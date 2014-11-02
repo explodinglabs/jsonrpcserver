@@ -38,16 +38,13 @@ class Server(flask.Flask):
     def handle_rpc_request(self):
         """Handle the request and output it"""
 
-        request_str = json.dumps(flask.request.get_json())
+        request = flask.request.get_json()
 
         # Log the request
-        oneline_str = ' '.join(request_str.split())
-        oneline_str = re.sub('{ ', '{', oneline_str)
-        oneline_str = re.sub(' }', '}', oneline_str)
-        logging.info('--> '+oneline_str)
+        logging.info('--> '+json.dumps(request))
 
         try:
-            response = rpchandler.handle(self.handler, request_str, True)
+            response = rpchandler.handle(self.handler, request, True)
             logging.info('<-- '+json.dumps(response))
             return flask.jsonify(response)
 
