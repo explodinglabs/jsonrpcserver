@@ -73,7 +73,7 @@ def handle(handler, request):
             jsonschema.validate(
                 request,
                 json.loads(open(os.path.dirname(__file__)+ \
-                    '/jsonrpc-2.0-request-schema.json').read()))
+                    '/request-schema.json').read()))
 
         except jsonschema.ValidationError:
             raise exceptions.InvalidRequest()
