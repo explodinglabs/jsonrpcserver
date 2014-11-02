@@ -35,7 +35,7 @@ class Server(flask.Flask):
             self.error_handler_spec[None][code] = self.make_json_error
 
         self.route('/in', methods=['POST'])(self.rpc)
-        self.errorhandler(exceptions.RPCHandlerException)(handler_error)
+        self.errorhandler(exceptions.RPCHandlerException)(handle_rpc_error)
 
     def rpc(self):
         """Handle the request and output it"""
