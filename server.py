@@ -10,6 +10,7 @@ from werkzeug.exceptions import default_exceptions
 import jsonschema
 
 from .handler import handle
+from . import exceptions
 
 class Server(flask.Flask):
     """RPC Server"""
