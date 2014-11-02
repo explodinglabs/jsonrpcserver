@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "JSON-RPC 2.0 Request Schema",
+  "description": "A JSON-RPC 2.0 request message",
+  "type": "object",
+  "properties": {
+    "jsonrpc": {
+      "type": "string",
+      "enum": ["2.0"]
+    },
+    "id": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "integer"},
+        {"type": "null"}
+      ]
+    },
+    "method": {
+      "type": "string",
+      "pattern": "^[^r]|^r[^p]|^rp[^c]|^rpc[^.]|^rpc$"
+    },
+    "params": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array"}
+      ]
+    }
+  },
+  "required": ["jsonrpc", "method"]
+}

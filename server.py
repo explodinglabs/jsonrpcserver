@@ -7,48 +7,48 @@ import json
 import flask
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import default_exceptions
-import rpchandler
+import jsonschema
 
-def make_json_error(e):
-    """Ensure we respond with json every time. All error responses that you
-    don't specifically manage yourself will have application/json content type.
-    See http://flask.pocoo.org/snippets/83/"""
-
-    response_str = '{"jsonrpc": "2.0", "error": {"code": -1, "message": "Internal Error"}, "id": null}'
-    logging.info('<-- '+response_str)
-
-    response = flask.Response(response_str, mimetype='application/json')
-    response.status_code = (e.code if isinstance(e, HTTPException) else 500)
-    return response
+from .handler import handle
 
 class Server(flask.Flask):
     """RPC Server"""
 
+    @staticmethod
+    def make_json_error(e):
+        """Ensure we always respond with jsonrpc, even on 404 or other bad
+        request"""
+
+        response_str = '{"jsonrpc": "2.0", "error": {"code": -1, "message": '+str(e)+'}, "id": null}'
+        logging.info('<-- '+response_str)
+
+        response = flask.Response(response_str, mimetype='application/json')
+        response.status_code = (e.code if isinstance(e, HTTPException) else 500)
+        return response
+
     def __init__(self, import_name, handler):
         super().__init__(import_name)
-        self.config['JSON_SORT_KEYS'] = False
-        self.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
         self.handler = handler
 
         for code in default_exceptions.keys():
-            self.error_handler_spec[None][code] = make_json_error
+            self.error_handler_spec[None][code] = self.make_json_error
 
-        self.route('/in', methods=['POST'])(self.handle_rpc_request)
+        self.route('/in', methods=['POST'])(self.rpc)
+        self.errorhandler(exceptions.RPCHandlerException)(handler_error)
 
-    def handle_rpc_request(self):
+    def rpc(self):
         """Handle the request and output it"""
 
+        # Get the request (raises "400: Bad request" if fails)
         request = flask.request.get_json()
 
         # Log the request
         logging.info('--> '+json.dumps(request))
+        handle(self.handler, request)
 
-        try:
-            response = rpchandler.handle(self.handler, request, True)
-            logging.info('<-- '+json.dumps(response))
-            return flask.jsonify(response)
+        logging.info('<-- '+json.dumps(response))
+        return flask.jsonify(response)
 
-        # Catch rpchandler error (invalid request etc)
-        except rpchandler.exceptions.RPCHandlerException as e:
-            logging.info('<-- '+str(e))
-            return flask.Response(str(e), mimetype='application/json')
+    def handle_rpc_error(e):
+        logging.info('<-- '+str(e))
+        return flask.jsonify(str(e))
