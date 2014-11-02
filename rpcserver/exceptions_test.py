@@ -15,7 +15,7 @@ def test_InvalidRequest():
 
 def test_InvalidParams():
     with assert_raises(exceptions.InvalidParams):
-        raise exceptions.InvalidParams('id was Missing')
+        raise exceptions.InvalidParams()
 
 def test_MethodNotFound():
     with assert_raises(exceptions.MethodNotFound):

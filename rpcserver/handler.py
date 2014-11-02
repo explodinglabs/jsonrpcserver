@@ -63,7 +63,7 @@ def dispatch(handler, method_name, args, kwargs):
 
     # Catch argument mismatch errors
     except TypeError as e:
-        raise exceptions.InvalidParams()
+        raise exceptions.InvalidParams(str(e))
 
 def handle(handler, request):
 

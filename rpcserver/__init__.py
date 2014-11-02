@@ -1,4 +1,4 @@
-"""rpcserver package"""
+"""rpcserver"""
 
 from .server import Server
-from .handler import handle
+#from .handler import handle
