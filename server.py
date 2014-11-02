@@ -45,7 +45,7 @@ class Server(flask.Flask):
 
         # Log the request
         logging.info('--> '+json.dumps(request))
-        handle(self.handler, request)
+        response = handle(self.handler, request)
 
         logging.info('<-- '+json.dumps(response))
         return flask.jsonify(response)
