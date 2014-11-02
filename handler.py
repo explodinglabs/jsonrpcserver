@@ -31,7 +31,7 @@ def convert_params_to_args_and_kwargs(params):
     return (args, kwargs)
 
 #pylint:disable=star-args
-def call(handler, method_name, args, kwargs):
+def dispatch(handler, method_name, args, kwargs):
     """Call a handler method"""
 
     # Dont allow magic methods to be called
@@ -72,7 +72,8 @@ def handle(handler, request):
         try:
             jsonschema.validate(
                 request,
-                json.loads(open(os.path.dirname(__file__)+'/jsonrpc-2.0-request-schema.json').read()))
+                json.loads(open(os.path.dirname(__file__)+ \
+                    '/jsonrpc-2.0-request-schema.json').read()))
 
         except jsonschema.ValidationError:
             raise exceptions.InvalidRequest()
@@ -81,13 +82,12 @@ def handle(handler, request):
         (args, kwargs) = convert_params_to_args_and_kwargs(
             request.get('params', None))
 
-        result = call(handler, request['method'], args, kwargs)
+        result = dispatch(handler, request['method'], args, kwargs)
 
         # Call the handler method
         return rpc.result(request.get('id', None), result)
 
-    # Catch any rpchandler error (invalid request etc)
-    # So we can add the request id
+    # Catch any rpchandler error (invalid request etc), add the request id
     except exceptions.RPCHandlerException as e:
         e.request_id = request.get('id', None)
         raise
