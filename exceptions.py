@@ -52,5 +52,5 @@ class MethodNotFound(RPCHandlerException):
 class InvalidParams(RPCHandlerException):
     """Invalid method parameter(s)."""
 
-    def __init__(self, message, **kwargs):
-        super().__init__(-32602, message, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(-32602, 'Invalid params', **kwargs)

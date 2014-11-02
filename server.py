@@ -16,11 +16,16 @@ class Server(flask.Flask):
     """RPC Server"""
 
     @staticmethod
-    def make_json_error(e):
+    def handle_rpc_error(e):
+        logging.info('<-- '+str(e))
+        return flask.Response(str(e), mimetype='application/json')
+
+    @staticmethod
+    def flask_error(e):
         """Ensure we always respond with jsonrpc, even on 404 or other bad
         request"""
 
-        response_str = '{"jsonrpc": "2.0", "error": {"code": -1, "message": '+str(e)+'}, "id": null}'
+        response_str = '{"jsonrpc": "2.0", "error": {"code": -1, "message": "'+str(e)+'"}, "id": null}'
         logging.info('<-- '+response_str)
 
         response = flask.Response(response_str, mimetype='application/json')
@@ -31,10 +36,10 @@ class Server(flask.Flask):
         super().__init__(import_name)
         self.handler = handler
 
-        for code in default_exceptions.keys():
-            self.error_handler_spec[None][code] = self.make_json_error
-
         self.route('/in', methods=['POST'])(self.rpc)
+
+        for code in default_exceptions.keys():
+            self.error_handler_spec[None][code] = self.flask_error
         self.errorhandler(exceptions.RPCHandlerException)(self.handle_rpc_error)
 
     def rpc(self):
@@ -49,7 +54,3 @@ class Server(flask.Flask):
 
         logging.info('<-- '+json.dumps(response))
         return flask.jsonify(response)
-
-    def handle_rpc_error(e):
-        logging.info('<-- '+str(e))
-        return flask.jsonify(str(e))
