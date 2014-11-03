@@ -44,28 +44,3 @@ def handler_error(e):
     """RPCHandlerExceptions: responds with json"""
 
     return error(e, str(e))
-
-@bp.before_app_request
-def before_app_request():
-    """Handle the request and output it"""
-
-    # Get the request (this raises "400: Bad request" if fails)
-    flask.g.request = flask.request.get_json()
-    logging.info('--> '+json.dumps(flask.g.request))
-
-    try:
-        # Validate
-        try:
-            jsonschema.validate(
-                flask.g.request,
-                json.loads(open(os.path.dirname(__file__)+ \
-                    '/request-schema.json').read()))
-
-        except jsonschema.ValidationError:
-            raise exceptions.InvalidRequest()
-
-    # Catch any rpchandler error (invalid request etc), add the request id
-    except exceptions.RPCHandlerException as e:
-        if flask.g.request:
-            e.request_id = flask.g.request.get('id', None)
-        raise

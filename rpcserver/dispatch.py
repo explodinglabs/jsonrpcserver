@@ -1,9 +1,12 @@
 """dispatch.py"""
 
+import os
+
 import json
 import logging
 import flask
 from flask import g
+import jsonschema
 
 from . import rpc
 from . import exceptions
@@ -31,20 +34,34 @@ def convert_params_to_args_and_kwargs(params):
 
     return (args, kwargs)
 
-def dispatch(handler, method_name, params):
+def dispatch(handler):
     """Call a handler method"""
 
+    # Get the request (this raises "400: Bad request" if fails)
+    request = flask.request.get_json()
+    logging.info('--> '+json.dumps(request))
+
     try:
+        # Validate
+        try:
+            jsonschema.validate(
+                request,
+                json.loads(open(os.path.dirname(__file__)+ \
+                    '/request-schema.json').read()))
+
+        except jsonschema.ValidationError:
+            raise exceptions.InvalidRequest()
+
         # Get the args and kwargs from request['params']
-        (a, k) = convert_params_to_args_and_kwargs(params)
+        (a, k) = convert_params_to_args_and_kwargs(request.get('params', None))
 
         # Dont allow magic methods to be called
-        if method_name.startswith('__') and method_name.endswith('__'):
+        if request['method'].startswith('__') and request['method'].endswith('__'):
             raise exceptions.MethodNotFound()
 
         # Get the method if available
         try:
-            method = getattr(handler, method_name)
+            method = getattr(handler, request['method'])
 
         # Catch method not found
         except AttributeError:
@@ -65,8 +82,8 @@ def dispatch(handler, method_name, params):
                 result = method(*a, **k) #pylint:disable=star-args
 
             # Return, if a response was requested
-            if 'id' in g.request:
-                response = rpc.result(g.request.get('id', None), result)
+            if 'id' in request:
+                response = rpc.result(request.get('id', None), result)
                 logging.info('<-- '+json.dumps(response))
                 return flask.jsonify(response)
             else:
@@ -78,6 +95,6 @@ def dispatch(handler, method_name, params):
 
     # Catch any rpchandler error (invalid request etc), add the request id
     except exceptions.RPCHandlerException as e:
-        if g.request:
-            e.request_id = g.request.get('id', None)
+        if request:
+            e.request_id = request.get('id', None)
         raise

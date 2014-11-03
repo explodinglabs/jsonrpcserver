@@ -17,8 +17,7 @@ app.register_blueprint(rpcserver.bp)
 
 @app.route('/', methods=['POST'])
 def index():
-    result = rpcserver.dispatch(
-        sys.modules[__name__], g.request['method'], g.request.get('params', None))
+    result = rpcserver.dispatch(sys.modules[__name__])
     return result
 
 def method_only():
@@ -101,13 +100,6 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
         assert_equal(
             expected_response,
             response
-        )
-
-    # MethodNotFound
-    def test_MethodNotFound(self):
-        self.post(
-            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
-            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
         )
 
     # InvalidParams - this requires lots of testing because there are many ways
@@ -222,3 +214,11 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
             {'jsonrpc': '2.0', 'result': 'Smith', 'id': 1},
             {"jsonrpc": "2.0", "method": "lookup_surname", "params": {"firstname": "John"}, "id": 1}
         )
+
+    # MethodNotFound
+    def test_MethodNotFound(self):
+        self.post(
+            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
+            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
+        )
+
