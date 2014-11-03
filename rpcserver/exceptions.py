@@ -54,3 +54,9 @@ class InvalidParams(RPCHandlerException):
 
     def __init__(self, message='Invalid params', **kwargs):
         super().__init__(-32602, message, **kwargs)
+
+class InternalError(RPCHandlerException):
+    """Internal error."""
+
+    def __init__(self, message='Internal error', **kwargs):
+        super().__init__(-1, message, **kwargs)
