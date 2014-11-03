@@ -30,64 +30,6 @@ def convert_params_to_args_and_kwargs(params):
 
     return (args, kwargs)
 
-#pylint:disable=star-args
-def dispatch(handler, method_name, args, kwargs):
-    """Call a handler method"""
+class Handler(object):
 
-    # Dont allow magic methods to be called
-    if method_name.startswith('__') and method_name.endswith('__'):
-        raise exceptions.MethodNotFound()
 
-    # Get the method if available
-    try:
-        method = getattr(handler, method_name)
-
-    # Catch method not found
-    except AttributeError:
-        raise exceptions.MethodNotFound()
-
-    try:
-
-        # Call the method
-        if not args and not kwargs:
-            return method()
-
-        if args and not kwargs:
-            return method(*args)
-
-        if not args and kwargs:
-            return method(**kwargs)
-
-        if args and kwargs:
-            return method(*args, **kwargs)
-
-    # Catch argument mismatch errors
-    except TypeError as e:
-        raise exceptions.InvalidParams(str(e))
-
-def handle(handler, request):
-
-    try:
-        # Validate
-        try:
-            jsonschema.validate(
-                request,
-                json.loads(open(os.path.dirname(__file__)+ \
-                    '/request-schema.json').read()))
-
-        except jsonschema.ValidationError:
-            raise exceptions.InvalidRequest()
-
-        # Get the args and kwargs from request['params']
-        (args, kwargs) = convert_params_to_args_and_kwargs(
-            request.get('params', None))
-
-        result = dispatch(handler, request['method'], args, kwargs)
-
-        # Call the handler method
-        return rpc.result(request.get('id', None), result)
-
-    # Catch any rpchandler error (invalid request etc), add the request id
-    except exceptions.RPCHandlerException as e:
-        e.request_id = request.get('id', None)
-        raise
