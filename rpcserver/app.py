@@ -2,7 +2,6 @@
 
 import os
 import logging
-import re
 import json
 
 import flask
@@ -46,9 +45,13 @@ def error(e, response_str):
     return response
 
 def invalid_request(e):
+    """Status codes 400-499"""
+
     return error(e, str(exceptions.InvalidRequest()))
 
 def internal_error(e):
+    """Any error other than status codes 400-499"""
+
     return error(e, str(exceptions.InternalError()))
 
 def handler_error(e):
@@ -56,7 +59,7 @@ def handler_error(e):
 
     return error(e, str(e))
 
-class App(flask.Flask):
+class App(flask.Flask): #pylint:disable=too-many-public-methods
     """RPC App"""
 
     def __init__(self, import_name, route='/'):

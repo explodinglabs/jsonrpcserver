@@ -8,31 +8,31 @@ import json
 from .app import App
 from . import exceptions
 
-class DummyApp(App):
+class DummyApp(App): #pylint:disable=too-many-public-methods
 
-    @staticmethod
-    def method_only(): pass
+    def method_only(self):
+        pass
 
-    @staticmethod
-    def one_positional(string): pass
+    def one_positional(self, string):
+        pass
 
-    @staticmethod
-    def two_positionals(one, two): pass
+    def two_positionals(self, one, two):
+        pass
 
-    @staticmethod
-    def args(*args): pass
+    def args(self, *args):
+        pass
 
-    @staticmethod
-    def kwargs(**kwargs): pass
+    def kwargs(self, **kwargs):
+        pass
 
-    @staticmethod
-    def positionals_with_args(one, two, *args): pass
+    def positionals_with_args(self, one, two, *args):
+        pass
 
-    @staticmethod
-    def positionals_with_kwargs(one, two, **kwargs): pass
+    def positionals_with_kwargs(self, one, two, **kwargs):
+        pass
 
-    @staticmethod
-    def positionals_with_args_and_kwargs(one, two, *args, **kwargs): pass
+    def positionals_with_args_and_kwargs(self, one, two, *args, **kwargs):
+        pass
 
     @staticmethod
     def add(number1, number2):
@@ -67,7 +67,7 @@ class DummyApp(App):
 
 testapp = DummyApp(__name__)
 
-class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statements
+class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statements,too-many-public-methods
     """To test:
         method_only()
         one_param(string)
@@ -87,7 +87,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
         response = self.app.post(
             '/', headers={'content-type': 'application/json'}, \
-            data=json.dumps(request)).data.decode('utf-8')
+            data=json.dumps(request)).data.decode('utf-8') #pylint:disable=maybe-no-member
 
         if response:
             response = json.loads(response)
@@ -111,7 +111,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_method_only_ok(self):
         self.post(
-            '',
+            None,
             {"jsonrpc": "2.0", "method": "method_only"}
         )
 
@@ -137,7 +137,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_one_positional_ok(self):
         self.post(
-            '',
+            None,
             {"jsonrpc": "2.0", "method": "one_positional", "params": [1]}
         )
 
@@ -202,7 +202,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
     def test_add_two_numbers(self):
         self.post(
             {'jsonrpc': '2.0', 'result': 3, 'id': 1},
-            {"jsonrpc": "2.0", "method": "add", "params": [1,2], "id": 1}
+            {"jsonrpc": "2.0", "method": "add", "params": [1, 2], "id": 1}
         )
 
     def test_uppercase(self):
