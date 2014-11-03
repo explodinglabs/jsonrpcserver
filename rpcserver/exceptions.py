@@ -40,8 +40,7 @@ class InvalidRequest(RPCHandlerException):
     """The JSON sent didn't validate against the JSON-RPC request schema."""
 
     def __init__(self, **kwargs):
-        super().__init__(
-            -32600, 'Invalid request', **kwargs)
+        super().__init__(-32600, 'Invalid request', **kwargs)
 
 class MethodNotFound(RPCHandlerException):
     """The method does not exist/is not available."""

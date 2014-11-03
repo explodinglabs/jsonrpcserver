@@ -1,71 +1,77 @@
 """server_test.py"""
 # pylint: disable=missing-docstring,line-too-long
 
-from nose.tools import assert_equal # pylint: disable=no-name-in-module
+import sys
 import unittest
 import json
 
-from .app import App
+from nose.tools import assert_equal # pylint: disable=no-name-in-module
+from flask import g
+from flask import Flask
+import rpcserver
+
 from . import exceptions
 
-class DummyApp(App): #pylint:disable=too-many-public-methods
+app = Flask(__name__)
+app.register_blueprint(rpcserver.bp)
 
-    def method_only(self):
-        pass
+@app.route('/', methods=['POST'])
+def index():
+    result = rpcserver.dispatch(
+        sys.modules[__name__], g.request['method'], g.request.get('params', None))
+    return result
 
-    def one_positional(self, string):
-        pass
+def method_only():
+    pass
 
-    def two_positionals(self, one, two):
-        pass
+def one_positional(string):
+    pass
 
-    def args(self, *args):
-        pass
+def two_positionals(one, two):
+    pass
 
-    def kwargs(self, **kwargs):
-        pass
+def just_args(*args):
+    pass
 
-    def positionals_with_args(self, one, two, *args):
-        pass
+def just_kwargs(**kwargs):
+    pass
 
-    def positionals_with_kwargs(self, one, two, **kwargs):
-        pass
+def positionals_with_args(one, two, *args):
+    pass
 
-    def positionals_with_args_and_kwargs(self, one, two, *args, **kwargs):
-        pass
+def positionals_with_kwargs(one, two, **kwargs):
+    pass
 
-    @staticmethod
-    def add(number1, number2):
-        """Add two numbers. Takes a list as args."""
+def positionals_with_args_and_kwargs(one, two, *args, **kwargs):
+    pass
 
-        try:
-            return number1 + number2
+def add(number1, number2):
+    """Add two numbers. Takes a list as args."""
 
-        except TypeError as e:
-            raise exceptions.InvalidParams(str(e))
+    try:
+        return number1 + number2
 
-    @staticmethod
-    def uppercase(*args):
-        """Uppercase a string"""
+    except TypeError as e:
+        raise exceptions.InvalidParams(str(e))
 
-        try:
-            return args[0].upper()
+def uppercase(*args):
+    """Uppercase a string"""
 
-        except KeyError:
-            raise exceptions.InvalidParams()
+    try:
+        return args[0].upper()
 
-    @staticmethod
-    def lookup_surname(**kwargs):
-        """Lookup a surname from a firstname"""
+    except KeyError:
+        raise exceptions.InvalidParams()
 
-        try:
-            if kwargs['firstname'] == 'John':
-                return 'Smith'
+def lookup_surname(**kwargs):
+    """Lookup a surname from a firstname"""
 
-        except KeyError:
-            raise exceptions.InvalidParams()
+    try:
+        if kwargs['firstname'] == 'John':
+            return 'Smith'
 
-testapp = DummyApp(__name__)
+    except KeyError:
+        raise exceptions.InvalidParams()
 
 class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statements,too-many-public-methods
     """To test:
@@ -80,8 +86,8 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
     """
 
     def setUp(self):
-        testapp.config['TESTING'] = True
-        self.app = testapp.test_client()
+        app.testing = True
+        self.app = app.test_client()
 
     def post(self, expected_response, request):
 
@@ -117,7 +123,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_method_only_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() takes 1 positional argument but 2 were given"}, "id": 1},
+            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() takes 0 positional arguments but 1 was given"}, "id": 1},
             {"jsonrpc": "2.0", "method": "method_only", "params": [1], "id": 1}
         )
 
@@ -149,7 +155,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_one_positional_two_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() takes 2 positional arguments but 3 were given"}, "id": 1},
+            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() takes 1 positional argument but 2 were given"}, "id": 1},
             {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2], "id": 1}
         )
 
@@ -202,7 +208,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
     def test_add_two_numbers(self):
         self.post(
             {'jsonrpc': '2.0', 'result': 3, 'id': 1},
-            {"jsonrpc": "2.0", "method": "add", "params": [1, 2], "id": 1}
+            {'jsonrpc': '2.0', 'method': 'add', 'params': [1, 2], 'id': 1}
         )
 
     def test_uppercase(self):
