@@ -111,13 +111,13 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_method_only_ok(self):
         self.post(
-            None,
+            '',
             {"jsonrpc": "2.0", "method": "method_only"}
         )
 
     def test_method_only_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() takes 0 positional arguments but 1 was given"}, "id": 1},
+            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() takes 1 positional argument but 2 were given"}, "id": 1},
             {"jsonrpc": "2.0", "method": "method_only", "params": [1], "id": 1}
         )
 
@@ -137,7 +137,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_one_positional_ok(self):
         self.post(
-            None,
+            '',
             {"jsonrpc": "2.0", "method": "one_positional", "params": [1]}
         )
 
@@ -149,7 +149,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_one_positional_two_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() takes 1 positional argument but 2 were given"}, "id": 1},
+            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() takes 2 positional arguments but 3 were given"}, "id": 1},
             {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2], "id": 1}
         )
 
