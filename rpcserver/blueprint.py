@@ -5,13 +5,11 @@ import logging
 import json
 
 import flask
-from flask import g
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import default_exceptions
 import jsonschema
 
 from . import exceptions
-from . import rpc
 from . import bp
 
 def error(e, response_str):
@@ -52,14 +50,14 @@ def before_app_request():
     """Handle the request and output it"""
 
     # Get the request (this raises "400: Bad request" if fails)
-    g.request = flask.request.get_json()
-    logging.info('--> '+json.dumps(g.request))
+    flask.g.request = flask.request.get_json()
+    logging.info('--> '+json.dumps(flask.g.request))
 
     try:
         # Validate
         try:
             jsonschema.validate(
-                g.request,
+                flask.g.request,
                 json.loads(open(os.path.dirname(__file__)+ \
                     '/request-schema.json').read()))
 
@@ -68,6 +66,6 @@ def before_app_request():
 
     # Catch any rpchandler error (invalid request etc), add the request id
     except exceptions.RPCHandlerException as e:
-        if g.request:
-            e.request_id = g.request.get('id', None)
+        if flask.g.request:
+            e.request_id = flask.g.request.get('id', None)
         raise

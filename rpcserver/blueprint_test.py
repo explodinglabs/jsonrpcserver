@@ -24,25 +24,25 @@ def index():
 def method_only():
     pass
 
-def one_positional(string):
+def one_positional(string): #pylint:disable=unused-argument
     pass
 
-def two_positionals(one, two):
+def two_positionals(one, two): #pylint:disable=unused-argument
     pass
 
-def just_args(*args):
+def just_args(*args): #pylint:disable=unused-argument
     pass
 
-def just_kwargs(**kwargs):
+def just_kwargs(**kwargs): #pylint:disable=unused-argument
     pass
 
-def positionals_with_args(one, two, *args):
+def positionals_with_args(one, two, *args): #pylint:disable=unused-argument
     pass
 
-def positionals_with_kwargs(one, two, **kwargs):
+def positionals_with_kwargs(one, two, **kwargs): #pylint:disable=unused-argument
     pass
 
-def positionals_with_args_and_kwargs(one, two, *args, **kwargs):
+def positionals_with_args_and_kwargs(one, two, *args, **kwargs): #pylint:disable=unused-argument
     pass
 
 def add(number1, number2):

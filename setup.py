@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""setup.py"""
 
 from distutils.core import setup
 
@@ -10,4 +11,4 @@ setup(
     author_email='beauinmelbourne@gmail.com',
     url='https://bitbucket.org/beau-barker/rpcserver',
     packages=['jsonschema', 'flask'],
- )
+    )
