@@ -59,7 +59,7 @@ def handler_error(e):
 class App(flask.Flask):
     """RPC App"""
 
-    def __init__(self, import_name):
+    def __init__(self, import_name, route='/'):
         super().__init__(import_name)
 
         # Override flask internal error handlers, to return as jsonrpc
@@ -77,7 +77,7 @@ class App(flask.Flask):
         self.errorhandler(exceptions.RPCHandlerException)(handler_error)
 
         # Setup route
-        self.route('/', methods=['POST'])(self.handle)
+        self.route(route, methods=['POST'])(self.handle)
 
     def dispatch(self, method_name, args, kwargs):
         """Call a handler method"""
