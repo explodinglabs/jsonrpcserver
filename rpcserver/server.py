@@ -16,11 +16,11 @@ class Server(flask.Flask):
     """RPC Server"""
 
     @staticmethod
-    def flask_error(e):
-        """Ensure we always respond with jsonrpc, even on 404 or other bad
+    def invalid_request(e):
+        """Ensure we always respond with jsonrpc, such as on 400 or other bad
         request"""
 
-        response_str = '{"jsonrpc": "2.0", "error": {"code": -1, "message": "'+str(e)+'"}, "id": null}'
+        response_str = str(exceptions.InvalidRequest())
         logging.info('<-- '+response_str)
 
         response = flask.Response(response_str, mimetype='application/json')
@@ -30,10 +30,12 @@ class Server(flask.Flask):
     def __init__(self, import_name):
         super().__init__(import_name)
 
-        # Catch flask errors such as 400 Bad Request and return as jsonrpc
+        # Override flask internal error handlers, and return as jsonrpc
+        # InvalidRequest
         for code in default_exceptions.keys():
-            self.error_handler_spec[None][code] = self.flask_error
+            self.error_handler_spec[None][code] = self.invalid_request
 
+        # Setup route
         self.route('/', methods=['POST'])(self.handle)
 
     def dispatch(method_name, args, kwargs):
@@ -72,7 +74,7 @@ class Server(flask.Flask):
     def handle(self):
         """Handle the request and output it"""
 
-        # Get the request (raises "400: Bad request" if fails)
+        # Get the request (this raises "400: Bad request" if fails)
         request = flask.request.get_json()
         logging.info('--> '+json.dumps(request))
 
