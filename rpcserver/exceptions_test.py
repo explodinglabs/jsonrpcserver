@@ -11,7 +11,7 @@ def test_ParseError():
 
 def test_InvalidRequest():
     with assert_raises(exceptions.InvalidRequest):
-        raise exceptions.InvalidRequest(dict({'id': 'Missing'}))
+        raise exceptions.InvalidRequest()
 
 def test_InvalidParams():
     with assert_raises(exceptions.InvalidParams):

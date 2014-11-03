@@ -1,4 +1,4 @@
-"""server.py"""
+"""app.py"""
 
 import os
 import logging
@@ -56,8 +56,8 @@ def handler_error(e):
 
     return error(e, str(e))
 
-class Server(flask.Flask):
-    """RPC Server"""
+class App(flask.Flask):
+    """RPC App"""
 
     def __init__(self, import_name):
         super().__init__(import_name)
@@ -145,5 +145,6 @@ class Server(flask.Flask):
 
         # Catch any rpchandler error (invalid request etc), add the request id
         except exceptions.RPCHandlerException as e:
-            e.request_id = request.get('id', None)
+            if request:
+                e.request_id = request.get('id', None)
             raise

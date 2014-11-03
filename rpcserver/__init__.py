@@ -1,4 +1,4 @@
 """rpcserver"""
 
-from .server import Server
+from .app import App
 #from .handler import handle
