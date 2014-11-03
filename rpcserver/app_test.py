@@ -68,9 +68,7 @@ class DummyApp(App):
 testapp = DummyApp(__name__)
 
 class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statements
-    """Handler class for testing
-
-    To test:
+    """To test:
         method_only()
         one_param(string)
         two_param(one, two)
