@@ -23,12 +23,12 @@ The *dispatch* command will validate the RPC request, and call the requested
 method. It looks for the method in the handler which is specified in the first
 argument. In this case, we've used this module as the handler.
 
-Now write your functions that can be called via RPC:
+Now write your RPC methods, as you would any other python function:
 
     def add(num1, num2):
         return num1 + num2
 
-You can also use \*args or \*\*kwargs like any other python function.
+You can also use \*args or \*\*kwargs arguments.
 
 Start the server:
 
