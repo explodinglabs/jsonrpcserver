@@ -10,10 +10,10 @@ Create a Flask app, and register the rpcserver blueprint to it.
     app = flask.Flask(__name__)
     app.register_blueprint(rpcserver.bp)
 
-The blueprint will ensure we respond correctly with JSON-RPC every time. For
-example, on 404, we respond with the JSON-RPC error, *Invalid request*.
+The blueprint will ensure we respond with JSON-RPC every time. For example, on
+404, we respond with the JSON-RPC error, *Invalid request*.
 
-Now create a route to handle the RPC methods:
+Now create a flask route to handle the RPC methods:
 
     @app.route('/', methods=['POST'])
     def index():
