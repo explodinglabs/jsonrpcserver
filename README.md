@@ -13,7 +13,7 @@ Create a Flask app, and register the rpcserver blueprint to it.
 The blueprint will ensure we respond with JSON-RPC every time. For example, on
 404, we respond with the JSON-RPC error, *Invalid request*.
 
-Now create a flask route to handle the RPC methods:
+Now create a Flask route to handle the RPC methods:
 
     @app.route('/', methods=['POST'])
     def index():
@@ -25,8 +25,8 @@ we've used this module as the handler.
 
 Now write your functions that can be called via RPC:
 
-    def add(one, two):
-        return one + two
+    def add(num1, num2):
+        return num1 + num2
 
 You can also use \*args or \*\*kwargs like any other python function.
 
