@@ -19,7 +19,7 @@ Now create a Flask route to handle the RPC methods:
     def index():
         return rpcserver.dispatch(sys.modules[__name__])
 
-The *dispatch* command will validate the request, and call the requested RPC
+The *dispatch* command will validate the RPC request, and call the requested
 method. It looks for the method in the handler which is specified in the first
 argument. In this case, we've used this module as the handler.
 
