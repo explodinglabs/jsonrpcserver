@@ -6,6 +6,7 @@ from distutils.core import setup
 setup(
     name = 'jsonrpcserver',
     packages = ['jsonrpcserver'],
+    package_data={'jsonrpcserver': ['request-schema.json']},
     install_requires = ['jsonschema', 'flask'],
     version = '0.01',
     description = 'JSON-RPC 2.0 server library',
