@@ -1,7 +1,7 @@
 jsonrpcserver
 =============
 
-A Flask-based JSON-RPC 2.0 server library.
+A Flask-based [JSON-RPC 2.0](http://www.jsonrpc.org/) server library.
 
 Create a Flask app, and register the jsonrpcserver blueprint to it.
 
