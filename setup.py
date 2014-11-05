@@ -13,7 +13,6 @@ setup(
     author = 'Beau Barker',
     author_email = 'beauinmelbourne@gmail.com',
     url = 'https://bitbucket.org/beau-barker/jsonrpcserver',
-    download_url = 'https://bitbucket.org/beau-barker/jsonrpcserver/get/0.01.zip',
     keywords = ['json-rpc', 'json', 'api'],
     classifiers = [
         'Programming Language :: Python',
