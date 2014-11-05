@@ -8,3 +8,4 @@ jsonrpcserver/exceptions.py
 jsonrpcserver/exceptions_test.py
 jsonrpcserver/rpc.py
 jsonrpcserver/rpc_test.py
+jsonrpcserver/request-schema.json
