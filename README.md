@@ -38,7 +38,7 @@ exception:
     def add(num1, num2='Not a number'):
         try:
             return num1 + num2
-        except:
+        except TypeError:
             raise jsonrpcserver.exceptions.InvalidParams()
 
 If you need a client library, try my
