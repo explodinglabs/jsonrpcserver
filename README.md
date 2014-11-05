@@ -1,23 +1,23 @@
-rpcserver
-=========
+jsonrpcserver
+=============
 
 A Flask-based JSON-RPC 2.0 server library.
 
-Create a Flask app, and register the rpcserver blueprint to it.
+Create a Flask app, and register the jsonrpcserver blueprint to it.
 
-    import sys, flask, rpcserver
+    import sys, flask, jsonrpcserver
 
     app = flask.Flask(__name__)
-    app.register_blueprint(rpcserver.bp)
+    app.register_blueprint(jsonrpcserver.bp)
 
 The blueprint will ensure we respond with JSON-RPC every time. For example, on
-404, we respond with the JSON-RPC error, *Invalid request*.
+404, we respond with the error, *Invalid request*.
 
 Now create a Flask route to handle the RPC methods:
 
     @app.route('/', methods=['POST'])
     def index():
-        return rpcserver.dispatch(sys.modules[__name__])
+        return jsonrpcserver.dispatch(sys.modules[__name__])
 
 The *dispatch* command will validate the RPC request, and call the requested
 method. It looks for the method in the handler which is specified in the first

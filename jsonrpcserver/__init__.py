@@ -1,4 +1,4 @@
-"""rpcserver"""
+"""jsonrpcserver"""
 
 from flask import Blueprint
 

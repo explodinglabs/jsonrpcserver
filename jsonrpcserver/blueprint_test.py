@@ -8,16 +8,16 @@ import json
 from nose.tools import assert_equal # pylint: disable=no-name-in-module
 from flask import g
 from flask import Flask
-import rpcserver
+import jsonrpcserver
 
 from . import exceptions
 
 app = Flask(__name__)
-app.register_blueprint(rpcserver.bp)
+app.register_blueprint(jsonrpcserver.bp)
 
 @app.route('/', methods=['POST'])
 def index():
-    result = rpcserver.dispatch(sys.modules[__name__])
+    result = jsonrpcserver.dispatch(sys.modules[__name__])
     return result
 
 def method_only():
