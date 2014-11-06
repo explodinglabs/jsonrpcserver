@@ -47,7 +47,7 @@ respond with the JSON-RPC error, *Method not found*.
 Route
 -----
 
-Now create a route to accept the RPC calls:
+Add a route to accept the RPC calls:
 
     @app.route('/', methods=['POST'])
     def index():
