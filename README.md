@@ -28,7 +28,7 @@ The blueprint will ensure we respond with JSON-RPC every time. For example, on
 404, we respond with the 404 status code along with the JSON-RPC error, *Invalid
 request*.
 
-Now create a route to handle the RPC methods:
+Now create a route to accept the RPC calls:
 
     @app.route('/', methods=['POST'])
     def index():
