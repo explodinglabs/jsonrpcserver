@@ -6,7 +6,6 @@ import unittest
 import json
 
 from nose.tools import assert_equal # pylint: disable=no-name-in-module
-from flask import g
 from flask import Flask
 import jsonrpcserver
 
@@ -19,6 +18,8 @@ app.register_blueprint(jsonrpcserver.bp)
 def index():
     result = jsonrpcserver.dispatch(sys.modules[__name__])
     return result
+
+# RPC Method handlers
 
 def method_only():
     pass

@@ -1,13 +1,10 @@
 """blueprint.py"""
 
-import os
 import logging
-import json
 
 import flask
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import default_exceptions
-import jsonschema
 
 from . import exceptions
 from . import bp

@@ -1,11 +1,8 @@
 """dispatch.py"""
 
-import os
-
 import json
 import logging
 import flask
-from flask import g
 import jsonschema
 import pkgutil
 
@@ -57,7 +54,8 @@ def dispatch(handler):
         (a, k) = convert_params_to_args_and_kwargs(request.get('params', None))
 
         # Dont allow magic methods to be called
-        if request['method'].startswith('__') and request['method'].endswith('__'):
+        if request['method'].startswith('__') \
+                and request['method'].endswith('__'):
             raise exceptions.MethodNotFound()
 
         # Get the method if available
