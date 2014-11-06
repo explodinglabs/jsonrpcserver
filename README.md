@@ -3,15 +3,23 @@ jsonrpcserver
 
 A [JSON-RPC 2.0](http://www.jsonrpc.org/) server library for Python 3.
 
+Usage
+-----
+
+    # views.py
+
     import sys, flask, jsonrpcserver
 
+    # Blueprint
     app = flask.Flask(__name__)
     app.register_blueprint(jsonrpcserver.bp)
 
+    # Route
     @app.route('/', methods=['POST'])
     def index():
         return jsonrpcserver.dispatch(sys.modules[__name__])
 
+    # Handlers
     def add(num1, num2):
         return num1 + num2
 
@@ -45,10 +53,10 @@ Calling ``dispatch`` will validate the RPC request, and pass the data along the
 requested *method* to handle the request. The argument passed to ``dispatch`` is
 the handler of the methods. We passed this module to handle them right here.
 
-Handler methods
----------------
+Handlers
+--------
 
-Now write the RPC handling methods, as you would any other Python function:
+Write functions to handle RPC requests, as you would any other Python function:
 
     def add(num1, num2):
         return num1 + num2
@@ -62,13 +70,14 @@ expansion or keyword expansion arguments.
 Exceptions
 ----------
 
-If the arguments received are no good, raise the ``InvalidParams`` exception:
+If the arguments received are invalid, raise the ``InvalidParams`` exception:
 
     def add(num1, num2='Not a number'):
         try:
             return num1 + num2
         except TypeError:
             raise jsonrpcserver.exceptions.InvalidParams()
+
 
 If you need a client, try my
 [jsonrpcclient](https://bitbucket.org/beau-barker/jsonrpcclient) library.
