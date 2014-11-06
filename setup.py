@@ -1,6 +1,6 @@
 #!/usr/bin/env python
+# pylint: disable=line-too-long
 """setup.py"""
-#pylint:disable=line-too-long
 
 from distutils.core import setup
 
