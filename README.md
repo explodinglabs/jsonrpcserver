@@ -7,6 +7,7 @@ Usage
 -----
 
     # views.py
+
     import sys, flask, jsonrpcserver
 
     # Blueprint
@@ -24,6 +25,10 @@ Usage
 
     if __name__ == '__main__':
         app.run()
+
+Test with:
+
+    python -m views
 
 What's going on here?
 
