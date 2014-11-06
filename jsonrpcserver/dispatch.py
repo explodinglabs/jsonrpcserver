@@ -7,6 +7,7 @@ import logging
 import flask
 from flask import g
 import jsonschema
+import pkgutil
 
 from . import rpc
 from . import exceptions
@@ -46,8 +47,8 @@ def dispatch(handler):
         try:
             jsonschema.validate(
                 request,
-                json.loads(open(os.path.dirname(__file__)+ \
-                    '/request-schema.json').read()))
+                json.loads(pkgutil.get_data(
+                    __name__, 'request-schema.json').decode('utf-8')))
 
         except jsonschema.ValidationError:
             raise exceptions.InvalidRequest()
