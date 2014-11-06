@@ -7,7 +7,6 @@ Usage
 -----
 
     # views.py
-
     import sys, flask, jsonrpcserver
 
     # Blueprint
