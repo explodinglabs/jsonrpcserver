@@ -88,6 +88,13 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
         app.testing = True
         self.app = app.test_client()
 
+    # MethodNotFound
+    def test_MethodNotFound(self):
+        self.post(
+            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
+            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
+        )
+
     def post(self, expected_response, request):
 
         response = self.app.post(
@@ -213,12 +220,5 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
         self.post(
             {'jsonrpc': '2.0', 'result': 'Smith', 'id': 1},
             {"jsonrpc": "2.0", "method": "lookup_surname", "params": {"firstname": "John"}, "id": 1}
-        )
-
-    # MethodNotFound
-    def test_MethodNotFound(self):
-        self.post(
-            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
-            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
         )
 
