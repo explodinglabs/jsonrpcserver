@@ -1,7 +1,7 @@
 jsonrpcserver
 =============
 
-A Flask-based [JSON-RPC 2.0](http://www.jsonrpc.org/) server library.
+A [JSON-RPC 2.0](http://www.jsonrpc.org/) server library for Python 3.
 
 Create a Flask app, and register the jsonrpcserver blueprint to it.
 
@@ -41,5 +41,5 @@ exception:
         except TypeError:
             raise jsonrpcserver.exceptions.InvalidParams()
 
-If you need a client library, try my
-[jsonrpcclient](https://bitbucket.org/beau-barker/jsonrpcclient).
+If you need a client, try my
+[jsonrpcclient](https://bitbucket.org/beau-barker/jsonrpcclient) library.
