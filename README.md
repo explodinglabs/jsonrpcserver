@@ -18,9 +18,8 @@ A [JSON-RPC 2.0](http://www.jsonrpc.org/) server library for Python 3.
     if __name__ == '__main__':
         app.run()
 
-What's going on here?
-
-First we create a Flask app, and register the jsonrpcserver blueprint to it.
+What's going on here? First we create a Flask app, and register the
+jsonrpcserver blueprint to it.
 
     app = flask.Flask(__name__)
     app.register_blueprint(jsonrpcserver.bp)
