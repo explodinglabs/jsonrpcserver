@@ -61,13 +61,13 @@ we've passed this module, to handle the requests right here.
 Handlers
 --------
 
-Write functions to handle RPC requests, as you would any other Python function:
+Write functions to handle each of the RPC requests:
 
     def add(num1, num2):
         return num1 + num2
 
-The RPC handling functions can receive any combination of positional, positional
-expansion or keyword expansion arguments.
+The RPC handling functions can receive any combination of positional or keyword
+expansion arguments.
 
     def find(name, *args, **kwargs):
         pass
