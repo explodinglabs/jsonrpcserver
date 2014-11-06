@@ -35,7 +35,8 @@ Now create a route to accept the RPC calls:
         return jsonrpcserver.dispatch(sys.modules[__name__])
 
 The ``dispatch`` call will validate the RPC request, and call the requested
-*method*. We pass the current module to it, as the handler of the methods.
+*method*. The argument passed to ``dispatch`` is the handler of the methods. We
+passed this module to handle them right here.
 
 Now write the RPC handling methods, as you would any other Python function:
 
