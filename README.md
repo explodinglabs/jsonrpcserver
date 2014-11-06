@@ -18,8 +18,12 @@ A [JSON-RPC 2.0](http://www.jsonrpc.org/) server library for Python 3.
     if __name__ == '__main__':
         app.run()
 
-What's going on here? First we create a Flask app, and register the
-jsonrpcserver blueprint to it.
+What's going on here?
+
+Blueprint
+---------
+
+First we create a Flask app, and register the jsonrpcserver blueprint to it.
 
     app = flask.Flask(__name__)
     app.register_blueprint(jsonrpcserver.bp)
@@ -27,6 +31,9 @@ jsonrpcserver blueprint to it.
 The blueprint will ensure we respond with JSON-RPC every time. For example, on
 404, we respond with the 404 status code along with the JSON-RPC error, *Invalid
 request*.
+
+Route
+-----
 
 Now create a route to accept the RPC calls:
 
@@ -37,6 +44,9 @@ Now create a route to accept the RPC calls:
 Calling ``dispatch`` will validate the RPC request, and pass the data along the
 requested *method* to handle the request. The argument passed to ``dispatch`` is
 the handler of the methods. We passed this module to handle them right here.
+
+Handler methods
+---------------
 
 Now write the RPC handling methods, as you would any other Python function:
 
