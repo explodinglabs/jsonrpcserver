@@ -31,14 +31,14 @@ What's going on here?
 Blueprint
 ---------
 
-First we create a Flask app, and register the jsonrpcserver blueprint to it.
+Create a Flask app, and register the jsonrpcserver blueprint to it.
 
     app = flask.Flask(__name__)
     app.register_blueprint(jsonrpcserver.bp)
 
-The blueprint will ensure we respond with JSON-RPC every time. For example, on
-404, we respond with the 404 status code along with the JSON-RPC error, *Invalid
-request*.
+The blueprint's purpose is to handle errors. The server should respond with
+JSON-RPC every time. For example, on 404, we respond with HTTP stats 404, along
+with the JSON-RPC error, *Invalid request*.
 
 Route
 -----
