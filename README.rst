@@ -1,7 +1,9 @@
 jsonrpcserver
 =============
 
-A [JSON-RPC 2.0](http://www.jsonrpc.org/) server library for Python 3.
+`JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ server library for Python 3.
+
+.. sourcecode:: python
 
     """views.py"""
 
@@ -34,6 +36,8 @@ Blueprint
 
 Create a Flask app, and register the jsonrpcserver blueprint to it.
 
+.. sourcecode:: python
+
     app = flask.Flask(__name__)
     app.register_blueprint(jsonrpcserver.bp)
 
@@ -45,6 +49,8 @@ Route
 -----
 
 Add a route to accept the RPC calls:
+
+.. sourcecode:: python
 
     @app.route('/', methods=['POST'])
     def index():
@@ -60,11 +66,15 @@ Handlers
 
 Write functions to handle each of the RPC requests:
 
+.. sourcecode:: python
+
     def add(num1, num2):
         return num1 + num2
 
 The RPC handling functions can receive any combination of positional or keyword
 expansion arguments.
+
+.. sourcecode:: python
 
     def find(name, *args, **kwargs):
         pass
@@ -74,12 +84,16 @@ Exceptions
 
 If the arguments received are invalid, raise the ``InvalidParams`` exception:
 
+.. sourcecode:: python
+
     def add(num1, num2='Not a number'):
         try:
             return num1 + num2
         except TypeError:
             raise jsonrpcserver.exceptions.InvalidParams()
 
+Issue tracker is `here
+<https://bitbucket.org/beau-barker/jsonrpcclient/issues>`_.
 
-If you need a client, try my
-[jsonrpcclient](https://bitbucket.org/beau-barker/jsonrpcclient) library.
+If you need a client, try my `jsonrpcclient
+<https://bitbucket.org/beau-barker/jsonrpcclient`_ library.
