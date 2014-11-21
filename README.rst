@@ -79,3 +79,16 @@ expansion arguments.
     def find(name, *args, **kwargs):
         pass
 
+Exceptions
+----------
+
+If the arguments received are invalid, raise the ``InvalidParams`` exception:
+
+.. sourcecode:: python
+
+    def add(num1, num2='Not a number'):
+        try:
+            return num1 + num2
+        except TypeError:
+            raise jsonrpcserver.exceptions.InvalidParams()
+
