@@ -9,8 +9,9 @@ jsonrpcserver
 
     import sys, flask, jsonrpcserver
 
-    # Blueprint
     app = flask.Flask(__name__)
+
+    # Blueprint
     app.register_blueprint(jsonrpcserver.bp)
 
     # Route
@@ -38,7 +39,7 @@ Create a Flask app, and register the jsonrpcserver blueprint to it.
 
 .. sourcecode:: python
 
-    app = flask.Flask(__name__)
+    # Blueprint
     app.register_blueprint(jsonrpcserver.bp)
 
 The blueprint's purpose is to handle errors. The app should respond with
@@ -52,6 +53,7 @@ Add a route to accept the RPC calls:
 
 .. sourcecode:: python
 
+    # Route
     @app.route('/', methods=['POST'])
     def index():
         return jsonrpcserver.dispatch(sys.modules[__name__])
@@ -68,6 +70,7 @@ Write functions to handle each of the RPC requests:
 
 .. sourcecode:: python
 
+    # Handlers
     def add(num1, num2):
         return num1 + num2
 
