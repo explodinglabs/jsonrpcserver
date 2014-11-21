@@ -112,7 +112,7 @@ Changelog
 ---------
 
 1.0.4 - 2014-11-22
-    * Fixed README
+    * Fixed readme
 
 1.0.3 - 2014-11-21
     * The underlying JSON messages are now hidden by default. To see them you
