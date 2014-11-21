@@ -1,7 +1,7 @@
 jsonrpcserver
 =============
 
-`JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ client library for Python 3.
+`JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ server library for Python 3.
 
 .. sourcecode:: python
 
@@ -110,6 +110,9 @@ If you need a client, try my `jsonrpcclient
 
 Changelog
 ---------
+
+1.0.4 - 2014-11-22
+    * Fixed README
 
 1.0.3 - 2014-11-21
     * The underlying JSON messages are now hidden by default. To see them you
