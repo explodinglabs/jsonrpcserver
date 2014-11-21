@@ -111,7 +111,7 @@ Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
 
 If you need a client, try my `jsonrpcclient
-<https://bitbucket.org/beau-barker/jsonrpcclient>`_ library.
+<https://pypi.python.org/pypi/jsonrpcclient>`_ library.
 
 Changelog
 ---------
