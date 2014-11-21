@@ -1,7 +1,7 @@
 jsonrpcserver
 =============
 
-`JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ server library for Python 3.
+`JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ client library for Python 3.
 
 .. sourcecode:: python
 
@@ -92,3 +92,8 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
         except TypeError:
             raise jsonrpcserver.exceptions.InvalidParams()
 
+Issue tracker is `here
+<https://bitbucket.org/beau-barker/jsonrpcclient/issues>`_.
+
+If you need a client, try my `jsonrpcclient
+<https://bitbucket.org/beau-barker/jsonrpcclient`_ library.
