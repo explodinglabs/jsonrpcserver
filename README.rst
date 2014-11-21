@@ -3,9 +3,9 @@ jsonrpcserver
 
 `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ server library for Python 3.
 
-.. sourcecode:: python
+Create a file named ``views.py``, and paste the following code:
 
-    """views.py"""
+.. sourcecode:: python
 
     import sys, flask, jsonrpcserver
 
