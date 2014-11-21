@@ -2,15 +2,21 @@
 # pylint: disable=line-too-long
 """setup.py"""
 
-from distutils.core import setup
+import os
+from setuptools import setup
+
+def read(fname):
+    """Get the readme from a file, to use as long_description"""
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name='jsonrpcserver',
     packages=['jsonrpcserver'],
     package_data={'jsonrpcserver': ['request-schema.json']},
     install_requires=['flask', 'jsonschema'],
-    version='1.0.2',
+    version='1.0.3',
     description='JSON-RPC 2.0 server library for Python 3',
+    long_description=read('README.rst'),
     author='Beau Barker',
     author_email='beauinmelbourne@gmail.com',
     url='https://bitbucket.org/beau-barker/jsonrpcserver',
