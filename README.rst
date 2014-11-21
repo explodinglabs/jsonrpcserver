@@ -92,8 +92,7 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
         except TypeError:
             raise jsonrpcserver.exceptions.InvalidParams()
 
-Issue tracker is `here
-<https://bitbucket.org/beau-barker/jsonrpcclient/issues>`_.
+Issue tracker is `here <https://bitbucket.org/beau-barker/jsonrpcclient/issues>`_ .
 
 If you need a client, try my `jsonrpcclient
 <https://bitbucket.org/beau-barker/jsonrpcclient`_ library.
