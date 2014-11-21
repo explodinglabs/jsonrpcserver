@@ -103,7 +103,7 @@ To see the underlying JSON messages, set the logging level to DEBUG:
     logging.getLogger('jsonrpcserver').setLevel(logging.DEBUG)
 
 Issue tracker is `here
-<https://bitbucket.org/beau-barker/jsonrpcclient/issues>`_.
+<https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
 
 If you need a client, try my `jsonrpcclient
 <https://bitbucket.org/beau-barker/jsonrpcclient>`_ library.
