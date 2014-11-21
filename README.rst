@@ -92,8 +92,26 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
         except TypeError:
             raise jsonrpcserver.exceptions.InvalidParams()
 
+Logging
+-------
+
+To see the underlying JSON messages, set the logging level to DEBUG:
+
+.. sourcecode:: python
+
+    import logging
+    logging.getLogger('jsonrpcserver').setLevel(logging.DEBUG)
+
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcclient/issues>`_.
 
 If you need a client, try my `jsonrpcclient
 <https://bitbucket.org/beau-barker/jsonrpcclient>`_ library.
+
+Changelog
+---------
+
+1.0.3 - 2014-11-21
+    * The underlying JSON messages are now hidden by default. To see them you
+      should increase the logging level (see above).
+    * Tests moved into separate "tests" dir.
