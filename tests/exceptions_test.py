@@ -1,9 +1,6 @@
 """exceptions_test.py"""
 # pylint: disable=missing-docstring,line-too-long
 
-import os
-import sys
-
 from nose.tools import assert_raises # pylint: disable=no-name-in-module
 
 from jsonrpcserver import exceptions

@@ -1,16 +1,14 @@
 """dispatch_test.py"""
 # pylint: disable=missing-docstring,line-too-long
 
-import os
 import sys
 import unittest
 import json
 import logging
 
-from nose.tools import assert_equal, assert_raises # pylint: disable=no-name-in-module
+from nose.tools import assert_equal # pylint: disable=no-name-in-module
 from flask import Flask
 
-#sys.path.append(os.path.dirname(__file__)+'/../jsonrpcserver')
 from jsonrpcserver import bp
 from jsonrpcserver import exceptions
 from jsonrpcserver import logger
@@ -101,7 +99,7 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
             '/', headers={'content-type': 'application/json'}, \
             data=json.dumps(request_str)).data.decode('utf-8') #pylint:disable=maybe-no-member
 
-    def post(self, expected_response, request_str, expected_exception=None):
+    def post(self, expected_response, request_str):
 
         response = self.post_request(request_str)
 

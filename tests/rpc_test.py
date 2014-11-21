@@ -1,8 +1,6 @@
 """response_test.py"""
 # pylint: disable=missing-docstring,line-too-long
 
-import os
-import sys
 import nose
 import json
 
