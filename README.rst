@@ -68,7 +68,7 @@ Here we've passed this module, to handle the requests right here.)
 Handlers
 --------
 
-Write functions to handle each of the RPC requests:
+Write functions to handle each of the requests:
 
 .. sourcecode:: python
 
