@@ -5,7 +5,7 @@ See http://www.jsonrpc.org/specification#error_object"""
 
 import json
 
-import rpc
+from jsonrpcserver import rpc
 
 class RPCHandlerException(Exception):
     """Base class for the other rpchandler exceptions"""

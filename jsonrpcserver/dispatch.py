@@ -5,9 +5,9 @@ import flask
 import jsonschema
 import pkgutil
 
-import rpc
-import exceptions
-from __init__ import logger
+from jsonrpcserver import rpc
+from jsonrpcserver import exceptions
+from jsonrpcserver import logger
 
 def convert_params_to_args_and_kwargs(params):
     """Takes the 'params' from the rpc request and converts it into args and
@@ -37,7 +37,7 @@ def dispatch(handler):
 
     # Get the request (this raises "400: Bad request" if fails)
     request = flask.request.get_json()
-    logger.info('--> '+json.dumps(request))
+    logger.debug('--> '+json.dumps(request))
 
     try:
         # Validate
@@ -83,7 +83,7 @@ def dispatch(handler):
             # Return, if a response was requested
             if 'id' in request:
                 response = rpc.result(request.get('id', None), result)
-                logger.info('<-- '+json.dumps(response))
+                logger.debug('<-- '+json.dumps(response))
                 return flask.jsonify(response)
             else:
                 return flask.Response('')

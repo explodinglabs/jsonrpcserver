@@ -6,9 +6,10 @@ from flask import Blueprint
 
 logger = logging.getLogger('jsonrpcserver')
 logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.WARNING)
 
 bp = Blueprint('bp', __name__)
 
-import exceptions
-import blueprint
-from dispatch import dispatch
+from jsonrpcserver import exceptions
+from jsonrpcserver import blueprint
+from jsonrpcserver.dispatch import dispatch

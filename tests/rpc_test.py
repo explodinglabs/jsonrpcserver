@@ -6,8 +6,7 @@ import sys
 import nose
 import json
 
-sys.path.append(os.path.dirname(__file__)+'/../jsonrpcserver')
-import rpc
+from jsonrpcserver import rpc
 
 def test_result():
     nose.tools.assert_equal(

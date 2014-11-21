@@ -4,15 +4,15 @@ import flask
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import default_exceptions
 
-import exceptions
-from __init__ import logger
-from __init__ import bp
+from jsonrpcserver import exceptions
+from jsonrpcserver import logger
+from jsonrpcserver import bp
 
 def error(e, response_str):
     """Ensure we always respond with jsonrpc, such as on 400 or other bad
     request"""
 
-    logger.info('<-- '+response_str)
+    logger.debug('<-- '+response_str)
     response = flask.Response(response_str, mimetype='application/json')
     response.status_code = (e.code if isinstance(e, HTTPException) else 500)
     return response

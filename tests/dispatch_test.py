@@ -5,20 +5,25 @@ import os
 import sys
 import unittest
 import json
+import logging
 
 from nose.tools import assert_equal, assert_raises # pylint: disable=no-name-in-module
 from flask import Flask
 
-sys.path.append(os.path.dirname(__file__)+'/../jsonrpcserver')
-import jsonrpcserver
-import exceptions
+#sys.path.append(os.path.dirname(__file__)+'/../jsonrpcserver')
+from jsonrpcserver import bp
+from jsonrpcserver import exceptions
+from jsonrpcserver import logger
+from jsonrpcserver import dispatch
 
 app = Flask(__name__)
-app.register_blueprint(jsonrpcserver.bp)
+app.register_blueprint(bp)
+
+logger.setLevel(logging.INFO)
 
 @app.route('/', methods=['POST'])
 def index():
-    result = jsonrpcserver.dispatch(sys.modules[__name__])
+    result = dispatch(sys.modules[__name__])
     return result
 
 # RPC Method handlers
@@ -98,27 +103,21 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def post(self, expected_response, request_str, expected_exception=None):
 
-        response = None
+        response = self.post_request(request_str)
 
-        if (expected_exception):
-            with assert_raises(expected_exception):
-                response = self.post_request(request_str)
-        else:
-            response = self.post_request(request_str)
-
-        assert response
+        if response:
+            response = json.loads(response)
 
         assert_equal(
             expected_response,
-            json.loads(response)
+            response
         )
 
     # MethodNotFound
     def test_MethodNotFound(self):
         self.post(
             {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
-            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1},
-            exceptions.MethodNotFound
+            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
         )
 
     # InvalidParams - this requires lots of testing because there are many ways

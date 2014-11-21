@@ -6,8 +6,7 @@ import sys
 
 from nose.tools import assert_raises # pylint: disable=no-name-in-module
 
-sys.path.append(os.path.dirname(__file__)+'/../jsonrpcserver')
-import exceptions
+from jsonrpcserver import exceptions
 
 def test_ParseError():
     with assert_raises(exceptions.ParseError):
