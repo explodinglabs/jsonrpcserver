@@ -39,6 +39,8 @@ Create a Flask app, and register the jsonrpcserver blueprint to it.
 
 .. sourcecode:: python
 
+    app = flask.Flask(__name__)
+
     # Blueprint
     app.register_blueprint(jsonrpcserver.bp)
 
