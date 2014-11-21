@@ -1,4 +1,4 @@
-"""jsonrpcserver"""
+"""__init__.py"""
 
 import logging
 
@@ -9,6 +9,6 @@ logger.addHandler(logging.StreamHandler())
 
 bp = Blueprint('bp', __name__)
 
-from . import exceptions
-from .dispatch import dispatch
-from . import blueprint
+import exceptions
+import blueprint
+from dispatch import dispatch

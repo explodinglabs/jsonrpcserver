@@ -4,9 +4,9 @@ import flask
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import default_exceptions
 
-from . import exceptions
-from . import bp
-from . import logger
+import exceptions
+from __init__ import logger
+from __init__ import bp
 
 def error(e, response_str):
     """Ensure we always respond with jsonrpc, such as on 400 or other bad

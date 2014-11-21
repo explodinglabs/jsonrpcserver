@@ -5,9 +5,9 @@ import flask
 import jsonschema
 import pkgutil
 
-from . import rpc
-from . import exceptions
-from . import logger
+import rpc
+import exceptions
+from __init__ import logger
 
 def convert_params_to_args_and_kwargs(params):
     """Takes the 'params' from the rpc request and converts it into args and
