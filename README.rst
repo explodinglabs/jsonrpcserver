@@ -95,3 +95,5 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcclient/issues>`_.
 
+If you need a client, try my `jsonrpcclient
+<https://bitbucket.org/beau-barker/jsonrpcclient>`_ library.
