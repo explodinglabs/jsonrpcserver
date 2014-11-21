@@ -61,9 +61,9 @@ Add a route to accept the RPC calls:
         return jsonrpcserver.dispatch(sys.modules[__name__])
 
 ``dispatch`` is the key method in this library. It validates the RPC request,
-and passes the data along to a function to handle. The argument passed to
-``dispatch`` can be any collection of functions, such as a class or module. Here
-we've passed this module, to handle the requests right here.
+and passes the data along to a function to handle. (The argument passed to
+``dispatch`` can be any collection of functions, such as a class or module.
+Here we've passed this module, to handle the requests right here.)
 
 Handlers
 --------
