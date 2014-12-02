@@ -4,7 +4,7 @@
 import nose
 import json
 
-from . import rpc
+from jsonrpcserver import rpc
 
 def test_result():
     nose.tools.assert_equal(

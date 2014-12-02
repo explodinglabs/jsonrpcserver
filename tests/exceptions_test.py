@@ -3,7 +3,7 @@
 
 from nose.tools import assert_raises # pylint: disable=no-name-in-module
 
-from . import exceptions
+from jsonrpcserver import exceptions
 
 def test_ParseError():
     with assert_raises(exceptions.ParseError):

@@ -1,21 +1,20 @@
 """blueprint.py"""
 
-import logging
-
 import flask
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import default_exceptions
 
-from . import exceptions
-from . import bp
+from jsonrpcserver import exceptions
+from jsonrpcserver import logger
+from jsonrpcserver import bp
 
 def error(e, response_str):
     """Ensure we always respond with jsonrpc, such as on 400 or other bad
     request"""
 
-    logging.info('<-- '+response_str)
     response = flask.Response(response_str, mimetype='application/json')
     response.status_code = (e.code if isinstance(e, HTTPException) else 500)
+    logger.info('<-- {} {}'.format(response.status_code, response_str))
     return response
 
 def invalid_request(e):

@@ -1,4 +1,4 @@
-"""server_test.py"""
+"""dispatch_test.py"""
 # pylint: disable=missing-docstring,line-too-long
 
 import sys
@@ -7,16 +7,18 @@ import json
 
 from nose.tools import assert_equal # pylint: disable=no-name-in-module
 from flask import Flask
-import jsonrpcserver
 
-from . import exceptions
+from jsonrpcserver import bp
+from jsonrpcserver import exceptions
+from jsonrpcserver import logger
+from jsonrpcserver import dispatch
 
 app = Flask(__name__)
-app.register_blueprint(jsonrpcserver.bp)
+app.register_blueprint(bp)
 
 @app.route('/', methods=['POST'])
 def index():
-    result = jsonrpcserver.dispatch(sys.modules[__name__])
+    result = dispatch(sys.modules[__name__])
     return result
 
 # RPC Method handlers
@@ -89,18 +91,14 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
         app.testing = True
         self.app = app.test_client()
 
-    # MethodNotFound
-    def test_MethodNotFound(self):
-        self.post(
-            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
-            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
-        )
-
-    def post(self, expected_response, request):
-
-        response = self.app.post(
+    def post_request(self, request_str):
+        return self.app.post(
             '/', headers={'content-type': 'application/json'}, \
-            data=json.dumps(request)).data.decode('utf-8') #pylint:disable=maybe-no-member
+            data=json.dumps(request_str)).data.decode('utf-8') #pylint:disable=maybe-no-member
+
+    def post(self, expected_response, request_str):
+
+        response = self.post_request(request_str)
 
         if response:
             response = json.loads(response)
@@ -108,6 +106,13 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
         assert_equal(
             expected_response,
             response
+        )
+
+    # MethodNotFound
+    def test_MethodNotFound(self):
+        self.post(
+            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
+            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
         )
 
     # InvalidParams - this requires lots of testing because there are many ways
@@ -222,4 +227,3 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
             {'jsonrpc': '2.0', 'result': 'Smith', 'id': 1},
             {"jsonrpc": "2.0", "method": "lookup_surname", "params": {"firstname": "John"}, "id": 1}
         )
-
