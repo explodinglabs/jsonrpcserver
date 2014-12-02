@@ -100,12 +100,12 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
 Logging
 -------
 
-To see the underlying JSON messages, set the logging level to DEBUG:
+To see the underlying JSON messages, set the logging level to INFO:
 
 .. sourcecode:: python
 
     import logging
-    logging.getLogger('jsonrpcserver').setLevel(logging.DEBUG)
+    logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.

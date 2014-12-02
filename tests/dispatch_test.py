@@ -4,7 +4,6 @@
 import sys
 import unittest
 import json
-import logging
 
 from nose.tools import assert_equal # pylint: disable=no-name-in-module
 from flask import Flask
@@ -16,8 +15,6 @@ from jsonrpcserver import dispatch
 
 app = Flask(__name__)
 app.register_blueprint(bp)
-
-logger.setLevel(logging.INFO)
 
 @app.route('/', methods=['POST'])
 def index():
