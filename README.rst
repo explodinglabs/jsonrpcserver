@@ -118,6 +118,7 @@ Changelog
 
 1.0.5 - 2014-12-02
     * Messages are now output on the INFO log level.
+    * Show the status code in response log entries
 
 1.0.4 - 2014-11-22
     * Fixed readme
