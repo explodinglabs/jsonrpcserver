@@ -37,7 +37,7 @@ def dispatch(handler):
 
     # Get the request (this raises "400: Bad request" if fails)
     request = flask.request.get_json()
-    logger.debug('--> '+json.dumps(request))
+    logger.info('--> '+json.dumps(request))
 
     try:
         # Validate
@@ -83,7 +83,7 @@ def dispatch(handler):
             # Return, if a response was requested
             if 'id' in request:
                 response = rpc.result(request.get('id', None), result)
-                logger.debug('<-- '+json.dumps(response))
+                logger.info('<-- 200 '+json.dumps(response))
                 return flask.jsonify(response)
             else:
                 return flask.Response('')
