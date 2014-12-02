@@ -116,6 +116,9 @@ If you need a client, try my `jsonrpcclient
 Changelog
 ---------
 
+1.0.5 - 2014-12-02
+    * Messages are now output on the INFO log level.
+
 1.0.4 - 2014-11-22
     * Fixed readme
 

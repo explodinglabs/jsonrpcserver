@@ -14,7 +14,7 @@ setup(
     packages=['jsonrpcserver'],
     package_data={'jsonrpcserver': ['request-schema.json']},
     install_requires=['flask', 'jsonschema'],
-    version='1.0.4',
+    version='1.0.5',
     description='JSON-RPC 2.0 server library for Python 3',
     long_description=read('README.rst'),
     author='Beau Barker',
