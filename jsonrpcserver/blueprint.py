@@ -12,9 +12,9 @@ def error(e, response_str):
     """Ensure we always respond with jsonrpc, such as on 400 or other bad
     request"""
 
-    logger.debug('<-- '+response_str)
     response = flask.Response(response_str, mimetype='application/json')
     response.status_code = (e.code if isinstance(e, HTTPException) else 500)
+    logger.info('<-- {} {}'.format(response.status_code, response_str))
     return response
 
 def invalid_request(e):
