@@ -5,21 +5,24 @@ import sys
 import unittest
 import json
 
-from nose.tools import assert_equal # pylint: disable=no-name-in-module
 from flask import Flask
+from flask.ext.testing import TestCase
 
 from jsonrpcserver import bp
 from jsonrpcserver import exceptions
 from jsonrpcserver import logger
 from jsonrpcserver import dispatch
 
+
 app = Flask(__name__)
 app.register_blueprint(bp)
 
 @app.route('/', methods=['POST'])
 def index():
-    result = dispatch(sys.modules[__name__])
-    return result
+    return dispatch(sys.modules[__name__])
+
+HTTP_STATUS_BAD_REQUEST=400
+
 
 # RPC Method handlers
 
@@ -75,7 +78,8 @@ def lookup_surname(**kwargs):
     except KeyError:
         raise exceptions.InvalidParams()
 
-class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statements,too-many-public-methods
+
+class TestDispatch(TestCase): #pylint:disable=no-init,multiple-statements,too-many-public-methods
     """To test:
         method_only()
         one_param(string)
@@ -87,32 +91,33 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
         positional_with_args_and_kwargs(one, two, *args, **kwargs)
     """
 
-    def setUp(self):
-        app.testing = True
-        self.app = app.test_client()
+    def create_app(self):
+
+        app.config['TESTING'] = True
+        return app
 
     def post_request(self, request_str):
-        return self.app.post(
+        return self.client.post(
             '/', headers={'content-type': 'application/json'}, \
-            data=json.dumps(request_str)).data.decode('utf-8') #pylint:disable=maybe-no-member
+            data=json.dumps(request_str)) #pylint:disable=maybe-no-member
 
-    def post(self, expected_response, request_str):
+    def post(self, expected_response_dict, request_str, expected_status_code=200):
 
         response = self.post_request(request_str)
 
-        if response:
-            response = json.loads(response)
+        self.assertEqual(expected_status_code, response.status_code)
 
-        assert_equal(
-            expected_response,
-            response
-        )
+        if expected_response_dict:
+            self.assertEqual(expected_response_dict, response.json)
+        else:
+            self.assertEqual("", response.data.decode('utf-8'))
 
     # MethodNotFound
     def test_MethodNotFound(self):
         self.post(
             {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
-            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1}
+            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     # InvalidParams - this requires lots of testing because there are many ways
@@ -122,26 +127,29 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
 
     def test_method_only_ok(self):
         self.post(
-            '',
+            None,
             {"jsonrpc": "2.0", "method": "method_only"}
         )
 
     def test_method_only_args(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() takes 0 positional arguments but 1 was given"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "method_only", "params": [1], "id": 1}
+            {"jsonrpc": "2.0", "method": "method_only", "params": [1], "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_method_only_kwargs(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() got an unexpected keyword argument \'foo\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "method_only", "params": {"foo": "bar"}, "id": 1}
+            {"jsonrpc": "2.0", "method": "method_only", "params": {"foo": "bar"}, "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_method_only_both(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() got an unexpected keyword argument \'foo\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "method_only", "params": [1, 2, {"foo": "bar"}], "id": 1}
+            {"jsonrpc": "2.0", "method": "method_only", "params": [1, 2, {"foo": "bar"}], "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     # one_positional
@@ -155,25 +163,29 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
     def test_one_positional_no_args(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() missing 1 required positional argument: \'string\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "one_positional", "id": 1}
+            {"jsonrpc": "2.0", "method": "one_positional", "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_one_positional_two_args(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() takes 1 positional argument but 2 were given"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2], "id": 1}
+            {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2], "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_one_positional_kwargs(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() got an unexpected keyword argument \'foo\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "one_positional", "params": {"foo": "bar"}, "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_one_positional_both(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() got an unexpected keyword argument \'foo\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2, {"foo": "bar"}], "id": 1}
+            {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2, {"foo": "bar"}], "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     # two_positionals
@@ -187,25 +199,29 @@ class AppTestCase(unittest.TestCase): #pylint:disable=no-init,multiple-statement
     def test_two_positionals_no_args(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() missing 2 required positional arguments: \'one\' and \'two\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "two_positionals", "id": 1}
+            {"jsonrpc": "2.0", "method": "two_positionals", "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_two_positionals_one_arg(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() missing 1 required positional argument: \'two\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "two_positionals", "params": [1], "id": 1}
+            {"jsonrpc": "2.0", "method": "two_positionals", "params": [1], "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_two_positionals_kwargs(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() got an unexpected keyword argument \'foo\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "two_positionals", "params": {"foo": "bar"}, "id": 1}
+            {"jsonrpc": "2.0", "method": "two_positionals", "params": {"foo": "bar"}, "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_two_positionals_both(self):
         self.post(
             {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() got an unexpected keyword argument \'foo\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "two_positionals", "params": [1, {"foo": "bar"}], "id": 1}
+            {"jsonrpc": "2.0", "method": "two_positionals", "params": [1, {"foo": "bar"}], "id": 1},
+            HTTP_STATUS_BAD_REQUEST
         )
 
     # Test return results
