@@ -1,15 +1,14 @@
-"""response_test.py"""
+"""rpc_test.py"""
+#pylint:disable=missing-docstring,line-too-long,too-many-public-methods
 
-import nose
-import json
 from unittest import TestCase
 
 from jsonrpcserver import rpc
 
 
-class TestRpc(TestCase): # pylint: disable=missing-docstring,line-too-long
+class TestRpc(TestCase):
 
-    # result()
+    # rpc.result()
 
     def test_result_with_no_result(self):
         self.assertEqual(
@@ -41,7 +40,7 @@ class TestRpc(TestCase): # pylint: disable=missing-docstring,line-too-long
             rpc.result(1, {'foo': 'bar', 'answer': 42, 'list': ['One', 2]})
         )
 
-    # error()
+    # rpc.error()
 
     def test_error_with_no_data(self):
         self.assertEqual(

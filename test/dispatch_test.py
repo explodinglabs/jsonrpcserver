@@ -1,18 +1,17 @@
 """dispatch_test.py"""
-# pylint: disable=missing-docstring,line-too-long
+# pylint:disable=missing-docstring,line-too-long,no-init,multiple-statements,too-many-public-methods,no-self-use,no-member
 
 import sys
-import unittest
 import json
 
 from flask import Flask
-from flask.ext.testing import TestCase
+from flask.ext.testing import TestCase #pylint:disable=import-error,no-name-in-module
 
 from jsonrpcserver import bp
 from jsonrpcserver import exceptions
-from jsonrpcserver import logger
 from jsonrpcserver import dispatch
 
+HTTP_STATUS_BAD_REQUEST = 400
 
 app = Flask(__name__)
 app.register_blueprint(bp)
@@ -20,8 +19,6 @@ app.register_blueprint(bp)
 @app.route('/', methods=['POST'])
 def index():
     return dispatch(sys.modules[__name__])
-
-HTTP_STATUS_BAD_REQUEST=400
 
 
 # RPC Method handlers
@@ -79,7 +76,7 @@ def lookup_surname(**kwargs):
         raise exceptions.InvalidParams()
 
 
-class TestDispatch(TestCase): #pylint:disable=no-init,multiple-statements,too-many-public-methods
+class TestDispatch(TestCase):
     """To test:
         method_only()
         one_param(string)
