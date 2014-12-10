@@ -116,6 +116,11 @@ Issue tracker is `here
 If you need a client, try my `jsonrpcclient
 <https://pypi.python.org/pypi/jsonrpcclient>`_ library.
 
+Todo
+----
+
+More dispatch tests.
+
 Changelog
 ---------
 
