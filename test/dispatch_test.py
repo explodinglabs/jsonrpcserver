@@ -7,11 +7,7 @@ import json
 from flask import Flask
 from flask.ext.testing import TestCase #pylint:disable=import-error,no-name-in-module
 
-from jsonrpcserver import bp
-from jsonrpcserver import exceptions
-from jsonrpcserver import dispatch
-
-HTTP_STATUS_BAD_REQUEST = 400
+from jsonrpcserver import bp, exceptions, dispatch, status
 
 app = Flask(__name__)
 app.register_blueprint(bp)
@@ -21,7 +17,7 @@ def index():
     return dispatch(sys.modules[__name__])
 
 
-# RPC Method handlers
+# Dummy RPC handling methods
 
 def method_only():
     pass
@@ -94,149 +90,172 @@ class TestDispatch(TestCase):
         return app
 
     def post_request(self, request_str):
+
         return self.client.post(
             '/', headers={'content-type': 'application/json'}, \
             data=json.dumps(request_str)) #pylint:disable=maybe-no-member
 
-    def post(self, expected_response_dict, request_str, expected_status_code=200):
+    def post(self, expected_http_status_code, expected_response_dict, request_str):
 
         response = self.post_request(request_str)
 
-        self.assertEqual(expected_status_code, response.status_code)
+        self.assertEqual(expected_http_status_code, response.status_code)
 
         if expected_response_dict:
             self.assertEqual(expected_response_dict, response.json)
         else:
             self.assertEqual("", response.data.decode('utf-8'))
 
+    # InvalidRequest
+    def test_InvalidRequest(self):
+        self.post(
+            status.HTTP_400_BAD_REQUEST,
+            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_REQUEST_CODE, 'message': 'Invalid request', 'data': "'jsonrpc' is a required property"}, 'id': None},
+            {'jsonrp': '2.0', 'method': 'get'},
+        )
+
     # MethodNotFound
+
     def test_MethodNotFound(self):
         self.post(
-            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': 1},
-            {'jsonrpc': '2.0', 'method': 'unknown', 'id': 1},
-            HTTP_STATUS_BAD_REQUEST
+            status.HTTP_400_BAD_REQUEST,
+            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_METHOD_NOT_FOUND_CODE, 'message': 'Method not found', 'data': 'get'}, 'id': 1},
+            {'jsonrpc': '2.0', 'method': 'get', 'id': 1},
+        )
+
+    def test_trying_to_call_magic_method(self):
+        self.post(
+            status.HTTP_400_BAD_REQUEST,
+            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_METHOD_NOT_FOUND_CODE, 'message': 'Method not found', 'data': '__init__'}, 'id': 1},
+            {'jsonrpc': '2.0', 'method': '__init__', 'id': 1},
         )
 
     # InvalidParams - this requires lots of testing because there are many ways
-    # the st params can come through
+    # the params can come through
 
     # method_only
 
     def test_method_only_ok(self):
         self.post(
+            status.HTTP_200_OK,
             None,
             {"jsonrpc": "2.0", "method": "method_only"}
         )
 
     def test_method_only_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() takes 0 positional arguments but 1 was given"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "method_only", "params": [1], "id": 1},
-            HTTP_STATUS_BAD_REQUEST
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "method_only() takes 0 positional arguments but 1 was given"}, "id": 1},
+            {"jsonrpc": "2.0", "method": "method_only", "params": [1], "id": 1}
         )
 
     def test_method_only_kwargs(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() got an unexpected keyword argument \'foo\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "method_only", "params": {"foo": "bar"}, "id": 1},
-            HTTP_STATUS_BAD_REQUEST
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "method_only() got an unexpected keyword argument \'foo\'"}, "id": 1},
+            {"jsonrpc": "2.0", "method": "method_only", "params": {"foo": "bar"}, "id": 1}
         )
 
     def test_method_only_both(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "method_only() got an unexpected keyword argument \'foo\'"}, "id": 1},
-            {"jsonrpc": "2.0", "method": "method_only", "params": [1, 2, {"foo": "bar"}], "id": 1},
-            HTTP_STATUS_BAD_REQUEST
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "method_only() got an unexpected keyword argument \'foo\'"}, "id": 1},
+            {"jsonrpc": "2.0", "method": "method_only", "params": [1, 2, {"foo": "bar"}], "id": 1}
         )
 
     # one_positional
 
     def test_one_positional_ok(self):
         self.post(
-            '',
+            status.HTTP_200_OK,
+            None,
             {"jsonrpc": "2.0", "method": "one_positional", "params": [1]}
         )
 
     def test_one_positional_no_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() missing 1 required positional argument: \'string\'"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "one_positional() missing 1 required positional argument: \'string\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "one_positional", "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_one_positional_two_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() takes 1 positional argument but 2 were given"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "one_positional() takes 1 positional argument but 2 were given"}, "id": 1},
             {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2], "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_one_positional_kwargs(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() got an unexpected keyword argument \'foo\'"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "one_positional() got an unexpected keyword argument \'foo\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "one_positional", "params": {"foo": "bar"}, "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_one_positional_both(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "one_positional() got an unexpected keyword argument \'foo\'"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "one_positional() got an unexpected keyword argument \'foo\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "one_positional", "params": [1, 2, {"foo": "bar"}], "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     # two_positionals
 
     def test_two_positionals_ok(self):
         self.post(
+            status.HTTP_200_OK,
             {'jsonrpc': '2.0', 'result': None, 'id': 1},
             {"jsonrpc": "2.0", "method": "two_positionals", "params": [1, 2], "id": 1}
         )
 
     def test_two_positionals_no_args(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() missing 2 required positional arguments: \'one\' and \'two\'"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "two_positionals() missing 2 required positional arguments: \'one\' and \'two\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "two_positionals", "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_two_positionals_one_arg(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() missing 1 required positional argument: \'two\'"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "two_positionals() missing 1 required positional argument: \'two\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "two_positionals", "params": [1], "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_two_positionals_kwargs(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() got an unexpected keyword argument \'foo\'"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "two_positionals() got an unexpected keyword argument \'foo\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "two_positionals", "params": {"foo": "bar"}, "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     def test_two_positionals_both(self):
         self.post(
-            {"jsonrpc": "2.0", "error": {"code": -32602, "message": "two_positionals() got an unexpected keyword argument \'foo\'"}, "id": 1},
+            status.HTTP_400_BAD_REQUEST,
+            {"jsonrpc": "2.0", "error": {"code": status.JSONRPC_INVALID_PARAMS_CODE, "message": "Invalid params", "data": "two_positionals() got an unexpected keyword argument \'foo\'"}, "id": 1},
             {"jsonrpc": "2.0", "method": "two_positionals", "params": [1, {"foo": "bar"}], "id": 1},
-            HTTP_STATUS_BAD_REQUEST
         )
 
     # Test return results
 
     def test_add_two_numbers(self):
         self.post(
+            status.HTTP_200_OK,
             {'jsonrpc': '2.0', 'result': 3, 'id': 1},
             {'jsonrpc': '2.0', 'method': 'add', 'params': [1, 2], 'id': 1}
         )
 
     def test_uppercase(self):
         self.post(
+            status.HTTP_200_OK,
             {'jsonrpc': '2.0', 'result': 'TEST', 'id': 1},
             {"jsonrpc": "2.0", "method": "uppercase", "params": ["test"], "id": 1}
         )
 
     def test_lookup_surname(self):
         self.post(
+            status.HTTP_200_OK,
             {'jsonrpc': '2.0', 'result': 'Smith', 'id': 1},
             {"jsonrpc": "2.0", "method": "lookup_surname", "params": {"firstname": "John"}, "id": 1}
         )
