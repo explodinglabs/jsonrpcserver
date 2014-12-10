@@ -58,8 +58,8 @@ def uppercase(*args):
     try:
         return args[0].upper()
 
-    except KeyError:
-        raise exceptions.InvalidParams()
+    except KeyError as e:
+        raise exceptions.InvalidParams(str(e))
 
 def lookup_surname(**kwargs):
     """Lookup a surname from a firstname"""
@@ -68,8 +68,8 @@ def lookup_surname(**kwargs):
         if kwargs['firstname'] == 'John':
             return 'Smith'
 
-    except KeyError:
-        raise exceptions.InvalidParams()
+    except KeyError as e:
+        raise exceptions.InvalidParams(str(e))
 
 
 class TestDispatch(TestCase):

@@ -4,6 +4,7 @@ import json
 import flask
 import jsonschema
 import pkgutil
+from inspect import getcallargs
 
 from jsonrpcserver import rpc, exceptions, logger
 
@@ -63,31 +64,43 @@ def dispatch(handler):
         except AttributeError:
             raise exceptions.MethodNotFound(request['method'])
 
-        try:
-            # Call the method
-            if not a and not k:
-                result = method()
 
-            if a and not k:
-                result = method(*a) #pylint:disable=star-args
+        # Call the method
+        if not a and not k:
+            try:
+                getcallargs(method)
+            except TypeError as e:
+                raise exceptions.InvalidParams(str(e))
+            result = method()
 
-            if not a and k:
-                result = method(**k) #pylint:disable=star-args
+        if a and not k:
+            try:
+                getcallargs(method, *a)
+            except TypeError as e:
+                raise exceptions.InvalidParams(str(e))
+            result = method(*a) #pylint:disable=star-args
 
-            if a and k:
-                result = method(*a, **k) #pylint:disable=star-args
+        if not a and k:
+            try:
+                getcallargs(method, **k)
+            except TypeError as e:
+                raise exceptions.InvalidParams(str(e))
+            result = method(**k) #pylint:disable=star-args
 
-            # Return, if a response was requested
-            if 'id' in request:
-                response = rpc.result(request.get('id', None), result)
-                logger.info('<-- 200 '+json.dumps(response))
-                return flask.jsonify(response)
-            else:
-                return flask.Response('')
+        if a and k:
+            try:
+                getcallargs(method, *a, **k)
+            except TypeError as e:
+                raise exceptions.InvalidParams(str(e))
+            result = method(*a, **k) #pylint:disable=star-args
 
-        # Catch argument mismatch errors
-        except TypeError as e:
-            raise exceptions.InvalidParams(str(e))
+        # Return, if a response was requested
+        if 'id' in request:
+            response = rpc.result(request.get('id', None), result)
+            logger.info('<-- 200 '+json.dumps(response))
+            return flask.jsonify(response)
+        else:
+            return flask.Response('')
 
     # Catch any raised exception (invalid request etc), add the request id
     except exceptions.JsonRpcServerError as e:
