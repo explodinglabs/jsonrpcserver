@@ -1,47 +1,51 @@
 """blueprint.py"""
 
 import flask
-from werkzeug.exceptions import HTTPException
+from werkzeug.http import HTTP_STATUS_CODES
 from werkzeug.exceptions import default_exceptions
 
-from jsonrpcserver import exceptions
-from jsonrpcserver import logger
-from jsonrpcserver import bp
+from jsonrpcserver import exceptions, logger, bp, status
 
 
-def error(e, response_str):
-    """Ensure we always respond with jsonrpc, such as on 400 or other bad
-    request"""
+def flask_error_response(http_status_code, text):
+    """This is a base function called by the others in this file. Takes an error
+    message and status code, and returns a flask.Response object."""
 
-    response = flask.Response(response_str, mimetype='application/json')
-    response.status_code = (e.code if isinstance(e, HTTPException) else 400)
-    logger.info('<-- {} {}'.format(response.status_code, response_str))
+    response = flask.Response(text, mimetype='application/json')
+    response.status_code = http_status_code
+    logger.info('<-- {} {}'.format(http_status_code, text))
     return response
 
 
-def invalid_request(e):
-    """Status codes 400-499"""
+@bp.app_errorhandler(exceptions.JsonRpcServerError)
+def handler_error(jsonrpcerror):
+    """Catch any exceptions raised by the library, and return as jsonrpc."""
 
-    return error(e, str(exceptions.InvalidRequest()))
-
-
-def internal_error(e):
-    """Any error other than status codes 400-499"""
-
-    return error(e, str(exceptions.InternalError()))
+    return flask_error_response(
+        jsonrpcerror.http_status_code, str(jsonrpcerror))
 
 
-# Override flask internal error handlers, to return as jsonrpc
+def client_error(e):
+    """Handle client errors caught by flask."""
+
+    return flask_error_response(
+        e.code, str(exceptions.InvalidRequest(HTTP_STATUS_CODES[e.code])))
+
+
+def server_error(e):
+    """Handle server errors caught by flask."""
+
+    return flask_error_response(
+        e.code, str(exceptions.ServerError(HTTP_STATUS_CODES[e.code])))
+
+
+# Override flask internal error handlers, to always return as jsonrpc
 for code in default_exceptions.keys():
-    if 400 <= code <= 499:
-        bp.app_errorhandler(code)(invalid_request)
+
+    # Client errors should respond with jsonrpc "Invalid request" message
+    if status.is_http_client_error(code):
+        bp.app_errorhandler(code)(client_error)
+
+    # Everything else should respond with jsonrpc "Server error" message
     else:
-        bp.app_errorhandler(code)(internal_error)
-
-
-# Catch RPCHandler exceptions and return jsonrpc
-@bp.app_errorhandler(exceptions.RPCHandlerException)
-def handler_error(e):
-    """RPCHandlerExceptions: responds with json"""
-
-    return error(e, str(e))
+        bp.app_errorhandler(code)(server_error)
