@@ -1,7 +1,11 @@
 """exceptions.py
 
 The error code numbers are defined by JSON-RPC.
-See http://www.jsonrpc.org/specification#error_object"""
+See http://www.jsonrpc.org/specification#error_object
+
+For the HTTP Status codes, see
+http://jsonrpc.org/historical/json-rpc-over-http.html
+"""
 
 import json
 
@@ -42,7 +46,8 @@ class ParseError(JsonRpcServerError):
 
     def __init__(self):
         super().__init__(
-            status.HTTP_400_BAD_REQUEST, status.JSONRPC_PARSE_ERROR_CODE, \
+            status.JSONRPC_PARSE_ERROR_HTTP_CODE, \
+            status.JSONRPC_PARSE_ERROR_CODE, \
             status.JSONRPC_PARSE_ERROR_TEXT)
 
 class InvalidRequest(JsonRpcServerError):
@@ -62,7 +67,8 @@ class InvalidRequest(JsonRpcServerError):
 
     def __init__(self, reason, request_id=None):
         super().__init__(
-            status.HTTP_400_BAD_REQUEST, status.JSONRPC_INVALID_REQUEST_CODE, \
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
+            status.JSONRPC_INVALID_REQUEST_CODE,
             status.JSONRPC_INVALID_REQUEST_TEXT, reason, request_id)
 
 class MethodNotFound(JsonRpcServerError):
@@ -75,7 +81,8 @@ class MethodNotFound(JsonRpcServerError):
 
     def __init__(self, method_name, request_id=None):
         super().__init__(
-            status.HTTP_400_BAD_REQUEST, status.JSONRPC_METHOD_NOT_FOUND_CODE, \
+            status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE, \
+            status.JSONRPC_METHOD_NOT_FOUND_CODE, \
             status.JSONRPC_METHOD_NOT_FOUND_TEXT, method_name, request_id)
 
 class InvalidParams(JsonRpcServerError):
@@ -92,7 +99,8 @@ class InvalidParams(JsonRpcServerError):
 
     def __init__(self, params, request_id=None):
         super().__init__(
-            status.HTTP_400_BAD_REQUEST, status.JSONRPC_INVALID_PARAMS_CODE, \
+            status.JSONRPC_INVALID_PARAMS_HTTP_CODE, \
+            status.JSONRPC_INVALID_PARAMS_CODE, \
             status.JSONRPC_INVALID_PARAMS_TEXT, params, request_id)
 
 class ServerError(JsonRpcServerError):
@@ -102,5 +110,6 @@ class ServerError(JsonRpcServerError):
 
     def __init__(self, data=None, request_id=None):
         super().__init__(
-            status.HTTP_500_INTERNAL_ERROR, status.JSONRPC_SERVER_ERROR_CODE, \
+            status.JSONRPC_SERVER_ERROR_HTTP_CODE, \
+            status.JSONRPC_SERVER_ERROR_CODE, \
             status.JSONRPC_SERVER_ERROR_TEXT, data, request_id)

@@ -11,7 +11,7 @@ class TestJsonRpcError(TestCase):
 
     def setUp(self):
         self.e = exceptions.JsonRpcServerError(
-            status.HTTP_400_BAD_REQUEST, \
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
             status.JSONRPC_INVALID_REQUEST_CODE, \
             status.JSONRPC_INVALID_REQUEST_TEXT)
 
@@ -21,7 +21,7 @@ class TestJsonRpcError(TestCase):
 
     def test_http_status_code(self):
         self.assertEqual(
-            status.HTTP_400_BAD_REQUEST, self.e.http_status_code)
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, self.e.http_status_code)
 
     def test_response_text(self):
         self.assertEqual(
@@ -38,7 +38,7 @@ class TestJsonRpcError(TestCase):
 
     def test_response_text_with_request_id(self):
         e = exceptions.JsonRpcServerError(
-            status.HTTP_400_BAD_REQUEST, \
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
             status.JSONRPC_INVALID_REQUEST_CODE, \
             status.JSONRPC_INVALID_REQUEST_TEXT, None, 1)
 
@@ -56,7 +56,7 @@ class TestJsonRpcError(TestCase):
 
     def test_response_text_with_string_as_data(self):
         e = exceptions.JsonRpcServerError(
-            status.HTTP_400_BAD_REQUEST, \
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
             status.JSONRPC_INVALID_REQUEST_CODE, \
             status.JSONRPC_INVALID_REQUEST_TEXT, 'Test', 1)
 
@@ -75,7 +75,7 @@ class TestJsonRpcError(TestCase):
 
     def test_response_text_with_list_as_data(self):
         e = exceptions.JsonRpcServerError(
-            status.HTTP_400_BAD_REQUEST, \
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
             status.JSONRPC_INVALID_REQUEST_CODE, \
             status.JSONRPC_INVALID_REQUEST_TEXT, ['One', 2], 1)
 
@@ -94,7 +94,7 @@ class TestJsonRpcError(TestCase):
 
     def test_response_text_with_dict_as_data(self):
         e = exceptions.JsonRpcServerError(
-            status.HTTP_400_BAD_REQUEST, \
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
             status.JSONRPC_INVALID_REQUEST_CODE, \
             status.JSONRPC_INVALID_REQUEST_TEXT, {'foo': 'bar'}, 1)
 
@@ -123,7 +123,7 @@ class TestParseError(TestCase):
 
     def test_http_status_code(self):
         self.assertEqual(
-            status.HTTP_400_BAD_REQUEST, self.e.http_status_code)
+            status.JSONRPC_PARSE_ERROR_HTTP_CODE, self.e.http_status_code)
 
     def test_response_text(self):
         self.assertEqual(
@@ -150,7 +150,7 @@ class TestInvalidRequest(TestCase):
 
     def test_http_status_code(self):
         self.assertEqual(
-            status.HTTP_400_BAD_REQUEST, self.e.http_status_code)
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, self.e.http_status_code)
 
     def test_response_text(self):
         self.assertEqual(
@@ -210,7 +210,7 @@ class TestMethodNotFound(TestCase):
 
     def test_http_status_code(self):
         self.assertEqual(
-            status.HTTP_400_BAD_REQUEST, self.e.http_status_code)
+            status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE, self.e.http_status_code)
 
     def test_response_text(self):
         self.assertEqual(
@@ -254,7 +254,7 @@ class TestInvalidParams(TestCase):
 
     def test_http_status_code(self):
         self.assertEqual(
-            status.HTTP_400_BAD_REQUEST, self.e.http_status_code)
+            status.JSONRPC_INVALID_PARAMS_HTTP_CODE, self.e.http_status_code)
 
     def test_response_text_with_list_as_data(self):
         self.assertEqual(

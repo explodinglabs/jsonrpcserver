@@ -28,8 +28,14 @@ def handler_error(jsonrpcerror):
 def client_error(e):
     """Handle client errors caught by flask."""
 
-    return flask_error_response(
-        e.code, str(exceptions.InvalidRequest(HTTP_STATUS_CODES[e.code])))
+    # For 404, raise MethodNotFound
+    if e.code == status.HTTP_404_NOT_FOUND:
+        return flask_error_response(
+            e.code, str(exceptions.MethodNotFound(HTTP_STATUS_CODES[e.code])))
+
+    else: # Anything else, raise InvalidRequest
+        return flask_error_response(
+            e.code, str(exceptions.InvalidRequest(HTTP_STATUS_CODES[e.code])))
 
 
 def server_error(e):
