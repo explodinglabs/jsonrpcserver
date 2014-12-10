@@ -48,6 +48,9 @@ The blueprint's purpose is to handle errors. The app should respond with
 JSON-RPC every time; for example if the requested method was invalid, it will
 respond with the JSON-RPC error, *Method not found*.
 
+Note: When debugging your app, it can help to comment out the blueprint line,
+so you get the tracebacks instead of just a jsonrpc error string.
+
 Route
 -----
 
@@ -61,9 +64,9 @@ Add a route to accept the RPC calls:
         return jsonrpcserver.dispatch(sys.modules[__name__])
 
 ``dispatch`` is the key method in this library. It validates the RPC request,
-and passes the data along to a function to handle. (The argument passed to
-``dispatch`` can be any collection of functions, such as a class or module.
-Here we've passed this module, to handle the requests right here.)
+and passes the data along to a function to handle. The argument passed to
+``dispatch`` can be any object that has functions, such as a class or module.
+Here we've passed this module, to handle the requests right here.
 
 Handlers
 --------
@@ -94,8 +97,8 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
     def add(num1, num2='Not a number'):
         try:
             return num1 + num2
-        except TypeError:
-            raise jsonrpcserver.exceptions.InvalidParams()
+        except TypeError as e:
+            raise jsonrpcserver.exceptions.InvalidParams(str(e))
 
 Logging
 -------
