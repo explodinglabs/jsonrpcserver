@@ -5,9 +5,7 @@ import flask
 import jsonschema
 import pkgutil
 
-from jsonrpcserver import rpc
-from jsonrpcserver import exceptions
-from jsonrpcserver import logger
+from jsonrpcserver import rpc, exceptions, logger
 
 def convert_params_to_args_and_kwargs(params):
     """Takes the 'params' from the rpc request and converts it into args and
@@ -43,12 +41,11 @@ def dispatch(handler):
         # Validate
         try:
             jsonschema.validate(
-                request,
-                json.loads(pkgutil.get_data(
-                    __name__, 'request-schema.json').decode('utf-8')))
+                request, json.loads(pkgutil.get_data(__name__, \
+                'request-schema.json').decode('utf-8')))
 
-        except jsonschema.ValidationError:
-            raise exceptions.InvalidRequest()
+        except jsonschema.ValidationError as e:
+            raise exceptions.InvalidRequest(e.message)
 
         # Get the args and kwargs from request['params']
         (a, k) = convert_params_to_args_and_kwargs(request.get('params', None))
@@ -56,7 +53,7 @@ def dispatch(handler):
         # Dont allow magic methods to be called
         if request['method'].startswith('__') \
                 and request['method'].endswith('__'):
-            raise exceptions.MethodNotFound()
+            raise exceptions.MethodNotFound(request['method'])
 
         # Get the method if available
         try:
@@ -64,7 +61,7 @@ def dispatch(handler):
 
         # Catch method not found
         except AttributeError:
-            raise exceptions.MethodNotFound()
+            raise exceptions.MethodNotFound(request['method'])
 
         try:
             # Call the method
@@ -92,8 +89,8 @@ def dispatch(handler):
         except TypeError as e:
             raise exceptions.InvalidParams(str(e))
 
-    # Catch any rpchandler error (invalid request etc), add the request id
-    except exceptions.RPCHandlerException as e:
+    # Catch any raised exception (invalid request etc), add the request id
+    except exceptions.JsonRpcServerError as e:
         if request:
             e.request_id = request.get('id', None)
         raise
