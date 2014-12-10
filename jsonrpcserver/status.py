@@ -1,0 +1,28 @@
+"""status.py"""
+
+# HTTP Status Codes
+
+HTTP_200_OK = 200
+HTTP_400_BAD_REQUEST = 400
+HTTP_500_INTERNAL_ERROR = 500
+
+# JSONRPC status codes from http://www.jsonrpc.org/specification#error_object
+
+JSONRPC_PARSE_ERROR_CODE = -32700
+JSONRPC_PARSE_ERROR_TEXT = 'Parse error'
+
+JSONRPC_INVALID_REQUEST_CODE = -32600
+JSONRPC_INVALID_REQUEST_TEXT = 'Invalid request'
+
+JSONRPC_METHOD_NOT_FOUND_CODE = -32601
+JSONRPC_METHOD_NOT_FOUND_TEXT = 'Method not found'
+
+JSONRPC_INVALID_PARAMS_CODE = -32602
+JSONRPC_INVALID_PARAMS_TEXT = 'Invalid params'
+
+JSONRPC_SERVER_ERROR_CODE = -32000
+JSONRPC_SERVER_ERROR_TEXT = 'Server error'
+
+
+def is_http_client_error(code):
+    return 400 <= code <= 499
