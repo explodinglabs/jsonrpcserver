@@ -66,8 +66,7 @@ class TestBlueprint(TestCase):
                 'jsonrpc': '2.0',
                 'error': {
                     'code': status.JSONRPC_SERVER_ERROR_CODE,
-                    'message': status.JSONRPC_SERVER_ERROR_TEXT,
-                    'data': HTTP_STATUS_CODES[status.JSONRPC_SERVER_ERROR_HTTP_CODE]
+                    'message': HTTP_STATUS_CODES[status.JSONRPC_SERVER_ERROR_HTTP_CODE]
                 },
                 'id': None
             },
