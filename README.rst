@@ -22,7 +22,7 @@ Installation
 Usage
 -----
 
-Register the blueprint to your app:
+Create flask app and register the blueprint:
 
 .. sourcecode:: python
 
@@ -30,12 +30,10 @@ Register the blueprint to your app:
     from flask import Flask
     from jsonrpcserver import bp, dispatch, exceptions
 
-    # Create a flask app and register the blueprint.
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-
-Create a route for access, and call ``dispatch``:
+Make a route for client access, and dispatch.
 
 .. sourcecode:: python
 
@@ -43,25 +41,22 @@ Create a route for access, and call ``dispatch``:
     def index():
         return dispatch(sys.modules[__name__])
 
-The argument to ``dispatch`` can be any object containing methods that will
-carry out the requests. Here I've used this very module so we can write the
-methods right here.
-
-Now write the request handling methods, as you would any other Python function:
+Write methods to carry out the requests.
 
 .. sourcecode:: python
 
-    def add(num1, num2):
+    def add(num1, num2='Not a number'):
         return num1 + num2
 
-You can take any number of positional or keyword arguments.
+The request-handling methods can take any number of positional or keyword
+arguments.
 
 .. sourcecode:: python
 
     def find(name, age=42, *args, **kwargs):
         ...
 
-When arguments are invalid, raise ``InvalidParams``:
+When arguments are invalid, raise ``InvalidParams``.
 
 .. sourcecode:: python
 
@@ -72,7 +67,7 @@ When arguments are invalid, raise ``InvalidParams``:
             raise exceptions.InvalidParams(str(e))
 
 The underlying messages are logged to the INFO log level. To see them, set the
-logging level to INFO:
+logging level to INFO.
 
 .. sourcecode:: python
 
