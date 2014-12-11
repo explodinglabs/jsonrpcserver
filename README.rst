@@ -71,8 +71,8 @@ When arguments are invalid, raise ``InvalidParams``:
         except TypeError as e:
             raise exceptions.InvalidParams(str(e))
 
-The underlying messages being transferred are logged to the INFO log level. To
-see them, set the logging level to INFO:
+The underlying messages are logged to the INFO log level. To see them, set the
+logging level to INFO:
 
 .. sourcecode:: python
 
