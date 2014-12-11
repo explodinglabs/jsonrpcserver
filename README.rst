@@ -66,9 +66,6 @@ When arguments are invalid, raise ``InvalidParams``.
         except TypeError:
             raise exceptions.InvalidParams(str(e))
 
-See it all put together `here
-<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
-
 .. note::
 
     To see the underlying messages going back and forth, set the logging level
