@@ -6,8 +6,8 @@ Allows `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a `Flask
 
 The library has two features:
 
-#. A ``dispatch`` method for handling requests, which passes the details on to
-   your own methods to carry out the request.
+#. A ``dispatch`` method for handling requests. This passes the important
+   details on to your own methods to carry out the request.
 
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
    errors, ensuring we *always* respond with json.
