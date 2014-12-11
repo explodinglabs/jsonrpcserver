@@ -80,7 +80,7 @@ see them, set the logging level to INFO:
     logging.getLogger('jsonrpcclient').setLevel(logging.INFO)
 
 See it all put together `here
-<https://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_.
+<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
 
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
