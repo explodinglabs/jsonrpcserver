@@ -11,72 +11,38 @@ Installation
 Usage
 -----
 
-This library gives a `Flask <http://flask.pocoo.org/>`_ app the ability to
-handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests.
+This library allows you to recieve `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_
+requests in a `Flask <http://flask.pocoo.org/>`_ app.
 
-It has two features:
+The library provides two features:
 
-#. A ``dispatch()`` method for handling requests.
-
-#. A blueprint for handling errors, ensuring we *always* respond with json.
-
-To see a working version, paste `this code
-<http://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_ into a file named
-run.py, then type ``python run.py``.
-
-What's going on here?
-
-There are three steps:
-
-#. Create a Flask app and register the blueprint to it
+A blueprint for handling errors, ensuring we *always* respond with json.
 
 .. sourcecode:: python
 
-    app = flask.Flask(__name__)
-    app.register_blueprint(jsonrpcserver.bp)
+    # Create a flask app and register the blueprint
+    app = Flask(__name__)
+    app.register_blueprint(bp)
 
-The blueprint's purpose is to handle errors. The app should respond with
-JSON-RPC every time; for example if the requested method doesn't exist, we
-respond with the JSON-RPC error, *Method not found*.
-
-.. note::
-    When debugging, it can help to disable the blueprint, so you get the
-    tracebacks instead of just a jsonrpc error string.
-
-#. Make a route for client access, ``dispatch()``-ing to the requested method.
+A ``dispatch()`` method for handling and dispatching requests.
 
 .. sourcecode:: python
 
-    # Route
+    # Create a route for access, and dispatch
     @app.route('/', methods=['POST'])
     def index():
-        return jsonrpcserver.dispatch(sys.modules[__name__])
+        return dispatch(sys.modules[__name__])
 
-``dispatch`` is the key method in this library. It validates the RPC request,
-and passes the data along to a function to handle. The argument passed to
-``dispatch`` can be any object that has functions, such as a class or module.
-Here we've passed this module, to handle the requests right here.
-
-#. Write your RPC methods.
-
-Write functions to handle each of the RPC requests:
+Now you can write the RPC procedures, as you would any other python function:
 
 .. sourcecode:: python
 
-    # Handlers
-    def add(num1, num2):
+    def add(num1, num2='Not a number'):
         return num1 + num2
 
-The RPC handling functions can receive any combination of positional or keyword
-expansion arguments.
 
-.. sourcecode:: python
-
-    def find(name, *args, **kwargs):
-        pass
-
-Exceptions
-----------
+Validating arguments
+--------------------
 
 If the arguments received are invalid, raise the ``InvalidParams`` exception:
 
@@ -89,16 +55,12 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
         except TypeError as e:
             raise InvalidParams(str(e))
 
-Logging
--------
+.. note::
+    To see the underlying messages going back and forth, set the logging level
+    to INFO:
 
-To see the underlying messages going back and forth, set the logging level to
-INFO or lower:
+    ``import logging; logging.getLogger('jsonrpcclient').setLevel(logging.INFO)``
 
-.. sourcecode:: python
-
-    import logging
-    logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
