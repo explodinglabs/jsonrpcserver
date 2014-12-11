@@ -7,16 +7,16 @@ import sys
 from flask import Flask
 from jsonrpcserver import bp, dispatch, exceptions
 
-# Create flask app and register the blueprint
+# Create flask app and register the blueprint.
 app = Flask(__name__)
 app.register_blueprint(bp)
 
-# Make a route for client access
+# Make a route for client access, and dispatch.
 @app.route('/', methods=['POST'])
 def index():
     return dispatch(sys.modules[__name__])
 
-# Write your RPC handlers.
+# The RPC methods.
 def add(num1, num2='Not a number'):
     try:
         return num1 + num2
