@@ -71,10 +71,10 @@ See it all put together `here
 
 .. note::
 
-    The underlying messages are logged to the INFO log level. To see them, set
-    the logging level to INFO.
+    To see the underlying messages going back and forth, set the logging level
+    to INFO:
 
-    ``import logging; logging.getLogger('jsonrpcserver').setLevel(logging.INFO)``
+    ``logging.getLogger('jsonrpcserver').setLevel(logging.INFO)``
 
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
