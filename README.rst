@@ -10,7 +10,7 @@ This package has two features:
    errors, ensuring we always respond with json.
 
 #. A ``dispatch`` method which takes requests and passes them on to your own
-   methods to carry out the request.
+   methods to carry out.
 
 
 Installation
