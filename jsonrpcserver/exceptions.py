@@ -42,7 +42,8 @@ class ParseError(JsonRpcServerError):
 
     No arguments should be passed - there's no need for any further explanation,
     and we can't give a request_id back, because the request was simply not
-    parsed."""
+    parsed.
+    """
 
     def __init__(self):
         super().__init__(
@@ -77,7 +78,8 @@ class MethodNotFound(JsonRpcServerError):
     MethodNotFound is raised when the message was parsed OK but the requested
     method doesn't exist.
 
-    string @method_name: To be returned in the data field."""
+    string @method_name: To be returned in the data field.
+    """
 
     def __init__(self, method_name, request_id=None):
         super().__init__(
@@ -95,7 +97,8 @@ class InvalidParams(JsonRpcServerError):
     are required but were not given or not valid.
 
     The "params" param should be either a list of the invalid param names, or a
-    dict with further information about each."""
+    dict with further information about each.
+    """
 
     def __init__(self, params, request_id=None):
         super().__init__(
@@ -106,7 +109,9 @@ class InvalidParams(JsonRpcServerError):
 class ServerError(JsonRpcServerError):
     """From the specs: 'Internal JSON-RPC error.'
 
-    ServerError is a generic response: """
+    ServerError is a generic response when there's an error on the server end.
+    Apps should subclass it.
+    """
 
     def __init__(self, message=status.JSONRPC_SERVER_ERROR_TEXT, data=None, request_id=None):
         super().__init__(
