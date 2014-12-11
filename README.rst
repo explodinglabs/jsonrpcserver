@@ -1,8 +1,9 @@
 jsonrpcserver
 =============
 
-This library allows you to receive `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_
-requests in a `Flask <http://flask.pocoo.org/>`_ app.
+*jsonrpcserver* is a Python library, allowing you to receive `JSON-RPC 2.0
+<http://www.jsonrpc.org/>`_ requests in a `Flask <http://flask.pocoo.org/>`_
+app.
 
 It has two features:
 
