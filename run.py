@@ -4,26 +4,21 @@ An example app, demonstrating how to use the library.
 """
 
 import sys
-import logging
-
 from flask import Flask
-from jsonrpcserver import dispatch, bp
+from jsonrpcserver import bp, dispatch
 
-# Create flask app
+# Create flask app and register the blueprint
 app = Flask(__name__)
-app.testing = True
-
-# Blueprint
 app.register_blueprint(bp)
 
-# Route
+# Make a route for client access
 @app.route('/', methods=['POST'])
 def index():
     return dispatch(sys.modules[__name__])
 
-# Handler
+# Write your RPC handlers.
 def add(one, two):
     return one + two
 
-if __name__ == __main__:
+if __name__ == '__main__':
     app.run()
