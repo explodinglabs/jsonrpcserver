@@ -66,12 +66,16 @@ When arguments are invalid, raise ``InvalidParams``.
         except TypeError:
             raise exceptions.InvalidParams(str(e))
 
-.. note::
+Logging
+-------
 
-    To see the underlying messages going back and forth, set the logging level
-    to INFO:
+To see the underlying messages going back and forth, set the logging level
+to INFO:
 
-    ``logging.getLogger('jsonrpcserver').setLevel(logging.INFO)``
+.. sourcecode:: python
+
+    import logging
+    logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
