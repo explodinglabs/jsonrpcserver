@@ -1,7 +1,14 @@
 jsonrpcserver
 =============
 
-`JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ server library for Python 3.
+This library allows you to receive `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_
+requests in a `Flask <http://flask.pocoo.org/>`_ app.
+
+It has two features:
+
+#. A ``dispatch`` method for handling and dispatching RPC requests.
+#. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
+   errors, ensuring we *always* respond with json.
 
 Installation
 ------------
@@ -10,14 +17,6 @@ Installation
 
 Usage
 -----
-
-This library allows you to recieve `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_
-requests in a `Flask <http://flask.pocoo.org/>`_ app.
-
-The library provides two features:
-
-#. A ``dispatch()`` method for handling and dispatching RPC requests.
-#. A blueprint for handling errors, ensuring we *always* respond with json.
 
 Register the blueprint to your app:
 
@@ -32,7 +31,7 @@ Register the blueprint to your app:
     app.register_blueprint(bp)
 
 
-Create a route and call ``dispatch()``:
+Create a route and call ``dispatch``:
 
 .. sourcecode:: python
 
@@ -41,10 +40,9 @@ Create a route and call ``dispatch()``:
     def index():
         return dispatch(sys.modules[__name__])
 
-The argument to ``dispatch()`` must be any object containing the RPC handling
-methods. Here I've used this very module.
-
-Now write the RPC methods, just as you would any other Python function:
+The argument to ``dispatch`` can be any object containing the RPC handling
+methods. Here I've used this very module so we can write the RPC methods right
+here. Now write the RPC methods, just as you would any other Python function:
 
 .. sourcecode:: python
 
@@ -67,7 +65,7 @@ If the arguments are invalid, raise ``InvalidParams``:
 
     ``import logging; logging.getLogger('jsonrpcclient').setLevel(logging.INFO)``
 
-To see it all put together, go `here
+See it all put together, go `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_.
 
 Issue tracker is `here
