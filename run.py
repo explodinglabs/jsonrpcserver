@@ -17,7 +17,7 @@ def index():
     return dispatch(MyHandlers)
 
 
-# Now write the methods that carry out the requests.
+# Lastly, write the methods that will carry out the requests.
 class MyHandlers:
 
     def add(num1, num2):

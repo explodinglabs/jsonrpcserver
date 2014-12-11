@@ -40,7 +40,7 @@ Add a route to dispatch requests on to the handling methods.
     def index():
         return dispatch(MyHandlers)
 
-Now write the methods that carry out the requests.
+Lastly, write the methods that will carry out the requests.
 
 .. sourcecode:: python
 
@@ -53,18 +53,18 @@ These methods can take any number of positional or keyword arguments.
 
 .. sourcecode:: python
 
-        def find(name, age=42, *args, **kwargs):
-            ...
+    def find(name, age=42, *args, **kwargs):
+        ...
 
 When arguments are invalid, raise ``InvalidParams``.
 
 .. sourcecode:: python
 
-        def add(num1, num2):
-            try:
-                return num1 + num2
-            except TypeError:
-                raise exceptions.InvalidParams(str(e))
+    def add(num1, num2):
+        try:
+            return num1 + num2
+        except TypeError:
+            raise exceptions.InvalidParams(str(e))
 
 See it all put together `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
