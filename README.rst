@@ -6,11 +6,11 @@ This library allows a `Flask <http://flask.pocoo.org/>`_ app to take `JSON-RPC
 
 It has two features:
 
-#. A ``dispatch`` method which takes requests from the client, passing the
-   details on to your own methods to carry out the request.
-
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
    errors, ensuring we always respond with json.
+
+#. A ``dispatch`` method which takes requests from the client, passing the
+   details on to your own methods to carry out the request.
 
 
 Installation
