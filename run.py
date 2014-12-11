@@ -5,7 +5,7 @@ An example app, demonstrating how to use the library.
 
 import sys
 from flask import Flask
-from jsonrpcserver import bp, dispatch
+from jsonrpcserver import bp, dispatch, exceptions
 
 # Create flask app and register the blueprint
 app = Flask(__name__)
@@ -17,8 +17,11 @@ def index():
     return dispatch(sys.modules[__name__])
 
 # Write your RPC handlers.
-def add(one, two):
-    return one + two
+def add(num1, num2='Not a number'):
+    try:
+        return num1 + num2
+    except TypeError as e:
+        raise exceptions.InvalidParams(str(e))
 
 if __name__ == '__main__':
     app.run()
