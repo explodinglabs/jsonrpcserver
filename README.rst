@@ -74,7 +74,10 @@ When arguments are invalid, raise ``InvalidParams``:
 The underlying messages being transferred are logged to the INFO log level. To
 see them, set the logging level to INFO:
 
-``import logging; logging.getLogger('jsonrpcclient').setLevel(logging.INFO)``
+.. sourcecode:: python
+
+    import logging
+    logging.getLogger('jsonrpcclient').setLevel(logging.INFO)
 
 See it all put together, `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_.
