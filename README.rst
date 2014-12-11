@@ -16,15 +16,23 @@ requests in a `Flask <http://flask.pocoo.org/>`_ app.
 
 The library provides two features:
 
-A blueprint for handling errors, ensuring we *always* respond with json.
+#. A ``dispatch()`` method for handling and dispatching RPC requests.
+#. A blueprint for handling errors, ensuring we *always* respond with json.
+
+Register the blueprint to your app:
 
 .. sourcecode:: python
+
+    import sys
+    from flask import Flask
+    from jsonrpcserver import bp, dispatch, exceptions
 
     # Create a flask app and register the blueprint
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-A ``dispatch()`` method for handling and dispatching requests.
+
+Create a route and call ``dispatch()``:
 
 .. sourcecode:: python
 
@@ -33,34 +41,34 @@ A ``dispatch()`` method for handling and dispatching requests.
     def index():
         return dispatch(sys.modules[__name__])
 
-Now you can write the RPC procedures, as you would any other python function:
+The argument to ``dispatch()`` must be any object containing the RPC handling
+methods. Here I've used this very module.
+
+Now write the RPC methods, just as you would any other Python function:
 
 .. sourcecode:: python
 
-    def add(num1, num2='Not a number'):
+    def add(num1, num2):
         return num1 + num2
 
-
-Validating arguments
---------------------
-
-If the arguments received are invalid, raise the ``InvalidParams`` exception:
+If the arguments are invalid, raise ``InvalidParams``:
 
 .. sourcecode:: python
 
-    from jsonrpcserver.exceptions import InvalidParams
     def add(num1, num2='Not a number'):
         try:
             return num1 + num2
         except TypeError as e:
-            raise InvalidParams(str(e))
+            raise exceptions.InvalidParams(str(e))
 
 .. note::
-    To see the underlying messages going back and forth, set the logging level
-    to INFO:
+    The underlying request and response messages are logged to the INFO log
+    level. To see them, set the logging level to INFO:
 
     ``import logging; logging.getLogger('jsonrpcclient').setLevel(logging.INFO)``
 
+To see it all put together, go `here
+<https://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_.
 
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
