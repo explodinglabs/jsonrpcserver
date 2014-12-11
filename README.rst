@@ -12,10 +12,12 @@ It has two features:
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
    errors, ensuring we *always* respond with json.
 
+
 Installation
 ------------
 
     pip install jsonrpcserver
+
 
 Usage
 -----
@@ -76,10 +78,6 @@ Issue tracker is `here
 If you need a client, try my `jsonrpcclient
 <https://pypi.python.org/pypi/jsonrpcclient>`_ library.
 
-Todo
-----
-
-More dispatch tests.
 
 Changelog
 ---------
