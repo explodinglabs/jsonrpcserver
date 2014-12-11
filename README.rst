@@ -3,7 +3,25 @@ jsonrpcserver
 
 `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ server library for Python 3.
 
-Create a file named ``views.py``, and paste the following code:
+Installation
+------------
+
+    pip install jsonrpcserver
+
+Usage
+-----
+
+*jsonrpcserver* gives the ability to handle JSON-RPC 2.0 requests in a `Flask
+<http://flask.pocoo.org/>`_ app. The library has two simple features:
+
+#. A ``dispatch()`` method for parsing and handling json-rpc requests.
+
+#. A Flask blueprint for handling errors. This ensures we *always* return a
+   json-rpc message.
+
+There are two steps to creating an app:
+
+Create a file named ``run.py``, and paste the following code:
 
 .. sourcecode:: python
 
@@ -28,7 +46,7 @@ Create a file named ``views.py``, and paste the following code:
 
 Test with:
 
-    python -m views
+    python run.py
 
 What's going on here?
 
@@ -40,16 +58,15 @@ Create a Flask app, and register the jsonrpcserver blueprint to it.
 .. sourcecode:: python
 
     app = flask.Flask(__name__)
-
-    # Blueprint
     app.register_blueprint(jsonrpcserver.bp)
 
 The blueprint's purpose is to handle errors. The app should respond with
-JSON-RPC every time; for example if the requested method was invalid, it will
+JSON-RPC every time; for example if the requested method doesn't exist, we
 respond with the JSON-RPC error, *Method not found*.
 
-Note: When debugging your app, it can help to comment out the blueprint line,
-so you get the tracebacks instead of just a jsonrpc error string.
+.. note::
+    When debugging, it can help to disable the blueprint, so you get the
+    tracebacks instead of just a jsonrpc error string.
 
 Route
 -----
@@ -103,7 +120,8 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
 Logging
 -------
 
-To see the underlying JSON messages, set the logging level to INFO:
+To see the underlying messages going back and forth, set the logging level to
+INFO or lower:
 
 .. sourcecode:: python
 
