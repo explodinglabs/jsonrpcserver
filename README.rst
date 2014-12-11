@@ -1,8 +1,8 @@
 jsonrpcserver
 =============
 
-This library allows a `Flask <http://flask.pocoo.org/>`_ app to take `JSON-RPC
-2.0 <http://www.jsonrpc.org/>`_ requests.
+Allows a `Flask <http://flask.pocoo.org/>`_ app to take `JSON-RPC 2.0
+<http://www.jsonrpc.org/>`_ requests.
 
 It has two features:
 
