@@ -6,11 +6,11 @@ Take `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a `Flask
 
 This package has two features:
 
-#. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
+#. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to handle
    errors, ensuring we always respond with json.
 
-#. A ``dispatch`` method which passes requests on to your own methods to carry
-   out.
+#. A ``dispatch`` method, which passes requests on to your own code in order to
+   carry out the request.
 
 
 Installation
@@ -81,7 +81,6 @@ Issue tracker is `here
 
 If you need a client, try my `jsonrpcclient
 <https://pypi.python.org/pypi/jsonrpcclient>`_ library.
-
 
 Changelog
 ---------
