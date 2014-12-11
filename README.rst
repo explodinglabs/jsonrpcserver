@@ -12,8 +12,7 @@ Usage
 -----
 
 This library gives a `Flask <http://flask.pocoo.org/>`_ app the ability to
-handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests, without getting in
-the way.
+handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests.
 
 It has two features:
 
@@ -23,7 +22,7 @@ It has two features:
    message to the client.
 
 To see a working version, paste `this code
-<http://bitbucket.org/beau-barker/jsonrpcserver/run.py`_: into a file named
+<http://bitbucket.org/beau-barker/jsonrpcserver/run.py`_ into a file named
 run.py, then type ``python run.py``.
 
 There are three steps:
