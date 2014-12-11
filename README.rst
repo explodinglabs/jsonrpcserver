@@ -4,7 +4,7 @@ jsonrpcserver
 Take `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a `Flask
 <http://flask.pocoo.org/>`_ app.
 
-It has two features:
+The library has two features:
 
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
    errors, ensuring we always respond with json.
