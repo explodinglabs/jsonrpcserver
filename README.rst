@@ -43,16 +43,23 @@ Create a route for access, and call ``dispatch``:
     def index():
         return dispatch(sys.modules[__name__])
 
-The argument to ``dispatch`` can be any object containing the RPC handling
-methods. Here I've used this very module so we can write the RPC methods right
-here.
+The argument to ``dispatch`` can be any object containing methods that will
+carry out the requests. Here I've used this very module so we can write the
+methods right here.
 
-Now write the RPC methods, as you would any other Python function:
+Now write the request handling methods, as you would any other Python function:
 
 .. sourcecode:: python
 
     def add(num1, num2):
         return num1 + num2
+
+You can take any number of positional or keyword arguments.
+
+.. sourcecode:: python
+
+    def find(name, age=42, *args, **kwargs):
+        pass
 
 When arguments are invalid, raise ``InvalidParams``:
 
