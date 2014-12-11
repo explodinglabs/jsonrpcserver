@@ -6,8 +6,8 @@ requests in a `Flask <http://flask.pocoo.org/>`_ app.
 
 It has two features:
 
-#. A ``dispatch()`` method for parsing client requests, and dispatching to your
-   own functions that handle the request.
+#. A ``dispatch()`` method for handling requests, passing the details on to your
+   own functions to carry out the request.
 
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
    errors, ensuring we *always* respond with json.
