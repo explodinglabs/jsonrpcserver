@@ -9,8 +9,8 @@ This package has two features:
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
    errors, ensuring we always respond with json.
 
-#. A ``dispatch`` method which takes requests from the client, passing the
-   details on to your own methods to carry out the request.
+#. A ``dispatch`` method which takes requests and passes them on to your own
+   methods to carry out the request.
 
 
 Installation
