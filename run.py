@@ -14,11 +14,11 @@ app.register_blueprint(bp)
 # Add a route to dispatch requests to the handling methods.
 @app.route('/', methods=['POST'])
 def index():
-    return dispatch(MyHandlers)
+    return dispatch(HandleRequests)
 
 
 # Lastly, write the methods that will carry out the requests.
-class MyHandlers:
+class HandleRequests:
 
     def add(num1, num2):
         try:
