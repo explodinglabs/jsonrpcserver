@@ -108,8 +108,8 @@ class ServerError(JsonRpcServerError):
 
     ServerError is a generic response: """
 
-    def __init__(self, data=None, request_id=None):
+    def __init__(self, message=status.JSONRPC_SERVER_ERROR_TEXT, data=None, request_id=None):
         super().__init__(
             status.JSONRPC_SERVER_ERROR_HTTP_CODE, \
             status.JSONRPC_SERVER_ERROR_CODE, \
-            status.JSONRPC_SERVER_ERROR_TEXT, data, request_id)
+            message, data, request_id)
