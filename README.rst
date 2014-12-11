@@ -16,9 +16,9 @@ handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests.
 
 It has two features:
 
-#. A ``dispatch()`` method for handling json-rpc requests.
+#. A ``dispatch()`` method for handling requests.
 
-#. A blueprint for handling errors.
+#. A blueprint for handling errors, ensuring we *always* respond with json.
 
 To see a working version, paste `this code
 <http://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_ into a file named
