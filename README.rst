@@ -1,16 +1,16 @@
 jsonrpcserver
 =============
 
-Handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a `Flask
-<http://flask.pocoo.org/>`_ app.
+Handles `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a
+`Flask <http://flask.pocoo.org/>`_ app.
 
-This package has two features:
-
-#. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to handle
-   errors, ensuring we always respond with json.
+The library has two features:
 
 #. A ``dispatch`` method, which passes requests on to your own code in order to
    carry out the request.
+
+#. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to handle
+   errors, ensuring we always respond with json.
 
 
 Installation
@@ -40,7 +40,7 @@ Add a route to dispatch requests to the handling methods.
     def index():
         return dispatch(HandleRequests)
 
-Lastly, write the methods that will carry out the requests.
+Now go ahead and write the methods that will carry out the requests.
 
 .. sourcecode:: python
 
