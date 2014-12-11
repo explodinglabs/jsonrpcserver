@@ -1,7 +1,7 @@
 jsonrpcserver
 =============
 
-Take `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a `Flask
+Handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a `Flask
 <http://flask.pocoo.org/>`_ app.
 
 This package has two features:
