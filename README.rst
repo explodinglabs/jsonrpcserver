@@ -1,10 +1,10 @@
 jsonrpcserver
 =============
 
-Allows you to take `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a
-`Flask <http://flask.pocoo.org/>`_ app.
+Allows a `Flask <http://flask.pocoo.org/>`_ app to take `JSON-RPC 2.0
+<http://www.jsonrpc.org/>`_ requests.
 
-It has two features:
+The library has two features:
 
 #. A ``dispatch`` method for handling requests, passing the details on to your
    own functions to carry out the request.
@@ -22,60 +22,59 @@ Installation
 Usage
 -----
 
-Create flask app and register the blueprint:
+Create a Flask app and register the blueprint:
 
 .. sourcecode:: python
 
-    import sys
     from flask import Flask
     from jsonrpcserver import bp, dispatch, exceptions
 
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-Make a route for client access, and dispatch.
+Add a route to pass requests on to the handling methods.
 
 .. sourcecode:: python
 
     @app.route('/', methods=['POST'])
     def index():
-        return dispatch(sys.modules[__name__])
+        return dispatch(MyHandlers)
 
-Write methods to carry out the requests.
-
-.. sourcecode:: python
-
-    def add(num1, num2='Not a number'):
-        return num1 + num2
-
-The request-handling methods can take any number of positional or keyword
-arguments.
+Now write the methods that carry out the requests.
 
 .. sourcecode:: python
 
-    def find(name, age=42, *args, **kwargs):
-        ...
+    class MyHandlers:
+
+        def add(num1, num2):
+            return num1 + num2
+
+These methods can take any number of positional or keyword arguments.
+
+.. sourcecode:: python
+
+        def find(name, age=42, *args, **kwargs):
+            ...
 
 When arguments are invalid, raise ``InvalidParams``.
 
 .. sourcecode:: python
 
-    def add(num1, num2='Not a number'):
-        try:
-            return num1 + num2
-        except TypeError as e:
-            raise exceptions.InvalidParams(str(e))
-
-The underlying messages are logged to the INFO log level. To see them, set the
-logging level to INFO.
-
-.. sourcecode:: python
-
-    import logging
-    logging.getLogger('jsonrpcclient').setLevel(logging.INFO)
+        def add(num1, num2):
+            try:
+                return num1 + num2
+            except TypeError:
+                raise exceptions.InvalidParams(str(e))
 
 See it all put together `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
+
+.. note::
+
+    The underlying messages are logged to the INFO log level. To see them, set
+    the logging level to INFO.
+
+    import logging; logging.getLogger('jsonrpcclient').setLevel(logging.INFO)
 
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
