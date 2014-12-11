@@ -59,7 +59,7 @@ You can take any number of positional or keyword arguments.
 .. sourcecode:: python
 
     def find(name, age=42, *args, **kwargs):
-        pass
+        ...
 
 When arguments are invalid, raise ``InvalidParams``:
 
