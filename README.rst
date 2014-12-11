@@ -25,44 +25,11 @@ To see a working version, paste `this code
 <http://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_ into a file named
 run.py, then type ``python run.py``.
 
+What's going on here?
+
 There are three steps:
 
 #. Create a Flask app and register the blueprint to it
-#. Make a route for client access, ``dispatch()``-ing to the requested method.
-#. Write your RPC methods.
-
-.. sourcecode:: python
-
-    import sys
-    from flask import Flask
-    from jsonrpcserver import bp, dispatch
-
-    # Create flask app and register the blueprint
-    app = Flask(__name__)
-    app.register_blueprint(bp)
-
-    # Make a route for client access
-    @app.route('/', methods=['POST'])
-    def index():
-        return dispatch(sys.modules[__name__])
-
-    # Write your RPC methods.
-    def add(one, two):
-        return one + two
-
-    if __name__ == '__main__':
-        app.run()
-
-Test with:
-
-    python run.py
-
-What's going on here?
-
-Blueprint
----------
-
-Create a Flask app, and register the jsonrpcserver blueprint to it.
 
 .. sourcecode:: python
 
@@ -77,10 +44,7 @@ respond with the JSON-RPC error, *Method not found*.
     When debugging, it can help to disable the blueprint, so you get the
     tracebacks instead of just a jsonrpc error string.
 
-Route
------
-
-Add a route to accept the RPC calls:
+#. Make a route for client access, ``dispatch()``-ing to the requested method.
 
 .. sourcecode:: python
 
@@ -94,8 +58,7 @@ and passes the data along to a function to handle. The argument passed to
 ``dispatch`` can be any object that has functions, such as a class or module.
 Here we've passed this module, to handle the requests right here.
 
-Handlers
---------
+#. Write your RPC methods.
 
 Write functions to handle each of the RPC requests:
 
