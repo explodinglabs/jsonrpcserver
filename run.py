@@ -6,7 +6,6 @@ An example app, demonstrating how to use the library.
 from flask import Flask
 from jsonrpcserver import bp, dispatch, exceptions
 
-
 # Create a Flask app and register the blueprint.
 app = Flask(__name__)
 app.register_blueprint(bp)
