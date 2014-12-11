@@ -6,7 +6,7 @@ requests in a `Flask <http://flask.pocoo.org/>`_ app.
 
 It has two features:
 
-#. A ``dispatch()`` method for handling requests, passing the details on to your
+#. A ``dispatch`` method for handling requests, passing the details on to your
    own functions to carry out the request.
 
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
@@ -28,7 +28,7 @@ Register the blueprint to your app:
     from flask import Flask
     from jsonrpcserver import bp, dispatch, exceptions
 
-    # Create a flask app and register the blueprint
+    # Create a flask app and register the blueprint.
     app = Flask(__name__)
     app.register_blueprint(bp)
 
@@ -37,7 +37,7 @@ Create a route and call ``dispatch``:
 
 .. sourcecode:: python
 
-    # Create a route for access, and dispatch
+    # Create a route for access, and dispatch.
     @app.route('/', methods=['POST'])
     def index():
         return dispatch(sys.modules[__name__])
@@ -51,7 +51,7 @@ here. Now write the RPC methods, just as you would any other Python function:
     def add(num1, num2):
         return num1 + num2
 
-If the arguments are invalid, raise ``InvalidParams``:
+When arguments are invalid, raise ``InvalidParams``:
 
 .. sourcecode:: python
 
@@ -61,11 +61,10 @@ If the arguments are invalid, raise ``InvalidParams``:
         except TypeError as e:
             raise exceptions.InvalidParams(str(e))
 
-.. note::
-    The underlying request and response messages are logged to the INFO log
-    level. To see them, set the logging level to INFO:
+The underlying messages being transferred are logged to the INFO log level. To
+see them, set the logging level to INFO:
 
-    ``import logging; logging.getLogger('jsonrpcclient').setLevel(logging.INFO)``
+``import logging; logging.getLogger('jsonrpcclient').setLevel(logging.INFO)``
 
 See it all put together, go `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_.
