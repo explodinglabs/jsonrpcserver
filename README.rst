@@ -22,7 +22,7 @@ Installation
 Usage
 -----
 
-Create a Flask app and register the blueprint:
+Create a Flask app and register the blueprint.
 
 .. sourcecode:: python
 
