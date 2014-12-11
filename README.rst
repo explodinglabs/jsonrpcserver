@@ -32,7 +32,7 @@ Create a Flask app and register the blueprint.
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-Add a route to pass requests on to the handling methods.
+Add a route to dispatch requests on to the handling methods.
 
 .. sourcecode:: python
 

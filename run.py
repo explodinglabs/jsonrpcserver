@@ -11,7 +11,7 @@ from jsonrpcserver import bp, dispatch, exceptions
 app = Flask(__name__)
 app.register_blueprint(bp)
 
-# Add a route to pass requests on to the handling methods.
+# Add a route to dispatch requests on to the handling methods.
 @app.route('/', methods=['POST'])
 def index():
     return dispatch(MyHandlers)
