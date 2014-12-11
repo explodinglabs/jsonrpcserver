@@ -6,7 +6,7 @@ This library handles `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a
 
 The library has two features:
 
-#. A ``dispatch`` method which takes requests from the client, and passes the
+#. A ``dispatch`` method which takes requests from the client, passing the
    important details on to your own methods to carry out the request.
 
 #. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ for handling
