@@ -11,35 +11,45 @@ Installation
 Usage
 -----
 
-*jsonrpcserver* gives the ability to handle JSON-RPC 2.0 requests in a `Flask
-<http://flask.pocoo.org/>`_ app. The library has two simple features:
+This library gives a `Flask <http://flask.pocoo.org/>`_ app the ability to
+handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests, without getting in
+the way.
+
+It has two features:
 
 #. A ``dispatch()`` method for parsing and handling json-rpc requests.
 
-#. A Flask blueprint for handling errors. This ensures we *always* return a
-   json-rpc message.
+#. A blueprint for handling errors, to ensure we *always* return a json-rpc
+   message to the client.
 
-There are two steps to creating an app:
+To see a working version, paste `this code
+<http://bitbucket.org/beau-barker/jsonrpcserver/run.py`_: into a file named
+run.py, then type ``python run.py``.
 
-Create a file named ``run.py``, and paste the following code:
+There are three steps:
+
+#. Create a Flask app and register the blueprint to it
+#. Make a route for client access, ``dispatch()``-ing to the requested method.
+#. Write your RPC methods.
 
 .. sourcecode:: python
 
-    import sys, flask, jsonrpcserver
+    import sys
+    from flask import Flask
+    from jsonrpcserver import bp, dispatch
 
-    app = flask.Flask(__name__)
+    # Create flask app and register the blueprint
+    app = Flask(__name__)
+    app.register_blueprint(bp)
 
-    # Blueprint
-    app.register_blueprint(jsonrpcserver.bp)
-
-    # Route
+    # Make a route for client access
     @app.route('/', methods=['POST'])
     def index():
-        return jsonrpcserver.dispatch(sys.modules[__name__])
+        return dispatch(sys.modules[__name__])
 
-    # Handlers
-    def add(num1, num2):
-        return num1 + num2
+    # Write your RPC methods.
+    def add(one, two):
+        return one + two
 
     if __name__ == '__main__':
         app.run()
@@ -111,11 +121,12 @@ If the arguments received are invalid, raise the ``InvalidParams`` exception:
 
 .. sourcecode:: python
 
+    from jsonrpcserver.exceptions import InvalidParams
     def add(num1, num2='Not a number'):
         try:
             return num1 + num2
         except TypeError as e:
-            raise jsonrpcserver.exceptions.InvalidParams(str(e))
+            raise InvalidParams(str(e))
 
 Logging
 -------
