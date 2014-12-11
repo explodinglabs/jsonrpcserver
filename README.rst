@@ -16,13 +16,13 @@ handle `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests.
 
 It has two features:
 
-#. A ``dispatch()`` method for parsing and handling json-rpc requests.
+#. A ``dispatch()`` method handling json-rpc requests.
 
 #. A blueprint for handling errors, to ensure we *always* return a json-rpc
    message to the client.
 
 To see a working version, paste `this code
-<http://bitbucket.org/beau-barker/jsonrpcserver/run.py`_ into a file named
+<http://bitbucket.org/beau-barker/jsonrpcserver/run.py>`_ into a file named
 run.py, then type ``python run.py``.
 
 There are three steps:
