@@ -33,18 +33,19 @@ Register the blueprint to your app:
     app.register_blueprint(bp)
 
 
-Create a route and call ``dispatch``:
+Create a route for access, and call ``dispatch``:
 
 .. sourcecode:: python
 
-    # Create a route for access, and dispatch.
     @app.route('/', methods=['POST'])
     def index():
         return dispatch(sys.modules[__name__])
 
 The argument to ``dispatch`` can be any object containing the RPC handling
 methods. Here I've used this very module so we can write the RPC methods right
-here. Now write the RPC methods, just as you would any other Python function:
+here.
+
+Now write the RPC methods, as you would any other Python function:
 
 .. sourcecode:: python
 
