@@ -16,7 +16,7 @@ app.register_blueprint(bp)
 def index():
     return dispatch(sys.modules[__name__])
 
-# The RPC methods.
+# Write the methods to carry out the requests.
 def add(num1, num2='Not a number'):
     try:
         return num1 + num2
