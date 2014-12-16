@@ -46,8 +46,8 @@ Now go ahead and write the methods that will carry out the requests.
 
     class HandleRequests:
 
-        def add(num1, num2):
-            return num1 + num2
+        def add(x, y):
+            return x + y
 
 These methods can take any number of positional or keyword arguments.
 
@@ -60,11 +60,14 @@ When arguments are invalid, raise ``InvalidParams``.
 
 .. sourcecode:: python
 
-    def add(num1, num2):
+    def add(x, y):
         try:
-            return num1 + num2
+            return x + y
         except TypeError:
             raise exceptions.InvalidParams(str(e))
+
+See it all put together here:
+https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py
 
 Logging
 -------
@@ -82,6 +85,11 @@ Issue tracker is `here
 
 If you need a client, try my `jsonrpcclient
 <https://pypi.python.org/pypi/jsonrpcclient>`_ library.
+
+Todo
+----
+
+* Support `batch calls <http://www.jsonrpc.org/specification#batch>`_.
 
 Changelog
 ---------
