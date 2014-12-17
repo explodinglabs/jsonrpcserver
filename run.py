@@ -1,6 +1,6 @@
 """run.py
 
-An example app, demonstrating how to use the library.
+An example app, demonstrating how to use the jsonrpcserver library.
 """
 
 from flask import Flask
