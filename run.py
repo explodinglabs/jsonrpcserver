@@ -15,16 +15,14 @@ app.register_blueprint(bp)
 def index():
     return dispatch(HandleRequests)
 
-
 # Now go ahead and write the methods that will carry out the requests.
 class HandleRequests:
 
-    def add(num1, num2):
+    def add(x, y):
         try:
-            return num1 + num2
+            return x + y
         except TypeError as e:
-            raise exceptions.InvalidParams(str(e))
-
+            raise exceptions.InvalidParams('Type error')
 
 if __name__ == '__main__':
     app.run()
