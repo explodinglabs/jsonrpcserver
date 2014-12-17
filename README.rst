@@ -1,23 +1,23 @@
 jsonrpcserver
 =============
 
-Handles `JSON-RPC 2.0 <http://www.jsonrpc.org/>`_ requests in a
-`Flask <http://flask.pocoo.org/>`_ app.
+Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
+<http://flask.pocoo.org/>`_ app.
 
 The library has two features:
 
-#. A ``dispatch`` method, which passes requests on to your own code in order to
-   carry out the request.
+#. A dispatcher, which validates incoming requests and then passes them on to
+   your own code to carry out the request.
 
-#. A `blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to handle
-   errors, ensuring we always respond with json.
-
+#. A `Flask blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to catch
+   errors, ensuring we always respond with JSON-RPC.
 
 Installation
 ------------
 
-    pip install jsonrpcserver
+::
 
+    pip install jsonrpcserver
 
 Usage
 -----
@@ -45,16 +45,21 @@ Now go ahead and write the methods that will carry out the requests.
 .. sourcecode:: python
 
     class HandleRequests:
-
         def add(x, y):
             return x + y
 
-These methods can take any number of positional or keyword arguments.
+Keyword arguments are also allowed.
 
 .. sourcecode:: python
 
-    def find(name, age=42, *args, **kwargs):
-        ...
+    def find(name='Foo', age=42, **kwargs):
+
+.. important::
+
+    Use either positional or keyword arguments, but not both in the same
+    method. See `Parameter Structures
+    <http://www.jsonrpc.org/specification#parameter_structures>`_ in the
+    specs.
 
 When arguments are invalid, raise ``InvalidParams``.
 
@@ -63,8 +68,12 @@ When arguments are invalid, raise ``InvalidParams``.
     def add(x, y):
         try:
             return x + y
-        except TypeError:
-            raise exceptions.InvalidParams(str(e))
+        except TypeError as e:
+            raise exceptions.InvalidParams('Type error')
+
+The blueprint will catch the exception and ensure this is returned::
+
+    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Type error"}, "id": 1}
 
 See it all put together here:
 https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py
@@ -73,15 +82,21 @@ Logging
 -------
 
 To see the underlying messages going back and forth, set the logging level
-to INFO:
+to INFO.
 
 .. sourcecode:: python
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
+Issue Tracker
+-------------
+
 Issue tracker is `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_.
+
+Client
+------
 
 If you need a client, try my `jsonrpcclient
 <https://pypi.python.org/pypi/jsonrpcclient>`_ library.
