@@ -99,7 +99,7 @@ Client
 ------
 
 If you need a client, try my `jsonrpcclient
-<https://pypi.python.org/pypi/jsonrpcclient>`_ library.
+<http://jsonrpcclient.readthedocs.org/>`_ library.
 
 Todo
 ----
