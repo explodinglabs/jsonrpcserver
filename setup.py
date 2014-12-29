@@ -19,7 +19,7 @@ with open('HISTORY.rst', 'r', 'utf-8') as f:
 
 setup(
     name='jsonrpcserver',
-    version='1.0.6',
+    version='1.0.7',
     description='JSON-RPC 2.0 server library for Python 3.',
     long_description=readme + '\n\n' + history,
     author='Beau Barker',
@@ -29,7 +29,7 @@ setup(
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
     install_requires=['flask', 'jsonschema'],
-    tests_require=['nose','rednose','nose-cov','flask-testing'],
+    tests_require=['nose','nose-cov','rednose','flask-testing'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
