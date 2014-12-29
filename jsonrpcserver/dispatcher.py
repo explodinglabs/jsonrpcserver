@@ -1,4 +1,4 @@
-"""dispatch.py"""
+"""dispatcher.py"""
 
 import json
 import flask
