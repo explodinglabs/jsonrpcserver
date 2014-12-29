@@ -7,20 +7,21 @@ jsonrpcserver
 Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
 <http://flask.pocoo.org/>`_ app.
 
-Get straight to handling the request - simply register the `blueprint
-<http://flask.pocoo.org/docs/0.10/blueprints/>`_, then dispatch the requests to
-your own code.
+Simply register the `blueprint
+<http://flask.pocoo.org/docs/0.10/blueprints/>`_, then dispatch the incoming
+requests to your own code. The library will handle the rest.
 
 .. sourcecode:: python
 
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-    # Dispatch incoming requests
+    # Add a route to dispatch requests
     @app.route('/', methods=['POST'])
     def index():
         return dispatch(HandleRequests)
 
+    # Write your methods to handle the requests.
     class HandleRequests:
         def add(x, y):
             return x + y
