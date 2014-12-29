@@ -9,7 +9,9 @@ Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
 
 Simply register the `blueprint
 <http://flask.pocoo.org/docs/0.10/blueprints/>`_, then dispatch the
-requests to your own code::
+requests to your own code.
+
+.. sourcecode:: python
 
     app = Flask(__name__)
     app.register_blueprint(bp)
