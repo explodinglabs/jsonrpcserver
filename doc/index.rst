@@ -22,9 +22,7 @@ Installation
 Usage
 -----
 
-Create a Flask app and register the blueprint.
-
-.. code-block:: python
+Create a Flask app and register the blueprint::
 
     from flask import Flask
     from jsonrpcserver import bp, dispatch, exceptions
@@ -32,25 +30,19 @@ Create a Flask app and register the blueprint.
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-Add a route to dispatch requests to the handling methods.
-
-.. code-block:: python
+Add a route to dispatch requests to the handling methods::
 
     @app.route('/', methods=['POST'])
     def index():
         return dispatch(HandleRequests)
 
-Now go ahead and write the methods that will carry out the requests.
-
-.. code-block:: python
+Now go ahead and write the methods that will carry out the requests::
 
     class HandleRequests:
         def add(x, y):
             return x + y
 
-Keyword arguments are also allowed.
-
-.. code-block:: python
+Keyword arguments are also allowed::
 
     def find(name='Foo', age=42, **kwargs):
 
@@ -64,9 +56,7 @@ Keyword arguments are also allowed.
 Exceptions
 ^^^^^^^^^^
 
-When arguments are invalid, raise ``InvalidParams``.
-
-.. code-block:: python
+When arguments are invalid, raise ``InvalidParams``::
 
     def add(x, y):
         try:
@@ -74,7 +64,9 @@ When arguments are invalid, raise ``InvalidParams``.
         except TypeError as e:
             raise exceptions.InvalidParams('Type error')
 
-The blueprint will catch the exception and ensure this is returned::
+The blueprint will catch the exception and ensure this is returned
+
+.. code-block:: javascript
 
     {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Type error"}, "id": 1}
 
@@ -82,12 +74,10 @@ See it all put together here:
 https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py
 
 Logging
--------
+^^^^^^^
 
 To see the underlying messages going back and forth, set the logging level
-to INFO.
-
-.. code-block:: python
+to INFO::
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
