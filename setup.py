@@ -1,26 +1,35 @@
 #!/usr/bin/env python
-# pylint: disable=line-too-long
+#pylint:disable=line-too-long
 """setup.py"""
 
 import os
-from setuptools import setup
 
-def read(fname):
-    """Get the readme from a file, to use as long_description"""
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+from codecs import open
+
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
+with open('README.rst', 'r', 'utf-8') as f:
+    readme = f.read()
+
+with open('HISTORY.rst', 'r', 'utf-8') as f:
+    history = f.read()
 
 setup(
     name='jsonrpcserver',
-    packages=['jsonrpcserver'],
-    package_data={'jsonrpcserver': ['request-schema.json']},
-    install_requires=['flask', 'jsonschema'],
     version='1.0.6',
-    description='JSON-RPC 2.0 server library for Python 3',
-    long_description=read('README.rst'),
+    description='JSON-RPC 2.0 server library for Python 3.',
+    long_description=readme + '\n\n' + history,
     author='Beau Barker',
     author_email='beauinmelbourne@gmail.com',
     url='http://jsonrpcserver.readthedocs.org/',
-    keywords=['json-rpc', 'json', 'api'],
+    packages=['jsonrpcserver'],
+    package_data={'jsonrpcserver': ['request-schema.json']},
+    include_package_data=True,
+    install_requires=['flask', 'jsonschema'],
+    tests_require=['nose','rednose','nose-cov','flask-testing'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
