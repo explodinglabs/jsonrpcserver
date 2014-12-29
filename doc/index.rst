@@ -83,7 +83,7 @@ return the correct response. Here's an example of handling a database error::
     try:
         db.session.commit()
     except SQLAlchemyError as e:
-        raise exceptions.DatabaseError()
+        raise DatabaseError()
 
 Logging
 ^^^^^^^
