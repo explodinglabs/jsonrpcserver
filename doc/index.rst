@@ -24,7 +24,7 @@ Usage
 
 Create a Flask app and register the blueprint.
 
-.. sourcecode:: python
+.. code-block:: python
 
     from flask import Flask
     from jsonrpcserver import bp, dispatch, exceptions
@@ -34,7 +34,7 @@ Create a Flask app and register the blueprint.
 
 Add a route to dispatch requests to the handling methods.
 
-.. sourcecode:: python
+.. code-block:: python
 
     @app.route('/', methods=['POST'])
     def index():
@@ -42,7 +42,7 @@ Add a route to dispatch requests to the handling methods.
 
 Now go ahead and write the methods that will carry out the requests.
 
-.. sourcecode:: python
+.. code-block:: python
 
     class HandleRequests:
         def add(x, y):
@@ -50,7 +50,7 @@ Now go ahead and write the methods that will carry out the requests.
 
 Keyword arguments are also allowed.
 
-.. sourcecode:: python
+.. code-block:: python
 
     def find(name='Foo', age=42, **kwargs):
 
@@ -66,7 +66,7 @@ Exceptions
 
 When arguments are invalid, raise ``InvalidParams``.
 
-.. sourcecode:: python
+.. code-block:: python
 
     def add(x, y):
         try:
@@ -87,7 +87,7 @@ Logging
 To see the underlying messages going back and forth, set the logging level
 to INFO.
 
-.. sourcecode:: python
+.. code-block:: python
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
