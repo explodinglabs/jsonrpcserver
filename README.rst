@@ -8,8 +8,8 @@ Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
 <http://flask.pocoo.org/>`_ app.
 
 Get straight to handling the request - simply register the `blueprint
-<http://flask.pocoo.org/docs/0.10/blueprints/>`_, then use the dispatcher to
-carry out the requests in your own code.
+<http://flask.pocoo.org/docs/0.10/blueprints/>`_, then dispatch the requests to
+your own code.
 
 .. sourcecode:: python
 
