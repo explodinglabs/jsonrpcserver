@@ -16,7 +16,7 @@ requests to your own code.
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-    # Add a route to dispatch requests.
+    # Add a route to take requests.
     @app.route('/', methods=['POST'])
     def index():
         return dispatch(HandleRequests)
