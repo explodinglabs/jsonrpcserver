@@ -38,4 +38,4 @@ Documentation
 Documentation is available at http://jsonrpcserver.readthedocs.org/.
 
 If you need a client, try my `jsonrpcclient
-<http://jsonrpcclient.readthedocs.org/>`_ library.
+<https://jsonrpcclient.readthedocs.org/>`_ library.
