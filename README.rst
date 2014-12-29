@@ -35,7 +35,7 @@ Installation
 Documentation
 -------------
 
-Documentation is available at http://jsonrpcserver.readthedocs.org/.
+Documentation is available at https://jsonrpcserver.readthedocs.org/.
 
 If you need a client, try my `jsonrpcclient
 <https://jsonrpcclient.readthedocs.org/>`_ library.
