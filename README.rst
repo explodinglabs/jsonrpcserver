@@ -30,12 +30,12 @@ Installation
 
 .. sourcecode:: sh
 
-    $ pip install jsonrpcclient
+    $ pip install jsonrpcserver
 
 Documentation
 -------------
 
-Documentation is available at http://jsonrpcclient.readthedocs.org/.
+Documentation is available at http://jsonrpcserver.readthedocs.org/.
 
 If you need a client, try my `jsonrpcclient
 <http://jsonrpcclient.readthedocs.org/>`_ library.
