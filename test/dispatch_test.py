@@ -14,62 +14,64 @@ app.register_blueprint(bp)
 
 @app.route('/', methods=['POST'])
 def index():
-    return dispatch(sys.modules[__name__])
+    return dispatch(HandleRequests)
 
 
-# Dummy RPC handling methods
+# RPC handling methods
 
-def method_only():
-    pass
+class HandleRequests:
 
-def one_positional(string): #pylint:disable=unused-argument
-    pass
+    def method_only():
+        pass
 
-def two_positionals(one, two): #pylint:disable=unused-argument
-    pass
+    def one_positional(string): #pylint:disable=unused-argument
+        pass
 
-def just_args(*args): #pylint:disable=unused-argument
-    pass
+    def two_positionals(one, two): #pylint:disable=unused-argument
+        pass
 
-def just_kwargs(**kwargs): #pylint:disable=unused-argument
-    pass
+    def just_args(*args): #pylint:disable=unused-argument
+        pass
 
-def positionals_with_args(one, two, *args): #pylint:disable=unused-argument
-    pass
+    def just_kwargs(**kwargs): #pylint:disable=unused-argument
+        pass
 
-def positionals_with_kwargs(one, two, **kwargs): #pylint:disable=unused-argument
-    pass
+    def positionals_with_args(one, two, *args): #pylint:disable=unused-argument
+        pass
 
-def positionals_with_args_and_kwargs(one, two, *args, **kwargs): #pylint:disable=unused-argument
-    pass
+    def positionals_with_kwargs(one, two, **kwargs): #pylint:disable=unused-argument
+        pass
 
-def add(number1, number2):
-    """Add two numbers. Takes a list as args."""
+    def positionals_with_args_and_kwargs(one, two, *args, **kwargs): #pylint:disable=unused-argument
+        pass
 
-    try:
-        return number1 + number2
+    def add(number1, number2):
+        """Add two numbers. Takes a list as args."""
 
-    except TypeError as e:
-        raise exceptions.InvalidParams(str(e))
+        try:
+            return number1 + number2
 
-def uppercase(*args):
-    """Uppercase a string"""
+        except TypeError as e:
+            raise exceptions.InvalidParams(str(e))
 
-    try:
-        return args[0].upper()
+    def uppercase(*args):
+        """Uppercase a string"""
 
-    except KeyError as e:
-        raise exceptions.InvalidParams(str(e))
+        try:
+            return args[0].upper()
 
-def lookup_surname(**kwargs):
-    """Lookup a surname from a firstname"""
+        except KeyError as e:
+            raise exceptions.InvalidParams(str(e))
 
-    try:
-        if kwargs['firstname'] == 'John':
-            return 'Smith'
+    def lookup_surname(**kwargs):
+        """Lookup a surname from a firstname"""
 
-    except KeyError as e:
-        raise exceptions.InvalidParams(str(e))
+        try:
+            if kwargs['firstname'] == 'John':
+                return 'Smith'
+
+        except KeyError as e:
+            raise exceptions.InvalidParams(str(e))
 
 
 class TestDispatch(TestCase):
