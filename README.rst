@@ -15,6 +15,22 @@ The library has two features:
 #. A `Flask blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to catch
    errors, ensuring we always respond with JSON-RPC.
 
+.. sourcecode:: python
+
+    from flask import Flask
+    from jsonrpcserver import bp, dispatch, exceptions
+
+    app = Flask(__name__)
+    app.register_blueprint(bp)
+
+    @app.route('/', methods=['POST'])
+    def index():
+        return dispatch(HandleRequests)
+
+    class HandleRequests:
+        def add(x, y):
+            return x + y
+
 Installation
 ------------
 
