@@ -47,6 +47,7 @@ Now go ahead and write the methods that will carry out the requests::
 
 Keyword arguments are also acceptable::
 
+    @staticmethod
     def find(**kwargs):
         """Find a customer."""
         # Optional parameters
