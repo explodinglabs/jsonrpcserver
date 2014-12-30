@@ -91,6 +91,10 @@ that inherit from ``JsonRpcServerError``::
     except SQLAlchemyError:
         raise exceptions.ServerError('Database error')
 
+.. code-block:: javascript
+
+    {"jsonrpc": "2.0", "error": {"code": -32000, "message": "Database error"}, "id": 1}
+
 
 Logging
 ^^^^^^^
