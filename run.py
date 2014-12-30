@@ -4,6 +4,7 @@ An example app, demonstrating how to use the jsonrpcserver library.
 """
 
 from flask import Flask
+
 from jsonrpcserver import bp, dispatch, exceptions
 
 
@@ -11,21 +12,19 @@ from jsonrpcserver import bp, dispatch, exceptions
 app = Flask(__name__)
 app.register_blueprint(bp)
 
-
+# Add a route to take requests.
 @app.route('/', methods=['POST'])
 def index():
     """Dispatch requests to the handling methods."""
-
     return dispatch(HandleRequests)
 
 
 class HandleRequests:
-    """Write methods to handle each request."""
+    """Methods to handle each request."""
 
     @staticmethod
     def add(x, y):
         """Add two numbers."""
-
         try:
             return x + y
         except TypeError:
