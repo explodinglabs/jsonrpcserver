@@ -49,6 +49,7 @@ Keyword arguments are also acceptable::
 
     def find(**kwargs):
         """Find a customer."""
+        # Optional parameters
         name = kwargs.get('name', None)
 
 .. important::
