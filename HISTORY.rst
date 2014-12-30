@@ -1,6 +1,11 @@
 Release History
 ---------------
 
+1.0.8 (2014-12-30)
+^^^^^^^^^^^^^^^^^^
+
+- Bugfix: an important schema file wasn't being included in the distribution.
+
 1.0.7 (2014-12-30)
 ^^^^^^^^^^^^^^^^^^
 
