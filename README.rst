@@ -22,6 +22,8 @@ methods for carrying out the requests:
 
     # Write methods to handle each request.
     class HandleRequests:
+
+        @staticmethod
         def add(x, y):
             return x + y
 

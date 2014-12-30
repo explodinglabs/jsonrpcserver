@@ -13,7 +13,7 @@ def flask_error_response(http_status_code, text):
 
     response = flask.Response(text, mimetype='application/json')
     response.status_code = http_status_code
-    logger.info('<-- {} {}'.format(http_status_code, text))
+    logger.info('<-- %d %s', http_status_code, text)
     return response
 
 

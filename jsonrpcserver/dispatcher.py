@@ -33,12 +33,14 @@ def convert_params_to_args_and_kwargs(params):
 
 def dispatch(handler):
     """Call a handler method"""
+    #pylint:disable=star-args
 
     # Get the request (this raises "400: Bad request" if fails)
     request = flask.request.get_json()
     logger.info('--> '+json.dumps(request))
 
     try:
+
         # Validate
         try:
             jsonschema.validate(
@@ -48,13 +50,16 @@ def dispatch(handler):
         except jsonschema.ValidationError as e:
             raise exceptions.InvalidRequest(e.message)
 
+
         # Get the args and kwargs from request['params']
         (a, k) = convert_params_to_args_and_kwargs(request.get('params', None))
+
 
         # Dont allow magic methods to be called
         if request['method'].startswith('__') \
                 and request['method'].endswith('__'):
             raise exceptions.MethodNotFound(request['method'])
+
 
         # Get the method if available
         try:
@@ -78,21 +83,21 @@ def dispatch(handler):
                 getcallargs(method, *a)
             except TypeError as e:
                 raise exceptions.InvalidParams(str(e))
-            result = method(*a) #pylint:disable=star-args
+            result = method(*a)
 
         if not a and k:
             try:
                 getcallargs(method, **k)
             except TypeError as e:
                 raise exceptions.InvalidParams(str(e))
-            result = method(**k) #pylint:disable=star-args
+            result = method(**k)
 
         if a and k:
             try:
                 getcallargs(method, *a, **k)
             except TypeError as e:
                 raise exceptions.InvalidParams(str(e))
-            result = method(*a, **k) #pylint:disable=star-args
+            result = method(*a, **k)
 
         # Return, if a response was requested
         if 'id' in request:

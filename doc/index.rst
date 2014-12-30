@@ -39,6 +39,8 @@ Add a route to dispatch requests to the handling methods::
 Now go ahead and write the methods that will carry out the requests::
 
     class HandleRequests:
+
+        @staticmethod
         def add(x, y):
             return x + y
 
@@ -64,7 +66,7 @@ When arguments are invalid, raise ``InvalidParams``::
     def add(x, y):
         try:
             return x + y
-        except TypeError as e:
+        except TypeError:
             raise exceptions.InvalidParams('Type error')
 
 The blueprint will catch the exception and return the correct response.

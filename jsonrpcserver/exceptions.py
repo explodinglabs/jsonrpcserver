@@ -113,7 +113,9 @@ class ServerError(JsonRpcServerError):
     Apps should subclass it.
     """
 
-    def __init__(self, message=status.JSONRPC_SERVER_ERROR_TEXT, data=None, request_id=None):
+    def __init__(
+            self, message=status.JSONRPC_SERVER_ERROR_TEXT, \
+            data=None, request_id=None):
         super().__init__(
             status.JSONRPC_SERVER_ERROR_HTTP_CODE, \
             status.JSONRPC_SERVER_ERROR_CODE, \
