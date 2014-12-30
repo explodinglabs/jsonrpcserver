@@ -45,7 +45,7 @@ Now go ahead and write the methods that will carry out the requests::
             """Add two numbers."""
             return x + y
 
-Keyword arguments are also acceptable::
+Keyword parameters are also acceptable::
 
     @staticmethod
     def find(**kwargs):
