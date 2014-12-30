@@ -19,6 +19,7 @@ def index():
     return dispatch(HandleRequests)
 
 
+# Write the methods that will carry out the requests.
 class HandleRequests:
     """Methods to handle each request."""
 
