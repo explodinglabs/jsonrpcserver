@@ -76,26 +76,19 @@ to the client:
 
 .. code-block:: javascript
 
-    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Type error"}, "id": 1}
+    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Key error: 'firstname'"}, "id": 1}
 
-The blueprint catches exceptions that inherit from the base exception
-``JsonRpcServerError``.
-
-To return a custom error, create an exception class that inherits from that
-base exception, or `any of it's subclasses
-<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/jsonrpcserver/exceptions.py>`_, such as
-``ServerError``.
-
-Here's an example of informing the client there was a database error::
-
-    class DatabaseError(exceptions.ServerError):
-        def __init__(self):
-            super().__init__('Database error')
+To return a custom error, raise ``ServerError``::
 
     try:
         db.session.commit()
     except SQLAlchemyError:
-        raise DatabaseError()
+        raise exceptions.ServerError('Database error')
+
+Or write your own class that inherits from any of `these
+<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/jsonrpcserver/exceptions.py>`_.
+The blueprint will handle any exception that inherits from
+``JsonRpcServerError``.
 
 Logging
 ^^^^^^^
