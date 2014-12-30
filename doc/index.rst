@@ -44,7 +44,7 @@ Now go ahead and write the methods that will carry out the requests::
         def add(x, y):
             return x + y
 
-Keyword arguments are also allowed in the request handling methods::
+Keyword arguments are also acceptable::
 
     def find(firstname='Foo', lastname='Bar', **kwargs):
         middlename = kwargs['middlename']
@@ -71,14 +71,22 @@ When arguments are invalid, raise ``InvalidParams``::
         except KeyError as e:
             raise exceptions.InvalidParams(str(e))
 
-The blueprint will catch the exception and return the correct response:
+The blueprint will catch the exception, and return the correct error response
+to the client:
 
 .. code-block:: javascript
 
     {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Type error"}, "id": 1}
 
-Custom exceptions in your app should extend from ``ServerError``, in order to
-return the correct response. Here's an example of handling a database error::
+The blueprint catches exceptions that inherit from the base exception
+``JsonRpcServerError``.
+
+To return a custom error, create an exception class that inherits from that
+base exception, or `any of it's subclasses
+<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/jsonrpcserver/exceptions.py>`_, such as
+``ServerError``.
+
+Here's an example of informing the client there was a database error::
 
     class DatabaseError(exceptions.ServerError):
         def __init__(self):
