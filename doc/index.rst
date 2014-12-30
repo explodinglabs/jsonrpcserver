@@ -46,14 +46,15 @@ Now go ahead and write the methods that will carry out the requests::
 
 Keyword arguments are also allowed in the request handling methods::
 
-    def find(name='Foo', age=42, **kwargs):
+    def find(firstname='Foo', lastname='Bar', **kwargs):
+        middlename = kwargs['middlename']
 
 .. important::
 
     Use either positional or keyword arguments, but not both in the same
     method. See `Parameter Structures
     <http://www.jsonrpc.org/specification#parameter_structures>`_ in the
-    specs.
+    JSON-RPC specification.
 
 See it all put together `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
@@ -63,11 +64,12 @@ Exceptions
 
 When arguments are invalid, raise ``InvalidParams``::
 
-    def add(x, y):
+    def find(**kwargs):
         try:
-            return x + y
-        except TypeError:
-            raise exceptions.InvalidParams('Type error')
+            firstname = kwargs['firstname']
+            lastname = kwargs['lastname']
+        except KeyError as e:
+            raise exceptions.InvalidParams(str(e))
 
 The blueprint will catch the exception and return the correct response:
 
