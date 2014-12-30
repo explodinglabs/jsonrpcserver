@@ -69,7 +69,7 @@ When arguments are invalid, raise ``InvalidParams``::
         except TypeError:
             raise exceptions.InvalidParams('Type error')
 
-The blueprint will catch the exception and return the correct response.
+The blueprint will catch the exception and return the correct response:
 
 .. code-block:: javascript
 

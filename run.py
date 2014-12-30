@@ -11,6 +11,7 @@ from jsonrpcserver import bp, dispatch, exceptions
 app = Flask(__name__)
 app.register_blueprint(bp)
 
+
 @app.route('/', methods=['POST'])
 def index():
     """Dispatch requests to the handling methods."""
@@ -19,7 +20,7 @@ def index():
 
 
 class HandleRequests:
-    """The methods that will carry out the requests."""
+    """Write methods to handle each request."""
 
     @staticmethod
     def add(x, y):
