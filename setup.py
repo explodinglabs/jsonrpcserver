@@ -26,7 +26,7 @@ setup(
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
     install_requires=['flask', 'jsonschema'],
-    tests_require=['nose', 'nose-cov', 'rednose', 'flask-testing'],
+    tests_require=['nose', 'rednose', 'nose-cov', 'flask-testing'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
