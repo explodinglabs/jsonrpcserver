@@ -6,8 +6,8 @@ Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
 
 The library has two features:
 
-#. A dispatcher, which validates incoming requests and then passes them on to
-   your own code to carry out the request.
+#. A dispatcher, which validates incoming requests and passes them on to your
+   own code to carry out the request.
 
 #. A `Flask blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to catch
    errors, ensuring we always respond with JSON-RPC.
@@ -42,12 +42,16 @@ Now go ahead and write the methods that will carry out the requests::
 
         @staticmethod
         def add(x, y):
+            """Add two numbers."""
             return x + y
 
 Keyword arguments are also acceptable::
 
-    def find(firstname='Foo', lastname='Bar', **kwargs):
-        middlename = kwargs['middlename']
+    def find(**kwargs):
+        """Find a customer."""
+
+        # middlename is optional parameter.
+        middlename = kwargs.get('middlename', None)
 
 .. important::
 
@@ -65,9 +69,9 @@ Exceptions
 When arguments are invalid, raise ``InvalidParams``::
 
     def find(**kwargs):
+        """Find a customer."""
         try:
-            firstname = kwargs['firstname']
-            lastname = kwargs['lastname']
+            name = kwargs['name']
         except KeyError as e:
             raise exceptions.InvalidParams(str(e))
 
@@ -78,17 +82,15 @@ to the client:
 
     {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Key error: 'firstname'"}, "id": 1}
 
-To return a custom error, raise ``ServerError``::
+To return a custom error, raise ``ServerError``, or `any of the other exceptions
+<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/jsonrpcserver/exceptions.py>`_
+that inherit from ``JsonRpcServerError``::
 
     try:
         db.session.commit()
     except SQLAlchemyError:
         raise exceptions.ServerError('Database error')
 
-Or write your own class that inherits from any of `these
-<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/jsonrpcserver/exceptions.py>`_.
-The blueprint will handle any exception that inherits from
-``JsonRpcServerError``.
 
 Logging
 ^^^^^^^
