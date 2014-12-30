@@ -1,7 +1,6 @@
 """dispatch_test.py"""
 # pylint:disable=missing-docstring,line-too-long,no-init,multiple-statements,too-many-public-methods,no-self-use,no-member
 
-import sys
 import json
 
 from flask import Flask
@@ -17,34 +16,43 @@ def index():
     return dispatch(HandleRequests)
 
 
-# RPC handling methods
-
 class HandleRequests:
+    """Handling methods"""
+    #pylint:disable=unused-argument
 
+    @staticmethod
     def method_only():
         pass
 
-    def one_positional(string): #pylint:disable=unused-argument
+    @staticmethod
+    def one_positional(string):
         pass
 
-    def two_positionals(one, two): #pylint:disable=unused-argument
+    @staticmethod
+    def two_positionals(one, two):
         pass
 
-    def just_args(*args): #pylint:disable=unused-argument
+    @staticmethod
+    def just_args(*args):
         pass
 
-    def just_kwargs(**kwargs): #pylint:disable=unused-argument
+    @staticmethod
+    def just_kwargs(**kwargs):
         pass
 
-    def positionals_with_args(one, two, *args): #pylint:disable=unused-argument
+    @staticmethod
+    def positionals_with_args(one, two, *args):
         pass
 
-    def positionals_with_kwargs(one, two, **kwargs): #pylint:disable=unused-argument
+    @staticmethod
+    def positionals_with_kwargs(one, two, **kwargs):
         pass
 
-    def positionals_with_args_and_kwargs(one, two, *args, **kwargs): #pylint:disable=unused-argument
+    @staticmethod
+    def positionals_with_args_and_kwargs(one, two, *args, **kwargs):
         pass
 
+    @staticmethod
     def add(number1, number2):
         """Add two numbers. Takes a list as args."""
 
@@ -54,6 +62,7 @@ class HandleRequests:
         except TypeError as e:
             raise exceptions.InvalidParams(str(e))
 
+    @staticmethod
     def uppercase(*args):
         """Uppercase a string"""
 
@@ -63,6 +72,7 @@ class HandleRequests:
         except KeyError as e:
             raise exceptions.InvalidParams(str(e))
 
+    @staticmethod
     def lookup_surname(**kwargs):
         """Lookup a surname from a firstname"""
 
@@ -101,12 +111,12 @@ class TestDispatch(TestCase):
 
         response = self.post_request(request_str)
 
-        self.assertEqual(expected_http_status_code, response.status_code)
-
         if expected_response_dict:
             self.assertEqual(expected_response_dict, response.json)
         else:
             self.assertEqual('', response.data.decode('utf-8'))
+
+        self.assertEqual(expected_http_status_code, response.status_code)
 
     # InvalidRequest
     def test_InvalidRequest(self):
