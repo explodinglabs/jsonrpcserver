@@ -15,14 +15,11 @@ methods for carrying out the requests:
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-    # Add a route to take requests.
     @app.route('/', methods=['POST'])
     def index():
         return dispatch(HandleRequests)
 
-    # Write methods to handle each request.
     class HandleRequests:
-
         @staticmethod
         def add(x, y):
             return x + y
