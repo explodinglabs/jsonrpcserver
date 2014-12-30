@@ -1,20 +1,17 @@
-#!/usr/bin/env python
-#pylint:disable=line-too-long
 """setup.py"""
+#pylint:disable=line-too-long
 
-import os
-
-from codecs import open
+from codecs import open as codecs_open
 
 try:
     from setuptools import setup
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup #pylint:disable=import-error,no-name-in-module
 
-with open('README.rst', 'r', 'utf-8') as f:
+with codecs_open('README.rst', 'r', 'utf-8') as f:
     readme = f.read()
 
-with open('HISTORY.rst', 'r', 'utf-8') as f:
+with codecs_open('HISTORY.rst', 'r', 'utf-8') as f:
     history = f.read()
 
 setup(
@@ -29,7 +26,7 @@ setup(
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
     install_requires=['flask', 'jsonschema'],
-    tests_require=['nose','nose-cov','rednose','flask-testing'],
+    tests_require=['nose', 'nose-cov', 'rednose', 'flask-testing'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
