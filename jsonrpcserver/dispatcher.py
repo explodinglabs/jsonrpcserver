@@ -6,7 +6,7 @@ import jsonschema
 import pkgutil
 from inspect import getcallargs
 
-from jsonrpcserver import rpc, exceptions, logger
+from jsonrpcserver import rpc, exceptions, request_log, response_log
 
 def convert_params_to_args_and_kwargs(params):
     """Takes the 'params' from the rpc request and converts it into args and
@@ -37,7 +37,7 @@ def dispatch(handler):
 
     # Get the request (this raises "400: Bad request" if fails)
     request = flask.request.get_json()
-    logger.info('--> '+json.dumps(request))
+    request_log.info(json.dumps(request))
 
     try:
 
@@ -102,7 +102,10 @@ def dispatch(handler):
         # Return, if a response was requested
         if 'id' in request:
             response = rpc.result(request.get('id', None), result)
-            logger.info('<-- 200 '+json.dumps(response))
+            response_log.info(json.dumps(response), extra={
+                'http_code': 200,
+                'http_reason': 'OK',
+            })
             return flask.jsonify(response)
         else:
             return flask.Response('')

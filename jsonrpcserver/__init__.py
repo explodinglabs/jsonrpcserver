@@ -1,12 +1,11 @@
 """__init__.py"""
 
-import logging
+from logging import getLogger, StreamHandler
 
 from flask import Blueprint
 
-logger = logging.getLogger('jsonrpcserver')
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.WARNING)
+request_log = getLogger('jsonrpcserver.request')
+response_log = getLogger('jsonrpcserver.response')
 
 bp = Blueprint('bp', __name__)
 

@@ -4,7 +4,7 @@ import flask
 from werkzeug.http import HTTP_STATUS_CODES
 from werkzeug.exceptions import default_exceptions
 
-from jsonrpcserver import exceptions, logger, bp, status
+from jsonrpcserver import exceptions, response_log, bp, status
 
 
 def flask_error_response(http_status_code, text):
@@ -13,7 +13,10 @@ def flask_error_response(http_status_code, text):
 
     response = flask.Response(text, mimetype='application/json')
     response.status_code = http_status_code
-    logger.info('<-- %d %s', http_status_code, text)
+    response_log.info(text, extra={
+        'http_code': response.status_code,
+        'http_reason': HTTP_STATUS_CODES[response.status_code]
+    })
     return response
 
 
