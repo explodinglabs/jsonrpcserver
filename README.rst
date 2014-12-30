@@ -7,8 +7,8 @@ jsonrpcserver
 Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
 <http://flask.pocoo.org/>`_ app.
 
-Simply register the blueprint to your app, then add a route to dispatch
-requests to your handling methods:
+Simply register the blueprint to your app, then add a route to carry out the
+requests:
 
 .. sourcecode:: python
 
