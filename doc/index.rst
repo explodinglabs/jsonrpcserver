@@ -30,7 +30,7 @@ Create a Flask app and register the blueprint::
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-Add a route to dispatch requests to the handling methods::
+Add a route to pass requests on to your handling methods::
 
     @app.route('/', methods=['POST'])
     def index():
@@ -49,13 +49,12 @@ Keyword arguments are also acceptable::
 
     def find(**kwargs):
         """Find a customer."""
-
-        # middlename is optional parameter.
+        # middlename is an optional parameter.
         middlename = kwargs.get('middlename', None)
 
 .. important::
 
-    Use either positional or keyword arguments, but not both in the same
+    Use either positional or keyword parameters, but not both in the same
     method. See `Parameter Structures
     <http://www.jsonrpc.org/specification#parameter_structures>`_ in the
     JSON-RPC specification.
