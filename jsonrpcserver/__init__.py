@@ -11,5 +11,4 @@ logger.setLevel(logging.WARNING)
 bp = Blueprint('bp', __name__)
 
 from jsonrpcserver import exceptions
-#from jsonrpcserver import blueprint
 from jsonrpcserver.dispatcher import dispatch
