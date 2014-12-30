@@ -82,14 +82,14 @@ to the client:
 
     {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Key error: 'firstname'"}, "id": 1}
 
-To return a custom error, raise ``ServerError``, or `any of the other exceptions
-<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/jsonrpcserver/exceptions.py>`_
-that inherit from ``JsonRpcServerError``::
+To return a custom error, raise ``ServerError``::
 
     try:
         db.session.commit()
     except SQLAlchemyError:
         raise exceptions.ServerError('Database error')
+
+The blueprint will take care of it:
 
 .. code-block:: javascript
 
