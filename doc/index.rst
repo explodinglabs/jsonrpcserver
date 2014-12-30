@@ -70,7 +70,8 @@ When arguments are invalid, raise ``InvalidParams``::
     def find(**kwargs):
         """Find a customer."""
         try:
-            name = kwargs['name']
+            firstname = kwargs['firstname']
+            lastname = kwargs['lastname']
         except KeyError as e:
             raise exceptions.InvalidParams(str(e))
 
