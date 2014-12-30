@@ -49,8 +49,7 @@ Keyword arguments are also acceptable::
 
     def find(**kwargs):
         """Find a customer."""
-        # middlename is an optional parameter.
-        middlename = kwargs.get('middlename', None)
+        name = kwargs.get('name', None)
 
 .. important::
 
@@ -70,6 +69,7 @@ When arguments are invalid, raise ``InvalidParams``::
     def find(**kwargs):
         """Find a customer."""
         try:
+            # Required parameters
             firstname = kwargs['firstname']
             lastname = kwargs['lastname']
         except KeyError as e:
@@ -82,7 +82,7 @@ to the client:
 
     {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Key error: 'firstname'"}, "id": 1}
 
-To return a custom error, raise ``ServerError``::
+To return a custom error in your app, raise ``ServerError``::
 
     try:
         db.session.commit()
