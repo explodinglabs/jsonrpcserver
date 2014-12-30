@@ -50,7 +50,7 @@ Keyword parameters are also acceptable::
     @staticmethod
     def find(**kwargs):
         """Find a customer."""
-        name = kwargs.get('name', None)
+        name = kwargs.get('name')
 
 .. important::
 
