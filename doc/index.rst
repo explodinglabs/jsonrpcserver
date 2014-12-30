@@ -70,20 +70,19 @@ When arguments are invalid, raise ``InvalidParams``::
     def find(**kwargs):
         """Find a customer."""
         try:
-            # Required parameters
             firstname = kwargs['firstname']
             lastname = kwargs['lastname']
         except KeyError as e:
             raise exceptions.InvalidParams(str(e))
 
-The blueprint will catch the exception, and return the correct error response
-to the client:
+The blueprint will catch the exception and return the correct error response to
+the client:
 
 .. code-block:: javascript
 
     {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Key error: 'firstname'"}, "id": 1}
 
-To return a custom error in your app, raise ``ServerError``::
+To notify the client of some other error, raise ``ServerError``::
 
     try:
         db.session.commit()
