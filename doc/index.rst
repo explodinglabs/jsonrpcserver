@@ -104,7 +104,7 @@ To give fine control, two loggers are used; ``request_log`` for requests and
 following shows how to output the ``request_log`` to stderr::
 
     from logging import StreamHandler, Formatter, INFO
-    from jsonrpcclient import request_log, response_log
+    from jsonrpcserver import request_log, response_log
 
     # Json messages are on the INFO log level.
     request_log.setLevel(INFO)
