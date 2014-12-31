@@ -108,6 +108,10 @@ def dispatch(handler):
             })
             return flask.jsonify(response)
         else:
+            response_log.info('', extra={
+                'http_code': 200,
+                'http_reason': 'OK',
+            })
             return flask.Response('')
 
     # Catch any raised exception (invalid request etc), add the request id
