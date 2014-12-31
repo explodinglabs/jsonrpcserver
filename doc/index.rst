@@ -99,11 +99,45 @@ The blueprint will take care of it:
 Logging
 ^^^^^^^
 
-To see the underlying messages going back and forth, set the logging level
-to INFO::
+To give fine control, two loggers are used; ``request_log`` for requests and
+``response_log`` for responses. These do nothing until they're set up. The
+following shows how to output the ``request_log`` to stderr::
 
-    import logging
-    logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
+    from logging import StreamHandler, Formatter, INFO
+    from jsonrpcclient import request_log, response_log
+
+    # Json messages are on the INFO log level.
+    request_log.setLevel(INFO)
+
+    # Add a stream handler to output to stderr.
+    request_handler = StreamHandler()
+    request_log.addHandler(request_handler)
+
+Do the same with ``response_log`` to see the responses::
+
+    response_log.setLevel(INFO)
+    response_handler = StreamHandler()
+    response_log.addHandler(response_handler)
+
+For better log entries, customize the log format::
+
+    # Set a custom request log format
+    request_format = Formatter(fmt='--> %(message)s')
+    request_handler.setFormatter(request_format)
+
+    # Set a custom response log format
+    response_format = Formatter(fmt='<-- %(http_code)d %(http_reason)s %(message)s')
+    response_handler.setFormatter(response_format)
+
+The response format has these extra fields:
+
+%(http_code)s
+    The HTTP status code received from the server, eg. *400*.
+
+%(http_reason)s
+    The description of the status code, eg. *"BAD REQUEST"*.
+
+
 
 Todo
 ----
