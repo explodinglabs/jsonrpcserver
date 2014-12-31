@@ -14,7 +14,7 @@ def flask_error_response(http_status_code, text):
     response.status_code = http_status_code
     response_log.info(text, extra={
         'http_code': response.status_code,
-        'http_reason': HTTP_STATUS_CODES[response.status_code]
+        'http_reason': HTTP_STATUS_CODES[response.status_code].upper()
     })
     return response
 
