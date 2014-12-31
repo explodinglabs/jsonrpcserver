@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+1.0.9 (2014-12-31)
+^^^^^^^^^^^^^^^^^^
+
+- Bugfix: Fixed a critical bug where the blueprint wasn't catching exceptions!
+- Logging has changed. See `Logging
+  <https://jsonrpcserver.readthedocs.org/#logging>`_.
+
 1.0.8 (2014-12-30)
 ^^^^^^^^^^^^^^^^^^
 
