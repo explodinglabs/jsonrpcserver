@@ -2,7 +2,6 @@
 
 import flask
 from werkzeug.http import HTTP_STATUS_CODES
-from werkzeug.exceptions import default_exceptions
 
 from jsonrpcserver import exceptions, response_log, bp, status
 
@@ -46,15 +45,3 @@ def server_error(e):
 
     return flask_error_response(
         e.code, str(exceptions.ServerError(HTTP_STATUS_CODES[e.code])))
-
-
-# Override flask internal error handlers, to always return as jsonrpc
-for code in default_exceptions.keys():
-
-    # Client errors should respond with jsonrpc "Invalid request" message
-    if status.is_http_client_error(code):
-        bp.app_errorhandler(code)(client_error)
-
-    # Everything else should respond with jsonrpc "Server error" message
-    else:
-        bp.app_errorhandler(code)(server_error)
