@@ -31,12 +31,18 @@ def convert_params_to_args_and_kwargs(params):
 
     return (args, kwargs)
 
-def dispatch(handler):
-    """Call a handler method"""
+def dispatch(request, handler):
+    """Call a handler method, based on the request.
+
+    request: A dict containing the JSON request data - recommended to pass
+        flask.Request.get_json() for this.
+
+    handler: Methods that carry out the requests.
+        Can be any object that containing methods, such as a class with static
+        methods, or a module. So long as we can call handler.method()
+    """
     #pylint:disable=star-args
 
-    # Get the request (this raises "400: Bad request" if fails)
-    request = flask.request.get_json()
     request_log.info(json.dumps(request))
 
     try:

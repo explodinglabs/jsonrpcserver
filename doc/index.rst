@@ -24,7 +24,7 @@ Usage
 
 Create a Flask app and register the blueprint::
 
-    from flask import Flask
+    from flask import Flask, request
     from jsonrpcserver import bp, dispatch, exceptions
 
     app = Flask(__name__)
@@ -34,7 +34,7 @@ Add a route to pass requests on to your handling methods::
 
     @app.route('/', methods=['POST'])
     def index():
-        return dispatch(HandleRequests)
+        return dispatch(request.get_json(), HandleRequests)
 
 Now go ahead and write the methods that will carry out the requests::
 
