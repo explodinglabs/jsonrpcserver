@@ -3,7 +3,7 @@
 An example app, demonstrating how to use the jsonrpcserver library.
 """
 
-from flask import Flask
+from flask import Flask, request
 
 from jsonrpcserver import bp, dispatch, exceptions
 
@@ -16,7 +16,7 @@ app.register_blueprint(bp)
 @app.route('/', methods=['POST'])
 def index():
     """Dispatch requests to the handling methods."""
-    return dispatch(HandleRequests)
+    return dispatch(request.get_json(), HandleRequests)
 
 
 # Write the methods that will carry out the requests.

@@ -3,7 +3,7 @@
 
 import json
 
-from flask import Flask
+from flask import Flask, request
 from flask.ext.testing import TestCase #pylint:disable=import-error,no-name-in-module
 
 from jsonrpcserver import bp, exceptions, dispatch, status
@@ -13,7 +13,7 @@ app.register_blueprint(bp)
 
 @app.route('/', methods=['POST'])
 def index():
-    return dispatch(HandleRequests)
+    return dispatch(request.get_json(), HandleRequests)
 
 
 class HandleRequests:
