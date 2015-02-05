@@ -39,9 +39,10 @@ def flask_error_response(http_status_code, text):
     return response
 
 
-
 def client_error(error):
     """Handle client errors caught by flask."""
+
+    code = error.code
 
     # Do they want a JSON response? (Check the accept header.) If so, handle it
     # by returning JSON-RPC. Otherwise, return the default werkzeug response.
@@ -52,17 +53,24 @@ def client_error(error):
     else:
         return default_exceptions[error.code]().get_response()
 
+
 def server_error(error):
     """Handle server errors caught by flask."""
+
+    # Note, in the case of a syntax error, we get a TypeError, in which case we
+    # should just use 500 Internal Server Error
+    code = 500
+    if hasattr(error, 'code'):
+        code = error.code
 
     # Do they want a JSON response? (Check the accept header.) If so, handle it
     # by returning JSON-RPC. Otherwise, return the default werkzeug response.
     if request.accept_mimetypes and \
             request_wants_json(request.accept_mimetypes):
-        return flask_error_response(error.code, \
-            str(exceptions.ServerError(HTTP_STATUS_CODES[error.code])))
+        return flask_error_response(code, \
+            str(exceptions.ServerError(HTTP_STATUS_CODES[code])))
     else:
-        return default_exceptions[error.code]().get_response()
+        return default_exceptions[code]().get_response()
 
 
 @bp.app_errorhandler(exceptions.JsonRpcServerError)
@@ -71,6 +79,7 @@ def custom_exception_error_handler(exc):
     jsonrpc format."""
 
     return flask_error_response(exc.http_status_code, str(exc))
+
 
 @bp.record_once
 def set_errorhandlers(setup_state):
@@ -91,11 +100,13 @@ def set_errorhandlers(setup_state):
         else:
             bp.app_errorhandler(code)(server_error)
 
+
 @bp.record_once
 def store_options(setup_state):
     """Keeps a record of the kwargs passed to register_blueprint, for later
     access"""
     bp.options = setup_state.options
+
 
 @bp.before_app_request
 def check_request():
