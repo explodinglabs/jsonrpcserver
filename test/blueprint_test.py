@@ -1,7 +1,7 @@
 """blueprint_test.py"""
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods
 
-from flask import Flask, abort
+from flask import Flask, abort, Response
 from flask.ext.testing import TestCase #pylint:disable=no-name-in-module,import-error
 from werkzeug.http import HTTP_STATUS_CODES
 
@@ -12,7 +12,7 @@ app.register_blueprint(bp)
 
 @app.route('/post-only', methods=['POST'])
 def post_only():
-    pass
+    return Response('ok')
 
 @app.route('/force-error', methods=['POST'])
 def force_error():
@@ -25,8 +25,12 @@ class TestBlueprint(TestCase):
         app.config['TESTING'] = True
         return app
 
+    def test_ok(self):
+        response = self.client.post('/post-only')
+        self.assert200(response)
+
     def test_wrong_http_method(self):
-        """Use GET instead of POST"""
+        # Using GET instead of POST
         response = self.client.get('/post-only')
         self.assert405(response)
         self.assertIn(('Content-Type', 'text/html'), list(response.headers))
