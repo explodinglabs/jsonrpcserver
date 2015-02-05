@@ -15,7 +15,7 @@ app.register_blueprint(bp)
 def post_only():
     pass
 
-@app.route('/force-error')
+@app.route('/force-error', methods=['POST'])
 def force_error():
     abort(status.HTTP_500_INTERNAL_ERROR)
 
@@ -26,42 +26,43 @@ class TestBlueprint(TestCase):
         app.config['TESTING'] = True
         return app
 
-    def test_get_method_not_allowed(self):
+    def test_wrong_http_method(self):
+        """Use GET instead of POST"""
         response = self.client.get('/post-only')
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assert405(response)
+        self.assertIn(('Content-Type', 'text/html'), list(response.headers))
+
+    def test_client_html(self):
+        response = self.client.post('/non-existant')
+        self.assert404(response)
+        self.assertIn(('Content-Type', 'text/html'), list(response.headers))
+
+    def test_client_json(self):
+        response = self.client.get('/non-existant', headers={'Accept': 'application/json-rpc'})
+        self.assert404(response)
+        self.assertIn(('Content-Type', 'application/json'), list(response.headers))
         self.assertEqual(
             {
                 'jsonrpc': '2.0',
                 'error': {
                     'code': status.JSONRPC_INVALID_REQUEST_CODE,
                     'message': status.JSONRPC_INVALID_REQUEST_TEXT,
-                    'data': HTTP_STATUS_CODES[status.HTTP_405_METHOD_NOT_ALLOWED]
+                    'data': HTTP_STATUS_CODES[status.HTTP_404_NOT_FOUND]
                 },
                 'id': None
             },
-            json.loads(response.data.decode('utf-8'))
+            response.json
         )
 
-    def test_route_not_found(self):
-        response = self.client.post('/non-existant')
-        self.assertEqual(status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE, response.status_code)
-        self.assertEqual(
-            {
-                'jsonrpc': '2.0',
-                'error': {
-                    'code': status.JSONRPC_METHOD_NOT_FOUND_CODE,
-                    'message': status.JSONRPC_METHOD_NOT_FOUND_TEXT,
-                    'data': HTTP_STATUS_CODES[status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE]
-                },
-                'id': None
-            },
-            json.loads(response.data.decode('utf-8'))
-        )
+    def test_server_html(self):
+        response = self.client.post('/force-error')
+        self.assert500(response)
+        self.assertIn(('Content-Type', 'text/html'), list(response.headers))
 
-    def test_server_error(self):
-        response = self.client.get('/force-error')
-
-        self.assertEqual(status.JSONRPC_SERVER_ERROR_HTTP_CODE, response.status_code)
+    def test_server_json(self):
+        response = self.client.post('/force-error', headers={'Accept': 'application/json'})
+        self.assert500(response)
+        self.assertIn(('Content-Type', 'application/json'), list(response.headers))
         self.assertEqual(
             {
                 'jsonrpc': '2.0',
@@ -71,5 +72,5 @@ class TestBlueprint(TestCase):
                 },
                 'id': None
             },
-            json.loads(response.data.decode('utf-8'))
+            response.json
         )

@@ -1,16 +1,36 @@
 """blueprint.py"""
 
-import flask
+from flask import Response, request, Flask, current_app
 from werkzeug.http import HTTP_STATUS_CODES
+from werkzeug.exceptions import default_exceptions
 
 from jsonrpcserver import exceptions, response_log, bp, status
+
+
+def request_wants_json(accept_mimetypes):
+    """Returns true if the Accept header is one of the acceptable options for
+    JSON-RPC. (either application/json-rpc, application/json or
+    application/jsonrpcrequest). Adapted from
+    http://flask.pocoo.org/snippets/45/"""
+
+    # Acceptable JSON-RPC mimetypes
+    # from http://jsonrpc.org/historical/json-rpc-over-http.html#http-header
+    jsonrpc_mimetypes = ['application/json-rpc', 'application/json',
+        'application/jsonrequest']
+
+    jsonrpc_and_html_mimetypes = list(jsonrpc_mimetypes)
+    jsonrpc_and_html_mimetypes.extend(['text/html'])
+
+    best = accept_mimetypes.best_match(jsonrpc_and_html_mimetypes)
+    return best in jsonrpc_mimetypes \
+        and accept_mimetypes[best] > accept_mimetypes['text/html']
 
 
 def flask_error_response(http_status_code, text):
     """This is a base function called by the others in this file. Takes an error
     message and status code, and returns a flask.Response object."""
 
-    response = flask.Response(text, mimetype='application/json')
+    response = Response(text, mimetype='application/json')
     response.status_code = http_status_code
     response_log.info(text, extra={
         'http_code': response.status_code,
@@ -20,28 +40,46 @@ def flask_error_response(http_status_code, text):
 
 
 @bp.app_errorhandler(exceptions.JsonRpcServerError)
-def handler_error(jsonrpcerror):
-    """Catch any exceptions raised by the library, and return as jsonrpc."""
+def custom_exception_error_handler(exc):
+    """Catch any JsonRpcServerError exception, and convert it to jsonrpc
+    format."""
 
-    return flask_error_response(
-        jsonrpcerror.http_status_code, str(jsonrpcerror))
+    return flask_error_response(exc.http_status_code, str(exc))
 
 
-def client_error(e):
+def client_error(error):
     """Handle client errors caught by flask."""
 
-    # For 404, raise MethodNotFound
-    if e.code == status.HTTP_404_NOT_FOUND:
+    # Do they want a JSON response? (Check the accept header.) If so, handle it
+    # by returning JSON-RPC. Otherwise, return the default werkzeug response.
+    if request.accept_mimetypes and request_wants_json(request.accept_mimetypes):
         return flask_error_response(
-            e.code, str(exceptions.MethodNotFound(HTTP_STATUS_CODES[e.code])))
+            error.code, str(exceptions.InvalidRequest(HTTP_STATUS_CODES[error.code])))
+    else:
+        return default_exceptions[error.code]().get_response()
 
-    else: # Anything else, raise InvalidRequest
-        return flask_error_response(
-            e.code, str(exceptions.InvalidRequest(HTTP_STATUS_CODES[e.code])))
-
-
-def server_error(e):
+def server_error(error):
     """Handle server errors caught by flask."""
 
-    return flask_error_response(
-        e.code, str(exceptions.ServerError(HTTP_STATUS_CODES[e.code])))
+    # Do they want a JSON response? (Check the accept header.) If so, handle it
+    # by returning JSON-RPC. Otherwise, return the default werkzeug response.
+    if request.accept_mimetypes and request_wants_json(request.accept_mimetypes):
+        return flask_error_response(
+            error.code, str(exceptions.ServerError(HTTP_STATUS_CODES[error.code])))
+    else:
+        return default_exceptions[error.code]().get_response()
+
+
+@bp.record_once
+def set_errorhandlers(setup_state):
+
+    # Override Flask's internal error handlers, to ensure we always return JSON-RPC
+    for code in default_exceptions.keys():
+
+        # Client errors (4xx) should respond with "Invalid request"
+        if status.is_http_client_error(code):
+            bp.app_errorhandler(code)(client_error)
+
+        # Everything else, respond with "Server error"
+        else:
+            bp.app_errorhandler(code)(server_error)
