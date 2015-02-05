@@ -1,7 +1,6 @@
 """blueprint_test.py"""
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods
 
-import json
 from flask import Flask, abort
 from flask.ext.testing import TestCase #pylint:disable=no-name-in-module,import-error
 from werkzeug.http import HTTP_STATUS_CODES
