@@ -90,3 +90,14 @@ def set_errorhandlers(setup_state):
         # Everything else, respond with "Server error"
         else:
             bp.app_errorhandler(code)(server_error)
+
+@bp.record_once
+def store_options(setup_state):
+    """Keeps a record of the kwargs passed to register_blueprint, for later
+    access"""
+    bp.options = setup_state.options
+
+@bp.before_app_request
+def check_request():
+    # Can check bp.options here.
+    pass
