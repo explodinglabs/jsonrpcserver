@@ -48,10 +48,10 @@ def client_error(error):
     # by returning JSON-RPC. Otherwise, return the default werkzeug response.
     if request.accept_mimetypes and \
             request_wants_json(request.accept_mimetypes):
-        return flask_error_response(error.code, \
-            str(exceptions.InvalidRequest(HTTP_STATUS_CODES[error.code])))
+        return flask_error_response(code, \
+            str(exceptions.InvalidRequest(HTTP_STATUS_CODES[code])))
     else:
-        return default_exceptions[error.code]().get_response()
+        return default_exceptions[code]().get_response()
 
 
 def server_error(error):
@@ -110,5 +110,5 @@ def store_options(setup_state):
 
 @bp.before_app_request
 def check_request():
-    # Can check bp.options here.
+    """Can check bp.options here."""
     pass
