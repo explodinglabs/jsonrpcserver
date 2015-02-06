@@ -1,6 +1,21 @@
 Release History
 ---------------
 
+1.0.10 (2014-12-31)
+^^^^^^^^^^^^^^^^^^
+
+- **Important:** The `dispatch` method now requires two arguments. Change
+  `dispatch(HandleRequests)` to `dispatch(flask.request.get_json(),
+  HandleRequests)`. This gives you the freedom to customize the way flask
+  retrieves the json request. For example, pass `force=True` to retrieve the json
+  body even if the request has the wrong Content-Type header.  See
+  `flask.Request.get_json
+  <http://flask.pocoo.org/docs/0.10/api/#flask.Request.get_json>`_.
+
+- Blueprint error handling improved. Now gives certain errors, such as Internal
+  Server Error, in the format requested by the client (in the Accept header).
+
+
 1.0.9 (2014-12-31)
 ^^^^^^^^^^^^^^^^^^
 
