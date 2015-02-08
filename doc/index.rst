@@ -34,7 +34,7 @@ Add a route to pass requests on to your handling methods::
 
     @app.route('/', methods=['POST'])
     def index():
-        return dispatch(request.get_json(), HandleRequests)
+        return dispatch(flask.request.get_json(), HandleRequests)
 
 Now go ahead and write the methods that will carry out the requests::
 
