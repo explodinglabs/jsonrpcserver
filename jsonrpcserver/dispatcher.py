@@ -1,11 +1,12 @@
 """dispatcher.py"""
 
 import json
+
 import flask
 import jsonschema
 import pkgutil
 from inspect import getcallargs
-
+from werkzeug.http import HTTP_STATUS_CODES
 from jsonrpcserver import rpc, exceptions, request_log, response_log
 
 def convert_params_to_args_and_kwargs(params):
@@ -43,7 +44,8 @@ def dispatch(request, handler):
     """
     #pylint:disable=star-args
 
-    request_log.info(json.dumps(request))
+    request_log.info(json.dumps(request), extra={'http_headers':
+        json.dumps(dict(flask.request.headers))})
 
     try:
 
@@ -105,20 +107,21 @@ def dispatch(request, handler):
                 raise exceptions.InvalidParams(str(e))
             result = method(*a, **k)
 
-        # Return, if a response was requested
+        # Return a response
+        response = None
         if 'id' in request:
-            response = rpc.result(request.get('id', None), result)
-            response_log.info(json.dumps(response), extra={
-                'http_code': 200,
-                'http_reason': 'OK',
-            })
-            return flask.jsonify(response)
+            response = flask.jsonify(rpc.result(request.get('id', None), result))
         else:
-            response_log.info('', extra={
-                'http_code': 200,
-                'http_reason': 'OK',
-            })
-            return flask.Response('')
+            response = flask.make_response('')
+            response.headers['Content-Length'] = 0
+            # Remove the Content-type header which flask adds
+            response.headers.pop('Content-Type', None)
+        response_log.info(str(response.get_data()), extra={
+            'http_code': response.status_code,
+            'http_reason': HTTP_STATUS_CODES[response.status_code].upper(),
+            'http_headers': json.dumps(dict(response.headers))
+        })
+        return response
 
     # Catch any raised exception (invalid request etc), add the request id
     except exceptions.JsonRpcServerError as e:
