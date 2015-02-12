@@ -129,6 +129,14 @@ For better log entries, customize the log format::
     response_format = Formatter(fmt='<-- %(http_code)d %(http_reason)s %(message)s')
     response_handler.setFormatter(response_format)
 
+The request format has these fields:
+
+%(http_headers)s
+    The full HTTP headers.
+
+%(message)s
+    The json request (the body).
+
 The response format has these extra fields:
 
 %(http_code)s
@@ -137,6 +145,11 @@ The response format has these extra fields:
 %(http_reason)s
     The description of the status code, eg. *"BAD REQUEST"*.
 
+%(http_headers)s
+    The full HTTP headers.
+
+%(message)s
+    The json response (the body).
 
 
 Todo
