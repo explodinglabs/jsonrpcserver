@@ -34,7 +34,7 @@ Add a route to pass requests on to your handling methods::
 
     @app.route('/', methods=['POST'])
     def index():
-        return dispatch(flask.request.get_json(), HandleRequests)
+        return dispatch(request.get_json(), HandleRequests)
 
 Now go ahead and write the methods that will carry out the requests::
 
@@ -59,11 +59,18 @@ Keyword parameters are also acceptable::
     <http://www.jsonrpc.org/specification#parameter_structures>`_ in the
     JSON-RPC specification.
 
-See it all put together `here
+Returning records from a database (using sqlalchemy)::
+
+    @staticmethod
+    def get_all():
+        books = Book.query.all()
+        return [{'Name': book.name, 'Author': book.author} for book in books]
+
+See a full example `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
 
 Exceptions
-^^^^^^^^^^
+~~~~~~~~~~
 
 When arguments are invalid, raise ``InvalidParams``::
 
@@ -97,7 +104,7 @@ The blueprint will take care of it:
 
 
 Logging
-^^^^^^^
+-------
 
 To give fine control, two loggers are used; ``request_log`` for requests and
 ``response_log`` for responses. These do nothing until they're set up. The
@@ -152,6 +159,48 @@ The response format has these extra fields:
     The json response (the body).
 
 
+Clients
+-------
+
+Python
+~~~~~~
+
+Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
+
+Ajax (jQuery)
+~~~~~~~~~~~~~
+
+.. code-block:: javascript
+
+  function flagRecord(row_id) {
+
+    $.ajax({
+      type: 'POST',
+      url: '/books/api',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      data: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'flag',
+        params: { id: row_id }
+    })
+    .done(function () {
+      alert('Ok');
+    })
+    .error(function(jqXHR, exception) {
+      if (jqXHR.status === 0) { alert('Connection error.'); }
+      else if (jqXHR.status == 404) { alert('File not found.'); }
+      else if (jqXHR.status == 500) { alert('Internal server error.'); }
+      else if (exception === 'parsererror') { alert('Parse error.'); }
+      else if (exception === 'timeout') { alert('Timeout error.'); }
+      else if (exception === 'abort') { alert('Aborted.'); }
+      else { alert('Uncaught Error: '+jqXHR.responseText); }
+    });
+
+  }
+
 Todo
 ----
 
@@ -164,5 +213,3 @@ Links
 * Repository: https://bitbucket.org/beau-barker/jsonrpcserver
 * Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
 
-If you need a client, try my `jsonrpcclient
-<https://jsonrpcclient.readthedocs.org/>`_ library.
