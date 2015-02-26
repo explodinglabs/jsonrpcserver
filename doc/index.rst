@@ -7,7 +7,7 @@ Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
 The library has two features:
 
 #. A dispatcher, which validates incoming requests and passes them on to your
-   own code to carry out the request.
+   own methods.
 
 #. A `Flask blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to catch
    errors, ensuring we always respond with JSON-RPC.
@@ -63,6 +63,7 @@ Returning records from a database (using sqlalchemy)::
 
     @staticmethod
     def get_all():
+        """Get a list of books"""
         books = Book.query.all()
         return [{'Name': book.name, 'Author': book.author} for book in books]
 
