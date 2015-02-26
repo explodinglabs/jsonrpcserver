@@ -12,7 +12,7 @@ Release History
 ^^^^^^^^^^^^^^^^^^^
 
 - Important! The `dispatch` method now requires two arguments. Change
-  `dispatch(HandleRequests)` to `dispatch(flask.request.get_json(),
+  `dispatch(HandleRequests)` to `dispatch(request.get_json(),
   HandleRequests)`. This gives you the freedom to customize the way flask
   retrieves the json request. For example, pass `force=True` to ignore the
   mimetype sent from the client. See `get_json
