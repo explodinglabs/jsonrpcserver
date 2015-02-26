@@ -67,7 +67,7 @@ Returning records from a database (using sqlalchemy)::
         books = Book.query.all()
         return [{'Name': book.name, 'Author': book.author} for book in books]
 
-See a full example `here
+See a full server example `here
 <https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
 
 Exceptions
@@ -174,8 +174,8 @@ Python
 
 Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
 
-Ajax (jQuery)
-~~~~~~~~~~~~~
+jQuery
+~~~~~~
 
 .. code-block:: javascript
 
