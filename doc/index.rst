@@ -76,11 +76,17 @@ When arguments are invalid, raise ``InvalidParams``::
 
     def find(**kwargs):
         """Find a customer."""
+
+        # Required params
         try:
             firstname = kwargs['firstname']
             lastname = kwargs['lastname']
         except KeyError as e:
             raise exceptions.InvalidParams(str(e))
+
+        # Optional params
+        age = kwargs.get('age')
+
 
 The blueprint will catch the exception and return the correct error response to
 the client:
