@@ -12,16 +12,10 @@ from jsonrpcserver import bp, dispatch, exceptions
 app = Flask(__name__)
 app.register_blueprint(bp)
 
-# Add a route to take requests.
-@app.route('/', methods=['POST'])
-def index():
-    """Dispatch requests to the handling methods."""
-    return dispatch(request.get_json(), HandleRequests)
 
-
-# Write the methods that will carry out the requests.
+# Write the methods that will carry out the JSON-RPC requests.
 class HandleRequests:
-    """Methods to handle each request."""
+    """Methods to handle each JSON-RPC request."""
 
     @staticmethod
     def add(x, y):
@@ -30,6 +24,13 @@ class HandleRequests:
             return x + y
         except TypeError:
             raise exceptions.InvalidParams('Type error')
+
+
+# Add a route to pass requests on to your methods
+@app.route('/', methods=['POST'])
+def index():
+    """Dispatch requests to the handling methods."""
+    return dispatch(request.get_json(), HandleRequests)
 
 
 if __name__ == '__main__':
