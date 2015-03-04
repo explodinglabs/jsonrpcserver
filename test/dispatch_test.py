@@ -184,7 +184,7 @@ class TestDispatch(TestCase):
             {'jsonrpc': '2.0', 'method': 'method_only', 'params': [1]}
         )
 
-    def test_method_only_one_arg(self):
+    def test_method_only_two_args(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
             {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'method_only() takes 0 positional arguments but 2 were given'}, 'id': None},
