@@ -20,7 +20,7 @@ the requests:
         def add(x, y):
             return x + y
 
-    @app.route('/books/api', methods=['POST'])
+    @app.route('/api', methods=['POST'])
     def index():
         return dispatch(request.get_json(), HandleRequests)
 
