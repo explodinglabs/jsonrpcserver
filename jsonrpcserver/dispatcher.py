@@ -18,16 +18,21 @@ def convert_params_to_args_and_kwargs(params):
         - args, eg. "params": [1, 2]
         - kwargs, eg. "params: {"foo": "bar"}
         - Both args and kwargs: [1, 2, {"foo": "bar"}]
+
+    .. versionchanged:: 1.0.12
+        No longer allows both args and kwargs, as per spec.
+
+    :param params: The arguments for the JSON-RPC method.
     """
 
     args = kwargs = None
 
+    # Params is a dict, ie. "params": {"foo": "bar"}
     if isinstance(params, dict):
         kwargs = params
 
+    # Params is a list, ie. "params": ["foo", "bar"]
     elif isinstance(params, list):
-        if isinstance(params[-1], dict):
-            kwargs = params.pop()
         args = params
 
     return (args, kwargs)
@@ -41,6 +46,9 @@ def dispatch(request, handler):
     handler: Methods that carry out the requests.
         Can be any object that containing methods, such as a class with static
         methods, or a module. So long as we can call handler.method()
+
+    ..versionchanged:: 1.0.12
+        Sending "'id': null" will be treated as if no response is required.
     """
     #pylint:disable=star-args
 
@@ -109,7 +117,7 @@ def dispatch(request, handler):
 
         # Return a response
         response = None
-        if 'id' in request:
+        if 'id' in request and request['id'] is not None:
             response = flask.jsonify(rpc.result(request.get('id', None), result))
         else:
             response = flask.make_response('')
