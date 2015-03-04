@@ -50,10 +50,10 @@ def dispatch(request, handler):
     ..versionchanged:: 1.0.12
         Sending "'id': null" will be treated as if no response is required.
     """
-    #pylint:disable=star-args
+    #pylint:disable=star-args,too-many-branches
 
-    request_log.info(json.dumps(request), extra={'http_headers':
-        json.dumps(dict(flask.request.headers))})
+    request_log.info(json.dumps(request), extra={
+        'http_headers': json.dumps(dict(flask.request.headers))})
 
     try:
 
@@ -118,7 +118,8 @@ def dispatch(request, handler):
         # Return a response
         response = None
         if 'id' in request and request['id'] is not None:
-            response = flask.jsonify(rpc.result(request.get('id', None), result))
+            response = flask.jsonify(
+                rpc.result(request.get('id', None), result))
         else:
             response = flask.make_response('')
             response.headers['Content-Length'] = 0
