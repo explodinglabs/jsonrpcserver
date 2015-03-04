@@ -30,13 +30,7 @@ Create a Flask app and register the blueprint::
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-Add a route to pass requests on to your handling methods::
-
-    @app.route('/', methods=['POST'])
-    def index():
-        return dispatch(request.get_json(), HandleRequests)
-
-Now go ahead and write the methods that will carry out the requests::
+Write the methods that will carry out the requests::
 
     class HandleRequests:
 
@@ -45,7 +39,13 @@ Now go ahead and write the methods that will carry out the requests::
             """Add two numbers."""
             return x + y
 
-Keyword parameters are also acceptable::
+Add a route to pass requests on to your methods::
+
+    @app.route('/', methods=['POST'])
+    def index():
+        return dispatch(request.get_json(), HandleRequests)
+
+In the JSON-RPC handling methods, keyword parameters are also acceptable::
 
     @staticmethod
     def find(**kwargs):
