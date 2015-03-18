@@ -179,34 +179,24 @@ jQuery
 
 .. code-block:: javascript
 
-  function flagRecord(row_id) {
-
-    $.ajax({
-      type: 'POST',
-      url: '/books/api',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
-      data: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'flag',
-        params: { id: row_id }
+  $.ajax({
+    type: 'POST',
+    url: '/api/books',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    data: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'get',
+      id: 1
     })
-    .done(function () {
-      alert('Ok');
-    })
-    .error(function(jqXHR, exception) {
-      if (jqXHR.status === 0) { alert('Connection error.'); }
-      else if (jqXHR.status == 404) { alert('File not found.'); }
-      else if (jqXHR.status == 500) { alert('Internal server error.'); }
-      else if (exception === 'parsererror') { alert('Parse error.'); }
-      else if (exception === 'timeout') { alert('Timeout error.'); }
-      else if (exception === 'abort') { alert('Aborted.'); }
-      else { alert('Uncaught Error: '+jqXHR.responseText); }
+  })
+  .done(function(data) {
+    $.each(data.result, function(key, value) {
+      $('#books').append(value);
     });
-
-  }
+  });
 
 Todo
 ----
