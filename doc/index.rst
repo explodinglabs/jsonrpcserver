@@ -215,4 +215,3 @@ Links
 * Package: https://pypi.python.org/pypi/jsonrpcserver
 * Repository: https://bitbucket.org/beau-barker/jsonrpcserver
 * Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
-
