@@ -151,7 +151,7 @@ The request format has these fields:
 %(message)s
     The json request (the body).
 
-The response format has these extra fields:
+The response format has these fields:
 
 %(http_code)s
     The HTTP status code received from the server, eg. *400*.
