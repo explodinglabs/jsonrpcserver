@@ -174,6 +174,13 @@ Python
 
 Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
 
+.. sourcecode:: python
+
+    >>> from jsonrpcclient import Server
+    >>> server = Server('http://example.com/api')
+    >>> server.request('add', 2, 3)
+    5
+
 jQuery
 ~~~~~~
 
@@ -181,21 +188,20 @@ jQuery
 
   $.ajax({
     type: 'POST',
-    url: '/api/books',
+    url: '/api',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
     },
     data: JSON.stringify({
       jsonrpc: '2.0',
-      method: 'get',
+      method: 'add',
+      params: [2, 3],
       id: 1
     })
   })
   .done(function(data) {
-    $.each(data.result, function(key, value) {
-      $('#books').append(value);
-    });
+    $('#answer').html(data.result);
   });
 
 Todo
