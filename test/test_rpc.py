@@ -1,7 +1,7 @@
-"""rpc_test.py"""
+"""test_rpc.py"""
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods
 
-from unittest import TestCase
+from unittest import TestCase, main
 
 from jsonrpcserver import rpc
 
@@ -65,3 +65,6 @@ class TestRpc(TestCase):
             {"jsonrpc": "2.0", "error": {"code": -32000, "message": "There was an error", "data": {"Foo": "Bar", "Answer": 42}}, "id": 1},
             rpc.error(1, -32000, 'There was an error', {'Foo': 'Bar', 'Answer': 42})
         )
+
+if __name__ == '__main__':
+    main()
