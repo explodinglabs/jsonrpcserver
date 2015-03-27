@@ -1,5 +1,5 @@
 """test_dispatcher.py"""
-#pylint:disable=missing-docstring,line-too-long,too-many-public-methods
+#pylint:disable=missing-docstring,line-too-long,too-many-public-methods,no-init
 
 from unittest import main
 import json
@@ -97,13 +97,12 @@ class TestDispatch(TestCase):
         positional_with_args_and_kwargs(one, two, *args, **kwargs)
     """
 
-    def create_app(self):
-
+    @staticmethod
+    def create_app():
         app.config['TESTING'] = True
         return app
 
     def post_request(self, request_str):
-
         return self.client.post(
             '/', headers={'content-type': 'application/json'}, \
             data=json.dumps(request_str)) #pylint:disable=maybe-no-member

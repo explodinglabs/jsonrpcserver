@@ -85,7 +85,8 @@ class TestBlueprint(TestCase):
             response.json
         )
 
-    def test_custom_exception_error_handler(self):
+    @staticmethod
+    def test_custom_exception_error_handler():
         blueprint.custom_exception_error_handler(InvalidParams('Test'))
 
 if __name__ == '__main__':
