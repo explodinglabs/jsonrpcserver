@@ -1,27 +1,34 @@
-"""blueprint_test.py"""
-#pylint:disable=missing-docstring,line-too-long,too-many-public-methods
+"""test_blueprint.py"""
+#pylint:disable=missing-docstring,line-too-long,too-many-public-methods,no-init
+
+from unittest import main
 
 from flask import Flask, abort, Response
 from flask.ext.testing import TestCase #pylint:disable=no-name-in-module,import-error
 from werkzeug.http import HTTP_STATUS_CODES
 
-from jsonrpcserver import bp, status
+from jsonrpcserver import blueprint, bp, status
+from jsonrpcserver.exceptions import InvalidParams
+
 
 app = Flask(__name__)
 app.register_blueprint(bp)
+
 
 @app.route('/post-only', methods=['POST'])
 def post_only():
     return Response('ok')
 
+
 @app.route('/force-error', methods=['POST'])
 def force_error():
     abort(status.HTTP_500_INTERNAL_ERROR)
 
-class TestBlueprint(TestCase):
-    #pylint:disable=no-init
 
-    def create_app(self): #pylint:disable=no-self-use
+class TestBlueprint(TestCase):
+
+    @staticmethod
+    def create_app():
         app.config['TESTING'] = True
         return app
 
@@ -77,3 +84,9 @@ class TestBlueprint(TestCase):
             },
             response.json
         )
+
+    def test_custom_exception_error_handler(self):
+        blueprint.custom_exception_error_handler(InvalidParams('Test'))
+
+if __name__ == '__main__':
+    main()

@@ -1,6 +1,7 @@
-"""dispatch_test.py"""
-# pylint:disable=missing-docstring,line-too-long,no-init,multiple-statements,too-many-public-methods,no-self-use,no-member
+"""test_dispatcher.py"""
+#pylint:disable=missing-docstring,line-too-long,too-many-public-methods
 
+from unittest import main
 import json
 
 from flask import Flask, request
@@ -486,3 +487,6 @@ class TestDispatch(TestCase):
             {'jsonrpc': '2.0', 'result': 'Smith', 'id': 1},
             {'jsonrpc': '2.0', 'method': 'lookup_surname', 'params': {'firstname': 'John'}, 'id': 1}
         )
+
+if __name__ == '__main__':
+    main()
