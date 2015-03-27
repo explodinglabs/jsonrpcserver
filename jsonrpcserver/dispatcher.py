@@ -109,12 +109,8 @@ def dispatch(request, handler):
             result = method(**k)
 
 #        if a and k: # should never happen
-#            raise exceptions.InvalidParams('Using both positional and keyword arguments is not supported by the JSON-RPC protocol')
-#            try:
-#                getcallargs(method, *a, **k)
-#            except TypeError as e:
-#                raise exceptions.InvalidParams(str(e))
-#            result = method(*a, **k)
+#            raise exceptions.InvalidParams('Using both positional and keyword \
+#            arguments is not supported by the JSON-RPC protocol')
 
         # Return a response
         response = None
