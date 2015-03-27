@@ -107,15 +107,12 @@ class InvalidParams(JsonRpcServerError):
             status.JSONRPC_INVALID_PARAMS_TEXT, params, request_id)
 
 class ServerError(JsonRpcServerError):
-    """From the specs: 'Internal JSON-RPC error.'
-
-    ServerError is a generic response when there's an error on the server end.
-    Apps should subclass it.
-    """
+    """A generic error raised when there's an app-specific error, such as a
+    database connection failure."""
 
     def __init__(
-            self, message=status.JSONRPC_SERVER_ERROR_TEXT, \
-            data=None, request_id=None):
+            self, message=status.JSONRPC_SERVER_ERROR_TEXT, data=None, \
+            request_id=None):
         super().__init__(
             status.JSONRPC_SERVER_ERROR_HTTP_CODE, \
             status.JSONRPC_SERVER_ERROR_CODE, \
