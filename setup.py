@@ -1,6 +1,8 @@
 """setup.py"""
 #pylint:disable=line-too-long
 
+import sys
+from setuptools.command.test import test as TestCommand
 from codecs import open as codecs_open
 
 try:
@@ -14,10 +16,26 @@ with codecs_open('README.rst', 'r', 'utf-8') as f:
 with codecs_open('HISTORY.rst', 'r', 'utf-8') as f:
     history = f.read()
 
+class Tox(TestCommand):
+    user_options = [('tox-args=', 'a', "Arguments to pass to tox")]
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.tox_args = '-v'
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import tox
+        import shlex
+        errno = tox.cmdline(args=shlex.split(self.tox_args))
+        sys.exit(errno)
+
 setup(
     name='jsonrpcserver',
     version='1.0.12',
-    description='JSON-RPC 2.0 server library for Python 3.',
+    description='JSON-RPC 2.0 server library.',
     long_description=readme + '\n\n' + history,
     author='Beau Barker',
     author_email='beauinmelbourne@gmail.com',
@@ -26,10 +44,10 @@ setup(
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
     install_requires=['flask', 'jsonschema'],
-    tests_require=['nose', 'rednose', 'nose-cov', 'flask-testing'],
+    tests_require=['tox'],
+    cmdclass = {'test': Tox},
     classifiers=[
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
         'Development Status :: 4 - Beta',
         'Environment :: Other Environment',
         'Intended Audience :: Developers',

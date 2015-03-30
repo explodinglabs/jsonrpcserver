@@ -107,16 +107,19 @@ class TestDispatch(TestCase):
             '/', headers={'content-type': 'application/json'}, \
             data=json.dumps(request_str)) #pylint:disable=maybe-no-member
 
-    def post(self, expected_http_status_code, expected_response_dict, request_str):
+    def post(self, expected_http_status_code, expected_response_text, request_str):
 
         response = self.post_request(request_str)
 
-        if expected_response_dict:
-            self.assertEqual(expected_response_dict, response.json)
+        self.assertEqual(expected_http_status_code, response.status_code)
+
+        if expected_response_text:
+            if expected_http_status_code == 200:
+                self.assertEqual(expected_response_text, response.json['result'])
+            else:
+                self.assertEqual(expected_response_text, response.json['error']['message'])
         else:
             self.assertEqual('', response.data.decode('utf-8'))
-
-        self.assertEqual(expected_http_status_code, response.status_code)
 
     # Misc
 
@@ -124,21 +127,21 @@ class TestDispatch(TestCase):
         """jsonrpc is a required property"""
         self.post(
             status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_REQUEST_CODE, 'message': 'Invalid request', 'data': "'jsonrpc' is a required property"}, 'id': None},
+            status.JSONRPC_INVALID_REQUEST_TEXT,
             {'jsonrp': '2.0', 'method': 'get'},
         )
 
     def test_method_not_found(self):
         self.post(
             status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_METHOD_NOT_FOUND_CODE, 'message': 'Method not found', 'data': 'get'}, 'id': None},
+            'Method not found',
             {'jsonrpc': '2.0', 'method': 'get'},
         )
 
     def test_trying_to_call_magic_method(self):
         self.post(
             status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_METHOD_NOT_FOUND_CODE, 'message': 'Method not found', 'data': '__init__'}, 'id': None},
+            'Method not found',
             {'jsonrpc': '2.0', 'method': '__init__'},
         )
 
@@ -146,7 +149,7 @@ class TestDispatch(TestCase):
         """Using 'params': null is not valid under the schema."""
         self.post(
             status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_REQUEST_CODE, 'message': status.JSONRPC_INVALID_REQUEST_TEXT, 'data': 'None is not valid under any of the given schemas'}, 'id': None},
+            status.JSONRPC_INVALID_REQUEST_TEXT,
             {'jsonrpc': '2.0', 'method': 'method_only', 'params': None},
         )
 
@@ -180,28 +183,28 @@ class TestDispatch(TestCase):
     def test_method_only_one_arg(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'method_only() takes 0 positional arguments but 1 was given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'method_only', 'params': [1]}
         )
 
     def test_method_only_two_args(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'method_only() takes 0 positional arguments but 2 were given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'method_only', 'params': [1, 2]}
         )
 
     def test_method_only_kwargs(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'method_only() got an unexpected keyword argument \'foo\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'method_only', 'params': {'foo': 'bar'}}
         )
 
     def test_method_only_both(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'method_only() takes 0 positional arguments but 3 were given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'method_only', 'params': [1, 2, {'foo': 'bar'}]}
         )
 
@@ -210,7 +213,7 @@ class TestDispatch(TestCase):
     def test_one_positional_params_omitted(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'one_positional() missing 1 required positional argument: \'string\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'one_positional'},
         )
 
@@ -224,21 +227,21 @@ class TestDispatch(TestCase):
     def test_one_positional_two_args(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'one_positional() takes 1 positional argument but 2 were given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1, 2]},
         )
 
     def test_one_positional_kwargs(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'one_positional() got an unexpected keyword argument \'foo\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'one_positional', 'params': {'foo': 'bar'}},
         )
 
     def test_one_positional_both(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'one_positional() takes 1 positional argument but 3 were given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1, 2, {'foo': 'bar'}]},
         )
 
@@ -254,21 +257,21 @@ class TestDispatch(TestCase):
     def test_two_positionals_params_omitted(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'two_positionals() missing 2 required positional arguments: \'one\' and \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'two_positionals'},
         )
 
     def test_two_positionals_one_arg(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'two_positionals() missing 1 required positional argument: \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1]},
         )
 
     def test_two_positionals_kwargs(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'two_positionals() got an unexpected keyword argument \'foo\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'two_positionals', 'params': {'foo': 'bar'}},
         )
 
@@ -305,7 +308,7 @@ class TestDispatch(TestCase):
     def test_just_args_kwargs(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'just_args() got an unexpected keyword argument \'foo\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'just_args', 'params': {'foo': 'bar'}},
         )
 
@@ -335,7 +338,7 @@ class TestDispatch(TestCase):
     def test_just_kwargs_one_arg(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'just_kwargs() takes 0 positional arguments but 1 was given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': [1]},
         )
 
@@ -349,7 +352,7 @@ class TestDispatch(TestCase):
     def test_just_kwargs_both(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'just_kwargs() takes 0 positional arguments but 2 were given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': [1, {'foo': 'bar'}]},
         )
 
@@ -365,21 +368,21 @@ class TestDispatch(TestCase):
     def test_positionals_with_args_params_omitted(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_args() missing 2 required positional arguments: \'one\' and \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_args'},
         )
 
     def test_positionals_with_args_one_arg(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_args() missing 1 required positional argument: \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': [1]},
         )
 
     def test_positionals_with_args_kwargs(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_args() got an unexpected keyword argument \'foo\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': {'foo': 'bar'}},
         )
 
@@ -395,28 +398,28 @@ class TestDispatch(TestCase):
     def test_positionals_with_kwargs_ok(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_kwargs() takes 2 positional arguments but 3 were given'}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]}
         )
 
     def test_positionals_with_kwargs_params_omitted(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_kwargs() missing 2 required positional arguments: \'one\' and \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs'},
         )
 
     def test_positionals_with_kwargs_one_arg(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_kwargs() missing 1 required positional argument: \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': [1]},
         )
 
     def test_positionals_with_kwargs_kwargs(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_kwargs() missing 2 required positional arguments: \'one\' and \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': {'foo': 'bar'}},
         )
 
@@ -439,21 +442,21 @@ class TestDispatch(TestCase):
     def test_positionals_with_args_and_kwargs_params_omitted(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_args_and_kwargs() missing 2 required positional arguments: \'one\' and \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs'},
         )
 
     def test_positionals_with_args_and_kwargs_one_arg(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_args_and_kwargs() missing 1 required positional argument: \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': [1]},
         )
 
     def test_positionals_with_args_and_kwargs_kwargs(self):
         self.post(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            {'jsonrpc': '2.0', 'error': {'code': status.JSONRPC_INVALID_PARAMS_CODE, 'message': status.JSONRPC_INVALID_PARAMS_TEXT, 'data': 'positionals_with_args_and_kwargs() missing 2 required positional arguments: \'one\' and \'two\''}, 'id': None},
+            status.JSONRPC_INVALID_PARAMS_TEXT,
             {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': {'foo': 'bar'}},
         )
 
@@ -469,21 +472,21 @@ class TestDispatch(TestCase):
     def test_add_two_numbers(self):
         self.post(
             status.HTTP_200_OK,
-            {'jsonrpc': '2.0', 'result': 3, 'id': 1},
+            3,
             {'jsonrpc': '2.0', 'method': 'add', 'params': [1, 2], 'id': 1}
         )
 
     def test_uppercase(self):
         self.post(
             status.HTTP_200_OK,
-            {'jsonrpc': '2.0', 'result': 'TEST', 'id': 1},
+            'TEST',
             {'jsonrpc': '2.0', 'method': 'uppercase', 'params': ['test'], 'id': 1}
         )
 
     def test_lookup_surname(self):
         self.post(
             status.HTTP_200_OK,
-            {'jsonrpc': '2.0', 'result': 'Smith', 'id': 1},
+            'Smith',
             {'jsonrpc': '2.0', 'method': 'lookup_surname', 'params': {'firstname': 'John'}, 'id': 1}
         )
 

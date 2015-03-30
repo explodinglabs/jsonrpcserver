@@ -50,7 +50,7 @@ def dispatch(request, handler):
     ..versionchanged:: 1.0.12
         Sending "'id': null" will be treated as if no response is required.
     """
-    #pylint:disable=star-args,too-many-branches
+    #pylint:disable=too-many-branches
 
     request_log.info(json.dumps(request), extra={
         'http_headers': json.dumps(dict(flask.request.headers))})
