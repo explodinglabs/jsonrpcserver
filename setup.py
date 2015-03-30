@@ -34,7 +34,7 @@ class Tox(TestCommand):
 
 setup(
     name='jsonrpcserver',
-    version='1.0.12',
+    version='1.0.13',
     description='JSON-RPC 2.0 server library.',
     long_description=readme + '\n\n' + history,
     author='Beau Barker',
