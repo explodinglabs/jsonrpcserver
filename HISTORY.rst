@@ -1,6 +1,11 @@
 Release History
 ---------------
 
+1.0.13 (2015-03-30)
+^^^^^^^^^^^^^^^^^^^
+
+- Minor adjustments for compatibility with older Python versions.
+
 1.0.12 (2015-03-04)
 ^^^^^^^^^^^^^^^^^^^
 
