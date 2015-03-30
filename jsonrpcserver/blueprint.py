@@ -85,11 +85,10 @@ def custom_exception_error_handler(exc):
 
 
 @bp.record_once
-def set_errorhandlers(setup_state):
+def set_errorhandlers(dummy):
     """Set the errorhandlers for standard HTTP errors like 404. This is so we
     can return the error in JSON-RPC format (if they've asked for json in the
     Accept header)"""
-    #pylint:disable=unused-argument
 
     # Override Flask's internal error handlers, to ensure we always return
     # JSON-RPC
