@@ -1,4 +1,4 @@
-"""run.py
+"""example.py
 
 An example app, demonstrating how to use the jsonrpcserver library.
 """
