@@ -68,7 +68,7 @@ Returning records from a database (using sqlalchemy)::
         return [{'Name': book.name, 'Author': book.author} for book in books]
 
 See a full server example `here
-<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/run.py>`_.
+<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/example.py>`_.
 
 Exceptions
 ~~~~~~~~~~
