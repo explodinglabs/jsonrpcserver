@@ -51,16 +51,8 @@ class ParseError(JsonRpcServerError):
             status.JSONRPC_PARSE_ERROR_TEXT)
 
 class InvalidRequest(JsonRpcServerError):
-    """From the specs: 'The JSON sent is not a valid Request object.'
-
-    InvalidRequest is raised in two situations:
-
-    1. When the request doesn't validate against json-rpc schema. In this case
-    it gives the reason as a string, chosen by the jsonschema package as the
-    best match.
-
-    2. When flask gets a client error such as 404. In this case the reason is
-    given as the HTTP status code name, such as "File not found".
+    """From the specs: 'The JSON sent is not a valid Request object.' Raised
+    when the request doesn't validate against json-rpc schema.
 
     string @reason: The reason the request is invalid, placed in the data field.
     """
