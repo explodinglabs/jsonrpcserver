@@ -32,22 +32,18 @@ Create a Flask app and register the blueprint::
 
 Write the methods that will carry out the requests::
 
-    class HandleRequests:
-
-        @staticmethod
-        def add(x, y):
-            """Add two numbers."""
-            return x + y
+    def add(x, y):
+        """Add two numbers."""
+        return x + y
 
 Add a route to pass requests on to your methods::
 
     @app.route('/', methods=['POST'])
     def index():
-        return dispatch(request.get_json(), HandleRequests)
+        return dispatch(request.get_json())
 
 In the JSON-RPC handling methods, keyword parameters are also acceptable::
 
-    @staticmethod
     def find(**kwargs):
         """Find a customer."""
         name = kwargs.get('name')
@@ -61,7 +57,6 @@ In the JSON-RPC handling methods, keyword parameters are also acceptable::
 
 Returning records from a database (using sqlalchemy)::
 
-    @staticmethod
     def get_all():
         """Get a list of books"""
         books = Book.query.all()
@@ -180,6 +175,14 @@ Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
     >>> server = Server('http://example.com/api')
     >>> server.request('add', 2, 3)
     5
+
+
+curl
+~~~~
+
+.. code-block:: sh
+
+    $ curl -X POST -H 'Content-type: application/json' -d '{"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 1}' http://localhost:5000/
 
 jQuery
 ~~~~~~
