@@ -1,13 +1,11 @@
 """test_dispatcher.py"""
-#pylint:disable=missing-docstring,line-too-long,too-many-public-methods,no-init
+#pylint:disable=missing-docstring,line-too-long,too-many-public-methods,no-init,unused-argument
 
 from unittest import main
-import json
 
 from flask import Flask, request
-from flask.ext.testing import TestCase #pylint:disable=import-error,no-name-in-module
-
-from jsonrpcserver import bp, exceptions, dispatch, status
+from flask.ext.testing import TestCase
+from jsonrpcserver import bp, exceptions, dispatch
 
 app = Flask(__name__)
 app.register_blueprint(bp)
@@ -17,9 +15,6 @@ class HandleRequests:
     @staticmethod
     def get_5():
         return 5
-
-def module_level_function():
-    return 5
 
 def method_only():
     pass
@@ -93,34 +88,30 @@ class TestDispatch(TestCase):
         self.assert200(response)
         self.assertEqual(expected_result, response.json['result'])
 
-    def assertErrorEquals(self, expected_status, expected_message, response):
-        self.assertStatus(expected_status, response)
-        self.assertEqual(expected_error_message, response.json['error']['message'])
-
     # Misc
 
     def test_missing_jsonrpc_property(self):
         """jsonrpc is a required property"""
         with self.assertRaises(exceptions.InvalidRequest):
-            dispatch({'jsonrp': '2.0', 'method': 'get'}),
+            dispatch({'jsonrp': '2.0', 'method': 'get'})
 
     def test_method_not_found(self):
         with self.assertRaises(exceptions.MethodNotFound):
-            dispatch({'jsonrpc': '2.0', 'method': 'get'}),
+            dispatch({'jsonrpc': '2.0', 'method': 'get'})
 
     def test_trying_to_call_magic_method(self):
         with self.assertRaises(exceptions.MethodNotFound):
-            dispatch({'jsonrpc': '2.0', 'method': '__init__'}),
+            dispatch({'jsonrpc': '2.0', 'method': '__init__'})
 
     def test_params_null(self):
         """Using 'params': null is not valid under the schema."""
         with self.assertRaises(exceptions.InvalidRequest):
-            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': None}),
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': None})
 
     def test_id_null(self):
         """Using 'id': null *is* valid under the schema."""
         self.assertJust200(
-            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'id': None}),
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'id': None})
         )
 
     # InvalidParams - this requires lots of testing because there are many ways
@@ -135,7 +126,7 @@ class TestDispatch(TestCase):
 
     def test_method_only_params_empty(self):
         self.assertJust200(
-            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': []}),
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': []})
         )
 
     def test_method_only_one_arg(self):
@@ -158,7 +149,7 @@ class TestDispatch(TestCase):
 
     def test_one_positional_params_omitted(self):
         with self.assertRaises(exceptions.InvalidParams):
-            dispatch({'jsonrpc': '2.0', 'method': 'one_positional'}),
+            dispatch({'jsonrpc': '2.0', 'method': 'one_positional'})
 
     def test_one_positional_one_arg(self):
         self.assertJust200(
@@ -220,7 +211,7 @@ class TestDispatch(TestCase):
 
     def test_just_args_kwargs(self):
         with self.assertRaises(exceptions.InvalidParams):
-            response = dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': {'foo': 'bar'}})
+            dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': {'foo': 'bar'}})
 
     def test_just_args_both(self):
         self.assertJust200(
