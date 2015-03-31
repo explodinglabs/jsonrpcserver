@@ -52,7 +52,7 @@ def dispatch(request, handler=None):
 
     ..versionchanged:: 1.0.12
         Sending "'id': null" will be treated as if no response is required.
-    ..versionchanged:: 1.0.13
+    ..versionchanged:: 1.1.1
         Removed all flask code.
     """
     #pylint:disable=too-many-branches
