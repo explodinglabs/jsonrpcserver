@@ -1,7 +1,5 @@
 """rpc.py"""
 
-from collections import OrderedDict
-
 def result(request_id, data):
     """Success response.
 
@@ -9,11 +7,11 @@ def result(request_id, data):
     and error. See http://www.jsonrpc.org/specification#response_object
     """
 
-    return OrderedDict([
-        ('jsonrpc', '2.0'),
-        ('result', data),
-        ('id', request_id)
-    ])
+    return {
+        'jsonrpc': '2.0',
+        'result': data,
+        'id': request_id
+    }
 
 def error(request_id, code, message, data=None):
     """Error response
@@ -22,19 +20,19 @@ def error(request_id, code, message, data=None):
     and error. See http://www.jsonrpc.org/specification#response_object
     """
 
-    e = OrderedDict([
-        ('code', code),
-        ('message', message)
-    ])
+    e = {
+        'code': code,
+        'message': message
+    }
 
     # Data is optional in the response.
     if data:
-        e.update(OrderedDict([
-            ('data', data)
-        ]))
+        e.update({
+            'data': data
+        })
 
-    return OrderedDict([
-        ('jsonrpc', '2.0'),
-        ('error', e),
-        ('id', request_id)
-    ])
+    return {
+        'jsonrpc': '2.0',
+        'error': e,
+        'id': request_id
+    }
