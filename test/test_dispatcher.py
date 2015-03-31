@@ -3,7 +3,8 @@
 
 from unittest import TestCase, main
 
-from jsonrpcserver import dispatch, exceptions
+from jsonrpcserver.dispatcher import dispatch, add_rpc_method, register_rpc_method
+from jsonrpcserver import exceptions
 from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
     JSONRPC_INVALID_PARAMS_HTTP_CODE, JSONRPC_METHOD_NOT_FOUND_HTTP_CODE, \
     JSONRPC_METHOD_NOT_FOUND_TEXT, JSONRPC_INVALID_REQUEST_TEXT, \
@@ -12,33 +13,38 @@ from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
 class HandleRequests:
     """Handling methods"""
     @staticmethod
+    @register_rpc_method
     def get_5():
         return 5
 
-def method_only():
-    pass
+add_rpc_method('method_only', lambda : None)
+add_rpc_method('one_positional', lambda string: None)
 
-def one_positional(string):
-    pass
-
+@register_rpc_method
 def two_positionals(one, two):
     pass
 
+@register_rpc_method
 def just_args(*args):
     pass
 
+@register_rpc_method
 def just_kwargs(**kwargs):
     pass
 
+@register_rpc_method
 def positionals_with_args(one, two, *args):
     pass
 
+@register_rpc_method
 def positionals_with_kwargs(one, two, **kwargs):
     pass
 
+@register_rpc_method
 def positionals_with_args_and_kwargs(one, two, *args, **kwargs):
     pass
 
+@register_rpc_method
 def add(number1, number2):
     """Add two numbers. Takes a list as args."""
     try:
@@ -46,6 +52,7 @@ def add(number1, number2):
     except TypeError as e:
         raise exceptions.InvalidParams(str(e))
 
+@register_rpc_method
 def uppercase(*args):
     """Uppercase a string"""
     try:
@@ -53,6 +60,7 @@ def uppercase(*args):
     except KeyError as e:
         raise exceptions.InvalidParams(str(e))
 
+@register_rpc_method
 def lookup_surname(**kwargs):
     """Lookup a surname from a firstname"""
     try:
@@ -424,7 +432,7 @@ class TestDispatch(TestCase):
     def test_passing_handling_object(self):
         self.assertResultEquals(
             5,
-            dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1}, HandleRequests)
+            dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1})
         )
 
 if __name__ == '__main__':
