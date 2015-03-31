@@ -1,6 +1,11 @@
 Release History
 ---------------
 
+1.1.1 (2015-03-31)
+^^^^^^^^^^^^^^^^^^
+
+- Major update. The Flask dependency has been removed.
+
 1.0.13 (2015-03-30)
 ^^^^^^^^^^^^^^^^^^^
 

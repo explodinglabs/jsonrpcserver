@@ -4,29 +4,23 @@ jsonrpcserver
 .. image:: https://pypip.in/v/jsonrpcserver/badge.png
 .. image:: https://pypip.in/d/jsonrpcserver/badge.png
 
-Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
-<http://flask.pocoo.org/>`_ app.
+Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
-Simply register the blueprint to your app, then write the methods to carry out
-the requests:
+Write methods to carry out the requests:
 
 .. sourcecode:: python
+    >> register_rpc_method('add', lambda x, y: x + y)
 
-    app = Flask(__name__)
-    app.register_blueprint(bp)
+Then dispatch requests to them:
 
-    def add(x, y):
-        return x + y
-
-    @app.route('/api', methods=['POST'])
-    def index():
-        return dispatch(request.get_json())
+.. sourcecode:: python
+    >> dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
+    5
 
 Installation
 ------------
 
 .. sourcecode:: sh
-
     $ pip install jsonrpcserver
 
 Documentation
