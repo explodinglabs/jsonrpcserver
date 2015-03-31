@@ -3,11 +3,9 @@
 A simple server that returns the sum of two numbers.
 
 To run it::
-
     $ python run.py
 
 Then with a client, post a request::
-
     $ curl -X POST -H 'Content-type: application/json' \
     > -d '{"jsonrpc": "2.0", "method": "add", "params": [1, 2], "id": 1}' \
     > http://localhost:5000/
@@ -20,7 +18,7 @@ Then with a client, post a request::
 
 from flask import Flask, request, jsonify
 
-from jsonrpcserver import dispatch
+from jsonrpcserver import register_rpc_method, dispatch
 from jsonrpcserver.exceptions import InvalidParams
 
 
@@ -31,6 +29,7 @@ app.config['DEBUG'] = True
 
 
 # Write the handling methods.
+@register_rpc_method
 def add(x, y):
     """Add two numbers."""
     try:

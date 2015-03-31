@@ -1,16 +1,10 @@
 jsonrpcserver
 =============
 
-Receive `JSON-RPC <http://www.jsonrpc.org/>`_ requests in a `Flask
-<http://flask.pocoo.org/>`_ app.
+Dispatch `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
-The library has two features:
-
-#. A dispatcher, which validates incoming requests and passes them on to your
-   own methods.
-
-#. A `Flask blueprint <http://flask.pocoo.org/docs/0.10/blueprints/>`_ to catch
-   errors, ensuring we always respond with JSON-RPC.
+A dispatcher, which validates incoming requests and passes them on to your own
+methods.
 
 Installation
 ------------
