@@ -15,14 +15,12 @@ the requests:
     app = Flask(__name__)
     app.register_blueprint(bp)
 
-    class HandleRequests:
-        @staticmethod
-        def add(x, y):
-            return x + y
+    def add(x, y):
+        return x + y
 
     @app.route('/api', methods=['POST'])
     def index():
-        return dispatch(request.get_json(), HandleRequests)
+        return dispatch(request.get_json())
 
 Installation
 ------------
