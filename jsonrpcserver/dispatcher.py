@@ -1,8 +1,6 @@
 """dispatcher.py"""
-#pylint:disable=star-args
 
 import json
-import inspect
 
 import jsonschema
 import pkgutil
@@ -11,9 +9,18 @@ from jsonrpcserver import rpc, exceptions, request_log, response_log
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
 
+rpc_methods = {}
+def add_rpc_method(name, func):
+    """Add an rpc method to the list"""
+    rpc_methods[name] = func
+
+def register_rpc_method(func):
+    """Register an rpc method - used for the decorator."""
+    add_rpc_method(func.__name__, func)
+
 def convert_params_to_args_and_kwargs(params):
     """Takes the 'params' from the rpc request and converts it into args and
-    kwargs to be passed through to the handler method.
+    kwargs to be passed through to the handling method.
 
     There are four possibilities for params:
         - No params at all.
@@ -40,25 +47,18 @@ def convert_params_to_args_and_kwargs(params):
     return (args, kwargs)
 
 
-def dispatch(request, handler=None):
+def dispatch(request):
     """Call a method, based on the request.
 
     request: A dict containing the JSON request.
-
-    handler: An object containing the methods that carry out the requests. Can
-    be any object that containing methods, such as a class with static methods,
-    or a module. If no handler is passed, the calling module is used as the
-    handler.
 
     ..versionchanged:: 1.0.12
         Sending "'id': null" will be treated as if no response is required.
     ..versionchanged:: 1.1.1
         Removed all flask code.
+        No longer accepts a "handler".
     """
     #pylint:disable=too-many-branches
-
-    if not handler:
-        handler = inspect.getmodule(inspect.stack()[1][0])
 
     request_log.info(json.dumps(request))
 
@@ -66,8 +66,7 @@ def dispatch(request, handler=None):
 
         # Validate
         try:
-            jsonschema.validate(
-                request, json.loads(pkgutil.get_data(__name__, \
+            jsonschema.validate(request, json.loads(pkgutil.get_data(__name__, \
                 'request-schema.json').decode('utf-8')))
         except jsonschema.ValidationError as e:
             raise exceptions.InvalidRequest(e.message)
@@ -85,10 +84,8 @@ def dispatch(request, handler=None):
 
         # Get the method if available
         try:
-            method = getattr(handler, request['method'])
-
-        # Catch method not found
-        except AttributeError:
+            method = rpc_methods[request['method']]
+        except KeyError:
             raise exceptions.MethodNotFound(request['method'])
 
 
