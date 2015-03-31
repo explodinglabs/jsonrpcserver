@@ -12,77 +12,60 @@ from jsonrpcserver import bp, exceptions, dispatch, status
 app = Flask(__name__)
 app.register_blueprint(bp)
 
-@app.route('/', methods=['POST'])
-def index():
-    return dispatch(request.get_json(), HandleRequests)
-
-
 class HandleRequests:
     """Handling methods"""
-    #pylint:disable=unused-argument
-
     @staticmethod
-    def method_only():
-        pass
+    def get_5():
+        return 5
 
-    @staticmethod
-    def one_positional(string):
-        pass
+def module_level_function():
+    return 5
 
-    @staticmethod
-    def two_positionals(one, two):
-        pass
+def method_only():
+    pass
 
-    @staticmethod
-    def just_args(*args):
-        pass
+def one_positional(string):
+    pass
 
-    @staticmethod
-    def just_kwargs(**kwargs):
-        pass
+def two_positionals(one, two):
+    pass
 
-    @staticmethod
-    def positionals_with_args(one, two, *args):
-        pass
+def just_args(*args):
+    pass
 
-    @staticmethod
-    def positionals_with_kwargs(one, two, **kwargs):
-        pass
+def just_kwargs(**kwargs):
+    pass
 
-    @staticmethod
-    def positionals_with_args_and_kwargs(one, two, *args, **kwargs):
-        pass
+def positionals_with_args(one, two, *args):
+    pass
 
-    @staticmethod
-    def add(number1, number2):
-        """Add two numbers. Takes a list as args."""
+def positionals_with_kwargs(one, two, **kwargs):
+    pass
 
-        try:
-            return number1 + number2
+def positionals_with_args_and_kwargs(one, two, *args, **kwargs):
+    pass
 
-        except TypeError as e:
-            raise exceptions.InvalidParams(str(e))
+def add(number1, number2):
+    """Add two numbers. Takes a list as args."""
+    try:
+        return number1 + number2
+    except TypeError as e:
+        raise exceptions.InvalidParams(str(e))
 
-    @staticmethod
-    def uppercase(*args):
-        """Uppercase a string"""
+def uppercase(*args):
+    """Uppercase a string"""
+    try:
+        return args[0].upper()
+    except KeyError as e:
+        raise exceptions.InvalidParams(str(e))
 
-        try:
-            return args[0].upper()
-
-        except KeyError as e:
-            raise exceptions.InvalidParams(str(e))
-
-    @staticmethod
-    def lookup_surname(**kwargs):
-        """Lookup a surname from a firstname"""
-
-        try:
-            if kwargs['firstname'] == 'John':
-                return 'Smith'
-
-        except KeyError as e:
-            raise exceptions.InvalidParams(str(e))
+def lookup_surname(**kwargs):
+    """Lookup a surname from a firstname"""
+    try:
+        if kwargs['firstname'] == 'John':
+            return 'Smith'
+    except KeyError as e:
+        raise exceptions.InvalidParams(str(e))
 
 
 class TestDispatch(TestCase):
@@ -102,63 +85,42 @@ class TestDispatch(TestCase):
         app.config['TESTING'] = True
         return app
 
-    def post_request(self, request_str):
-        return self.client.post(
-            '/', headers={'content-type': 'application/json'}, \
-            data=json.dumps(request_str)) #pylint:disable=maybe-no-member
+    def assertJust200(self, response):
+        self.assert200(response)
+        self.assertEqual('', response.data.decode('utf-8'))
 
-    def post(self, expected_http_status_code, expected_response_text, request_str):
+    def assertResultEquals(self, expected_result, response):
+        self.assert200(response)
+        self.assertEqual(expected_result, response.json['result'])
 
-        response = self.post_request(request_str)
-
-        self.assertEqual(expected_http_status_code, response.status_code)
-
-        if expected_response_text:
-            if expected_http_status_code == 200:
-                self.assertEqual(expected_response_text, response.json['result'])
-            else:
-                self.assertEqual(expected_response_text, response.json['error']['message'])
-        else:
-            self.assertEqual('', response.data.decode('utf-8'))
+    def assertErrorEquals(self, expected_status, expected_message, response):
+        self.assertStatus(expected_status, response)
+        self.assertEqual(expected_error_message, response.json['error']['message'])
 
     # Misc
 
     def test_missing_jsonrpc_property(self):
         """jsonrpc is a required property"""
-        self.post(
-            status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-            status.JSONRPC_INVALID_REQUEST_TEXT,
-            {'jsonrp': '2.0', 'method': 'get'},
-        )
+        with self.assertRaises(exceptions.InvalidRequest):
+            dispatch({'jsonrp': '2.0', 'method': 'get'}),
 
     def test_method_not_found(self):
-        self.post(
-            status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
-            'Method not found',
-            {'jsonrpc': '2.0', 'method': 'get'},
-        )
+        with self.assertRaises(exceptions.MethodNotFound):
+            dispatch({'jsonrpc': '2.0', 'method': 'get'}),
 
     def test_trying_to_call_magic_method(self):
-        self.post(
-            status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
-            'Method not found',
-            {'jsonrpc': '2.0', 'method': '__init__'},
-        )
+        with self.assertRaises(exceptions.MethodNotFound):
+            dispatch({'jsonrpc': '2.0', 'method': '__init__'}),
 
     def test_params_null(self):
         """Using 'params': null is not valid under the schema."""
-        self.post(
-            status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-            status.JSONRPC_INVALID_REQUEST_TEXT,
-            {'jsonrpc': '2.0', 'method': 'method_only', 'params': None},
-        )
+        with self.assertRaises(exceptions.InvalidRequest):
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': None}),
 
     def test_id_null(self):
         """Using 'id': null *is* valid under the schema."""
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'method_only', 'id': None},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'id': None}),
         )
 
     # InvalidParams - this requires lots of testing because there are many ways
@@ -167,327 +129,224 @@ class TestDispatch(TestCase):
     # method_only
 
     def test_method_only_params_omitted(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'method_only'}
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only'})
         )
 
     def test_method_only_params_empty(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'method_only', 'params': []},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': []}),
         )
 
     def test_method_only_one_arg(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'method_only', 'params': [1]}
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': [1]})
 
     def test_method_only_two_args(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'method_only', 'params': [1, 2]}
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': [1, 2]})
 
     def test_method_only_kwargs(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'method_only', 'params': {'foo': 'bar'}}
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': {'foo': 'bar'}})
 
     def test_method_only_both(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'method_only', 'params': [1, 2, {'foo': 'bar'}]}
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': [1, 2, {'foo': 'bar'}]})
 
     # one_positional
 
     def test_one_positional_params_omitted(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'one_positional'},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'one_positional'}),
 
     def test_one_positional_one_arg(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1]}
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1]})
         )
 
     def test_one_positional_two_args(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1, 2]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1, 2]})
 
     def test_one_positional_kwargs(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'one_positional', 'params': {'foo': 'bar'}},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'one_positional', 'params': {'foo': 'bar'}})
 
     def test_one_positional_both(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1, 2, {'foo': 'bar'}]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1, 2, {'foo': 'bar'}]})
 
     # two_positionals
 
     def test_two_positionals_ok(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1, 2]}
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1, 2]})
         )
 
     def test_two_positionals_params_omitted(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'two_positionals'},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'two_positionals'})
 
     def test_two_positionals_one_arg(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1]})
 
     def test_two_positionals_kwargs(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'two_positionals', 'params': {'foo': 'bar'}},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': {'foo': 'bar'}})
 
     def test_two_positionals_both(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1, {'foo': 'bar'}]},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1, {'foo': 'bar'}]})
         )
 
     # just_args
 
     def test_just_args_ok(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'just_args', 'params': [1, 2]}
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': [1, 2]})
         )
 
     def test_just_args_params_omitted(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'just_args'},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'just_args'})
         )
 
     def test_just_args_one_arg(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'just_args', 'params': [1]},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': [1]})
         )
 
     def test_just_args_kwargs(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'just_args', 'params': {'foo': 'bar'}},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            response = dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': {'foo': 'bar'}})
 
     def test_just_args_both(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'just_args', 'params': [1, {'foo': 'bar'}]},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': [1, {'foo': 'bar'}]})
         )
 
     # just_kwargs
 
     def test_just_kwargs_ok(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': {'foo': 'bar'}}
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': {'foo': 'bar'}})
         )
 
     def test_just_kwargs_params_omitted(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'just_kwargs'},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs'})
         )
 
     def test_just_kwargs_one_arg(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': [1]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': [1]})
 
     def test_just_kwargs_kwargs(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': {'foo': 'bar'}},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': {'foo': 'bar'}})
         )
 
     def test_just_kwargs_both(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': [1, {'foo': 'bar'}]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': [1, {'foo': 'bar'}]})
 
     # positionals_with_args
 
     def test_positionals_with_args_ok(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': ['foo', 42]}
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': ['foo', 42]})
         )
 
     def test_positionals_with_args_params_omitted(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args'},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args'})
 
     def test_positionals_with_args_one_arg(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': [1]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': [1]})
 
     def test_positionals_with_args_kwargs(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': {'foo': 'bar'}},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': {'foo': 'bar'}})
 
     def test_positionals_with_args_both(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': [1, {'foo': 'bar'}]},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': [1, {'foo': 'bar'}]})
         )
 
     # positionals_with_kwargs
 
     def test_positionals_with_kwargs_ok(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]}
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]})
 
     def test_positionals_with_kwargs_params_omitted(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs'},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs'})
 
     def test_positionals_with_kwargs_one_arg(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': [1]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': [1]})
 
     def test_positionals_with_kwargs_kwargs(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': {'foo': 'bar'}},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': {'foo': 'bar'}})
 
     def test_positionals_with_kwargs_both(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': [1, {'foo': 'bar'}]},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': [1, {'foo': 'bar'}]})
         )
 
     # positionals_with_args_and_kwargs
 
     def test_positionals_with_args_and_kwargs_ok(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]}
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]})
         )
 
     def test_positionals_with_args_and_kwargs_params_omitted(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs'},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs'})
 
     def test_positionals_with_args_and_kwargs_one_arg(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': [1]},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': [1]})
 
     def test_positionals_with_args_and_kwargs_kwargs(self):
-        self.post(
-            status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
-            status.JSONRPC_INVALID_PARAMS_TEXT,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': {'foo': 'bar'}},
-        )
+        with self.assertRaises(exceptions.InvalidParams):
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': {'foo': 'bar'}})
 
     def test_positionals_with_args_and_kwargs_both(self):
-        self.post(
-            status.HTTP_200_OK,
-            None,
-            {'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': [1, {'foo': 'bar'}]},
+        self.assertJust200(
+            dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': [1, {'foo': 'bar'}]})
         )
 
     # Test return results
 
     def test_add_two_numbers(self):
-        self.post(
-            status.HTTP_200_OK,
+        self.assertResultEquals(
             3,
-            {'jsonrpc': '2.0', 'method': 'add', 'params': [1, 2], 'id': 1}
+            dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [1, 2], 'id': 1})
         )
 
     def test_uppercase(self):
-        self.post(
-            status.HTTP_200_OK,
+        self.assertResultEquals(
             'TEST',
-            {'jsonrpc': '2.0', 'method': 'uppercase', 'params': ['test'], 'id': 1}
+            dispatch({'jsonrpc': '2.0', 'method': 'uppercase', 'params': ['test'], 'id': 1})
         )
 
     def test_lookup_surname(self):
-        self.post(
-            status.HTTP_200_OK,
+        self.assertResultEquals(
             'Smith',
-            {'jsonrpc': '2.0', 'method': 'lookup_surname', 'params': {'firstname': 'John'}, 'id': 1}
+            dispatch({'jsonrpc': '2.0', 'method': 'lookup_surname', 'params': {'firstname': 'John'}, 'id': 1})
+        )
+
+    def test_passing_handling_object(self):
+        self.assertResultEquals(
+            5,
+            dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1}, HandleRequests)
         )
 
 if __name__ == '__main__':

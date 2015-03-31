@@ -1,6 +1,7 @@
 """dispatcher.py"""
 
 import json
+import inspect
 
 import flask
 import jsonschema
@@ -8,6 +9,7 @@ import pkgutil
 from inspect import getcallargs
 from werkzeug.http import HTTP_STATUS_CODES
 from jsonrpcserver import rpc, exceptions, request_log, response_log
+
 
 def convert_params_to_args_and_kwargs(params):
     """Takes the 'params' from the rpc request and converts it into args and
@@ -37,20 +39,24 @@ def convert_params_to_args_and_kwargs(params):
 
     return (args, kwargs)
 
-def dispatch(request, handler):
-    """Call a handler method, based on the request.
 
-    request: A dict containing the JSON request data - recommended to pass
-        flask.Request.get_json() for this.
+def dispatch(request, handler=None):
+    """Call a method, based on the request.
 
     handler: Methods that carry out the requests.
         Can be any object that containing methods, such as a class with static
         methods, or a module. So long as we can call handler.method()
 
+    request: A dict containing the JSON request data - recommended to pass
+        request.get_json() for this.
+
     ..versionchanged:: 1.0.12
         Sending "'id': null" will be treated as if no response is required.
     """
     #pylint:disable=too-many-branches
+
+    if not handler:
+        handler = inspect.getmodule(inspect.stack()[1][0])
 
     request_log.info(json.dumps(request), extra={
         'http_headers': json.dumps(dict(flask.request.headers))})
@@ -62,7 +68,6 @@ def dispatch(request, handler):
             jsonschema.validate(
                 request, json.loads(pkgutil.get_data(__name__, \
                 'request-schema.json').decode('utf-8')))
-
         except jsonschema.ValidationError as e:
             raise exceptions.InvalidRequest(e.message)
 
