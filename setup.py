@@ -35,7 +35,7 @@ class Tox(TestCommand):
 
 setup(
     name='jsonrpcserver',
-    version='1.0.13',
+    version='1.1.1',
     description='JSON-RPC 2.0 server library.',
     long_description=readme + '\n\n' + history,
     author='Beau Barker',
@@ -44,7 +44,7 @@ setup(
     packages=['jsonrpcserver'],
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
-    install_requires=['flask', 'jsonschema'],
+    install_requires=['jsonschema'],
     tests_require=['tox'],
     cmdclass={'test': Tox},
     classifiers=[
