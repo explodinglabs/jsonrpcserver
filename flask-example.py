@@ -18,15 +18,16 @@ Then with a client, post a request::
     }
 """
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
-from jsonrpcserver import bp, dispatch
+from jsonrpcserver import dispatch
 from jsonrpcserver.exceptions import InvalidParams
 
 
 # Create a Flask app and register the blueprint to it.
 app = Flask(__name__)
-app.register_blueprint(bp)
+app.config['TESTING'] = True
+app.config['DEBUG'] = True
 
 
 # Write the handling methods.
@@ -42,7 +43,8 @@ def add(x, y):
 @app.route('/', methods=['POST'])
 def index():
     """The json-rpc route."""
-    return dispatch(request.get_json())
+    result, status = dispatch(request.get_json())
+    return jsonify(result) if result else '', status
 
 
 if __name__ == '__main__':
