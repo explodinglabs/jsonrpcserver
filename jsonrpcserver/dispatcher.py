@@ -101,17 +101,17 @@ def dispatch(request, handler=None):
 
         if a and not k:
             try:
-                getcallargs(method, *a)
+                getcallargs(method, *a) #pylint:disable=star-args
             except TypeError as e:
                 raise exceptions.InvalidParams(str(e))
-            result = method(*a)
+            result = method(*a) #pylint:disable=star-args
 
         if not a and k:
             try:
-                getcallargs(method, **k)
+                getcallargs(method, **k) #pylint:disable=star-args
             except TypeError as e:
                 raise exceptions.InvalidParams(str(e))
-            result = method(**k)
+            result = method(**k) #pylint:disable=star-args
 
 #        if a and k: # should never happen
 #            raise exceptions.InvalidParams('Using both positional and keyword \
