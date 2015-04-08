@@ -131,7 +131,7 @@ def dispatch(request, more_info=False):
             })
         return (result, status)
 
-    # Catch any raised exception (invalid request etc), add the request id
+    # Catch JsonRpcServerErrors raised (invalid request etc), add the request id
     except exceptions.JsonRpcServerError as e:
         if request:
             e.request_id = request.get('id', None)
@@ -144,3 +144,16 @@ def dispatch(request, more_info=False):
         if not more_info and 'data' in response['error']:
             response['error'].pop('data')
         return (response, e.http_status_code)
+
+    # Catch all other exceptions raised, add the request id
+    except Exception as e:
+        result = json.loads(str(exceptions.ServerError('Server error', str(e))))
+        if request:
+            result['request_id'] = request.get('id', None)
+        if not more_info and 'data' in result['error']:
+            result['error'].pop('data')
+        response_log.info(str(e), extra={
+            'http_code': 500,
+            'http_reason': HTTP_STATUS_CODES[500]
+        })
+        return (result, 500)
