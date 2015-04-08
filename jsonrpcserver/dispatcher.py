@@ -97,30 +97,29 @@ def dispatch(request, more_info=False):
                 getcallargs(method)
             except TypeError as e:
                 raise InvalidParams(str(e))
-            result = method()
+            method_result = method()
 
         if a and not k:
             try:
                 getcallargs(method, *a)
             except TypeError as e:
                 raise InvalidParams(str(e))
-            result = method(*a)
+            method_result = method(*a)
 
         if not a and k:
             try:
                 getcallargs(method, **k)
             except TypeError as e:
                 raise InvalidParams(str(e))
-            result = method(**k)
+            method_result = method(**k)
 
-#        if a and k: # should never happen
-#            raise InvalidParams('Using both positional and keyword \
-#            arguments is not supported by the JSON-RPC protocol')
+#        if a and k: # This should never happen.
 
         # Return a response
         request_id = request.get('id', None)
         if request_id is not None:
-            result, status = (rpc.result(request_id, result), 200)
+            # A response was requested
+            result, status = (rpc.result(request_id, method_result), 200)
         else:
             # Notification - return nothing.
             result, status = (None, 204)
