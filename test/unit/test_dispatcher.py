@@ -10,64 +10,33 @@ from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
     JSONRPC_METHOD_NOT_FOUND_TEXT, JSONRPC_INVALID_REQUEST_TEXT, \
     JSONRPC_INVALID_REQUEST_HTTP_CODE
 
+add_rpc_method('method_only', lambda : None)
+add_rpc_method('one_positional', lambda string: None)
+add_rpc_method('two_positionals', lambda one, two: None)
+add_rpc_method('just_args', lambda *args: None)
+add_rpc_method('just_kwargs', lambda **kwargs: None)
+add_rpc_method('positionals_with_args', lambda one, two, *args: None)
+add_rpc_method('positionals_with_kwargs', lambda one, two, **kwargs: None)
+add_rpc_method('positionals_with_args_and_kwargs', lambda one, two, *args, **kwargs: None)
+add_rpc_method('add', lambda one, two: one + two)
+add_rpc_method('uppercase', lambda string: string.upper())
+
+@register_rpc_method
+def lookup_surname(**kwargs):
+    """Test using a full function, not a lambda"""
+    if kwargs['firstname'] == 'John':
+        return 'Smith'
+
 class HandleRequests:
-    """Handling methods"""
+    """Test using a class method, not a function"""
     @staticmethod
     @register_rpc_method
     def get_5():
         return 5
 
-add_rpc_method('method_only', lambda : None)
-add_rpc_method('one_positional', lambda string: None)
-
 @register_rpc_method
-def two_positionals(one, two):
-    pass
-
-@register_rpc_method
-def just_args(*args):
-    pass
-
-@register_rpc_method
-def just_kwargs(**kwargs):
-    pass
-
-@register_rpc_method
-def positionals_with_args(one, two, *args):
-    pass
-
-@register_rpc_method
-def positionals_with_kwargs(one, two, **kwargs):
-    pass
-
-@register_rpc_method
-def positionals_with_args_and_kwargs(one, two, *args, **kwargs):
-    pass
-
-@register_rpc_method
-def add(number1, number2):
-    """Add two numbers. Takes a list as args."""
-    try:
-        return number1 + number2
-    except TypeError as e:
-        raise exceptions.InvalidParams(str(e))
-
-@register_rpc_method
-def uppercase(*args):
-    """Uppercase a string"""
-    try:
-        return args[0].upper()
-    except KeyError as e:
-        raise exceptions.InvalidParams(str(e))
-
-@register_rpc_method
-def lookup_surname(**kwargs):
-    """Lookup a surname from a firstname"""
-    try:
-        if kwargs['firstname'] == 'John':
-            return 'Smith'
-    except KeyError as e:
-        raise exceptions.InvalidParams(str(e))
+def raises_jsonrpcerror(**kwargs):
+    raise exceptions.ServerError('Database error', 'column "Insecure" does not exist')
 
 
 class TestDispatch(TestCase):
