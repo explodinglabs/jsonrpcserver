@@ -120,8 +120,9 @@ def dispatch(request, more_info=False):
         # Return a response
         request_id = request.get('id', None)
         if request_id is not None:
-            result, status = rpc.result(request_id, result), 200
+            result, status = (rpc.result(request_id, result), 200)
         else:
+            # Notification - return nothing.
             result, status = (None, 204)
 
     # Catch JsonRpcServerErrors raised (invalid request etc)
