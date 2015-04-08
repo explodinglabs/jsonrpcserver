@@ -1,7 +1,7 @@
 """test_dispatcher.py"""
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods,no-init,unused-argument
 
-from unittest import TestCase, main, skip
+from unittest import TestCase, main, skip, expectedFailure
 
 from jsonrpcserver.dispatcher import dispatch, add_rpc_method, register_rpc_method
 from jsonrpcserver.exceptions import ServerError
@@ -416,17 +416,16 @@ class TestDispatch(TestCase):
         # Because the more_info was not passed, there should be no 'data'
         self.assertNotIn('data', response[0]['error'])
 
-    @skip('Needs work')
+    @expectedFailure
     def test_raising_jsonrpcservererror_with_more_info(self):
-        response = dispatch({'jsonrpc': '2.0', 'method':
-            'raise_jsonrpcservererror'}, more_info=true)
+        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'}, more_info=true)
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
             'Database error',
             response
         )
         # Because the more_info was not passed, there should be no 'data'
-        self.assertNotIn('data', response[0]['error'])
+        self.assertIn('data', response[0]['error'])
 
 
 if __name__ == '__main__':
