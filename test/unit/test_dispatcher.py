@@ -392,13 +392,13 @@ class TestDispatch(TestCase):
             dispatch({'jsonrpc': '2.0', 'method': 'uppercase', 'params': ['test'], 'id': 1})
         )
 
-    def test_lookup_surname(self):
+    def test_full_function_not_lambda(self):
         self.assertResultEquals(
             'Smith',
             dispatch({'jsonrpc': '2.0', 'method': 'lookup_surname', 'params': {'firstname': 'John'}, 'id': 1})
         )
 
-    def test_passing_handling_object(self):
+    def test_class_method(self):
         self.assertResultEquals(
             5,
             dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1})
