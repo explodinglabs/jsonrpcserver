@@ -42,7 +42,7 @@ def raise_jsonrpcservererror():
 
 @register_rpc_method
 def raise_other_error():
-    raise KeyError()
+    raise ValueError('Value too low')
 
 
 class TestDispatch(TestCase):
@@ -428,28 +428,28 @@ class TestDispatch(TestCase):
             response
         )
         # Because the more_info was passed, there should be 'data'.
-        self.assertEquals('Column "Insecure" does not exist', response[0]['error']['data'])
+        self.assertEqual('Column "Insecure" does not exist', response[0]['error']['data'])
 
 
     def test_raising_other_error(self):
         response = dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
-            'Other error',
+            'Server error',
             response
         )
         # Because the more_info was not passed, there should be no 'data'
-        self.assertNotIn('data', response['error'])
+        self.assertNotIn('data', response[0]['error'])
 
     def test_raising_other_error_with_more_info(self):
-        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
+        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'}, more_info=True)
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
-            'Other error',
+            'Server error',
             response
         )
         # Because the more_info was passed, there should be 'data'.
-        self.assertEquals('Column "Insecure" does not exist', response['error']['data'])
+        self.assertEqual('Value too low', response[0]['error']['data'])
 
 
 if __name__ == '__main__':
