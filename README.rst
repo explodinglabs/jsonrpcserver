@@ -4,12 +4,12 @@ jsonrpcserver
 .. image:: https://pypip.in/v/jsonrpcserver/badge.png
 .. image:: https://pypip.in/d/jsonrpcserver/badge.png
 
-Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
+Handles `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
 Write methods to carry out the requests:
 
 .. sourcecode:: python
-    >> register_rpc_method('add', lambda x, y: x + y)
+    >> register_jsonrpc_method('add', lambda x, y: x + y)
 
 Then dispatch requests to them:
 

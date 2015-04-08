@@ -12,13 +12,15 @@ from jsonrpcserver.status import HTTP_STATUS_CODES
 
 
 _rpc_methods = {}
-def add_rpc_method(name, func):
-    """Add an rpc method to the list"""
+def register_jsonrpc_method(name, func):
+    """Add a jsonrpc method to the global list."""
     _rpc_methods[name] = func
 
-def register_rpc_method(func):
-    """Register an rpc method - used for the decorator."""
-    add_rpc_method(func.__name__, func)
+
+def jsonrpc(func):
+    """Decorator for adding an rpc method to the global list."""
+    register_jsonrpc_method(func.__name__, func)
+
 
 def convert_params_to_args_and_kwargs(params):
     """Takes the 'params' from the rpc request and converts it into args and
