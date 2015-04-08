@@ -18,7 +18,7 @@ Then with a client, post a request::
 
 from flask import Flask, request, jsonify
 
-from jsonrpcserver import register_rpc_method, dispatch
+from jsonrpcserver import jsonrpc, dispatch
 from jsonrpcserver.exceptions import InvalidParams
 
 
@@ -29,7 +29,7 @@ app.config['DEBUG'] = True
 
 
 # Write the handling methods.
-@register_rpc_method
+@jsonrpc
 def add(x, y):
     """Add two numbers."""
     try:
