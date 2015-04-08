@@ -1,14 +1,15 @@
 """test_dispatcher.py"""
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods,no-init,unused-argument
 
-from unittest import TestCase, main
+from unittest import TestCase, main, skip
 
 from jsonrpcserver.dispatcher import dispatch, add_rpc_method, register_rpc_method
-from jsonrpcserver import exceptions
+from jsonrpcserver.exceptions import ServerError
 from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
     JSONRPC_INVALID_PARAMS_HTTP_CODE, JSONRPC_METHOD_NOT_FOUND_HTTP_CODE, \
     JSONRPC_METHOD_NOT_FOUND_TEXT, JSONRPC_INVALID_REQUEST_TEXT, \
-    JSONRPC_INVALID_REQUEST_HTTP_CODE
+    JSONRPC_INVALID_REQUEST_HTTP_CODE, JSONRPC_SERVER_ERROR_HTTP_CODE, \
+    JSONRPC_SERVER_ERROR_TEXT
 
 add_rpc_method('method_only', lambda : None)
 add_rpc_method('one_positional', lambda string: None)
@@ -35,8 +36,8 @@ class HandleRequests:
         return 5
 
 @register_rpc_method
-def raises_jsonrpcerror(**kwargs):
-    raise exceptions.ServerError('Database error', 'column "Insecure" does not exist')
+def raise_jsonrpcservererror(**kwargs):
+    raise ServerError('Database error', 'column "Insecure" does not exist')
 
 
 class TestDispatch(TestCase):
@@ -403,6 +404,30 @@ class TestDispatch(TestCase):
             5,
             dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1})
         )
+
+    @expectedFailure
+    def test_raising_jsonrpcservererror(self):
+        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'})
+        self.assertErrorEquals(
+            JSONRPC_SERVER_ERROR_HTTP_CODE,
+            'Database error',
+            response
+        )
+        # Because the more_info was not passed, there should be no 'data'
+        self.assertNotIn('data', response[0]['error'])
+
+    @skip('Needs work')
+    def test_raising_jsonrpcservererror_with_more_info(self):
+        response = dispatch({'jsonrpc': '2.0', 'method':
+            'raise_jsonrpcservererror'}, more_info=true)
+        self.assertErrorEquals(
+            JSONRPC_SERVER_ERROR_HTTP_CODE,
+            'Database error',
+            response
+        )
+        # Because the more_info was not passed, there should be no 'data'
+        self.assertNotIn('data', response[0]['error'])
+
 
 if __name__ == '__main__':
     main()
