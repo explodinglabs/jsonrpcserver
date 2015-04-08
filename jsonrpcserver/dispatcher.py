@@ -5,7 +5,9 @@ import json
 import jsonschema
 import pkgutil
 from inspect import getcallargs
-from jsonrpcserver import rpc, exceptions, request_log, response_log
+from jsonrpcserver import rpc, request_log, response_log
+from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
+    MethodNotFound, InvalidParams, ServerError
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
 
@@ -69,7 +71,7 @@ def dispatch(request, more_info=False):
             jsonschema.validate(request, json.loads(pkgutil.get_data(__name__, \
                 'request-schema.json').decode('utf-8')))
         except jsonschema.ValidationError as e:
-            raise exceptions.InvalidRequest(e.message)
+            raise InvalidRequest(e.message)
 
 
         # Get the args and kwargs from request['params']
@@ -79,14 +81,14 @@ def dispatch(request, more_info=False):
         # Dont allow magic methods to be called
         if request['method'].startswith('__') \
                 and request['method'].endswith('__'):
-            raise exceptions.MethodNotFound(request['method'])
+            raise MethodNotFound(request['method'])
 
 
         # Get the method if available
         try:
             method = _rpc_methods[request['method']]
         except KeyError:
-            raise exceptions.MethodNotFound(request['method'])
+            raise MethodNotFound(request['method'])
 
 
         # Call the method
@@ -94,66 +96,51 @@ def dispatch(request, more_info=False):
             try:
                 getcallargs(method)
             except TypeError as e:
-                raise exceptions.InvalidParams(str(e))
+                raise InvalidParams(str(e))
             result = method()
 
         if a and not k:
             try:
                 getcallargs(method, *a)
             except TypeError as e:
-                raise exceptions.InvalidParams(str(e))
+                raise InvalidParams(str(e))
             result = method(*a)
 
         if not a and k:
             try:
                 getcallargs(method, **k)
             except TypeError as e:
-                raise exceptions.InvalidParams(str(e))
+                raise InvalidParams(str(e))
             result = method(**k)
 
 #        if a and k: # should never happen
-#            raise exceptions.InvalidParams('Using both positional and keyword \
+#            raise InvalidParams('Using both positional and keyword \
 #            arguments is not supported by the JSON-RPC protocol')
 
         # Return a response
         request_id = request.get('id', None)
         if request_id is not None:
             result, status = rpc.result(request_id, result), 200
-            response_log.info(result, extra={
-                'http_code': status,
-                'http_reason': HTTP_STATUS_CODES[status]
-            })
         else:
-            result, status = None, 204
-            response_log.info(result, extra={
-                'http_code': status,
-                'http_reason': HTTP_STATUS_CODES[status]
-            })
-        return (result, status)
+            result, status = (None, 204)
 
-    # Catch JsonRpcServerErrors raised (invalid request etc), add the request id
-    except exceptions.JsonRpcServerError as e:
-        if request:
-            e.request_id = request.get('id', None)
-        response = json.loads(str(e))
-        response_log.info(str(e), extra={
-            'http_code': e.http_status_code,
-            'http_reason': HTTP_STATUS_CODES[e.http_status_code]
-        })
-        # Only return error message, not 'data', unless more_info specified.
-        if not more_info and 'data' in response['error']:
-            response['error'].pop('data')
-        return (response, e.http_status_code)
-
-    # Catch all other exceptions raised, add the request id
-    except Exception as e:
-        result = json.loads(str(exceptions.ServerError('Server error', str(e))))
-        if request:
-            result['request_id'] = request.get('id', None)
-        if not more_info and 'data' in result['error']:
+    # Catch JsonRpcServerErrors raised (invalid request etc)
+    except JsonRpcServerError as e:
+        e.request_id = request.get('id', None)
+        result, status = (json.loads(str(e)), e.http_status_code)
+        if not more_info:
             result['error'].pop('data')
-        response_log.info(str(e), extra={
-            'http_code': 500,
-            'http_reason': HTTP_STATUS_CODES[500]
-        })
-        return (result, 500)
+
+    # Catch all other exceptions
+    except Exception as e:
+        e.request_id = request.get('id', None)
+        result, status = (json.loads(str(ServerError('Server error', str(e)))), 500)
+        if not more_info:
+            result['error'].pop('data')
+
+    response_log.info(str(result), extra={
+        'http_code': status,
+        'http_reason': HTTP_STATUS_CODES[status]
+    })
+
+    return (result, status)
