@@ -136,7 +136,8 @@ def dispatch(request, more_info=False):
     # Catch all other exceptions
     except Exception as e:
         e.request_id = request.get('id', None)
-        result, status = (json.loads(str(ServerError('Server error', str(e)))), 500)
+        result, status = (json.loads(str(ServerError('Server error', \
+            str(e)))), 500)
         if not more_info:
             result['error'].pop('data')
 
