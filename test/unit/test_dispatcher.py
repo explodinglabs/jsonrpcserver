@@ -37,7 +37,7 @@ class HandleRequests:
 
 @register_rpc_method
 def raise_jsonrpcservererror(**kwargs):
-    raise ServerError('Database error', 'column "Insecure" does not exist')
+    raise ServerError('Database error', 'Column "Insecure" does not exist')
 
 
 class TestDispatch(TestCase):
@@ -405,7 +405,6 @@ class TestDispatch(TestCase):
             dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1})
         )
 
-    @expectedFailure
     def test_raising_jsonrpcservererror(self):
         response = dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'})
         self.assertErrorEquals(
@@ -416,16 +415,15 @@ class TestDispatch(TestCase):
         # Because the more_info was not passed, there should be no 'data'
         self.assertNotIn('data', response[0]['error'])
 
-    @expectedFailure
     def test_raising_jsonrpcservererror_with_more_info(self):
-        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'}, more_info=true)
+        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'}, more_info=True)
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
             'Database error',
             response
         )
         # Because the more_info was not passed, there should be no 'data'
-        self.assertIn('data', response[0]['error'])
+        self.assertEquals('Column "Insecure" does not exist', response[0]['error']['data'])
 
 
 if __name__ == '__main__':
