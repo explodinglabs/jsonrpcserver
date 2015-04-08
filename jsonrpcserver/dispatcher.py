@@ -47,14 +47,14 @@ def convert_params_to_args_and_kwargs(params):
     return (args, kwargs)
 
 
-def dispatch(request):
+def dispatch(request, more_info=False):
     """Call a method, based on the request.
 
     request: A dict containing the JSON request.
 
     ..versionchanged:: 1.0.12
         Sending "'id': null" will be treated as if no response is required.
-    ..versionchanged:: 1.1.1
+    ..versionchanged:: 2.0.0
         Removed all flask code.
         No longer accepts a "handler".
     """
@@ -129,7 +129,7 @@ def dispatch(request):
                 'http_code': status,
                 'http_reason': HTTP_STATUS_CODES[status]
             })
-        return result, status
+        return (result, status)
 
     # Catch any raised exception (invalid request etc), add the request id
     except exceptions.JsonRpcServerError as e:
@@ -140,4 +140,7 @@ def dispatch(request):
             'http_code': e.http_status_code,
             'http_reason': HTTP_STATUS_CODES[e.http_status_code]
         })
-        return response, e.http_status_code
+        # Only return error message, not 'data', unless more_info specified.
+        if not more_info and 'data' in response['error']:
+            response['error'].pop('data')
+        return (response, e.http_status_code)
