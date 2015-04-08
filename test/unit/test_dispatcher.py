@@ -11,6 +11,7 @@ from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
     JSONRPC_INVALID_REQUEST_HTTP_CODE, JSONRPC_SERVER_ERROR_HTTP_CODE, \
     JSONRPC_SERVER_ERROR_TEXT
 
+
 add_rpc_method('method_only', lambda : None)
 add_rpc_method('one_positional', lambda string: None)
 add_rpc_method('two_positionals', lambda one, two: None)
@@ -36,8 +37,12 @@ class HandleRequests:
         return 5
 
 @register_rpc_method
-def raise_jsonrpcservererror(**kwargs):
+def raise_jsonrpcservererror():
     raise ServerError('Database error', 'Column "Insecure" does not exist')
+
+@register_rpc_method
+def raise_other_error():
+    raise KeyError()
 
 
 class TestDispatch(TestCase):
@@ -422,8 +427,29 @@ class TestDispatch(TestCase):
             'Database error',
             response
         )
-        # Because the more_info was not passed, there should be no 'data'
+        # Because the more_info was passed, there should be 'data'.
         self.assertEquals('Column "Insecure" does not exist', response[0]['error']['data'])
+
+
+    def test_raising_other_error(self):
+        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
+        self.assertErrorEquals(
+            JSONRPC_SERVER_ERROR_HTTP_CODE,
+            'Other error',
+            response
+        )
+        # Because the more_info was not passed, there should be no 'data'
+        self.assertNotIn('data', response['error'])
+
+    def test_raising_other_error_with_more_info(self):
+        response = dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
+        self.assertErrorEquals(
+            JSONRPC_SERVER_ERROR_HTTP_CODE,
+            'Other error',
+            response
+        )
+        # Because the more_info was passed, there should be 'data'.
+        self.assertEquals('Column "Insecure" does not exist', response['error']['data'])
 
 
 if __name__ == '__main__':
