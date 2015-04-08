@@ -9,10 +9,10 @@ from jsonrpcserver import rpc, exceptions, request_log, response_log
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
 
-rpc_methods = {}
+_rpc_methods = {}
 def add_rpc_method(name, func):
     """Add an rpc method to the list"""
-    rpc_methods[name] = func
+    _rpc_methods[name] = func
 
 def register_rpc_method(func):
     """Register an rpc method - used for the decorator."""
@@ -84,7 +84,7 @@ def dispatch(request):
 
         # Get the method if available
         try:
-            method = rpc_methods[request['method']]
+            method = _rpc_methods[request['method']]
         except KeyError:
             raise exceptions.MethodNotFound(request['method'])
 
