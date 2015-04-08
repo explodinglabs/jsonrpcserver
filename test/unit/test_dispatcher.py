@@ -3,7 +3,7 @@
 
 from unittest import TestCase, main, skip, expectedFailure
 
-from jsonrpcserver.dispatcher import jsonrpc, register_jsonrpc_method, dispatch
+from jsonrpcserver.dispatcher import jsonrpc_method, dispatch
 from jsonrpcserver.exceptions import ServerError
 from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
     JSONRPC_INVALID_PARAMS_HTTP_CODE, JSONRPC_METHOD_NOT_FOUND_HTTP_CODE, \
@@ -12,18 +12,18 @@ from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
     JSONRPC_SERVER_ERROR_TEXT
 
 
-register_jsonrpc_method('method_only', lambda : None)
-register_jsonrpc_method('one_positional', lambda string: None)
-register_jsonrpc_method('two_positionals', lambda one, two: None)
-register_jsonrpc_method('just_args', lambda *args: None)
-register_jsonrpc_method('just_kwargs', lambda **kwargs: None)
-register_jsonrpc_method('positionals_with_args', lambda one, two, *args: None)
-register_jsonrpc_method('positionals_with_kwargs', lambda one, two, **kwargs: None)
-register_jsonrpc_method('positionals_with_args_and_kwargs', lambda one, two, *args, **kwargs: None)
-register_jsonrpc_method('add', lambda one, two: one + two)
-register_jsonrpc_method('uppercase', lambda string: string.upper())
+jsonrpc_method(lambda : None, 'method_only')
+jsonrpc_method(lambda string: None, 'one_positional')
+jsonrpc_method(lambda one, two: None, 'two_positionals')
+jsonrpc_method(lambda *args: None, 'just_args')
+jsonrpc_method(lambda **kwargs: None, 'just_kwargs')
+jsonrpc_method(lambda one, two, *args: None, 'positionals_with_args')
+jsonrpc_method(lambda one, two, **kwargs: None, 'positionals_with_kwargs')
+jsonrpc_method(lambda one, two, *args, **kwargs: None, 'positionals_with_args_and_kwargs')
+jsonrpc_method(lambda one, two: one + two, 'add')
+jsonrpc_method(lambda string: string.upper(), 'uppercase')
 
-@jsonrpc
+@jsonrpc_method
 def lookup_surname(**kwargs):
     """Test using a full function, not a lambda"""
     if kwargs['firstname'] == 'John':
@@ -32,15 +32,15 @@ def lookup_surname(**kwargs):
 class HandleRequests:
     """Test using a class method, not a function"""
     @staticmethod
-    @jsonrpc
+    @jsonrpc_method
     def get_5():
         return 5
 
-@jsonrpc
+@jsonrpc_method
 def raise_jsonrpcservererror():
     raise ServerError('Database error', 'Column "Insecure" does not exist')
 
-@jsonrpc
+@jsonrpc_method
 def raise_other_error():
     raise ValueError('Value too low')
 

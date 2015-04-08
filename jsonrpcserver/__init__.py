@@ -6,4 +6,4 @@ request_log = getLogger('jsonrpcserver.request')
 response_log = getLogger('jsonrpcserver.response')
 
 from jsonrpcserver import exceptions, status
-from jsonrpcserver.dispatcher import jsonrpc, dispatch
+from jsonrpcserver.dispatcher import jsonrpc_method, dispatch
