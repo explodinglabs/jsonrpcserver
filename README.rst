@@ -23,17 +23,11 @@ A tuple is returned with information to respond to the client with. This
 includes the JSON-RPC response, and a recommended HTTP status code (if using
 HTTP for transport).
 
+Full documentation is available at https://jsonrpcserver.readthedocs.org/.
+
 Installation
 ------------
 
 .. sourcecode:: sh
 
     $ pip install jsonrpcserver
-
-Documentation
--------------
-
-Documentation is available at https://jsonrpcserver.readthedocs.org/.
-
-If you need a client, try my `jsonrpcclient
-<https://jsonrpcclient.readthedocs.org/>`_ library.
