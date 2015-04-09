@@ -1,14 +1,15 @@
-"""example.py
+"""flask-example.py
 
-A simple server that returns the sum of two numbers.
+A simple server demonstrating the jsonrpcserver library in a Flask environment.
 
 To run it::
-    $ python run.py
+    $ pip install flask
+    $ python flask-example.py
 
 Then with a client, post a request::
     $ curl -X POST -H 'Content-type: application/json' \
     > -d '{"jsonrpc": "2.0", "method": "add", "params": [1, 2], "id": 1}' \
-    > http://localhost:5000/
+    > http://localhost:5000/api
     {
         "jsonrpc": "2.0",
         "result": 3,
@@ -18,18 +19,17 @@ Then with a client, post a request::
 
 from flask import Flask, request, jsonify
 
-from jsonrpcserver import jsonrpc, dispatch
+from jsonrpcserver import Dispatcher
 from jsonrpcserver.exceptions import InvalidParams
 
 
-# Create a Flask app and register the blueprint to it.
+# Create a Flask app and a Dispatcher.
 app = Flask(__name__)
-app.config['TESTING'] = True
-app.config['DEBUG'] = True
+api = Dispatcher()
 
 
 # Write the handling methods.
-@jsonrpc
+@api.method('add')
 def add(x, y):
     """Add two numbers."""
     try:
@@ -39,10 +39,10 @@ def add(x, y):
 
 
 # Add a route to take the requests and pass them on to your methods.
-@app.route('/', methods=['POST'])
+@app.route('/api', methods=['POST'])
 def index():
-    """The json-rpc route."""
-    result, status = dispatch(request.get_json())
+    """The api route."""
+    result, status = api.dispatch(request.get_json())
     return jsonify(result) if result else '', status
 
 
