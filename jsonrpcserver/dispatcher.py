@@ -13,7 +13,8 @@ from jsonrpcserver.status import HTTP_STATUS_CODES
 
 class Dispatcher(object):
 
-    _rpc_methods = {}
+    def __init__(self):
+        self._rpc_methods = {}
 
     def register_method(self, func, name=None):
         """Add a jsonrpc method to the global list."""
