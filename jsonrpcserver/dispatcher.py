@@ -69,7 +69,6 @@ class Dispatcher(object):
             except KeyError:
                 raise MethodNotFound(request['method'])
 
-
             # Call the method
             if not a and not k:
                 try:
@@ -92,7 +91,7 @@ class Dispatcher(object):
                     raise InvalidParams(str(e))
                 method_result = method(**k)
 
-#        if a and k: # This should never happen.
+            # if a and k: # This should never happen.
 
             # Return a response
             request_id = request.get('id', None)
@@ -113,8 +112,8 @@ class Dispatcher(object):
         # Catch all other exceptions
         except Exception as e:
             e.request_id = request.get('id', None)
-            result, status = (json.loads(str(ServerError('Server error', \
-                str(e)))), 500)
+            result, status = (json.loads(str(ServerError(
+                str(type(e).__name__)+': '+str(e)))), 500)
             if not more_info:
                 result['error'].pop('data')
 

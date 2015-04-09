@@ -85,7 +85,7 @@ To notify the client of a server-side error, raise ``ServerError``::
     try:
         db.session.commit()
     except SQLAlchemyError as e:
-        raise ServerError('Database error', str(e))
+        raise ServerError(str(e))
 
 The library will take care of it:
 
