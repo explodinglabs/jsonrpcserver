@@ -36,16 +36,16 @@ Keyword parameters are also acceptable::
 .. important::
 
     Use either positional or keyword parameters, but not both in the same
-    method. (See the JSON-RPC `specification
-    <http://www.jsonrpc.org/specification#parameter_structures>`_)
+    method. See the `JSON-RPC specs
+    <http://www.jsonrpc.org/specification#parameter_structures>`_ for more
+    information.
 
 Dispatching to your methods
 ---------------------------
 
 Dispatch requests to your methods with ``dispatch``::
 
-    >>> request = {'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1}
-    >>> api.dispatch(request)
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
 A tuple is returned with information to respond to the client with; including
