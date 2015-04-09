@@ -24,10 +24,3 @@ includes the JSON-RPC response, and a recommended HTTP status code (if using
 HTTP for transport).
 
 Full documentation is available at https://jsonrpcserver.readthedocs.org/.
-
-Installation
-------------
-
-.. sourcecode:: sh
-
-    $ pip install jsonrpcserver
