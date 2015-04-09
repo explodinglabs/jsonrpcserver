@@ -1,10 +1,9 @@
 jsonrpcserver
 =============
 
-Dispatch `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
+Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
-A dispatcher, which validates incoming requests and passes them on to your own
-methods.
+Takes JSON-RPC requests and passes them on to your own methods.
 
 Installation
 ------------
@@ -13,57 +12,54 @@ Installation
 
     $ pip install jsonrpcserver
 
-Usage
------
+Writing the methods
+-------------------
 
-Create a Flask app and register the blueprint::
+Write methods that will carry out the JSON-RPC requests::
 
-    from flask import Flask, request
-    from jsonrpcserver import bp, dispatch, exceptions
+    >>> from jsonrpcserver import Dispatcher
+    >>> api = Dispatcher()
+    >>> api.register_method(lambda x, y: x + y, 'add')
 
-    app = Flask(__name__)
-    app.register_blueprint(bp)
+More often, you will use the decorator syntax::
 
-Write the methods that will carry out the requests::
+    >>> @api.method('add')
+    ... def add(x, y):
+    ...     return x + y
 
-    def add(x, y):
-        """Add two numbers."""
-        return x + y
+Keyword parameters are also acceptable::
 
-Add a route to pass requests on to your methods::
-
-    @app.route('/', methods=['POST'])
-    def index():
-        return dispatch(request.get_json())
-
-In the JSON-RPC handling methods, keyword parameters are also acceptable::
-
-    def find(**kwargs):
-        """Find a customer."""
-        name = kwargs.get('name')
+    >>> @api.method('find')
+    ... def find(**kwargs):
+    ...     name = kwargs['name']
 
 .. important::
 
     Use either positional or keyword parameters, but not both in the same
-    method. See `Parameter Structures
-    <http://www.jsonrpc.org/specification#parameter_structures>`_ in the
-    JSON-RPC specification.
+    method. (See the JSON-RPC `specification
+    <http://www.jsonrpc.org/specification#parameter_structures>`_)
 
-Returning records from a database (using sqlalchemy)::
+Dispatching to your methods
+---------------------------
 
-    def get_all():
-        """Get a list of books"""
-        books = Book.query.all()
-        return [{'Name': book.name, 'Author': book.author} for book in books]
+Dispatch requests to your methods with ``dispatch``::
 
-See a full server example `here
-<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/example.py>`_.
+    >>> request = {'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1}
+    >>> api.dispatch(request)
+    ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
+
+A tuple is returned with information to respond to the client with; including
+the JSON-RPC response, and a recommended HTTP status code, if using HTTP for
+transport.
 
 Exceptions
-~~~~~~~~~~
+----------
 
-When arguments are invalid, raise ``InvalidParams``::
+When arguments to your methods are invalid, raise ``InvalidParams``::
 
+    from jsonrpcserver.exceptions import InvalidParams, ServerError
+
+    @api.method('find')
     def find(**kwargs):
         """Find a customer."""
 
@@ -72,32 +68,42 @@ When arguments are invalid, raise ``InvalidParams``::
             firstname = kwargs['firstname']
             lastname = kwargs['lastname']
         except KeyError as e:
-            raise exceptions.InvalidParams(str(e))
+            raise InvalidParams(str(e))
 
         # Optional params
         age = kwargs.get('age')
 
-
-The blueprint will catch the exception and return the correct error response to
-the client:
+The library will catch the exception and return the correct JSON-RPC error
+response:
 
 .. code-block:: javascript
 
-    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params", "data": "Key error: 'firstname'"}, "id": 1}
+    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}
 
-To notify the client of some other error, raise ``ServerError``::
+To notify the client of a server-side error, raise ``ServerError``::
 
     try:
         db.session.commit()
-    except SQLAlchemyError:
-        raise exceptions.ServerError('Database error')
+    except SQLAlchemyError as e:
+        raise ServerError('Database error', str(e))
 
-The blueprint will take care of it:
+The library will take care of it:
 
 .. code-block:: javascript
 
     {"jsonrpc": "2.0", "error": {"code": -32000, "message": "Database error"}, "id": 1}
 
+Debugging
+~~~~~~~~~
+
+In the above exceptions, we're passing more information to the exceptions than
+what is appearing in the error response. To see the extra information in the
+error response, pass ``more_info=True`` to the dispatch method. You'll get an
+extra 'data' value in the errors, something like::
+
+.. code-block:: javascript
+
+    {"jsonrpc": "2.0", "error": {"code": -32000, "message": "Database error", "data": "Column 'author_id' does not exist"}, "id": 1}
 
 Logging
 -------
@@ -166,17 +172,15 @@ Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
 .. sourcecode:: python
 
     >>> from jsonrpcclient import Server
-    >>> server = Server('http://example.com/api')
-    >>> server.request('add', 2, 3)
+    >>> Server('http://example.com/api').request('add', 2, 3)
     5
-
 
 curl
 ~~~~
 
 .. code-block:: sh
 
-    $ curl -X POST -H 'Content-type: application/json' -d '{"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 1}' http://localhost:5000/
+    $ curl -X POST -H 'Content-type: application/json' -d '{"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 1}' http://example.com/api
 
 jQuery
 ~~~~~~
