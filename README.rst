@@ -18,8 +18,7 @@ Then dispatch requests to them with ``dispatch``:
 
 .. sourcecode:: python
 
-    >>> request = {'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1}
-    >>> api.dispatch(request)
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
 A tuple is returned with information to respond to the client with; including
