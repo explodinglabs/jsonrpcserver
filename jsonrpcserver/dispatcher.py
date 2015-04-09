@@ -20,6 +20,7 @@ class Dispatcher(object):
         if name is None:
             name = func.__name__
         self._rpc_methods[name] = func
+        return func
 
     def method(self, name):
         """Add a jsonrpc method to the global list. Can be used as a decorator"""
