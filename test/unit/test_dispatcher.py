@@ -25,15 +25,15 @@ tests.register_method(lambda one, two, *args, **kwargs: None, 'positionals_with_
 tests.register_method(lambda one, two: one + two, 'add')
 tests.register_method(lambda string: string.upper(), 'uppercase')
 
-@tests.method('lookup_surname')
-def lookup_surname(**kwargs):
+@tests.method('get')
+def get(**kwargs):
     """Test using a full function, not a lambda"""
     if kwargs['firstname'] == 'John':
         return 'Smith'
 
 @tests.method('raise_jsonrpcservererror')
 def raise_jsonrpcservererror():
-    raise ServerError('Database error', 'Column "Insecure" does not exist')
+    raise ServerError('Column "Insecure" does not exist')
 
 @tests.method('raise_other_error')
 def raise_other_error():
@@ -51,20 +51,20 @@ class TestDispatch(TestCase):
 
     def assertNoContent(self, response):
         result, status = response
-        self.assertEqual(204, status)
         self.assertEqual(None, result)
+        self.assertEqual(204, status)
 
     def assertResultEquals(self, expected_result, response):
         result, status = response
         self.assertIn('result', result)
-        self.assertEqual(expected_result, result['result'])
         self.assertEqual(200, status)
+        self.assertEqual(expected_result, result['result'])
 
     def assertErrorEquals(self, expected_status, expected_result, response):
         result, status = response
         self.assertIn('error', result)
-        self.assertEqual(expected_status, status)
         self.assertEqual(expected_result, result['error']['message'])
+        self.assertEqual(expected_status, status)
 
     # InvalidRequest
 
@@ -96,7 +96,7 @@ class TestDispatch(TestCase):
         self.assertErrorEquals(
             JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
             JSONRPC_METHOD_NOT_FOUND_TEXT,
-            tests.dispatch({'jsonrpc': '2.0', 'method': 'get'})
+            tests.dispatch({'jsonrpc': '2.0', 'method': 'no_such_method'}, more_info=True)
         )
 
     def test_trying_to_call_magic_method(self):
@@ -404,7 +404,7 @@ class TestDispatch(TestCase):
     def test_full_function_not_lambda(self):
         self.assertResultEquals(
             'Smith',
-            tests.dispatch({'jsonrpc': '2.0', 'method': 'lookup_surname', 'params': {'firstname': 'John'}, 'id': 1})
+            tests.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'firstname': 'John'}, 'id': 1})
         )
 
     def test_class_method(self):
@@ -417,7 +417,7 @@ class TestDispatch(TestCase):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
-            'Database error',
+            JSONRPC_SERVER_ERROR_TEXT,
             response
         )
         # Because the more_info was not passed, there should be no 'data'
@@ -427,7 +427,7 @@ class TestDispatch(TestCase):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'}, more_info=True)
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
-            'Database error',
+            JSONRPC_SERVER_ERROR_TEXT,
             response
         )
         # Because the more_info was passed, there should be 'data'.
@@ -452,7 +452,7 @@ class TestDispatch(TestCase):
             response
         )
         # Because the more_info was passed, there should be 'data'.
-        self.assertEqual('Value too low', response[0]['error']['data'])
+        self.assertEqual('ValueError: Value too low', response[0]['error']['data'])
 
 
 if __name__ == '__main__':

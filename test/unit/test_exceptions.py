@@ -117,7 +117,7 @@ class TestServerError(TestCase):
                 'data': 'Not found'
             },
             'id': None
-        }, json.loads(str(exceptions.ServerError(data='Not found'))))
+        }, json.loads(str(exceptions.ServerError('Not found'))))
 
 
 if __name__ == '__main__':
