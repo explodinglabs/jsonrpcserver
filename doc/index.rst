@@ -140,9 +140,6 @@ For better log entries, customize the log format::
 
 The request format has these fields:
 
-%(http_headers)s
-    The full HTTP headers.
-
 %(message)s
     The json request (the body).
 
@@ -153,9 +150,6 @@ The response format has these fields:
 
 %(http_reason)s
     The description of the status code, eg. *"BAD REQUEST"*.
-
-%(http_headers)s
-    The full HTTP headers.
 
 %(message)s
     The json response (the body).
