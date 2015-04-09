@@ -6,15 +6,13 @@ jsonrpcserver
 
 Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
-First write methods to carry out the requests:
+Write methods to carry out the requests:
 
 .. sourcecode:: python
 
-    >>> from jsonrpcserver import Dispatcher
-    >>> api = Dispatcher()
     >>> api.register_method(lambda x, y: x + y, 'add')
 
-Then dispatch requests to them with ``dispatch``:
+Then dispatch requests to them:
 
 .. sourcecode:: python
 
