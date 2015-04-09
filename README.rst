@@ -19,8 +19,7 @@ Then dispatch requests to them:
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
-A tuple is returned with information to respond to the client with. This
-includes the JSON-RPC response, and a recommended HTTP status code (if using
-HTTP for transport).
+A tuple is returned with some information to respond to the client with. This
+includes a JSON-RPC response and a HTTP status code if needed.
 
 Full documentation is available at https://jsonrpcserver.readthedocs.org/.
