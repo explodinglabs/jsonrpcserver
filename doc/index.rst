@@ -99,7 +99,7 @@ Debugging
 In the above exceptions, we're passing more information to the exceptions than
 what is appearing in the error response. To see the extra information in the
 error response, pass ``more_info=True`` to the dispatch method. You'll get an
-extra 'data' value in the errors, something like::
+extra 'data' value in the errors, something like:
 
 .. code-block:: javascript
 
