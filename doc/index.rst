@@ -15,13 +15,13 @@ Installation
 Writing the methods
 -------------------
 
-Write methods that will carry out the JSON-RPC requests::
+Write functions to carry out the requests::
 
     >>> from jsonrpcserver import Dispatcher
     >>> api = Dispatcher()
     >>> api.register_method(lambda x, y: x + y, 'add')
 
-More often, you will use the decorator syntax::
+You may prefer use the decorator syntax::
 
     >>> @api.method('add')
     ... def add(x, y):
