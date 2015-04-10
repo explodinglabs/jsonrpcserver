@@ -47,8 +47,8 @@ Dispatch requests to your methods with ``dispatch``::
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
-The returned values can be used to respond to a client, including a JSON-RPC
-response, and an HTTP status code if needed.
+The returned values - a JSON-RPC response and an HTTP status code - can be
+used to respond to a client.
 
 Exceptions
 ----------
