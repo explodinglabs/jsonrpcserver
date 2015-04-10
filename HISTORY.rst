@@ -14,4 +14,4 @@ used with Flask with very few changes - see `flask-example.py
 The library now works very similarly to Josh Marshall's `jsonrpclib
 <https://pypi.python.org/pypi/jsonrpclib>`_, but is purely for the server-side
 and has no client, and is just a dispatcher, not a server (despite the name),
-giving the freedom to be used on a wide range of servers.
+giving the freedom to be used on a wider range of scenarios.
