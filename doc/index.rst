@@ -60,14 +60,12 @@ When arguments to your methods are invalid, raise ``InvalidParams``::
     @api.method('find')
     def find(**kwargs):
         """Find a customer."""
-
         # Required params
         try:
             firstname = kwargs['firstname']
             lastname = kwargs['lastname']
         except KeyError as e:
             raise InvalidParams(str(e))
-
         # Optional params
         age = kwargs.get('age')
 
@@ -76,7 +74,7 @@ response:
 
 .. code-block:: javascript
 
-    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}
+    ({"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}, 400)
 
 To notify the client of a server-side error, raise ``ServerError``::
 
@@ -89,7 +87,7 @@ The library will take care of it:
 
 .. code-block:: javascript
 
-    {"jsonrpc": "2.0", "error": {"code": -32000, "message": "Database error"}, "id": 1}
+    ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}, "id": 1}, 500)
 
 Debugging
 ~~~~~~~~~
@@ -97,11 +95,10 @@ Debugging
 In the above exceptions, we're passing more information to the exceptions than
 what is appearing in the error response. To see the extra information in the
 error response, pass ``more_info=True`` to the dispatch method. You'll get an
-extra 'data' value in the errors, something like:
+extra 'data' value in the errors, something like::
 
-.. code-block:: javascript
-
-    {"jsonrpc": "2.0", "error": {"code": -32000, "message": "Database error", "data": "Column 'author_id' does not exist"}, "id": 1}
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1}, more_info=True)
+    ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
 -------
@@ -164,7 +161,8 @@ Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
 .. sourcecode:: python
 
     >>> from jsonrpcclient import Server
-    >>> Server('http://example.com/api').request('add', 2, 3)
+    >>> s = Server('http://example.com/api')
+    >>> s.request('add', 2, 3)
     5
 
 curl
