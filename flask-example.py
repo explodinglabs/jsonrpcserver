@@ -1,26 +1,13 @@
 """flask-example.py
 
-A simple server demonstrating the jsonrpcserver library in a Flask environment.
+Demonstrates the jsonrpcserver library in a Flask app.
 
-To run it::
+To run::
     $ pip install flask
     $ python flask-example.py
-
-Then with a client, post a request::
-    $ curl -X POST -H 'Content-type: application/json' \
-    > -d '{"jsonrpc": "2.0", "method": "add", "params": [1, 2], "id": 1}' \
-    > http://localhost:5000/api
-    {
-        "jsonrpc": "2.0",
-        "result": 3,
-        "id": 1
-    }
 """
-
 from flask import Flask, request, jsonify
-
 from jsonrpcserver import Dispatcher
-from jsonrpcserver.exceptions import InvalidParams
 
 
 # Create a Flask app and a Dispatcher.
@@ -32,10 +19,7 @@ api = Dispatcher()
 @api.method('add')
 def add(x, y):
     """Add two numbers."""
-    try:
-        return x + y
-    except TypeError:
-        raise InvalidParams('Type error')
+    return x + y
 
 
 # Add a route to take the requests and pass them on to your methods.
