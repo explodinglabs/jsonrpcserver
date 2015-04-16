@@ -1,8 +1,6 @@
 """setup.py"""
 #pylint:disable=line-too-long
 
-import sys
-from setuptools.command.test import test as TestCommand
 from codecs import open as codecs_open
 
 try:
