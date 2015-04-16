@@ -12,6 +12,7 @@ from jsonrpcserver.status import HTTP_STATUS_CODES
 
 
 class Dispatcher(object):
+    """Holds the rpc methods, and dispatches to them."""
 
     def __init__(self):
         self._rpc_methods = {}
@@ -24,8 +25,9 @@ class Dispatcher(object):
         return func
 
     def method(self, name):
-        """Add a jsonrpc method to the global list. Can be used as a decorator"""
-        def decorator(f):
+        """Add a jsonrpc method to the global list. Can be used as a
+        decorator"""
+        def decorator(f): #pylint:disable=missing-docstring
             return self.register_method(f, name)
         return decorator
 
@@ -48,14 +50,15 @@ class Dispatcher(object):
 
             # Validate
             try:
-                jsonschema.validate(request, json.loads(pkgutil.get_data(__name__, \
-                    'request-schema.json').decode('utf-8')))
+                jsonschema.validate(request, json.loads(pkgutil.get_data(
+                    __name__, 'request-schema.json').decode('utf-8')))
             except jsonschema.ValidationError as e:
                 raise InvalidRequest(e.message)
 
 
             # Get the args and kwargs from request['params']
-            (a, k) = _convert_params_to_args_and_kwargs(request.get('params', None))
+            (a, k) = _convert_params_to_args_and_kwargs(request.get('params', \
+                None))
 
 
             # Dont allow magic methods to be called
