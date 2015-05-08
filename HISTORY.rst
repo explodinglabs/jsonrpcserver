@@ -1,6 +1,12 @@
 Release History
 ---------------
 
+2.0.1 (2015-05-09)
+^^^^^^^^^^^^^^^^^^
+
+- Fixed logging, now allows you to add handlers to getLogger('jsonrpcserver').
+  See docs for info.
+
 2.0.0 (2015-04-09)
 ^^^^^^^^^^^^^^^^^^
 
