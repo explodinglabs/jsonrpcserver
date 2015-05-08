@@ -1,15 +1,21 @@
 """dispatcher.py"""
 
 import json
-
-import jsonschema
+import logging
 import pkgutil
 from inspect import getcallargs
-from jsonrpcserver import rpc, request_log, response_log
+
+import jsonschema
+
+from jsonrpcserver import rpc
 from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
     MethodNotFound, InvalidParams, ServerError
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
+
+logger = logging.getLogger(__name__)
+request_log = logging.getLogger(__name__+'.request')
+response_log = logging.getLogger(__name__+'.response')
 
 class Dispatcher(object):
     """Holds the rpc methods, and dispatches to them."""
@@ -144,15 +150,11 @@ def _convert_params_to_args_and_kwargs(params):
 
     :param params: The arguments for the JSON-RPC method.
     """
-
     args = kwargs = None
-
     # Params is a dict, ie. "params": {"foo": "bar"}
     if isinstance(params, dict):
         kwargs = params
-
     # Params is a list, ie. "params": ["foo", "bar"]
     elif isinstance(params, list):
         args = params
-
     return (args, kwargs)
