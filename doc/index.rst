@@ -103,35 +103,24 @@ extra 'data' value in the errors, something like::
 Logging
 -------
 
-To give fine control, two loggers are used; ``request_log`` for requests and
-``response_log`` for responses. These do nothing until they're set up. The
-following shows how to output the ``request_log`` to stderr::
+To see the json messages being passed back and forth, set the log level to
+INFO::
 
-    from logging import StreamHandler, Formatter, INFO
-    from jsonrpcserver import request_log, response_log
+    import logging
+    logging.basicConfig()
+    logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
-    # Json messages are on the INFO log level.
-    request_log.setLevel(INFO)
+For better logging, replace ``basicConfig`` with your own handlers, and
+customize the log format for ``jsonrpcserver.dispatcher.request`` and
+``jsonrpcserver.dispatcher.response``::
 
-    # Add a stream handler to output to stderr.
-    request_handler = StreamHandler()
-    request_log.addHandler(request_handler)
+    request_handler = logging.StreamHandler()
+    request_handler.setFormatter(logging.Formatter(fmt='--> %(message)s'))
+    logging.getLogger('jsonrpcserver.dispatcher.request').addHandler(request_handler)
 
-Do the same with ``response_log`` to see the responses::
-
-    response_log.setLevel(INFO)
-    response_handler = StreamHandler()
-    response_log.addHandler(response_handler)
-
-For better log entries, customize the log format::
-
-    # Set a custom request log format
-    request_format = Formatter(fmt='--> %(message)s')
-    request_handler.setFormatter(request_format)
-
-    # Set a custom response log format
-    response_format = Formatter(fmt='<-- %(http_code)d %(http_reason)s %(message)s')
-    response_handler.setFormatter(response_format)
+    response_handler = logging.StreamHandler()
+    response_handler.setFormatter(logging.Formatter(fmt='<-- %(http_code)d %(http_reason)s %(message)s'))
+    logging.getLogger('jsonrpcserver.dispatcher.response').addHandler(response_handler)
 
 The request format has these fields:
 
