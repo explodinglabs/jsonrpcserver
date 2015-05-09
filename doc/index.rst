@@ -36,7 +36,7 @@ Keyword parameters are also acceptable::
 .. important::
 
     Use either positional or keyword parameters, but not both in the same
-    method - as required by the `JSON-RPC specs
+    method - this is a requirement of the JSON-RPC `specs
     <http://www.jsonrpc.org/specification#parameter_structures>`_.
 
 Dispatching to your methods
@@ -53,7 +53,7 @@ used to respond to a client.
 Exceptions
 ----------
 
-When arguments to your methods are invalid, raise ``InvalidParams``::
+When your receive invalid arguments, raise ``InvalidParams``::
 
     from jsonrpcserver.exceptions import InvalidParams, ServerError
 
