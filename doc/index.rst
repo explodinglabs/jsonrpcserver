@@ -21,7 +21,7 @@ Write functions to carry out the requests::
     >>> api = Dispatcher()
     >>> api.register_method(lambda x, y: x + y, 'add')
 
-You may prefer use the decorator syntax::
+You may prefer the decorator syntax::
 
     >>> @api.method('add')
     ... def add(x, y):
