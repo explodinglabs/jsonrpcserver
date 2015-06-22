@@ -1,9 +1,6 @@
 jsonrpcserver
 =============
 
-.. image:: https://pypip.in/v/jsonrpcserver/badge.png
-.. image:: https://pypip.in/d/jsonrpcserver/badge.png
-
 Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
 Write functions to carry out the JSON-RPC requests:
