@@ -1,19 +1,19 @@
 jsonrpcserver
-=============
+*************
 
 Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
 Takes JSON-RPC requests and passes them on to your own methods.
 
 Installation
-------------
+============
 
 .. code-block:: sh
 
     $ pip install jsonrpcserver
 
 Writing the methods
--------------------
+===================
 
 Write functions to carry out the requests::
 
@@ -40,18 +40,21 @@ Keyword parameters are also acceptable::
     <http://www.jsonrpc.org/specification#parameter_structures>`_.
 
 Dispatching to your methods
----------------------------
+===========================
 
 Dispatch requests to your methods with ``dispatch``::
 
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
+Note that ``dispatch()`` takes a *dict*, not a string. If you have a string,
+convert it to dict first with ``json.loads()``.
+
 The returned values - a JSON-RPC response and an HTTP status code - can be
 used to respond to a client.
 
 Exceptions
-----------
+==========
 
 When your receive invalid arguments, raise ``InvalidParams``::
 
@@ -90,7 +93,7 @@ The library will take care of it:
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}, "id": 1}, 500)
 
 Debugging
-~~~~~~~~~
+=========
 
 In the above exceptions, we're passing more information to the exceptions than
 what is appearing in the error response. To see the extra information in the
@@ -101,7 +104,7 @@ extra 'data' value in the errors, something like::
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
--------
+=======
 
 To see the json messages being passed back and forth, set the log level to
 INFO::
@@ -140,10 +143,10 @@ The response format has these fields:
 
 
 Clients
--------
+=======
 
 Python
-~~~~~~
+------
 
 Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
 
@@ -155,14 +158,17 @@ Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
     5
 
 curl
-~~~~
+----
 
 .. code-block:: sh
 
-    $ curl -X POST -H 'Content-type: application/json' -d '{"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 1}' http://example.com/api
+    $ curl -X POST \
+        -H 'Content-type: application/json' \
+        -d '{"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 1}' \
+        http://example.com/api
 
 jQuery
-~~~~~~
+------
 
 .. code-block:: javascript
 
@@ -184,14 +190,12 @@ jQuery
     $('#answer').html(data.result);
   });
 
-Todo
-----
-
-* Support `batch calls <http://www.jsonrpc.org/specification#batch>`_.
-
 Links
------
+=====
 
-* Package: https://pypi.python.org/pypi/jsonrpcserver
-* Repository: https://bitbucket.org/beau-barker/jsonrpcserver
-* Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
+- PyPi Package: https://pypi.python.org/pypi/jsonrpcserver
+- Repository: https://bitbucket.org/beau-barker/jsonrpcserver
+- Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
+
+If you need a client, try my `jsonrpcclient
+<https://jsonrpcclient.readthedocs.org/>`_ library.

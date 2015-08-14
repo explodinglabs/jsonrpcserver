@@ -40,13 +40,13 @@ class Dispatcher(object):
     def dispatch(self, request, more_info=False):
         """Call a method, based on the request.
 
-        request: A dict containing the JSON request.
-
         ..versionchanged:: 1.0.12
             Sending "'id': null" will be treated as if no response is required.
         ..versionchanged:: 2.0.0
             Removed all flask code.
             No longer accepts a "handler".
+
+        :param request: A dict containing the JSON request.
         """
         #pylint:disable=too-many-branches
 
