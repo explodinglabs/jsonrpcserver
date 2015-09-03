@@ -1,6 +1,3 @@
-jsonrpcserver
-*************
-
 Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
 Write functions to carry out the JSON-RPC requests:
