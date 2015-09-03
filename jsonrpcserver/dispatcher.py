@@ -83,7 +83,10 @@ class Dispatcher(object):
             except KeyError:
                 raise MethodNotFound(reqMethod)
 
-            # Call the method
+            # Call the method, first checking if the arguments match the
+            # method's parameters. It's no good catching exceptions after the
+            # method has been called because the exception may have been raised
+            # from inside the method.
             if not a and not k:
                 try:
                     getcallargs(method)
