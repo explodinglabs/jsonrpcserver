@@ -1,23 +1,14 @@
 Release History
----------------
+===============
+
+2.0.2 (2015-09-04)
+------------------
+
+- Faster request validation.
+  (`#23<https://bitbucket.org/beau-barker/jsonrpcserver/issues/23/performance-of-jsonrpcserver-is-not-very>`_)
 
 2.0.1 (2015-05-09)
-^^^^^^^^^^^^^^^^^^
+------------------
 
 - Fixed logging, now allows you to add handlers to getLogger('jsonrpcserver').
   See docs for info.
-
-2.0.0 (2015-04-09)
-^^^^^^^^^^^^^^^^^^
-
-**Major update.**
-
-The Flask dependency has been removed. So little of the code relied on Flask,
-so that code was either updated or removed altogether. The library can still be
-used with Flask with very few changes - see `flask-example.py
-<https://bitbucket.org/beau-barker/jsonrpcserver/src/tip/flask-example.py>`_.
-
-The library now works very similarly to Josh Marshall's `jsonrpclib
-<https://pypi.python.org/pypi/jsonrpclib>`_, but is purely for the server-side
-and has no client, and is just a dispatcher, not a server (despite the name),
-giving the freedom to be used on a wider range of scenarios.
