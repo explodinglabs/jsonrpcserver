@@ -111,7 +111,7 @@ class Dispatcher(object):
             # if a and k: # This should never happen.
 
             # Return a response
-            request_id = request.get('id', None)
+            request_id = request.get('id')
             if request_id is not None:
                 # A response was requested
                 result, status = (rpc.result(request_id, method_result), 200)
@@ -121,14 +121,14 @@ class Dispatcher(object):
 
         # Catch JsonRpcServerErrors raised (invalid request etc)
         except JsonRpcServerError as e:
-            e.request_id = request.get('id', None)
+            e.request_id = request.get('id')
             result, status = (json.loads(str(e)), e.http_status_code)
             if not more_info:
                 result['error'].pop('data')
 
         # Catch all other exceptions
         except Exception as e: #pylint:disable=broad-except
-            e.request_id = request.get('id', None)
+            e.request_id = request.get('id')
             result, status = (json.loads(str(ServerError(
                 str(type(e).__name__)+': '+str(e)))), 500)
             if not more_info:
