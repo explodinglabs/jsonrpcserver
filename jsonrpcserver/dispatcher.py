@@ -18,7 +18,7 @@ request_log = logging.getLogger(__name__+'.request')
 response_log = logging.getLogger(__name__+'.response')
 
 jsonValidator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
-        __name__, 'request-schema.json').decode('utf-8')))
+    __name__, 'request-schema.json').decode('utf-8')))
 
 
 class Dispatcher(object):
@@ -53,7 +53,7 @@ class Dispatcher(object):
 
         :param request: A dict containing the JSON request.
         """
-        #pylint:disable=too-many-branches
+        #pylint:disable=too-many-branches,too-many-statements
 
         request_log.info(json.dumps(request))
 
@@ -127,7 +127,7 @@ class Dispatcher(object):
                 result['error'].pop('data')
 
         # Catch all other exceptions
-        except Exception as e:
+        except Exception as e: #pylint:disable=broad-except
             e.request_id = request.get('id', None)
             result, status = (json.loads(str(ServerError(
                 str(type(e).__name__)+': '+str(e)))), 500)
