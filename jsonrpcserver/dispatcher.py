@@ -17,11 +17,16 @@ logger = logging.getLogger(__name__)
 request_log = logging.getLogger(__name__+'.request')
 response_log = logging.getLogger(__name__+'.response')
 
+jsonValidator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
+        __name__, 'request-schema.json').decode('utf-8')))
+
+
 class Dispatcher(object):
     """Holds the rpc methods, and dispatches to them."""
 
     def __init__(self):
         self._rpc_methods = {}
+        self.validateRequests = True
 
     def register_method(self, func, name=None):
         """Add a jsonrpc method to the global list."""
@@ -55,29 +60,28 @@ class Dispatcher(object):
         try:
 
             # Validate
-            try:
-                jsonschema.validate(request, json.loads(pkgutil.get_data(
-                    __name__, 'request-schema.json').decode('utf-8')))
-            except jsonschema.ValidationError as e:
-                raise InvalidRequest(e.message)
-
+            if self.validateRequests:
+                try:
+                    jsonValidator.validate(request)
+                except jsonschema.ValidationError as e:
+                    raise InvalidRequest(e.message)
 
             # Get the args and kwargs from request['params']
             (a, k) = _convert_params_to_args_and_kwargs(request.get('params', \
                 None))
 
+            reqMethod = request['method']
 
             # Dont allow magic methods to be called
-            if request['method'].startswith('__') \
-                    and request['method'].endswith('__'):
-                raise MethodNotFound(request['method'])
+            if reqMethod.startswith('__') and reqMethod.endswith('__'):
+                raise MethodNotFound(reqMethod)
 
 
             # Get the method if available
             try:
-                method = self._rpc_methods[request['method']]
+                method = self._rpc_methods[reqMethod]
             except KeyError:
-                raise MethodNotFound(request['method'])
+                raise MethodNotFound(reqMethod)
 
             # Call the method
             if not a and not k:
