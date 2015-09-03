@@ -16,7 +16,7 @@ with codecs_open('HISTORY.rst', 'r', 'utf-8') as f:
 
 setup(
     name='jsonrpcserver',
-    version='2.0.1',
+    version='2.0.2',
     description='JSON-RPC server library.',
     long_description=readme + '\n\n' + history,
     author='Beau Barker',
