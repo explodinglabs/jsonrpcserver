@@ -5,7 +5,7 @@ Release History
 ------------------
 
 - Faster request validation.
-  (`#23<https://bitbucket.org/beau-barker/jsonrpcserver/issues/23/performance-of-jsonrpcserver-is-not-very>`_)
+  (`#23 <https://bitbucket.org/beau-barker/jsonrpcserver/issues/23/performance-of-jsonrpcserver-is-not-very>`_)
 
 2.0.1 (2015-05-09)
 ------------------
