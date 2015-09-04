@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 request_log = logging.getLogger(__name__+'.request')
 response_log = logging.getLogger(__name__+'.response')
 
-jsonValidator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
+json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
     __name__, 'request-schema.json').decode('utf-8')))
 
 
@@ -62,7 +62,7 @@ class Dispatcher(object):
             # Validate
             if self.validateRequests:
                 try:
-                    jsonValidator.validate(request)
+                    json_validator.validate(request)
                 except jsonschema.ValidationError as e:
                     raise InvalidRequest(e.message)
 
