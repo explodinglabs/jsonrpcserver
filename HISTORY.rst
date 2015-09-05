@@ -6,8 +6,8 @@ Release History
 
 - Debug mode can now be enabled by setting a flag on the dispatcher. This allows
   extra (potentially sensitive) information to be included in the response
-  message to the client. *The previous method (passing ``more_info=True`` to the
-  dispatch method) has been removed.*
+  message to the client. *The previous method, passing ``more_info=True`` to the
+  dispatch method, has been removed.*
 
 2.0.2 (2015-09-04)
 ------------------
