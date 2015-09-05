@@ -10,8 +10,8 @@ Installation
 
     $ pip install jsonrpcserver
 
-Write the methods
-=================
+Usage
+=====
 
 Write functions to carry out the requests::
 
@@ -38,7 +38,7 @@ Keyword parameters are also acceptable::
     <http://www.jsonrpc.org/specification#parameter_structures>`_.
 
 Dispatching
-===========
+-----------
 
 Dispatch requests with ``dispatch()``::
 
@@ -51,7 +51,7 @@ The returned tuple is a **JSON-RPC response** and an **HTTP status code**, which
 can be used to respond to a client.
 
 Exceptions
-==========
+----------
 
 On receiving invalid arguments, raise ``InvalidParams``::
 
@@ -90,7 +90,7 @@ The library will take care of it, returning:
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}, "id": 1}, 500)
 
 Debugging
-=========
+---------
 
 In the above exceptions, potentially sensitive information is included when
 raising the exception which can help with debugging. This information is not
@@ -102,7 +102,7 @@ property, like::
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
-=======
+-------
 
 To see the JSON messages being passed back and forth, set the log level to
 INFO::
