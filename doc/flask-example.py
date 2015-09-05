@@ -2,8 +2,12 @@
 
 Demonstrates the jsonrpcserver library in a Flask app.
 
-To run::
-    $ pip install flask
+Install::
+
+    $ pip install flask jsonrpcserver
+
+Run::
+
     $ python flask-example.py
 """
 from flask import Flask, request, jsonify
