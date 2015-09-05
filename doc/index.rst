@@ -94,7 +94,7 @@ Debugging
 
 In the above exceptions, extra debugging information is included when raising
 the exceptions. To include this extra information in the JSON-RPC responses,
-turn on debugging (pass ``debug=True`` when instantiating the dispatcher). The
+enable debugging (pass ``debug=True`` when instantiating the dispatcher). The
 extra info will then be included in the ``data`` property, like this::
 
     >>> api.debug = True
