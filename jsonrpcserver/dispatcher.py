@@ -98,17 +98,18 @@ class Dispatcher(object):
             (a, k) = _convert_params_to_args_and_kwargs(request.get('params', \
                 None))
 
-            reqMethod = request['method']
+            request_method = request['method']
 
             # Dont allow magic methods to be called
-            if reqMethod.startswith('__') and reqMethod.endswith('__'):
-                raise MethodNotFound(reqMethod)
+            if request_method.startswith('__') and \
+                    request_method.endswith('__'):
+                raise MethodNotFound(request_method)
 
             # Get the method if available
             try:
-                method = self._rpc_methods[reqMethod]
+                method = self._rpc_methods[request_method]
             except KeyError:
-                raise MethodNotFound(reqMethod)
+                raise MethodNotFound(request_method)
 
             # Call the method, first checking if the arguments match the
             # method's parameters. It's no good checking for invalid params by
