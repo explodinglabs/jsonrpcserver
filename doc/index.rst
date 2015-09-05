@@ -111,9 +111,11 @@ INFO::
     logging.basicConfig()
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
-For better logging, replace ``basicConfig`` with your own handlers, and
-customize the log format for ``jsonrpcserver.dispatcher.request`` and
-``jsonrpcserver.dispatcher.response``::
+For better logging, customize the log format for
+``jsonrpcserver.dispatcher.request`` and ``jsonrpcserver.dispatcher.response``::
+
+    import logging
+    logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
     request_handler = logging.StreamHandler()
     request_handler.setFormatter(logging.Formatter(fmt='--> %(message)s'))
