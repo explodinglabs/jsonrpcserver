@@ -92,13 +92,13 @@ The library will take care of it, returning:
 Debugging
 ---------
 
-In the above exceptions, potentially sensitive information is included when
-raising the exception which can help with debugging. This information is not
-included in the response by default. To include the extra information, pass
-``more_info=True`` to ``dispatch()``. The extra info will be in the ``data``
-property, like::
+In the above exceptions, extra debugging information is included when raising
+the exceptions. To include this extra information in the JSON-RPC responses,
+turn on debugging (pass ``debug=True`` when instantiating the dispatcher). The
+extra info will then be included in the ``data`` property, like this::
 
-    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1}, more_info=True)
+    >>> api.debug = True
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1})
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
