@@ -47,8 +47,8 @@ Dispatch requests with ``dispatch()``::
 
 ``dispatch()`` takes a dictionary. If you have a string, use ``dispatch_str()``.
 
-The returned values - a **JSON-RPC response** and an **HTTP status code** - can
-be used to respond to a client.
+The returned tuple is a **JSON-RPC response** and an **HTTP status code**, which
+can be used to respond to a client.
 
 Exceptions
 ==========
