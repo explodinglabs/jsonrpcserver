@@ -36,9 +36,8 @@ class JsonRpcServerError(Exception):
 
     def __str__(self):
         """Returns the error in a in JSON-RPC format response string"""
-        return json.dumps(
-            rpc.error(self.request_id, self.jsonrpc_status_code, self.message, \
-                self.data), sort_keys=False)
+        return json.dumps(rpc.error(self.request_id, self.jsonrpc_status_code, \
+            self.message, self.data), sort_keys=False)
 
 
 class ParseError(JsonRpcServerError):
