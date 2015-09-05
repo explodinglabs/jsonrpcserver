@@ -15,6 +15,7 @@
 
 import sys
 import os
+
 import alabaster
 
 # If extensions (or modules to document with autodoc) are in another directory,
