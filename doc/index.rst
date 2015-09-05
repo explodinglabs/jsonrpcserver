@@ -16,18 +16,18 @@ Usage
 Write functions to carry out the requests::
 
     >>> from jsonrpcserver import Dispatcher
-    >>> api = Dispatcher()
-    >>> api.register_method(lambda x, y: x + y, 'add')
+    >>> dispatcher = Dispatcher()
+    >>> dispatcher.register_method(lambda x, y: x + y, 'add')
 
 You may prefer the decorator syntax::
 
-    >>> @api.method('add')
+    >>> @dispatcher.method('add')
     ... def add(x, y):
     ...     return x + y
 
 Keyword parameters are also acceptable::
 
-    >>> @api.method('find')
+    >>> @dispatcher.method('find')
     ... def find(**kwargs):
     ...     name = kwargs['name']
 
@@ -40,16 +40,17 @@ Keyword parameters are also acceptable::
 Dispatching
 -----------
 
-Dispatch JSON-RPC requests with ``dispatch()``::
+Dispatch requests with ``dispatch()``::
 
-    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
+    >>> dispatcher.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
-``dispatch()`` takes a dictionary. If you have a string, use ``dispatch_str()``.
+.. tip::
 
-The returned tuple, a JSON-RPC response and an HTTP status code, can be used to
+    ``dispatch()`` takes a dictionary. If you have a string, use ``dispatch_str()``.
+
+The returned values, a JSON-RPC response and an HTTP status code, can be used to
 respond to a client.
-
 
 Exceptions
 ----------
@@ -58,7 +59,7 @@ On receiving invalid arguments, raise ``InvalidParams``::
 
     from jsonrpcserver.exceptions import InvalidParams, ServerError
 
-    @api.method('find')
+    @dispatcher.method('find')
     def find(**kwargs):
         """Find a customer."""
         # Required params
@@ -98,15 +99,15 @@ the exceptions. To include this extra information in the JSON-RPC responses,
 enable debugging (pass ``debug=True`` when instantiating the dispatcher). The
 extra info will then be included in the ``data`` property, like this::
 
-    >>> api.debug = True
-    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1})
+    >>> dispatcher.debug = True
+    >>> dispatcher.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1})
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
 -------
 
 To see the JSON messages being passed back and forth, set the log level to
-INFO::
+``INFO``::
 
     import logging
     logging.basicConfig()
@@ -145,8 +146,8 @@ The response format has these fields:
 Examples
 ========
 
-| `HTTP Server using Flask <https://bitbucket.org/snippets/beau-barker/BAXrR/json-rpc-over-http-server-in-python>`_
-| `ZeroMQ Server using pyzmq <https://bitbucket.org/snippets/beau-barker/BAMno/json-rpc-over-zeromq-request-reply-server>`_
+- `HTTP Server using Flask <https://bitbucket.org/snippets/beau-barker/BAXrR/json-rpc-over-http-server-in-python>`_
+- `ZeroMQ Server using pyzmq <https://bitbucket.org/snippets/beau-barker/BAMno/json-rpc-over-zeromq-request-reply-server>`_
 
 Links
 =====
@@ -155,7 +156,5 @@ Links
 - Repository: https://bitbucket.org/beau-barker/jsonrpcserver
 - Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
 
-If you need a client, try my `jsonrpcclient
-<https://jsonrpcclient.readthedocs.org/>`_ library.
-
-`. <test.rst>`__
+Need a client? Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_
+library.
