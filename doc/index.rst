@@ -139,6 +139,12 @@ The response format has these fields:
 %(message)s
     The JSON response (the body).
 
+Examples
+========
+
+HTTP Server using Flask
+ZeroMQ Server using pyzmq
+
 Links
 =====
 
