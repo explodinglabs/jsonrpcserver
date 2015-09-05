@@ -10,8 +10,8 @@ Installation
 
     $ pip install jsonrpcserver
 
-Writing the methods
-===================
+Write the methods
+=================
 
 Write functions to carry out the requests::
 
@@ -34,26 +34,26 @@ Keyword parameters are also acceptable::
 .. important::
 
     Use either positional or keyword parameters, but not both in the same
-    method. This is a requirement of the JSON-RPC `specs
+    method. This is a requirement of the `JSON-RPC specs
     <http://www.jsonrpc.org/specification#parameter_structures>`_.
 
-Dispatching to your methods
-===========================
+Dispatching
+===========
 
-Pass requests through ``dispatch()``::
+Dispatch to the methods with ``dispatch()``::
 
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
 ``dispatch()`` takes a dict. If you have a string, convert it to dict first.
 
-The returned values - a JSON-RPC response and an HTTP status code - can be
-used to respond to a client.
+The returned values - a **JSON-RPC response** and an **HTTP status code** - can
+be used to respond to a client.
 
 Exceptions
 ==========
 
-When your receive invalid arguments, raise ``InvalidParams``::
+On receiving invalid arguments, raise ``InvalidParams``::
 
     from jsonrpcserver.exceptions import InvalidParams, ServerError
 
@@ -92,11 +92,11 @@ The library will take care of it, returning:
 Debugging
 =========
 
-In the above exceptions, potentially sensitive information is included when
-raising the exception, which can help with debugging. This is not included in
-the response by default. To include the extra information, add
-``more_info=True`` when calling ``dispatch()``. The extra info will be included
-in the ``data`` property, like::
+In the above exceptions, potentially sensitive information is passed when
+raising the exception which can help with debugging. This information is not
+included in the response by default. To include the extra information, pass
+``more_info=True`` to ``dispatch()``. The extra info will be in the ``data``
+property, like::
 
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1}, more_info=True)
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
@@ -104,7 +104,7 @@ in the ``data`` property, like::
 Logging
 =======
 
-To see the json messages being passed back and forth, set the log level to
+To see the JSON messages being passed back and forth, set the log level to
 INFO::
 
     import logging
@@ -126,7 +126,7 @@ customize the log format for ``jsonrpcserver.dispatcher.request`` and
 The request format has these fields:
 
 %(message)s
-    The json request (the body).
+    The JSON request (the body).
 
 The response format has these fields:
 
@@ -137,7 +137,7 @@ The response format has these fields:
     The description of the status code, eg. *"BAD REQUEST"*.
 
 %(message)s
-    The json response (the body).
+    The JSON response (the body).
 
 Links
 =====
