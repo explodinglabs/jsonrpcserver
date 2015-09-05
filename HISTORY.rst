@@ -6,10 +6,9 @@ Release History
 
 - Debug mode can now be enabled by setting a flag on the dispatcher.
   (``dispatcher = Dispatcher(debug=True)`` or ``dispatcher.debug = True``).
-  Debug mode allows extra (potentially sensitive) information to be included in
-  the response message to the client. Default is False. *Previously debugging
-  was done by passing ``more_info=True`` in the dispatch method - that method
-  has been removed.*
+  This allows extra (potentially sensitive) information to be included in the
+  response message to the client. *The previous method (passing
+  ``more_info=True`` to the dispatch method) has been removed.*
 
 2.0.2 (2015-09-04)
 ------------------
