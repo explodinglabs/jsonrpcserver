@@ -168,3 +168,11 @@ class Dispatcher(object):
         })
 
         return (result, status)
+
+    def dispatch_str(self, request, more_info=False):
+        """Wrapper for dispatch, which takes a string instead of a dict."""
+        try:
+            request = json.loads(request)
+        except ValueError:
+            raise ParseError()
+        return self.dispatch(request, more_info)
