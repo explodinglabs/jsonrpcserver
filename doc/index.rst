@@ -158,4 +158,4 @@ Links
 If you need a client, try my `jsonrpcclient
 <https://jsonrpcclient.readthedocs.org/>`_ library.
 
-`. <test.rst>`_
+`. <test.rst>`__
