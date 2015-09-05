@@ -36,7 +36,7 @@ Keyword parameters are also acceptable::
 .. important::
 
     Use either positional or keyword parameters, but not both in the same
-    method - this is a requirement of the JSON-RPC `specs
+    method. This is a requirement of the JSON-RPC `specs
     <http://www.jsonrpc.org/specification#parameter_structures>`_.
 
 Dispatching to your methods
