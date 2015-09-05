@@ -1,8 +1,7 @@
 jsonrpcserver
 *************
 
-Takes `JSON-RPC <http://www.jsonrpc.org/>`_ requests and passes them on to your
-own methods.
+Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
 
 Installation
 ============
@@ -17,18 +16,18 @@ Writing the methods
 Write functions to carry out the requests::
 
     >>> from jsonrpcserver import Dispatcher
-    >>> dispatcher = Dispatcher()
-    >>> dispatcher.register_method(lambda x, y: x + y, 'add')
+    >>> api = Dispatcher()
+    >>> api.register_method(lambda x, y: x + y, 'add')
 
 You may prefer the decorator syntax::
 
-    >>> @dispatcher.method('add')
+    >>> @api.method('add')
     ... def add(x, y):
     ...     return x + y
 
 Keyword parameters are also acceptable::
 
-    >>> @dispatcher.method('find')
+    >>> @api.method('find')
     ... def find(**kwargs):
     ...     name = kwargs['name']
 
@@ -43,7 +42,7 @@ Dispatching to your methods
 
 Pass requests through ``dispatch()``::
 
-    >>> dispatcher.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
 ``dispatch()`` takes a dict. If you have a string, convert it to dict first.
@@ -58,7 +57,7 @@ When your receive invalid arguments, raise ``InvalidParams``::
 
     from jsonrpcserver.exceptions import InvalidParams, ServerError
 
-    @dispatcher.method('find')
+    @api.method('find')
     def find(**kwargs):
         """Find a customer."""
         # Required params
@@ -99,7 +98,7 @@ the response by default. To include the extra information, add
 ``more_info=True`` when calling ``dispatch()``. The extra info will be included
 in the ``data`` property, like::
 
-    >>> dispatcher.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1}, more_info=True)
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1}, more_info=True)
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
