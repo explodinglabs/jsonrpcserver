@@ -31,8 +31,8 @@ def get(**kwargs):
     if kwargs['firstname'] == 'John':
         return 'Smith'
 
-@tests.method('raise_jsonrpcservererror')
-def raise_jsonrpcservererror():
+@tests.method('raise_servererror')
+def raise_servererror():
     raise ServerError('Column "Insecure" does not exist')
 
 @tests.method('raise_other_error')
@@ -414,7 +414,7 @@ class TestDispatch(TestCase):
         )
 
     def test_dispatch_raising_jsonrpcservererror(self):
-        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'})
+        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_servererror'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
             JSONRPC_SERVER_ERROR_TEXT,
@@ -424,7 +424,7 @@ class TestDispatch(TestCase):
         self.assertNotIn('data', response[0]['error'])
 
     def test_dispatch_raising_jsonrpcservererror_with_more_info(self):
-        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'}, more_info=True)
+        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_servererror'}, more_info=True)
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
             JSONRPC_SERVER_ERROR_TEXT,
@@ -452,7 +452,7 @@ class TestDispatch(TestCase):
             response
         )
         # Because the more_info was passed, there should be 'data'.
-        self.assertEqual('ValueError: Value too low', response[0]['error']['data'])
+        self.assertEqual('See server logs', response[0]['error']['data'])
 
     # dispatch_str
     def test_dispatch_str_method_not_found(self):
