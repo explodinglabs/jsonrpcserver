@@ -49,6 +49,9 @@ class HandleRequests:
 
 class TestDispatch(TestCase):
 
+    def setUp(self):
+        tests.debug = False
+
     def assertNoContent(self, response):
         result, status = response
         self.assertEqual(None, result)
@@ -413,24 +416,25 @@ class TestDispatch(TestCase):
             tests.dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1})
         )
 
-    def test_dispatch_raising_jsonrpcservererror(self):
+    def test_dispatch_raising_servererror(self):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_servererror'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
             JSONRPC_SERVER_ERROR_TEXT,
             response
         )
-        # Because the more_info was not passed, there should be no 'data'
+        # Because the debug was not passed, there should be no 'data'
         self.assertNotIn('data', response[0]['error'])
 
-    def test_dispatch_raising_jsonrpcservererror_with_more_info(self):
-        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_servererror'}, more_info=True)
+    def test_dispatch_raising_servererror_with_debug(self):
+        tests.debug = True
+        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_servererror'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
             JSONRPC_SERVER_ERROR_TEXT,
             response
         )
-        # Because the more_info was passed, there should be 'data'.
+        # Because debugging is on, there should be 'data'.
         self.assertEqual('Column "Insecure" does not exist', response[0]['error']['data'])
 
 
@@ -441,17 +445,18 @@ class TestDispatch(TestCase):
             'Server error',
             response
         )
-        # Because the more_info was not passed, there should be no 'data'
+        # Because debugging is off, there should be no 'data'
         self.assertNotIn('data', response[0]['error'])
 
-    def test_dispatch_raising_other_error_with_more_info(self):
-        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'}, more_info=True)
+    def test_dispatch_raising_other_error_with_debug(self):
+        tests.debug = True
+        response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
             'Server error',
             response
         )
-        # Because the more_info was passed, there should be 'data'.
+        # Because debug is on, there should be 'data'.
         self.assertEqual('See server logs', response[0]['error']['data'])
 
     # dispatch_str

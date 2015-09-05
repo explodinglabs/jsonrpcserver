@@ -49,9 +49,10 @@ def _convert_params_to_args_and_kwargs(params):
 class Dispatcher(object):
     """Holds a list of the rpc methods, and dispatches to them."""
 
-    def __init__(self):
+    def __init__(self, debug=False):
         self._rpc_methods = {}
         self.validate_requests = True
+        self.debug = debug
 
     def register_method(self, func, name=None):
         """Add an RPC method to the list."""
@@ -66,7 +67,7 @@ class Dispatcher(object):
             return self.register_method(f, name)
         return decorator
 
-    def dispatch(self, request, more_info=False):
+    def dispatch(self, request):
         """Dispatch requests to the RPC methods.
 
         .. versionchanged:: 1.0.12
@@ -76,8 +77,6 @@ class Dispatcher(object):
             No longer accepts a "handler".
 
         :param request: A JSON-RPC request in dict format.
-        :param more_info: If True, include the 'data' property in error
-            responses.
         :return: A tuple containing the JSON-RPC response and an HTTP status
             code, which can be used to respond to a client.
         """
@@ -152,7 +151,7 @@ class Dispatcher(object):
         except JsonRpcServerError as e:
             e.request_id = request.get('id')
             result, status = (json.loads(str(e)), e.http_status_code)
-            if not more_info:
+            if not self.debug:
                 result['error'].pop('data')
 
         # Catch all other exceptions
@@ -161,7 +160,7 @@ class Dispatcher(object):
             logging.exception(e)
             result, status = (json.loads(str(ServerError('See server logs'))), \
                 500)
-            if not more_info:
+            if not self.debug:
                 result['error'].pop('data')
 
         response_log.info(str(result), extra={
@@ -171,10 +170,10 @@ class Dispatcher(object):
 
         return (result, status)
 
-    def dispatch_str(self, request, more_info=False):
+    def dispatch_str(self, request):
         """Wrapper for dispatch, which takes a string instead of a dict."""
         try:
             request = json.loads(request)
         except ValueError:
             raise ParseError()
-        return self.dispatch(request, more_info)
+        return self.dispatch(request)
