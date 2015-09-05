@@ -141,55 +141,6 @@ The response format has these fields:
 %(message)s
     The json response (the body).
 
-
-Clients
-=======
-
-Python
-------
-
-Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_ library.
-
-.. sourcecode:: python
-
-    >>> from jsonrpcclient import Server
-    >>> s = Server('http://example.com/api')
-    >>> s.request('add', 2, 3)
-    5
-
-curl
-----
-
-.. code-block:: sh
-
-    $ curl -X POST \
-        -H 'Content-type: application/json' \
-        -d '{"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 1}' \
-        http://example.com/api
-
-jQuery
-------
-
-.. code-block:: javascript
-
-  $.ajax({
-    type: 'POST',
-    url: '/api',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json'
-    },
-    data: JSON.stringify({
-      jsonrpc: '2.0',
-      method: 'add',
-      params: [2, 3],
-      id: 1
-    })
-  })
-  .done(function(data) {
-    $('#answer').html(data.result);
-  });
-
 Links
 =====
 
