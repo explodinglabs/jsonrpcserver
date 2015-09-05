@@ -91,5 +91,8 @@ JSONRPC_SERVER_ERROR_TEXT = 'Server error'
 def is_http_client_error(code):
     """Returns true if a status code is a 4xx Client Error.
     See http://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_Error
+
+    :param code: HTTP error code.
+    :return: True if the code is a client error, else False.
     """
     return 400 <= code <= 499
