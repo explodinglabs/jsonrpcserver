@@ -40,7 +40,7 @@ Keyword parameters are also acceptable::
 Dispatching
 -----------
 
-Dispatch requests with ``dispatch()``::
+Dispatch JSON-RPC requests with ``dispatch()``::
 
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
