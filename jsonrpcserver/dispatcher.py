@@ -76,7 +76,6 @@ class Dispatcher(object):
             if reqMethod.startswith('__') and reqMethod.endswith('__'):
                 raise MethodNotFound(reqMethod)
 
-
             # Get the method if available
             try:
                 method = self._rpc_methods[reqMethod]
@@ -84,9 +83,10 @@ class Dispatcher(object):
                 raise MethodNotFound(reqMethod)
 
             # Call the method, first checking if the arguments match the
-            # method's parameters. It's no good catching exceptions after the
-            # method has been called because the exception may have been raised
-            # from inside the method.
+            # method's parameters. It's no good checking for invalid params by
+            # simply calling the method, because the caught exception may have
+            # been raised from inside the method. This section is ugly but I'm
+            # yet to find a better option.
             if not a and not k:
                 try:
                     getcallargs(method)

@@ -42,13 +42,12 @@ Keyword parameters are also acceptable::
 Dispatching to your methods
 ===========================
 
-Dispatch requests to your methods with ``dispatch``::
+Pass the request to ``dispatch()``::
 
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
-Note that ``dispatch()`` takes a *dict*, not a string. If you have a string,
-convert it to dict first with ``json.loads()``.
+``dispatch()`` takes a dict. If you have a string, convert it to dict first.
 
 The returned values - a JSON-RPC response and an HTTP status code - can be
 used to respond to a client.
@@ -86,7 +85,7 @@ To notify the client of a server-side error, raise ``ServerError``::
     except SQLAlchemyError as e:
         raise ServerError(str(e))
 
-The library will take care of it:
+The library will take care of it, returning:
 
 .. code-block:: javascript
 
@@ -95,10 +94,11 @@ The library will take care of it:
 Debugging
 =========
 
-In the above exceptions, we're passing more information to the exceptions than
-what is appearing in the error response. To see the extra information in the
-error response, pass ``more_info=True`` to the dispatch method. You'll get an
-extra 'data' value in the errors, something like::
+In the above exceptions, potentially sensitive information is included when
+raising the exception, which can help with debugging. This is not included in
+the response by default. To include the extra information, add
+``more_info=True`` when calling ``dispatch()``. The extra info will be included
+in the ``data`` property, like::
 
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1}, more_info=True)
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
