@@ -68,7 +68,7 @@ class TestDispatch(TestCase):
 
     # InvalidRequest
 
-    def test_missing_jsonrpc_property(self):
+    def test_dispatch_missing_jsonrpc_property(self):
         """jsonrpc is a required property"""
         self.assertErrorEquals(
             JSONRPC_INVALID_REQUEST_HTTP_CODE,
@@ -76,7 +76,7 @@ class TestDispatch(TestCase):
             tests.dispatch({'jsonrp': '2.0', 'method': 'get'})
         )
 
-    def test_params_null(self):
+    def test_dispatch_params_null(self):
         """Using 'params': null is *not* valid under the schema."""
         self.assertErrorEquals(
             JSONRPC_INVALID_REQUEST_HTTP_CODE,
@@ -84,7 +84,7 @@ class TestDispatch(TestCase):
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': None})
         )
 
-    def test_id_null(self):
+    def test_dispatch_id_null(self):
         """Using 'id': null *is* valid under the schema."""
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'id': None})
@@ -92,14 +92,14 @@ class TestDispatch(TestCase):
 
     # MethodNotFound
 
-    def test_method_not_found(self):
+    def test_dispatch_method_not_found(self):
         self.assertErrorEquals(
             JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
             JSONRPC_METHOD_NOT_FOUND_TEXT,
-            tests.dispatch({'jsonrpc': '2.0', 'method': 'no_such_method'}, more_info=True)
+            tests.dispatch({'jsonrpc': '2.0', 'method': 'no_such_method'})
         )
 
-    def test_trying_to_call_magic_method(self):
+    def test_dispatch_trying_to_call_magic_method(self):
         self.assertErrorEquals(
             JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
             JSONRPC_METHOD_NOT_FOUND_TEXT,
@@ -109,10 +109,10 @@ class TestDispatch(TestCase):
     # pow
 
     @skip('inspect module seemingly wont allow getcallargs on a builtin')
-    def test_pow(self):
+    def test_dispatch_pow(self):
         self.assertResultEquals(
             8,
-            tests.dispatch({'jsonrpc': '2.0', 'method': 'pow', 'params': [2, 3], 'id': 1}, more_info=True)
+            tests.dispatch({'jsonrpc': '2.0', 'method': 'pow', 'params': [2, 3], 'id': 1})
         )
 
     # InvalidParams - this requires lots of testing because there are many ways
@@ -120,38 +120,38 @@ class TestDispatch(TestCase):
 
     # method_only
 
-    def test_method_only_params_omitted(self):
+    def test_dispatch_method_only_params_omitted(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only'})
         )
 
-    def test_method_only_params_empty(self):
+    def test_dispatch_method_only_params_empty(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': []})
         )
 
-    def test_method_only_one_arg(self):
+    def test_dispatch_method_only_one_arg(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': [1]})
         )
 
-    def test_method_only_two_args(self):
+    def test_dispatch_method_only_two_args(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': [1, 2]})
         )
 
-    def test_method_only_kwargs(self):
+    def test_dispatch_method_only_kwargs(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only', 'params': {'foo': 'bar'}})
         )
 
-    def test_method_only_both(self):
+    def test_dispatch_method_only_both(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
@@ -160,33 +160,33 @@ class TestDispatch(TestCase):
 
     # one_positional
 
-    def test_one_positional_params_omitted(self):
+    def test_dispatch_one_positional_params_omitted(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'one_positional'})
         )
 
-    def test_one_positional_one_arg(self):
+    def test_dispatch_one_positional_one_arg(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1]})
         )
 
-    def test_one_positional_two_args(self):
+    def test_dispatch_one_positional_two_args(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'one_positional', 'params': [1, 2]})
         )
 
-    def test_one_positional_kwargs(self):
+    def test_dispatch_one_positional_kwargs(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'one_positional', 'params': {'foo': 'bar'}})
         )
 
-    def test_one_positional_both(self):
+    def test_dispatch_one_positional_both(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
@@ -195,91 +195,91 @@ class TestDispatch(TestCase):
 
     # two_positionals
 
-    def test_two_positionals_ok(self):
+    def test_dispatch_two_positionals_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1, 2]})
         )
 
-    def test_two_positionals_params_omitted(self):
+    def test_dispatch_two_positionals_params_omitted(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'two_positionals'})
         )
 
-    def test_two_positionals_one_arg(self):
+    def test_dispatch_two_positionals_one_arg(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1]})
         )
 
-    def test_two_positionals_kwargs(self):
+    def test_dispatch_two_positionals_kwargs(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': {'foo': 'bar'}})
         )
 
-    def test_two_positionals_both(self):
+    def test_dispatch_two_positionals_both(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1, {'foo': 'bar'}]})
         )
 
     # just_args
 
-    def test_just_args_ok(self):
+    def test_dispatch_just_args_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': [1, 2]})
         )
 
-    def test_just_args_params_omitted(self):
+    def test_dispatch_just_args_params_omitted(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_args'})
         )
 
-    def test_just_args_one_arg(self):
+    def test_dispatch_just_args_one_arg(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': [1]})
         )
 
-    def test_just_args_kwargs(self):
+    def test_dispatch_just_args_kwargs(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': {'foo': 'bar'}})
         )
 
-    def test_just_args_both(self):
+    def test_dispatch_just_args_both(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': [1, {'foo': 'bar'}]})
         )
 
     # just_kwargs
 
-    def test_just_kwargs_ok(self):
+    def test_dispatch_just_kwargs_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': {'foo': 'bar'}})
         )
 
-    def test_just_kwargs_params_omitted(self):
+    def test_dispatch_just_kwargs_params_omitted(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs'})
         )
 
-    def test_just_kwargs_one_arg(self):
+    def test_dispatch_just_kwargs_one_arg(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': [1]})
         )
 
-    def test_just_kwargs_kwargs(self):
+    def test_dispatch_just_kwargs_kwargs(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': {'foo': 'bar'}})
         )
 
-    def test_just_kwargs_both(self):
+    def test_dispatch_just_kwargs_both(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
@@ -288,132 +288,132 @@ class TestDispatch(TestCase):
 
     # positionals_with_args
 
-    def test_positionals_with_args_ok(self):
+    def test_dispatch_positionals_with_args_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': ['foo', 42]})
         )
 
-    def test_positionals_with_args_params_omitted(self):
+    def test_dispatch_positionals_with_args_params_omitted(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args'})
         )
 
-    def test_positionals_with_args_one_arg(self):
+    def test_dispatch_positionals_with_args_one_arg(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': [1]})
         )
 
-    def test_positionals_with_args_kwargs(self):
+    def test_dispatch_positionals_with_args_kwargs(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': {'foo': 'bar'}})
         )
 
-    def test_positionals_with_args_both(self):
+    def test_dispatch_positionals_with_args_both(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': [1, {'foo': 'bar'}]})
         )
 
     # positionals_with_kwargs
 
-    def test_positionals_with_kwargs_ok(self):
+    def test_dispatch_positionals_with_kwargs_ok(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]})
         )
 
-    def test_positionals_with_kwargs_params_omitted(self):
+    def test_dispatch_positionals_with_kwargs_params_omitted(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs'})
         )
 
-    def test_positionals_with_kwargs_one_arg(self):
+    def test_dispatch_positionals_with_kwargs_one_arg(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': [1]})
         )
 
-    def test_positionals_with_kwargs_kwargs(self):
+    def test_dispatch_positionals_with_kwargs_kwargs(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': {'foo': 'bar'}})
         )
 
-    def test_positionals_with_kwargs_both(self):
+    def test_dispatch_positionals_with_kwargs_both(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_kwargs', 'params': [1, {'foo': 'bar'}]})
         )
 
     # positionals_with_args_and_kwargs
 
-    def test_positionals_with_args_and_kwargs_ok(self):
+    def test_dispatch_positionals_with_args_and_kwargs_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]})
         )
 
-    def test_positionals_with_args_and_kwargs_params_omitted(self):
+    def test_dispatch_positionals_with_args_and_kwargs_params_omitted(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs'})
         )
 
-    def test_positionals_with_args_and_kwargs_one_arg(self):
+    def test_dispatch_positionals_with_args_and_kwargs_one_arg(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': [1]})
         )
 
-    def test_positionals_with_args_and_kwargs_kwargs(self):
+    def test_dispatch_positionals_with_args_and_kwargs_kwargs(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
             JSONRPC_INVALID_PARAMS_TEXT,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': {'foo': 'bar'}})
         )
 
-    def test_positionals_with_args_and_kwargs_both(self):
+    def test_dispatch_positionals_with_args_and_kwargs_both(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': [1, {'foo': 'bar'}]})
         )
 
     # Test return results
 
-    def test_add_two_numbers(self):
+    def test_dispatch_add_two_numbers(self):
         self.assertResultEquals(
             3,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [1, 2], 'id': 1})
         )
 
-    def test_uppercase(self):
+    def test_dispatch_uppercase(self):
         self.assertResultEquals(
             'TEST',
             tests.dispatch({'jsonrpc': '2.0', 'method': 'uppercase', 'params': ['test'], 'id': 1})
         )
 
-    def test_full_function_not_lambda(self):
+    def test_dispatch_full_function_not_lambda(self):
         self.assertResultEquals(
             'Smith',
             tests.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'firstname': 'John'}, 'id': 1})
         )
 
-    def test_class_method(self):
+    def test_dispatch_class_method(self):
         self.assertResultEquals(
             5,
             tests.dispatch({'jsonrpc': '2.0', 'method': 'get_5', 'id': 1})
         )
 
-    def test_raising_jsonrpcservererror(self):
+    def test_dispatch_raising_jsonrpcservererror(self):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
@@ -423,7 +423,7 @@ class TestDispatch(TestCase):
         # Because the more_info was not passed, there should be no 'data'
         self.assertNotIn('data', response[0]['error'])
 
-    def test_raising_jsonrpcservererror_with_more_info(self):
+    def test_dispatch_raising_jsonrpcservererror_with_more_info(self):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_jsonrpcservererror'}, more_info=True)
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
@@ -434,7 +434,7 @@ class TestDispatch(TestCase):
         self.assertEqual('Column "Insecure" does not exist', response[0]['error']['data'])
 
 
-    def test_raising_other_error(self):
+    def test_dispatch_raising_other_error(self):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
@@ -444,7 +444,7 @@ class TestDispatch(TestCase):
         # Because the more_info was not passed, there should be no 'data'
         self.assertNotIn('data', response[0]['error'])
 
-    def test_raising_other_error_with_more_info(self):
+    def test_dispatch_raising_other_error_with_more_info(self):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'}, more_info=True)
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
@@ -453,6 +453,14 @@ class TestDispatch(TestCase):
         )
         # Because the more_info was passed, there should be 'data'.
         self.assertEqual('ValueError: Value too low', response[0]['error']['data'])
+
+    # dispatch_str
+    def test_dispatch_str_method_not_found(self):
+        self.assertErrorEquals(
+            JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
+            JSONRPC_METHOD_NOT_FOUND_TEXT,
+            tests.dispatch_str('{"jsonrpc": "2.0", "method": "no_such_method"}')
+        )
 
 
 if __name__ == '__main__':
