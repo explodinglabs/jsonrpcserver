@@ -45,8 +45,7 @@ Dispatch requests with ``dispatch()``::
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
-``dispatch()`` takes a dictionary. If you have a string, convert it to
-dict first.
+``dispatch()`` takes a dictionary. If you have a string, use ``dispatch_str()``.
 
 The returned values - a **JSON-RPC response** and an **HTTP status code** - can
 be used to respond to a client.
