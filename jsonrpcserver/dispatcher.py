@@ -26,7 +26,7 @@ class Dispatcher(object):
 
     def __init__(self):
         self._rpc_methods = {}
-        self.validateRequests = True
+        self.validate_requests = True
 
     def register_method(self, func, name=None):
         """Add a jsonrpc method to the global list."""
@@ -60,7 +60,7 @@ class Dispatcher(object):
         try:
 
             # Validate
-            if self.validateRequests:
+            if self.validate_requests:
                 try:
                     json_validator.validate(request)
                 except jsonschema.ValidationError as e:
