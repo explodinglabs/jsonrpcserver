@@ -50,6 +50,11 @@ class Dispatcher(object):
     """Holds a list of the rpc methods, and dispatches to them."""
 
     def __init__(self, debug=False):
+        """
+        :param debug: Debug mode - includes the 'data' property in error
+            responses which contain (potentially sensitive) debugging info.
+            Default is False.
+        """
         self._rpc_methods = {}
         self.validate_requests = True
         self.debug = debug
