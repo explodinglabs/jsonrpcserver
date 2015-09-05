@@ -40,12 +40,13 @@ Keyword parameters are also acceptable::
 Dispatching
 ===========
 
-Dispatch to the methods with ``dispatch()``::
+Dispatch requests with ``dispatch()``::
 
     >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
-``dispatch()`` takes a dict. If you have a string, convert it to dict first.
+``dispatch()`` takes a dictionary. If you have a string, convert it to
+dict first.
 
 The returned values - a **JSON-RPC response** and an **HTTP status code** - can
 be used to respond to a client.
@@ -92,7 +93,7 @@ The library will take care of it, returning:
 Debugging
 =========
 
-In the above exceptions, potentially sensitive information is passed when
+In the above exceptions, potentially sensitive information is included when
 raising the exception which can help with debugging. This information is not
 included in the response by default. To include the extra information, pass
 ``more_info=True`` to ``dispatch()``. The extra info will be in the ``data``
