@@ -127,12 +127,12 @@ For better logging, customize the log format for
     response_handler.setFormatter(logging.Formatter(fmt='<-- %(http_code)d %(http_reason)s %(message)s'))
     logging.getLogger('jsonrpcserver.dispatcher.response').addHandler(response_handler)
 
-The request format has these fields:
+The **request format** has these fields:
 
 %(message)s
     The JSON request (the body).
 
-The response format has these fields:
+The **response format** has these fields:
 
 %(http_code)s
     The HTTP status code received from the server, eg. *400*.
