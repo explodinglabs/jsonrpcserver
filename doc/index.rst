@@ -147,7 +147,7 @@ Examples
 ========
 
 - `HTTP Server using Flask <https://bitbucket.org/snippets/beau-barker/BAXrR/json-rpc-over-http-server-in-python>`_
-- `ZeroMQ Server using pyzmq <https://bitbucket.org/snippets/beau-barker/BAMno/json-rpc-over-zeromq-request-reply-server>`_
+- `ZeroMQ Server using PyZMQ <https://bitbucket.org/snippets/beau-barker/BAMno/json-rpc-over-zeromq-request-reply-server>`_
 
 Links
 =====
