@@ -1,6 +1,11 @@
 Release History
 ===============
 
+2.1.1 (2015-09-06)
+------------------
+
+- Properly handle invalid JSON in dispatch_str()
+
 2.1.0 (2015-09-06)
 ------------------
 
