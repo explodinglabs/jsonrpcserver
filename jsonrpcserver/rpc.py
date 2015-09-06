@@ -1,6 +1,6 @@
 """rpc.py"""
 
-def result(request_id, data):
+def rpc_success_response(request_id, data):
     """Success response.
 
     Note the 'id' is required in the response, even if null, for both success
@@ -16,7 +16,8 @@ def result(request_id, data):
         'id': request_id
     }
 
-def error(request_id, code, message, data=None):
+
+def rpc_error_response(request_id, code, message, data=None):
     """Error response
 
     Note the 'id' is required in the response, even if null, for both success
