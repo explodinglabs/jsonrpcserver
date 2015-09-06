@@ -1,7 +1,7 @@
 jsonrpcserver
 *************
 
-Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests.
+Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and 3.3+.
 
 Installation
 ============
