@@ -7,10 +7,10 @@ from inspect import getcallargs
 
 import jsonschema
 
-from jsonrpcserver import rpc
-from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
+from .rpc import rpc_success_response
+from .exceptions import JsonRpcServerError, ParseError, \
     InvalidRequest, MethodNotFound, InvalidParams, ServerError
-from jsonrpcserver.status import HTTP_STATUS_CODES
+from .status import HTTP_STATUS_CODES
 
 
 logger = logging.getLogger(__name__)
@@ -151,7 +151,8 @@ class Dispatcher(object):
             request_id = request.get('id')
             if request_id is not None:
                 # A response was requested
-                result, status = (rpc.result(request_id, method_result), 200)
+                result, status = (rpc_success_response(
+                    request_id, method_result), 200)
             else:
                 # Notification - return nothing.
                 result, status = (None, 204)
