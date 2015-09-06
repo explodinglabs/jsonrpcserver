@@ -17,18 +17,18 @@ Usage
 Write functions to carry out the requests::
 
     >>> from jsonrpcserver import Dispatcher
-    >>> dispatcher = Dispatcher()
-    >>> dispatcher.register_method(lambda x, y: x + y, 'add')
+    >>> api = Dispatcher()
+    >>> api.register_method(lambda x, y: x + y, 'add')
 
 You may prefer the decorator syntax::
 
-    >>> @dispatcher.method('add')
+    >>> @api.method('add')
     ... def add(x, y):
     ...     return x + y
 
 Keyword parameters are also acceptable::
 
-    >>> @dispatcher.method('find')
+    >>> @api.method('find')
     ... def find(**kwargs):
     ...     name = kwargs['name']
 
@@ -43,7 +43,7 @@ Dispatching
 
 Dispatch requests with ``dispatch()``::
 
-    >>> dispatcher.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
     ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
 
 .. tip::
@@ -60,7 +60,7 @@ On receiving invalid arguments, raise ``InvalidParams``::
 
     from jsonrpcserver.exceptions import InvalidParams, ServerError
 
-    @dispatcher.method('find')
+    @api.method('find')
     def find(**kwargs):
         """Find a customer."""
         # Required params
@@ -97,11 +97,11 @@ Debugging
 
 In the above exceptions, extra debugging information is included when raising
 the exceptions. To include this extra information in the JSON-RPC responses,
-enable debugging (pass ``debug=True`` when instantiating the dispatcher). The
+enable debugging (pass ``debug=True`` when instantiating the Dispatcher). The
 extra info will then be included in the ``data`` property, like this::
 
-    >>> dispatcher.debug = True
-    >>> dispatcher.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1})
+    >>> api.debug = True
+    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1})
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
