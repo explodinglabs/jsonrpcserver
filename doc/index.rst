@@ -135,10 +135,10 @@ The request format has these fields:
 The response format has these fields:
 
 %(http_code)s
-    The HTTP status code received from the server, eg. *400*.
+    The HTTP status code one might respond with if using HTTP, eg. *400*.
 
 %(http_reason)s
-    The description of the status code, eg. *"BAD REQUEST"*.
+    Description of the above status code, eg. *"BAD REQUEST"*.
 
 %(message)s
     The JSON response (the body).
