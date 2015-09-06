@@ -28,9 +28,12 @@ def _convert_params_to_args_and_kwargs(params):
     There are four possibilities for 'params' in JSON-RPC:
         - No params at all (either 'params' is not present or the value is
           ``null``).
-        - A single value eg. "params": 5 (or "5", or true etc), taken as one positional argument.
-        - A JSON array, eg. "params": ["foo", "bar"], taken as positional arguments.
-        - A JSON object, eg. "params: {"foo": "bar"}, taken as keyword arguments.
+        - A single value eg. "params": 5 (or "5", or true etc), taken as one
+          positional argument.
+        - A JSON array, eg. "params": ["foo", "bar"], taken as positional
+          arguments.
+        - A JSON object, eg. "params: {"foo": "bar"}, taken as keyword
+          arguments.
 
     .. versionchanged:: 1.0.12
         No longer allows both args and kwargs, as per spec.
