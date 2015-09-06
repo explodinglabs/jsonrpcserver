@@ -53,7 +53,7 @@ The returned values, a JSON-RPC response and an HTTP status code, can be used to
 respond to a client.
 
 Exceptions
-----------
+==========
 
 On receiving invalid arguments, raise ``InvalidParams``::
 
@@ -92,7 +92,7 @@ The library will take care of it, returning:
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}, "id": 1}, 500)
 
 Debugging
----------
+=========
 
 In the above exceptions, extra debugging information is included when raising
 the exceptions. To include this extra information in the JSON-RPC responses,
@@ -104,17 +104,18 @@ extra info will then be included in the ``data`` property, like this::
     ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
 
 Logging
--------
+=======
 
-To see the JSON messages being passed back and forth, set the log level to
-``INFO``::
+The incoming and outgoing JSON-RPC messages are logged on the ``INFO`` log
+level. To see them, set the log level to ``INFO``::
 
     import logging
-    logging.basicConfig()
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
-For better logging, customize the log format for
-``jsonrpcserver.dispatcher.request`` and ``jsonrpcserver.dispatcher.response``::
+    logging.basicConfig() # Creates a basic StreamHandler w/ default formatter
+
+For better logging, add handlers to ``jsonrpcserver.dispatcher.request`` and
+``jsonrpcserver.dispatcher.response``, and customize the format::
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
