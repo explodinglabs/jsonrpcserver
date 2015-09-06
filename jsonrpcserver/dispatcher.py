@@ -166,7 +166,7 @@ class Dispatcher(object):
         # Catch all other exceptions
         except Exception as e: #pylint:disable=broad-except
             # Log the exception
-            logging.exception(e)
+            logger.exception(e)
             result, status = (json.loads(str(ServerError('See server logs'))), \
                 500)
             if not self.debug:
