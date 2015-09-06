@@ -1,6 +1,7 @@
 """test_dispatcher.py"""
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods,no-init,unused-argument
 
+import logging
 from unittest import TestCase, main, skip
 
 from jsonrpcserver.dispatcher import Dispatcher
@@ -47,6 +48,7 @@ class TestDispatch(TestCase):
 
     def setUp(self):
         tests.debug = False
+        logging.getLogger('jsonrpcserver.dispatcher').disabled = True
 
     # My own asserts
     def assertNoContent(self, response):
