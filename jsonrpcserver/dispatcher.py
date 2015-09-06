@@ -22,25 +22,26 @@ json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
 
 
 def _convert_params_to_args_and_kwargs(params):
-    """Takes the 'params' from the rpc request and converts it into args and
-    kwargs to be passed through to the handling method.
+    """Takes the 'params' part from the JSON-RPC request and converts it into
+    positional or keyword arguments to be passed through to the handling method.
 
-    There are four possibilities for params:
-        - No params at all.
-        - args, eg. "params": [1, 2]
-        - kwargs, eg. "params: {"foo": "bar"}
-        - Both args and kwargs: [1, 2, {"foo": "bar"}]
+    There are four possibilities for 'params' in JSON-RPC:
+        - No params at all (either 'params' is not present or the value is
+          ``null``).
+        - A single value eg. "params": 5 (or "5", or true etc), taken as one positional argument.
+        - A JSON array, eg. "params": ["foo", "bar"], taken as positional arguments.
+        - A JSON object, eg. "params: {"foo": "bar"}, taken as keyword arguments.
 
     .. versionchanged:: 1.0.12
         No longer allows both args and kwargs, as per spec.
 
-    :param params: The arguments for the JSON-RPC method.
+    :param params: Arguments for the JSON-RPC method.
     """
     args = kwargs = None
-    # Params is a dict, ie. "params": {"foo": "bar"}
+    # Params is a dict? ie. "params": {"foo": "bar"}
     if isinstance(params, dict):
         kwargs = params
-    # Params is a list, ie. "params": ["foo", "bar"]
+    # Params is a list? ie. "params": ["foo", "bar"]
     elif isinstance(params, list):
         args = params
     return (args, kwargs)
@@ -81,9 +82,9 @@ class Dispatcher(object):
             Removed all flask code.
             No longer accepts a "handler".
 
-        :param request: A JSON-RPC request in dict format.
-        :return: A tuple containing the JSON-RPC response and an HTTP status
-            code, which can be used to respond to a client.
+        :param request: JSON-RPC request in dict format.
+        :return: Tuple containing the JSON-RPC response and an HTTP status code,
+            which can be used to respond to a client.
         """
         #pylint:disable=too-many-branches,too-many-statements
 
@@ -98,15 +99,15 @@ class Dispatcher(object):
                 except jsonschema.ValidationError as e:
                     raise InvalidRequest(e.message)
 
-            # Get the args and kwargs from request['params']
-            (a, k) = _convert_params_to_args_and_kwargs(request.get('params', \
-                None))
-
             request_method = request['method']
 
+            # Get the positional and keyword arguments from request['params']
+            (positional_args, keyword_args) = \
+                _convert_params_to_args_and_kwargs(request.get('params'))
+
             # Dont allow magic methods to be called
-            if request_method.startswith('__') and \
-                    request_method.endswith('__'):
+            if request_method.startswith('__') and request_method.endswith(
+                    '__'):
                 raise MethodNotFound(request_method)
 
             # Get the method if available
@@ -115,33 +116,33 @@ class Dispatcher(object):
             except KeyError:
                 raise MethodNotFound(request_method)
 
-            # Call the method, first checking if the arguments match the
-            # method's parameters. It's no good checking for invalid params by
-            # simply calling the method, because the caught exception may have
-            # been raised from inside the method. This section is ugly but I'm
-            # yet to find a better option.
-            if not a and not k:
+            # Call the method, first checking the arguments match the method
+            # definition. It's no good simply calling the method and catching
+            # the exception, because the caught exception may have been raised
+            # from inside the method. This section is ugly but I'm yet to find a
+            # better option.
+            if not positional_args and not keyword_args:
                 try:
                     getcallargs(method)
                 except TypeError as e:
                     raise InvalidParams(str(e))
                 method_result = method()
 
-            if a and not k:
+            if positional_args and not keyword_args:
                 try:
-                    getcallargs(method, *a)
+                    getcallargs(method, *positional_args)
                 except TypeError as e:
                     raise InvalidParams(str(e))
-                method_result = method(*a)
+                method_result = method(*positional_args)
 
-            if not a and k:
+            if not positional_args and keyword_args:
                 try:
-                    getcallargs(method, **k)
+                    getcallargs(method, **keyword_args)
                 except TypeError as e:
                     raise InvalidParams(str(e))
-                method_result = method(**k)
+                method_result = method(**keyword_args)
 
-            # if a and k: # This should never happen.
+            # if positional_args and keyword_args: # Should never happen.
 
             # Return a response
             request_id = request.get('id')
@@ -176,9 +177,12 @@ class Dispatcher(object):
         return (result, status)
 
     def dispatch_str(self, request):
-        """Wrapper for dispatch, which takes a string instead of a dict."""
+        """Wrapper for dispatch, which takes a string instead of a dict.
+
+        :param request: JSON-RPC request string.
+        """
         try:
             request = json.loads(request)
         except ValueError:
-            raise ParseError()
+            return (json.loads(str(ParseError())), 400)
         return self.dispatch(request)

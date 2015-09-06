@@ -5,11 +5,7 @@ from unittest import TestCase, main, skip
 
 from jsonrpcserver.dispatcher import Dispatcher
 from jsonrpcserver.exceptions import ServerError
-from jsonrpcserver.status import JSONRPC_INVALID_PARAMS_TEXT, \
-    JSONRPC_INVALID_PARAMS_HTTP_CODE, JSONRPC_METHOD_NOT_FOUND_HTTP_CODE, \
-    JSONRPC_METHOD_NOT_FOUND_TEXT, JSONRPC_INVALID_REQUEST_TEXT, \
-    JSONRPC_INVALID_REQUEST_HTTP_CODE, JSONRPC_SERVER_ERROR_HTTP_CODE, \
-    JSONRPC_SERVER_ERROR_TEXT
+from jsonrpcserver.status import *
 
 tests = Dispatcher()
 
@@ -52,6 +48,7 @@ class TestDispatch(TestCase):
     def setUp(self):
         tests.debug = False
 
+    # My own asserts
     def assertNoContent(self, response):
         result, status = response
         self.assertEqual(None, result)
@@ -70,7 +67,6 @@ class TestDispatch(TestCase):
         self.assertEqual(expected_status, status)
 
     # InvalidRequest
-
     def test_dispatch_missing_jsonrpc_property(self):
         """jsonrpc is a required property"""
         self.assertErrorEquals(
@@ -94,7 +90,6 @@ class TestDispatch(TestCase):
         )
 
     # MethodNotFound
-
     def test_dispatch_method_not_found(self):
         self.assertErrorEquals(
             JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
@@ -110,7 +105,6 @@ class TestDispatch(TestCase):
         )
 
     # pow
-
     @skip('inspect module seemingly wont allow getcallargs on a builtin')
     def test_dispatch_pow(self):
         self.assertResultEquals(
@@ -122,7 +116,6 @@ class TestDispatch(TestCase):
     # the params can come through
 
     # method_only
-
     def test_dispatch_method_only_params_omitted(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'method_only'})
@@ -162,7 +155,6 @@ class TestDispatch(TestCase):
         )
 
     # one_positional
-
     def test_dispatch_one_positional_params_omitted(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
@@ -197,7 +189,6 @@ class TestDispatch(TestCase):
         )
 
     # two_positionals
-
     def test_dispatch_two_positionals_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'two_positionals', 'params': [1, 2]})
@@ -230,7 +221,6 @@ class TestDispatch(TestCase):
         )
 
     # just_args
-
     def test_dispatch_just_args_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_args', 'params': [1, 2]})
@@ -259,7 +249,6 @@ class TestDispatch(TestCase):
         )
 
     # just_kwargs
-
     def test_dispatch_just_kwargs_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'just_kwargs', 'params': {'foo': 'bar'}})
@@ -290,7 +279,6 @@ class TestDispatch(TestCase):
         )
 
     # positionals_with_args
-
     def test_dispatch_positionals_with_args_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args', 'params': ['foo', 42]})
@@ -323,7 +311,6 @@ class TestDispatch(TestCase):
         )
 
     # positionals_with_kwargs
-
     def test_dispatch_positionals_with_kwargs_ok(self):
         self.assertErrorEquals(
             JSONRPC_INVALID_PARAMS_HTTP_CODE,
@@ -358,7 +345,6 @@ class TestDispatch(TestCase):
         )
 
     # positionals_with_args_and_kwargs
-
     def test_dispatch_positionals_with_args_and_kwargs_ok(self):
         self.assertNoContent(
             tests.dispatch({'jsonrpc': '2.0', 'method': 'positionals_with_args_and_kwargs', 'params': ['foo', 42, {'foo': 'bar'}]})
@@ -391,7 +377,6 @@ class TestDispatch(TestCase):
         )
 
     # Test return results
-
     def test_dispatch_add_two_numbers(self):
         self.assertResultEquals(
             3,
@@ -423,7 +408,7 @@ class TestDispatch(TestCase):
             JSONRPC_SERVER_ERROR_TEXT,
             response
         )
-        # Because the debug was not passed, there should be no 'data'
+        # Because debug mode is off, there should be no 'data'
         self.assertNotIn('data', response[0]['error'])
 
     def test_dispatch_raising_servererror_with_debug(self):
@@ -434,9 +419,8 @@ class TestDispatch(TestCase):
             JSONRPC_SERVER_ERROR_TEXT,
             response
         )
-        # Because debugging is on, there should be 'data'.
+        # Because debug mode is on, there should be 'data'.
         self.assertEqual('Column "Insecure" does not exist', response[0]['error']['data'])
-
 
     def test_dispatch_raising_other_error(self):
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
@@ -460,6 +444,13 @@ class TestDispatch(TestCase):
         self.assertEqual('See server logs', response[0]['error']['data'])
 
     # dispatch_str
+    def test_dispatch_str_invalid_json(self):
+        self.assertErrorEquals(
+            JSONRPC_PARSE_ERROR_HTTP_CODE,
+            JSONRPC_PARSE_ERROR_TEXT,
+            tests.dispatch_str('{"jsonrpc": "2}')
+        )
+
     def test_dispatch_str_method_not_found(self):
         self.assertErrorEquals(
             JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
