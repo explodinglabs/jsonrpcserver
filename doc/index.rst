@@ -106,13 +106,12 @@ extra info will then be included in the ``data`` property, like this::
 Logging
 =======
 
-The incoming and outgoing JSON-RPC messages are logged on the ``INFO`` log
-level. To see them, set the log level to ``INFO``::
+The JSON-RPC messages are logged on the ``INFO`` log level. To see them::
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
-    logging.basicConfig() # Creates a basic StreamHandler w/ default formatter
+    logging.basicConfig() # Creates a basic StreamHandler with a default format
 
 For better logging, use custom handlers and formats::
 
