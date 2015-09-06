@@ -1,5 +1,24 @@
 """rpc.py"""
 
+from collections import OrderedDict
+
+def sort_response(response):
+    """Sorts a JSON-RPC response dict returning a sorted OrderedDict, having no
+    effect other than making it nicer to read.
+
+    >>> json.dumps(sort_response(
+    ...     {'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
+    '{"jsonrpc": "2.0", "method": "add", "result": 5, "id": 1}'
+
+    :param response: JSON-RPC response in dict format.
+    :return: The same response, nicely sorted.
+    """
+    if response:
+        sort_order = ['jsonrpc', 'result', 'error', 'id']
+        return OrderedDict(sorted(response.items(), key=lambda k: \
+            sort_order.index(k[0])))
+
+
 def rpc_success_response(request_id, data):
     """Success response.
 
@@ -31,17 +50,15 @@ def rpc_error_response(request_id, code, message, data=None):
         string, number, dict or list.
     :return: The response dict.
     """
-    e = {
-        'code': code,
-        'message': message
+    response = {
+        'jsonrpc': '2.0',
+        'error': {
+            'code': code,
+            'message': message
+        },
+        'id': request_id
     }
     # Data is optional in the response.
     if data:
-        e.update({
-            'data': data
-        })
-    return {
-        'jsonrpc': '2.0',
-        'error': e,
-        'id': request_id
-    }
+        response['error']['data'] = data
+    return response

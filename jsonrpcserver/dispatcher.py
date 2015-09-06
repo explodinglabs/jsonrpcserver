@@ -7,7 +7,7 @@ from inspect import getcallargs
 
 import jsonschema
 
-from .rpc import rpc_success_response
+from .rpc import rpc_success_response, sort_response
 from .exceptions import JsonRpcServerError, ParseError, \
     InvalidRequest, MethodNotFound, InvalidParams, ServerError
 from .status import HTTP_STATUS_CODES
@@ -151,34 +151,34 @@ class Dispatcher(object):
             request_id = request.get('id')
             if request_id is not None:
                 # A response was requested
-                result, status = (rpc_success_response(
+                response, status = (rpc_success_response(
                     request_id, method_result), 200)
             else:
                 # Notification - return nothing.
-                result, status = (None, 204)
+                response, status = (None, 204)
 
         # Catch JsonRpcServerErrors raised (invalid request etc)
         except JsonRpcServerError as e:
             e.request_id = request.get('id')
-            result, status = (json.loads(str(e)), e.http_status_code)
+            response, status = (json.loads(str(e)), e.http_status_code)
             if not self.debug:
-                result['error'].pop('data')
+                response['error'].pop('data')
 
         # Catch all other exceptions
         except Exception as e: #pylint:disable=broad-except
             # Log the exception
             logger.exception(e)
-            result, status = (json.loads(str(ServerError('See server logs'))), \
-                500)
+            response, status = (json.loads(str(ServerError(
+                'See server logs'))), 500)
             if not self.debug:
-                result['error'].pop('data')
+                response['error'].pop('data')
 
-        response_log.info(str(result), extra={
+        response_log.info(str(sort_response(response)), extra={
             'http_code': status,
             'http_reason': HTTP_STATUS_CODES[status]
         })
 
-        return (result, status)
+        return (response, status)
 
     def dispatch_str(self, request):
         """Wrapper for dispatch, which takes a string instead of a dict.

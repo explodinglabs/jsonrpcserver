@@ -9,7 +9,7 @@ http://jsonrpc.org/historical/json-rpc-over-http.html
 
 import json
 
-from .rpc import rpc_error_response
+from .rpc import rpc_error_response, sort_response
 from . import status
 
 
@@ -37,8 +37,9 @@ class JsonRpcServerError(Exception):
 
     def __str__(self):
         """Returns the error in a in JSON-RPC format response string"""
-        return json.dumps(rpc_error_response(self.request_id, self.jsonrpc_status_code, \
-            self.message, self.data), sort_keys=False)
+        return json.dumps(sort_response(rpc_error_response(self.request_id, \
+            self.jsonrpc_status_code, self.message, self.data)), \
+            sort_keys=False)
 
 
 class ParseError(JsonRpcServerError):

@@ -2,11 +2,26 @@
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods
 
 from unittest import TestCase, main
+import json
 
-from jsonrpcserver.rpc import rpc_success_response, rpc_error_response
+from jsonrpcserver.rpc import rpc_success_response, rpc_error_response, \
+    sort_response
 
 
 class TestRpc(TestCase):
+
+    # sort_response
+    def test_sort_response_success(self):
+        self.assertEqual(
+            '{"jsonrpc": "2.0", "result": 5, "id": 1}',
+            json.dumps(sort_response({'id': 1, 'result': 5, 'jsonrpc': '2.0'})),
+        )
+
+    def test_sort_response_error(self):
+        self.assertEqual(
+            '{"jsonrpc": "2.0", "error": {"code": -320000}, "id": 1}',
+            json.dumps(sort_response({'error': {"code": -320000}, 'id': 1, 'jsonrpc': '2.0'})),
+        )
 
     # rpc_success_response()
     def test_result_with_no_result(self):
@@ -63,6 +78,7 @@ class TestRpc(TestCase):
             {"jsonrpc": "2.0", "error": {"code": -32000, "message": "There was an error", "data": {"Foo": "Bar", "Answer": 42}}, "id": 1},
             rpc_error_response(1, -32000, 'There was an error', {'Foo': 'Bar', 'Answer': 42})
         )
+
 
 if __name__ == '__main__':
     main()
