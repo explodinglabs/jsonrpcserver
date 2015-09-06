@@ -1,5 +1,5 @@
-Release History
-===============
+Recent Changes
+==============
 
 2.1.1 (2015-09-06)
 ------------------
@@ -19,9 +19,3 @@ Release History
 
 - Faster request validation.
   (`#23 <https://bitbucket.org/beau-barker/jsonrpcserver/issues/23/performance-of-jsonrpcserver-is-not-very>`_)
-
-2.0.1 (2015-05-09)
-------------------
-
-- Fixed logging, now allows you to add handlers to getLogger('jsonrpcserver').
-  See docs for info.
