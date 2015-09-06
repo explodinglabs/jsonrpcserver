@@ -114,8 +114,7 @@ level. To see them, set the log level to ``INFO``::
 
     logging.basicConfig() # Creates a basic StreamHandler w/ default formatter
 
-For better logging, add handlers to ``jsonrpcserver.dispatcher.request`` and
-``jsonrpcserver.dispatcher.response``, and customize the format::
+For better logging, use custom handlers and formats::
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
