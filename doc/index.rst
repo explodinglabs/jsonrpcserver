@@ -48,7 +48,8 @@ Dispatch requests with ``dispatch()``::
 
 .. tip::
 
-    ``dispatch()`` takes a dictionary. If you have a string, use ``dispatch_str()``.
+    ``dispatch()`` takes a dictionary. If you have a string, use
+    ``dispatch_str()``.
 
 The returned values, a JSON-RPC response and an HTTP status code, can be used to
 respond to a client.
@@ -58,19 +59,14 @@ Exceptions
 
 On receiving invalid arguments, raise ``InvalidParams``::
 
-    from jsonrpcserver.exceptions import InvalidParams, ServerError
-
+    from jsonrpcserver.exceptions import InvalidParams
     @api.method('find')
     def find(**kwargs):
-        """Find a customer."""
-        # Required params
         try:
             firstname = kwargs['firstname']
             lastname = kwargs['lastname']
         except KeyError as e:
             raise InvalidParams(str(e))
-        # Optional params
-        age = kwargs.get('age')
 
 The library will catch the exception and return the correct JSON-RPC error
 response:
@@ -81,6 +77,7 @@ response:
 
 To notify the client of a server-side error, raise ``ServerError``::
 
+    from jsonrpcserver.exceptions import ServerError
     try:
         db.session.commit()
     except SQLAlchemyError as e:
