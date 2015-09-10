@@ -154,4 +154,4 @@ Links
 - Repository: https://bitbucket.org/beau-barker/jsonrpcserver
 - Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
 
-See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_
+See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_.
