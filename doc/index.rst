@@ -1,8 +1,8 @@
 jsonrpcserver
 *************
 
-Handle incoming `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and
-3.3+.
+Handle incoming `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7
+and 3.3+.
 
 Installation
 ============
@@ -154,4 +154,4 @@ Links
 - Repository: https://bitbucket.org/beau-barker/jsonrpcserver
 - Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
 
-Need a `client <https://jsonrpcclient.readthedocs.org/>`_?
+See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_
