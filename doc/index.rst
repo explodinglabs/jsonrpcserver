@@ -66,6 +66,7 @@ On receiving invalid arguments, raise ``InvalidParams``::
             firstname = kwargs['firstname']
             lastname = kwargs['lastname']
         except KeyError as e:
+            # A required argument wasn't given
             raise InvalidParams(str(e))
 
 The library will catch the exception and return the correct JSON-RPC error
@@ -153,5 +154,4 @@ Links
 - Repository: https://bitbucket.org/beau-barker/jsonrpcserver
 - Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
 
-Need a client? Try my `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_
-library.
+Need a client? Try `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_.
