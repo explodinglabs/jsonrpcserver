@@ -1,12 +1,8 @@
 """setup.py"""
 #pylint:disable=line-too-long
 
+from setuptools import setup
 from codecs import open as codecs_open
-
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup #pylint:disable=import-error,no-name-in-module
 
 with codecs_open('README.rst', 'r', 'utf-8') as f:
     readme = f.read()
