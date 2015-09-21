@@ -3,7 +3,7 @@
 import json
 import logging
 import pkgutil
-from inspect import getcallargs
+from funcsigs import signature
 
 import jsonschema
 
@@ -50,6 +50,17 @@ def _convert_params_to_args_and_kwargs(params):
     return (args, kwargs)
 
 
+def _call(func, *args, **kwargs):
+    """Call the requested method, first checking the arguments match the
+    function signature."""
+    try:
+        params = signature(func).bind(*args, **kwargs)
+    except TypeError as e:
+        raise InvalidParams(str(e))
+    else:
+        return func(*params.args, **params.kwargs)
+
+
 class Dispatcher(object):
     """Holds a list of the rpc methods, and dispatches to them."""
 
@@ -89,12 +100,10 @@ class Dispatcher(object):
         :return: Tuple containing the JSON-RPC response and an HTTP status code,
             which can be used to respond to a client.
         """
-        #pylint:disable=too-many-branches,too-many-statements
-
+        #pylint:disable=too-many-branches
         request_log.info(json.dumps(request))
 
         try:
-
             # Validate
             if self.validate_requests:
                 try:
@@ -122,28 +131,17 @@ class Dispatcher(object):
             # Call the method, first checking the arguments match the method
             # definition. It's no good simply calling the method and catching
             # the exception, because the caught exception may have been raised
-            # from inside the method. This section is ugly but I'm yet to find a
-            # better option.
+            # from inside the method.
+            result = None
+
             if not positional_args and not keyword_args:
-                try:
-                    getcallargs(method)
-                except TypeError as e:
-                    raise InvalidParams(str(e))
-                method_result = method()
+                result = _call(method)
 
             if positional_args and not keyword_args:
-                try:
-                    getcallargs(method, *positional_args)
-                except TypeError as e:
-                    raise InvalidParams(str(e))
-                method_result = method(*positional_args)
+                result = _call(method, *positional_args)
 
             if not positional_args and keyword_args:
-                try:
-                    getcallargs(method, **keyword_args)
-                except TypeError as e:
-                    raise InvalidParams(str(e))
-                method_result = method(**keyword_args)
+                result = _call(method, **keyword_args)
 
             # if positional_args and keyword_args: # Should never happen.
 
@@ -152,7 +150,7 @@ class Dispatcher(object):
             if request_id is not None:
                 # A response was requested
                 response, status = (rpc_success_response(
-                    request_id, method_result), 200)
+                    request_id, result), 200)
             else:
                 # Notification - return nothing.
                 response, status = (None, 204)
