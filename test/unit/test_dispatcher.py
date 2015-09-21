@@ -107,7 +107,7 @@ class TestDispatch(TestCase):
         )
 
     # pow
-    @skip('inspect module seemingly wont allow getcallargs on a builtin')
+    @skip('inspect module seemingly wont allow get a builtin method signature')
     def test_dispatch_pow(self):
         self.assertResultEquals(
             8,
