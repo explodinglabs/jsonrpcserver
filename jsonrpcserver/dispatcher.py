@@ -100,7 +100,6 @@ class Dispatcher(object):
         :return: Tuple containing the JSON-RPC response and an HTTP status code,
             which can be used to respond to a client.
         """
-        #pylint:disable=too-many-branches
         request_log.info(json.dumps(request))
 
         try:
@@ -116,11 +115,6 @@ class Dispatcher(object):
             # Get the positional and keyword arguments from request['params']
             (positional_args, keyword_args) = \
                 _convert_params_to_args_and_kwargs(request.get('params'))
-
-            # Dont allow magic methods to be called
-            if request_method.startswith('__') and request_method.endswith(
-                    '__'):
-                raise MethodNotFound(request_method)
 
             # Get the method if available
             try:
