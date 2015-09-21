@@ -25,6 +25,6 @@ setup(
     packages=['jsonrpcserver'],
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
-    install_requires=['jsonschema'],
+    install_requires=['jsonschema', 'funcsigs'],
     tests_require=['tox']
 )
