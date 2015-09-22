@@ -454,19 +454,19 @@ class TestDispatch(TestCase):
         # Because debug is on, there should be 'data'.
         self.assertEqual('See server logs', response[0]['error']['data'])
 
-    # dispatch_str
+    # Call dispatch() with string argument
     def test_dispatch_str_invalid_json(self):
         self.assertErrorEquals(
             JSONRPC_PARSE_ERROR_HTTP_CODE,
             JSONRPC_PARSE_ERROR_TEXT,
-            tests.dispatch_str('{"jsonrpc": "2}')
+            tests.dispatch('{"jsonrpc": "2}')
         )
 
     def test_dispatch_str_method_not_found(self):
         self.assertErrorEquals(
             JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
             JSONRPC_METHOD_NOT_FOUND_TEXT,
-            tests.dispatch_str('{"jsonrpc": "2.0", "method": "no_such_method"}')
+            tests.dispatch('{"jsonrpc": "2.0", "method": "no_such_method"}')
         )
 
 
