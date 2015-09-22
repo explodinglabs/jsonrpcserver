@@ -4,6 +4,7 @@ import json
 import logging
 import pkgutil
 from funcsigs import signature
+from six import string_types
 
 import jsonschema
 
@@ -113,14 +114,25 @@ class Dispatcher(object):
             Removed all flask code.
             No longer accepts a "handler".
 
-        :param request: JSON-RPC request in dict format.
+        :param request: JSON-RPC request in string or dict format.
         :return: Tuple containing the JSON-RPC response and an HTTP status code,
             which can be used to respond to a client.
         """
-        # Log the request before processing
-        request_log.info(json.dumps(request))
+        # If the request is in string format, convert it to a dict before
+        # continuing
+        if isinstance(request, string_types):
+            # Log the request before parsing
+            request_log.info(request)
+            try:
+                request = json.loads(request)
+            except ValueError:
+                return (json.loads(str(ParseError())), 400)
+        else:
+            # Must already be a dict. Log before continuing.
+            request_log.info(json.dumps(request))
 
         try:
+
             # Validate
             if self.validate_requests:
                 try:
@@ -179,14 +191,3 @@ class Dispatcher(object):
         })
 
         return (response, status)
-
-    def dispatch_str(self, request):
-        """Wrapper for dispatch, which takes a string instead of a dict.
-
-        :param request: JSON-RPC request string.
-        """
-        try:
-            request = json.loads(request)
-        except ValueError:
-            return (json.loads(str(ParseError())), 400)
-        return self.dispatch(request)
