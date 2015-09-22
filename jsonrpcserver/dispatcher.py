@@ -25,15 +25,8 @@ def _convert_params_to_args_and_kwargs(params):
     """Takes the 'params' part from the JSON-RPC request and converts it into
     positional or keyword arguments to be passed through to the handling method.
 
-    There are four possibilities for 'params' in JSON-RPC:
-        - No params at all (either 'params' is not present or the value is
-          ``null``).
-        - A single value eg. "params": 5 (or "5", or true etc), taken as one
-          positional argument.
-        - A JSON array, eg. "params": ["foo", "bar"], taken as positional
-          arguments.
-        - A JSON object, eg. "params: {"foo": "bar"}, taken as keyword
-          arguments.
+    From json.org: a *value* (like 'params'), can be string, number, object,
+    array, true, false or null.
 
     .. versionchanged:: 1.0.12
         No longer allows both args and kwargs, as per spec.
@@ -41,10 +34,12 @@ def _convert_params_to_args_and_kwargs(params):
     :param params: Arguments for the JSON-RPC method.
     """
     args = kwargs = None
-    # Params is a dict? ie. "params": {"foo": "bar"}
+    # Is params a JSON object? (represented in Python as a dict) eg. "params":
+    # {"foo": "bar"}
     if isinstance(params, dict):
         kwargs = params
-    # Params is a list? ie. "params": ["foo", "bar"]
+    # Is params is a JSON array? (represented in Python as a list) eg. "params":
+    # ["foo", "bar"]
     elif isinstance(params, list):
         args = params
     return (args, kwargs)
@@ -52,7 +47,9 @@ def _convert_params_to_args_and_kwargs(params):
 
 def _call(func, *args, **kwargs):
     """Call the requested method, first checking the arguments match the
-    function signature."""
+    function signature. It's no good simply calling the method and catching the
+    exception, because the caught exception may have been raised from inside the
+    method."""
     try:
         params = signature(func).bind(*args, **kwargs)
     except TypeError as e:
@@ -112,7 +109,7 @@ class Dispatcher(object):
 
             request_method = request['method']
 
-            # Get the positional and keyword arguments from request['params']
+            # Get the positional and keyword arguments from the 'params' part
             (positional_args, keyword_args) = \
                 _convert_params_to_args_and_kwargs(request.get('params'))
 
@@ -122,12 +119,9 @@ class Dispatcher(object):
             except KeyError:
                 raise MethodNotFound(request_method)
 
-            # Call the method, first checking the arguments match the method
-            # definition. It's no good simply calling the method and catching
-            # the exception, because the caught exception may have been raised
-            # from inside the method.
             result = None
 
+            # Call the method
             if not positional_args and not keyword_args:
                 result = _call(method)
 
