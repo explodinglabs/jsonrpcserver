@@ -21,41 +21,60 @@ json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
     __name__, 'request-schema.json').decode('utf-8')))
 
 
-def _convert_params_to_args_and_kwargs(params):
-    """Takes the 'params' part from the JSON-RPC request and converts it into
-    positional or keyword arguments to be passed through to the handling method.
+def _get_arguments_from_request(request):
+    """Takes the 'params' part of a JSON-RPC request and converts it to either
+    positional or keyword arguments.
 
-    From json.org: a *value* (like 'params'), can be string, number, object,
-    array, true, false or null.
+    Important to remember - a JSON-RPC can have positional *or* keyword
+    arguments, but not both!
+
+    Positional arguments will be represented as a list. Keyword arguments will
+    be represented as a dict. A third option is that 'params' was omitted.
+    There are no other acceptable options.
+
+    See http://www.jsonrpc.org/specification#parameter_structures
 
     .. versionchanged:: 1.0.12
         No longer allows both args and kwargs, as per spec.
 
-    :param params: Arguments for the JSON-RPC method.
+    :param request: JSON-RPC request.
+    :returns: A tuple containing the positionals (in a list, or None) and
+        keywords (in a dict, or None) extracted from the 'params' part of the
+        request.
+    :raises InvalidParams: 'params' was present, but was not a list or dict.
     """
-    args = kwargs = None
-    # Is params a JSON object? (represented in Python as a dict) eg. "params":
-    # {"foo": "bar"}
-    if isinstance(params, dict):
-        kwargs = params
+    positionals = keywords = None
+    params = request.get('params')
+    # Was 'params' omitted from the request? Consider this as "no arguments were
+    # passed".
+    if 'params' not in request:
+        pass
     # Is params is a JSON array? (represented in Python as a list) eg. "params":
-    # ["foo", "bar"]
+    # ["foo", "bar"]. Consider this positional arguments.
     elif isinstance(params, list):
-        args = params
-    return (args, kwargs)
+        positionals = params
+    # Is params a JSON object? (represented in Python as a dict) eg. "params":
+    # {"foo": "bar"}. Consider this keyword arguments.
+    elif isinstance(params, dict):
+        keywords = params
+    # Anything else is invalid. (This should never happen if the request has
+    # passed the schema validation.)
+    else:
+        raise InvalidParams('Params of type %s is not allowed' % \
+            type(params).__name__)
+    return (positionals, keywords)
 
 
-def _call(func, *args, **kwargs):
-    """Call the requested method, first checking the arguments match the
-    function signature. It's no good simply calling the method and catching the
-    exception, because the caught exception may have been raised from inside the
-    method."""
+def _call(func, *positionals, **keywords):
+    """Call the method, first ensuring the arguments match the function
+    signature
+    """
     try:
-        params = signature(func).bind(*args, **kwargs)
+        params = signature(func).bind(*positionals, **keywords)
     except TypeError as e:
         raise InvalidParams(str(e))
-    else:
-        return func(*params.args, **params.kwargs)
+    # Call the method and return the result
+    return func(*params.args, **params.kwargs)
 
 
 class Dispatcher(object):
@@ -89,6 +108,7 @@ class Dispatcher(object):
 
         .. versionchanged:: 1.0.12
             Sending "'id': null" will be treated as if no response is required.
+
         .. versionchanged:: 2.0.0
             Removed all flask code.
             No longer accepts a "handler".
@@ -97,6 +117,7 @@ class Dispatcher(object):
         :return: Tuple containing the JSON-RPC response and an HTTP status code,
             which can be used to respond to a client.
         """
+        # Log the request before processing
         request_log.info(json.dumps(request))
 
         try:
@@ -107,40 +128,33 @@ class Dispatcher(object):
                 except jsonschema.ValidationError as e:
                     raise InvalidRequest(e.message)
 
+            # Get the requested method, raise if unknown
             request_method = request['method']
-
-            # Get the positional and keyword arguments from the 'params' part
-            (positional_args, keyword_args) = \
-                _convert_params_to_args_and_kwargs(request.get('params'))
-
-            # Get the method if available
             try:
                 method = self._rpc_methods[request_method]
             except KeyError:
                 raise MethodNotFound(request_method)
 
-            result = None
+            # Get the positional and keyword arguments from the 'params' part
+            (positionals, keywords) = _get_arguments_from_request(request)
 
-            # Call the method
-            if not positional_args and not keyword_args:
+            # Call the method, first ensuring the arguments match the function
+            # signature
+            if positionals:
+                result = _call(method, *positionals)
+            elif keywords:
+                result = _call(method, **keywords)
+            else:
                 result = _call(method)
 
-            if positional_args and not keyword_args:
-                result = _call(method, *positional_args)
-
-            if not positional_args and keyword_args:
-                result = _call(method, **keyword_args)
-
-            # if positional_args and keyword_args: # Should never happen.
-
-            # Return a response
+            # Build a response message
             request_id = request.get('id')
             if request_id is not None:
                 # A response was requested
-                response, status = (rpc_success_response(
-                    request_id, result), 200)
+                response, status = (rpc_success_response(request_id, result), \
+                    200)
             else:
-                # Notification - return nothing.
+                # Notification - return no content.
                 response, status = (None, 204)
 
         # Catch JsonRpcServerErrors raised (invalid request etc)
@@ -150,15 +164,15 @@ class Dispatcher(object):
             if not self.debug:
                 response['error'].pop('data')
 
-        # Catch all other exceptions
+        # Catch all other exceptions, respond with ServerError message
         except Exception as e: #pylint:disable=broad-except
-            # Log the exception
             logger.exception(e)
             response, status = (json.loads(str(ServerError(
                 'See server logs'))), 500)
             if not self.debug:
                 response['error'].pop('data')
 
+        # Log the response
         response_log.info(str(sort_response(response)), extra={
             'http_code': status,
             'http_reason': HTTP_STATUS_CODES[status]

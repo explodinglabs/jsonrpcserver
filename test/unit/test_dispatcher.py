@@ -10,7 +10,10 @@ from jsonrpcserver.status import *
 
 tests = Dispatcher()
 
+# Builtin function
 tests.register_method(pow)
+
+# Lambdas
 tests.register_method(lambda: None, 'method_only')
 tests.register_method(lambda string: None, 'one_positional')
 tests.register_method(lambda one, two: None, 'two_positionals')
@@ -22,6 +25,7 @@ tests.register_method(lambda one, two, *args, **kwargs: None, 'positionals_with_
 tests.register_method(lambda one, two: one + two, 'add')
 tests.register_method(lambda string: string.upper(), 'uppercase')
 
+# Decorators
 @tests.method('get')
 def get(**kwargs):
     """Test using a full function, not a lambda"""
@@ -36,6 +40,7 @@ def raise_servererror():
 def raise_other_error():
     raise ValueError('Value too low')
 
+# Class methods
 class HandleRequests:
     """Test using a class method, not a function"""
     @staticmethod
@@ -47,8 +52,9 @@ class HandleRequests:
 class TestDispatch(TestCase):
 
     def setUp(self):
-        tests.debug = False
+        tests.debug = True
         logging.getLogger('jsonrpcserver.dispatcher').disabled = True
+        pass
 
     # My own asserts
     def assertNoContent(self, response):
@@ -78,7 +84,8 @@ class TestDispatch(TestCase):
         )
 
     def test_dispatch_params_null(self):
-        """Using 'params': null is *not* valid under the schema."""
+        """Using 'params': null is invalid json-rpc, so should fail the schema
+        validation."""
         self.assertErrorEquals(
             JSONRPC_INVALID_REQUEST_HTTP_CODE,
             JSONRPC_INVALID_REQUEST_TEXT,
@@ -404,6 +411,7 @@ class TestDispatch(TestCase):
         )
 
     def test_dispatch_raising_servererror(self):
+        tests.debug = False
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_servererror'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
@@ -425,6 +433,7 @@ class TestDispatch(TestCase):
         self.assertEqual('Column "Insecure" does not exist', response[0]['error']['data'])
 
     def test_dispatch_raising_other_error(self):
+        tests.debug = False
         response = tests.dispatch({'jsonrpc': '2.0', 'method': 'raise_other_error'})
         self.assertErrorEquals(
             JSONRPC_SERVER_ERROR_HTTP_CODE,
