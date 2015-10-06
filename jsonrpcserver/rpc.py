@@ -2,6 +2,8 @@
 
 from collections import OrderedDict
 
+# TODO: Make a Response class
+
 def sort_response(response):
     """Sorts a JSON-RPC response dict returning a sorted OrderedDict, having no
     effect other than making it nicer to read.
@@ -37,7 +39,7 @@ def rpc_success_response(request_id, data):
 
 
 def rpc_error_response(request_id, code, message, data=None):
-    """Error response
+    """Returns a JSON-RPC error response
 
     Note the 'id' is required in the response, even if null, for both success
     and error. See http://www.jsonrpc.org/specification#response_object
@@ -58,7 +60,7 @@ def rpc_error_response(request_id, code, message, data=None):
         },
         'id': request_id
     }
-    # Data is optional in the response.
+    # Data is optional in the response - include it if provided.
     if data:
         response['error']['data'] = data
     return response
