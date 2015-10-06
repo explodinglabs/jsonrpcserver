@@ -1,3 +1,4 @@
 """__init__.py"""
 
-from jsonrpcserver.dispatcher import Dispatcher
+from jsonrpcserver.methods import Methods
+from jsonrpcserver.dispatcher import dispatch
