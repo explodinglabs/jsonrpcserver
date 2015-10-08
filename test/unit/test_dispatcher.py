@@ -1,7 +1,8 @@
 """test_dispatcher.py"""
-#pylint:disable=missing-docstring,line-too-long
+#pylint:disable=missing-docstring
 
 from unittest import TestCase, main
+import logging
 
 from jsonrpcserver.dispatcher import _validate_arguments_against_signature, \
     _call
@@ -27,97 +28,115 @@ class TestValidateArgumentsAgainstSignature(TestCase):
 
     def test_positionals_not_passed(self):
         with self.assertRaises(InvalidParams):
-            _validate_arguments_against_signature(lambda x: None, None, {'foo': 'bar'})
+            _validate_arguments_against_signature(lambda x: None, None,
+                {'foo': 'bar'})
 
     @staticmethod
     def test_keywords():
-        _validate_arguments_against_signature(lambda **kwargs: None, None, {'foo': 'bar'})
+        _validate_arguments_against_signature(lambda **kwargs: None, None,
+            {'foo': 'bar'})
 
 
 class TestCall(TestCase):
 
-    def test_plain_list_of_lambdas(self):
-        one = lambda: 1
-        one.__name__ = 'one'
-        self.assertEqual(1, _call([one], 'one'))
+    def test_list_of_functions(self):
+        def foo():
+            return 'bar'
+        self.assertEqual('bar', _call([foo], 'foo'))
 
-    def test_methods_add(self):
+    def test_list_of_lambdas(self):
+        foo = lambda: 'bar'
+        foo.__name__ = 'foo'
+        self.assertEqual('bar', _call([foo], 'foo'))
+
+    def test_methods(self):
         methods = Methods()
         methods.add(lambda: 1, 'one')
         self.assertEqual(1, _call(methods, 'one'))
 
-    def test_methods_add_decorator(self):
+    def test_methods_decorator(self):
         methods = Methods()
         @methods.add
         def one(): # pylint: disable=unused-variable
             return 1
         self.assertEqual(1, _call(methods, 'one'))
 
-    def test_methods_add_with_args(self):
+    def test_positionals(self):
         methods = Methods()
         methods.add(lambda x: x * x, 'square')
         self.assertEqual(9, _call(methods, 'square', [3]))
 
+    def test_positionals_and_keywords(self):
+        def foo(*args, **kwargs):
+            return 'bar'
+        with self.assertRaises(InvalidParams):
+            _call([foo], 'foo', [3], {'foo': 'bar'})
+
 
 class TestDispatch(TestCase):
 
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+
     def test_plain_list_of_functions(self):
-        def one():
-            return 1
-        self.assertEqual(
-            ({'jsonrpc': '2.0', 'result': 1, 'id': 1}, 200),
-            dispatch([one], {'jsonrpc': '2.0', 'method': 'one', 'id': 1})
-        )
+        def foo():
+            return 'bar'
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertEqual('bar', r.result)
 
     def test_plain_list_of_lambdas(self):
-        one = lambda: 1
-        one.__name__ = 'one'
-        self.assertEqual(
-            ({'jsonrpc': '2.0', 'result': 1, 'id': 1}, 200),
-            dispatch([one], {'jsonrpc': '2.0', 'method': 'one', 'id': 1})
-        )
+        foo = lambda: 'bar'
+        foo.__name__ = 'foo'
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertEqual('bar', r.result)
 
-    def test_methods_add(self):
+    def test_methods(self):
         methods = Methods()
-        methods.add(lambda: 1, 'one')
-        self.assertEqual(
-            ({'jsonrpc': '2.0', 'result': 1, 'id': 1}, 200),
-            dispatch(methods, {'jsonrpc': '2.0', 'method': 'one', 'id': 1})
-        )
+        methods.add(lambda: 'bar', 'foo')
+        r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertEqual('bar', r.result)
 
-    def test_methods_add_with_args(self):
+    def test_positional_args(self):
         methods = Methods()
         methods.add(lambda x: x * x, 'square')
-        self.assertEqual(
-            ({'jsonrpc': '2.0', 'result': 9, 'id': 1}, 200),
-            dispatch(methods, {'jsonrpc': '2.0', 'method': 'square', 'params': [3], 'id': 1})
-        )
+        self.assertEqual(9, dispatch(methods, {'jsonrpc': '2.0', 'method':
+            'square', 'params': [3], 'id': 1}).result)
 
-    def test_methods_add_with_kwargs(self):
+    def test_keyword_args(self):
         methods = Methods()
         @methods.add
         def upper(**kwargs): # pylint: disable=unused-variable
             return kwargs['word'].upper()
-        self.assertEqual(
-            ({'jsonrpc': '2.0', 'result': 'FOO', 'id': 1}, 200),
-            dispatch(methods, {'jsonrpc': '2.0', 'method': 'upper', 'params': {'word': 'foo'}, 'id': 1})
-        )
-
-    def test_methods_add_with_invalid_params(self):
-        methods = Methods()
-        methods.add(lambda: None, 'foo')
-        self.assertEqual(
-            ({'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}, 400),
-            dispatch(methods, {'jsonrpc': '2.0', 'method': 'foo', 'params': [1], 'id': 1})
-        )
+        r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'upper', 'params':
+            {'word': 'foo'}, 'id': 1})
+        self.assertEqual('FOO', r.result)
 
     def test_string_request(self):
-        def one():
-            return 1
-        self.assertEqual(
-            ({'jsonrpc': '2.0', 'result': 1, 'id': 1}, 200),
-            dispatch([one], '{"jsonrpc": "2.0", "method": "one", "id": 1}')
-        )
+        def foo():
+            return 'bar'
+        r = dispatch([foo], '{"jsonrpc": "2.0", "method": "foo", "id": 1}')
+        self.assertEqual('bar', r.result)
+
+    # Errors
+    def test_invalid_request(self):
+        def foo():
+            return 'bar'
+        r = dispatch([foo], {'jsonrpc': '2.0'})
+        self.assertEqual('Invalid request', r.json['error']['message'])
+        self.assertEqual(400, r.http_status)
+
+    def test_uncaught(self):
+        def foo():
+            return 1/0
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('Server error', r.json['error']['message'])
+
+    def test_raise(self):
+        def foo():
+            raise InvalidParams()
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('Invalid params', r.json['error']['message'])
+
 
 if __name__ == '__main__':
     main()

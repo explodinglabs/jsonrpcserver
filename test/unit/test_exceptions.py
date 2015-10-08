@@ -1,123 +1,60 @@
-"""test_exceptions.py"""
+"""test_py"""
 #pylint:disable=missing-docstring,line-too-long,too-many-public-methods
 
 from unittest import TestCase, main
 import json
 
-from jsonrpcserver import exceptions, status
+from jsonrpcserver.exceptions import *
+from jsonrpcserver.status import *
 
 
-class TestJsonRpcError(TestCase):
+class TestJsonRpcServerError(TestCase):
 
     def test_raise(self):
-        with self.assertRaises(exceptions.JsonRpcServerError):
-            raise exceptions.JsonRpcServerError(
-                status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
-                status.JSONRPC_INVALID_REQUEST_CODE, \
-                status.JSONRPC_INVALID_REQUEST_TEXT)
+        with self.assertRaises(JsonRpcServerError):
+            raise JsonRpcServerError(JSONRPC_INVALID_REQUEST_HTTP_CODE,
+                    JSONRPC_INVALID_REQUEST_CODE, JSONRPC_INVALID_REQUEST_TEXT)
 
-    def test_response_text_with_string_as_data(self):
-        self.assertEqual({
-            'jsonrpc': '2.0',
-            'error': {
-                'code': status.JSONRPC_INVALID_REQUEST_CODE,
-                'message': status.JSONRPC_INVALID_REQUEST_TEXT,
-                'data': 'Test'
-            },
-            'id': 1
-        }, json.loads(str(exceptions.JsonRpcServerError(
-            status.JSONRPC_INVALID_REQUEST_HTTP_CODE, \
-            status.JSONRPC_INVALID_REQUEST_CODE, \
-            status.JSONRPC_INVALID_REQUEST_TEXT, 'Test', 1))))
+    def test_str(self):
+        e = JsonRpcServerError(JSONRPC_INVALID_REQUEST_HTTP_CODE,
+                JSONRPC_INVALID_REQUEST_CODE, JSONRPC_INVALID_REQUEST_TEXT,
+                'Foo')
+        self.assertEqual(JSONRPC_INVALID_REQUEST_TEXT, str(e))
 
 
 class TestParseError(TestCase):
 
     def test_raise(self):
-        with self.assertRaises(exceptions.JsonRpcServerError):
-            raise exceptions.ParseError()
-
-    def test_response_text(self):
-        self.assertEqual({
-            'jsonrpc': '2.0',
-            'error': {
-                'code': status.JSONRPC_PARSE_ERROR_CODE,
-                'message': status.JSONRPC_PARSE_ERROR_TEXT
-            },
-            'id': None
-        }, json.loads(str(exceptions.ParseError())))
+        with self.assertRaises(JsonRpcServerError):
+            raise ParseError()
 
 
 class TestInvalidRequest(TestCase):
 
     def test_raise(self):
-        with self.assertRaises(exceptions.JsonRpcServerError):
-            raise exceptions.InvalidRequest('Test')
-
-    def test_response_text(self):
-        self.assertEqual({
-            'jsonrpc': '2.0',
-            'error': {
-                'code': status.JSONRPC_INVALID_REQUEST_CODE,
-                'message': status.JSONRPC_INVALID_REQUEST_TEXT,
-                'data': 'Test'
-            },
-            'id': None
-        }, json.loads(str(exceptions.InvalidRequest('Test'))))
+        with self.assertRaises(JsonRpcServerError):
+            raise InvalidRequest('foo')
 
 
 class TestMethodNotFound(TestCase):
 
     def test_raise(self):
-        with self.assertRaises(exceptions.JsonRpcServerError):
-            raise exceptions.MethodNotFound('Test')
-
-    def test_response(self):
-        self.assertEqual({
-            'jsonrpc': '2.0',
-            'error': {
-                'code': status.JSONRPC_METHOD_NOT_FOUND_CODE,
-                'message': status.JSONRPC_METHOD_NOT_FOUND_TEXT,
-                'data': 'Test'
-            },
-            'id': None
-        }, json.loads(str(exceptions.MethodNotFound('Test'))))
+        with self.assertRaises(JsonRpcServerError):
+            raise MethodNotFound('Test')
 
 
 class TestInvalidParams(TestCase):
 
     def test_raise(self):
-        with self.assertRaises(exceptions.JsonRpcServerError):
-            raise exceptions.InvalidParams('Test')
-
-    def test_response(self):
-        self.assertEqual({
-            'jsonrpc': '2.0',
-            'error': {
-                'code': status.JSONRPC_INVALID_PARAMS_CODE,
-                'message': status.JSONRPC_INVALID_PARAMS_TEXT,
-                'data': 'name'
-            },
-            'id': None
-        }, json.loads(str(exceptions.InvalidParams('name'))))
+        with self.assertRaises(JsonRpcServerError):
+            raise InvalidParams('Test')
 
 
 class TestServerError(TestCase):
 
     def test_raise(self):
-        with self.assertRaises(exceptions.JsonRpcServerError):
-            raise exceptions.ServerError()
-
-    def test_response(self):
-        self.assertEqual({
-            'jsonrpc': '2.0',
-            'error': {
-                'code': status.JSONRPC_SERVER_ERROR_CODE,
-                'message': status.JSONRPC_SERVER_ERROR_TEXT,
-                'data': 'Not found'
-            },
-            'id': None
-        }, json.loads(str(exceptions.ServerError('Not found'))))
+        with self.assertRaises(JsonRpcServerError):
+            raise ServerError()
 
 
 if __name__ == '__main__':
