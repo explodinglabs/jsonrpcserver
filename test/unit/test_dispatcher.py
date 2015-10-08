@@ -177,14 +177,6 @@ class TestDispatch(TestCase):
         self.assertEqual('Invalid params', r.json['error']['message'])
         self.assertEqual(400, r.http_status)
 
-    def test_debug(self):
-        def foo():
-            raise InvalidParams('bar')
-        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
-        self.assertNotIn('data', r.json['error'])
-        self.assertEqual('bar', r.json_debug['error']['data'])
-        self.assertEqual(400, r.http_status)
-
 
 if __name__ == '__main__':
     main()
