@@ -78,29 +78,35 @@ class TestDispatch(TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
 
-    def test_plain_list_of_functions(self):
+    # Success
+    def test_list_of_functions(self):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         self.assertEqual('bar', r.result)
+        self.assertEqual(200, r.http_status)
 
-    def test_plain_list_of_lambdas(self):
+    def test_list_of_lambdas(self):
         foo = lambda: 'bar'
         foo.__name__ = 'foo'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         self.assertEqual('bar', r.result)
+        self.assertEqual(200, r.http_status)
 
     def test_methods(self):
         methods = Methods()
         methods.add(lambda: 'bar', 'foo')
         r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         self.assertEqual('bar', r.result)
+        self.assertEqual(200, r.http_status)
 
     def test_positional_args(self):
         methods = Methods()
         methods.add(lambda x: x * x, 'square')
-        self.assertEqual(9, dispatch(methods, {'jsonrpc': '2.0', 'method':
-            'square', 'params': [3], 'id': 1}).result)
+        r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'square', 'params':
+            [3], 'id': 1})
+        self.assertEqual(9, r.result)
+        self.assertEqual(200, r.http_status)
 
     def test_keyword_args(self):
         methods = Methods()
@@ -110,14 +116,32 @@ class TestDispatch(TestCase):
         r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'upper', 'params':
             {'word': 'foo'}, 'id': 1})
         self.assertEqual('FOO', r.result)
+        self.assertEqual(200, r.http_status)
 
     def test_string_request(self):
         def foo():
             return 'bar'
         r = dispatch([foo], '{"jsonrpc": "2.0", "method": "foo", "id": 1}')
         self.assertEqual('bar', r.result)
+        self.assertEqual(200, r.http_status)
+
+    def test_notification(self):
+        def foo():
+            return 'bar'
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual(None, r.result)
+        self.assertEqual(None, r.json)
+        self.assertEqual('', r.body)
+        self.assertEqual(204, r.http_status)
 
     # Errors
+    def test_parse_error(self):
+        def foo():
+            return 'bar'
+        r = dispatch([foo], '{"jsonrpc')
+        self.assertEqual('Parse error', r.json['error']['message'])
+        self.assertEqual(400, r.http_status)
+
     def test_invalid_request(self):
         def foo():
             return 'bar'
@@ -125,17 +149,41 @@ class TestDispatch(TestCase):
         self.assertEqual('Invalid request', r.json['error']['message'])
         self.assertEqual(400, r.http_status)
 
-    def test_uncaught(self):
+    def test_method_not_found(self):
+        def foo():
+            return 'bar'
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'baz'})
+        self.assertEqual('Method not found', r.json['error']['message'])
+        self.assertEqual(404, r.http_status)
+
+    def test_invalid_params(self):
+        def foo(x):
+            return 'bar'
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('Invalid params', r.json['error']['message'])
+        self.assertEqual(400, r.http_status)
+
+    def test_server_error(self):
         def foo():
             return 1/0
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
         self.assertEqual('Server error', r.json['error']['message'])
+        self.assertEqual(500, r.http_status)
 
-    def test_raise(self):
+    def test_explicitly_raised_exception(self):
         def foo():
             raise InvalidParams()
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
         self.assertEqual('Invalid params', r.json['error']['message'])
+        self.assertEqual(400, r.http_status)
+
+    def test_debug(self):
+        def foo():
+            raise InvalidParams('bar')
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertNotIn('data', r.json['error'])
+        self.assertEqual('bar', r.json_debug['error']['data'])
+        self.assertEqual(400, r.http_status)
 
 
 if __name__ == '__main__':
