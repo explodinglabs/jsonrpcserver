@@ -1,11 +1,10 @@
 """dispatcher.py"""
 
 import logging
-import json
 
 from funcsigs import signature
 
-from .rpc import rpc_success_response, sort_response
+from .response import SuccessResponse, ErrorResponse
 from .request import Request
 from .exceptions import JsonRpcServerError, InvalidParams, ServerError
 from .status import HTTP_STATUS_CODES
@@ -53,22 +52,26 @@ def _call(methods, method_name, args=None, kwargs=None):
     # Ensure the arguments match the method's signature
     _validate_arguments_against_signature(method, args, kwargs)
     # Call the method
-    if not args and not kwargs:
+    if args and kwargs:
+        # Cannot have both positional and keyword arguments in JSON-RPC.
+        raise InvalidParams()
+    elif not args and not kwargs:
         return method()
     elif args:
         return method(*args)
     elif kwargs:
         return method(**kwargs)
-    else:
-        raise InvalidParams()
 
 
-def dispatch(methods, request, debug=False):
+def dispatch(methods, request):
     """
     Dispatch requests to the RPC methods.
+    :param methods: List of methods to dispatch to - either a python list, or a
+    Methods obj.
     :param request: JSON-RPC request in dict or string format.
-    :returns: Tuple containing information which can be used to respond to a
-        client, such as the JSON-RPC response and an HTTP status code.
+    :returns: Response object containing information which can be used to
+    respond to a client, such as the full JSON-RPC response and a recommended
+    HTTP status code.
     """
     r = None
     try:
@@ -76,30 +79,26 @@ def dispatch(methods, request, debug=False):
         request_log.info(str(request))
         # Create request object (also validates the request)
         r = Request(request)
+        # Call the requested method
         result = _call(methods, r.method_name, r.args, r.kwargs)
-    # Catch JsonRpcServerError raised (Invalid Request, etc)
+    # Catch any JsonRpcServerError raised (Invalid Request, etc)
     except JsonRpcServerError as e:
-        if hasattr(r, 'request_id'):
-            e.request_id = r.request_id
-        response, status = (json.loads(str(e)), e.http_status_code)
-        if not debug:
-            response['error'].pop('data')
-    # Catch all other exceptions, respond with ServerError message
+        request_id = r.request_id if hasattr(r, 'request_id') else None
+        response = ErrorResponse(
+            e.http_status, request_id, e.jsonrpc_status, str(e), e.data)
+    # Catch uncaught exceptions, respond with ServerError
     except Exception as e: #pylint:disable=broad-except
         logger.exception(e)
-        response, status = (json.loads(str(ServerError(
-            'See server logs'))), 500)
-        if not debug:
-            response['error'].pop('data')
+        ex = ServerError('See server logs')
+        request_id = r.request_id if hasattr(r, 'request_id') else None
+        response = ErrorResponse(
+            ex.http_status, request_id, ex.jsonrpc_status, str(ex), ex.data)
     else:
-        # Build a success response message
-        if r.is_notification:
-            # Notification - return no content.
-            response, status = (None, 204)
-        else:
-            # A response was requested
-            response, status = (rpc_success_response(r.request_id, result), 200)
+        # Success
+        result = result if r.request_id else None
+        response = SuccessResponse(r.request_id, result)
     # Log the response
-    response_log.info(json.dumps(sort_response(response)), extra={'http_code': \
-        status, 'http_reason': HTTP_STATUS_CODES[status]})
-    return (response, status)
+    response_log.info(
+        response.body, extra={'http_code': response.http_status, \
+        'http_reason': HTTP_STATUS_CODES[response.http_status]})
+    return response
