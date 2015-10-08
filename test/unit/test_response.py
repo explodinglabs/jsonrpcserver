@@ -6,7 +6,7 @@ import json
 
 from jsonrpcserver.response import sort_response, _Response, SuccessResponse, \
         ErrorResponse
-from jsonrpcserver.status import *
+from jsonrpcserver import status
 
 class TestSortResponse(TestCase):
 
@@ -20,7 +20,7 @@ class TestSortResponse(TestCase):
         self.assertEqual(
             '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
             json.dumps(sort_response({'id': 1, 'error': {'data': 'bar',
-                'message': 'foo', 'code': JSONRPC_INVALID_REQUEST_CODE},
+                'message': 'foo', 'code': status.JSONRPC_INVALID_REQUEST_CODE},
                 'jsonrpc': '2.0'})),
         )
 
@@ -52,7 +52,7 @@ class TestSuccessResponse(TestCase):
         r = SuccessResponse(None, None)
         self.assertEqual(None, r.request_id)
         self.assertEqual('', r.body)
-        self.assertEqual(HTTP_204_NO_CONTENT, r.http_status)
+        self.assertEqual(status.HTTP_NO_CONTENT, r.http_status)
 
     def test_no_id_with_result(self):
         # Notification should not have a result.
@@ -103,41 +103,41 @@ class TestSuccessResponse(TestCase):
 class TestErrorResponse(TestCase):
 
     def test_no_id(self):
-        r = ErrorResponse(HTTP_400_BAD_REQUEST, None,
-                JSONRPC_INVALID_REQUEST_CODE, 'foo')
+        r = ErrorResponse(status.HTTP_BAD_REQUEST, None,
+                status.JSONRPC_INVALID_REQUEST_CODE, 'foo')
         self.assertEqual(None, r.json['id'])
 
     def test_json(self):
-        r = ErrorResponse(HTTP_400_BAD_REQUEST, 1, JSONRPC_INVALID_REQUEST_CODE,
-                'foo', 'bar')
+        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
+                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual({'jsonrpc': '2.0', 'error': {'code': -32600, 'message':
             'foo'}, 'id': 1}, r.json)
 
     def test_json_debug_off(self):
-        r = ErrorResponse(HTTP_400_BAD_REQUEST, 1, JSONRPC_INVALID_REQUEST_CODE,
-                'foo', 'bar')
+        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
+                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertNotIn('data', r.json['error'])
 
     def test_json_debug_on(self):
-        r = ErrorResponse(HTTP_400_BAD_REQUEST, 1, JSONRPC_INVALID_REQUEST_CODE,
-                'foo', 'bar')
+        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
+                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual('bar', r.json_debug['error']['data'])
 
     def test_body(self):
-        r = ErrorResponse(HTTP_400_BAD_REQUEST, 1, JSONRPC_INVALID_REQUEST_CODE,
-                'foo', 'bar')
+        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
+                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual('{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
                 r.body)
 
     def test_body_debug_off(self):
-        r = ErrorResponse(HTTP_400_BAD_REQUEST, 1, JSONRPC_INVALID_REQUEST_CODE,
-                'foo', 'bar')
+        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
+                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual('{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
                 r.body)
 
     def test_body_debug_on(self):
-        r = ErrorResponse(HTTP_400_BAD_REQUEST, 1, JSONRPC_INVALID_REQUEST_CODE,
-                'foo', 'bar')
+        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
+                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual('{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
                 r.body_debug)
 

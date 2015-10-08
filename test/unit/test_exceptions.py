@@ -1,25 +1,28 @@
-"""test_py"""
-#pylint:disable=missing-docstring,line-too-long,too-many-public-methods
+"""test_exceptions.py"""
+#pylint:disable=missing-docstring
 
 from unittest import TestCase, main
 import json
 
 from jsonrpcserver.exceptions import *
-from jsonrpcserver.status import *
+from jsonrpcserver import status
 
 
 class TestJsonRpcServerError(TestCase):
 
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
-            raise JsonRpcServerError(JSONRPC_INVALID_REQUEST_HTTP_CODE,
-                    JSONRPC_INVALID_REQUEST_CODE, JSONRPC_INVALID_REQUEST_TEXT)
+            raise JsonRpcServerError(
+                    status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
+                    status.JSONRPC_INVALID_REQUEST_CODE,
+                    status.JSONRPC_INVALID_REQUEST_TEXT)
 
     def test_str(self):
-        e = JsonRpcServerError(JSONRPC_INVALID_REQUEST_HTTP_CODE,
-                JSONRPC_INVALID_REQUEST_CODE, JSONRPC_INVALID_REQUEST_TEXT,
-                'Foo')
-        self.assertEqual(JSONRPC_INVALID_REQUEST_TEXT, str(e))
+        e = JsonRpcServerError(
+                status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
+                status.JSONRPC_INVALID_REQUEST_CODE,
+                status.JSONRPC_INVALID_REQUEST_TEXT, 'Foo')
+        self.assertEqual(status.JSONRPC_INVALID_REQUEST_TEXT, str(e))
 
 
 class TestParseError(TestCase):
