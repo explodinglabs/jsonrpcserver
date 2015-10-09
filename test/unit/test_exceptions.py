@@ -2,9 +2,9 @@
 #pylint:disable=missing-docstring
 
 from unittest import TestCase, main
-import json
 
-from jsonrpcserver.exceptions import *
+from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
+    InvalidRequest, MethodNotFound, InvalidParams, ServerError
 from jsonrpcserver import status
 
 
@@ -13,15 +13,15 @@ class TestJsonRpcServerError(TestCase):
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise JsonRpcServerError(
-                    status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-                    status.JSONRPC_INVALID_REQUEST_CODE,
-                    status.JSONRPC_INVALID_REQUEST_TEXT)
+                status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
+                status.JSONRPC_INVALID_REQUEST_CODE,
+                status.JSONRPC_INVALID_REQUEST_TEXT)
 
     def test_str(self):
         e = JsonRpcServerError(
-                status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-                status.JSONRPC_INVALID_REQUEST_CODE,
-                status.JSONRPC_INVALID_REQUEST_TEXT, 'Foo')
+            status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
+            status.JSONRPC_INVALID_REQUEST_CODE,
+            status.JSONRPC_INVALID_REQUEST_TEXT, 'Foo')
         self.assertEqual(status.JSONRPC_INVALID_REQUEST_TEXT, str(e))
 
 
