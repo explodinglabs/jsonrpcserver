@@ -28,13 +28,13 @@ class TestValidateArgumentsAgainstSignature(TestCase):
 
     def test_positionals_not_passed(self):
         with self.assertRaises(InvalidParams):
-            _validate_arguments_against_signature(lambda x: None, None,
-                {'foo': 'bar'})
+            _validate_arguments_against_signature(
+                lambda x: None, None, {'foo': 'bar'})
 
     @staticmethod
     def test_keywords():
-        _validate_arguments_against_signature(lambda **kwargs: None, None,
-            {'foo': 'bar'})
+        _validate_arguments_against_signature(
+            lambda **kwargs: None, None, {'foo': 'bar'})
 
 
 class TestCall(TestCase):
@@ -67,7 +67,7 @@ class TestCall(TestCase):
         self.assertEqual(9, _call(methods, 'square', [3]))
 
     def test_positionals_and_keywords(self):
-        def foo(*args, **kwargs):
+        def foo(*args, **kwargs): # pylint: disable=unused-argument
             return 'bar'
         with self.assertRaises(InvalidParams):
             _call([foo], 'foo', [3], {'foo': 'bar'})
@@ -104,7 +104,7 @@ class TestDispatch(TestCase):
         methods = Methods()
         methods.add(lambda x: x * x, 'square')
         r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'square', 'params':
-            [3], 'id': 1})
+                               [3], 'id': 1})
         self.assertEqual(9, r.result)
         self.assertEqual(200, r.http_status)
 
@@ -114,7 +114,7 @@ class TestDispatch(TestCase):
         def upper(**kwargs): # pylint: disable=unused-variable
             return kwargs['word'].upper()
         r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'upper', 'params':
-            {'word': 'foo'}, 'id': 1})
+                               {'word': 'foo'}, 'id': 1})
         self.assertEqual('FOO', r.result)
         self.assertEqual(200, r.http_status)
 
@@ -157,7 +157,7 @@ class TestDispatch(TestCase):
         self.assertEqual(404, r.http_status)
 
     def test_invalid_params(self):
-        def foo(x):
+        def foo(x): # pylint: disable=unused-argument
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
         self.assertEqual('Invalid params', r.json['error']['message'])

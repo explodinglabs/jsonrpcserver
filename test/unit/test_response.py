@@ -19,13 +19,14 @@ class TestSortResponse(TestCase):
     def test_sort_response_error(self):
         self.assertEqual(
             '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
-            json.dumps(sort_response({'id': 1, 'error': {'data': 'bar',
-                'message': 'foo', 'code': status.JSONRPC_INVALID_REQUEST_CODE},
-                'jsonrpc': '2.0'})),
+            json.dumps(sort_response({'id': 1, 'error': {
+                'data': 'bar', 'message': 'foo', 'code':
+                status.JSONRPC_INVALID_REQUEST_CODE}, 'jsonrpc': '2.0'})),
         )
 
 
 class TestResponse(TestCase):
+    # pylint: disable=expression-not-assigned
 
     def test_json(self):
         with self.assertRaises(NotImplementedError):
@@ -92,54 +93,57 @@ class TestSuccessResponse(TestCase):
     def test_body_debug_off(self):
         r = SuccessResponse(1, 'foo')
         self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}',
-                r.body)
+                         r.body)
 
-    def test_body_debug_off(self):
+    def test_body_debug_on(self):
         r = SuccessResponse(1, 'foo')
         self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}',
-                r.body)
+                         r.body_debug)
 
 
 class TestErrorResponse(TestCase):
 
     def test_no_id(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, None,
-                status.JSONRPC_INVALID_REQUEST_CODE, 'foo')
+                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo')
         self.assertEqual(None, r.json['id'])
 
     def test_json(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual({'jsonrpc': '2.0', 'error': {'code': -32600, 'message':
-            'foo'}, 'id': 1}, r.json)
+                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
+        self.assertEqual({'jsonrpc': '2.0', 'error': {
+            'code': -32600, 'message': 'foo'}, 'id': 1}, r.json)
 
     def test_json_debug_off(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
+                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertNotIn('data', r.json['error'])
 
     def test_json_debug_on(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
+                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual('bar', r.json_debug['error']['data'])
 
     def test_body(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual('{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
-                r.body)
+                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
+        self.assertEqual(
+            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
+            r.body)
 
     def test_body_debug_off(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual('{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
-                r.body)
+                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
+        self.assertEqual(
+            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
+            r.body)
 
     def test_body_debug_on(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual('{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
-                r.body_debug)
+                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
+        self.assertEqual(
+            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
+            r.body_debug)
 
 
 if __name__ == '__main__':
