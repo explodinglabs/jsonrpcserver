@@ -43,7 +43,7 @@ class TestAdd(TestCase):
     def test_lambda_no_name(self):
         add = lambda x, y: x + y
         methods = Methods()
-        methods.add(add) # Lambda's __name__ will be '<lambda>', not 'add'
+        methods.add(add) # Lambda's __name__ will be '<lambda>'!
         with self.assertRaises(MethodNotFound):
             _get_method(methods, 'add')
 
