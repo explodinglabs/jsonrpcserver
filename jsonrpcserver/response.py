@@ -2,7 +2,7 @@
 Response
 ********
 
-The response objects returned by ``dispatch()``.
+These are the response objects returned by `dispatch() <#dispatcher.dispatch>`_.
 """
 
 import json
@@ -15,6 +15,7 @@ def sort_response(response):
     OrderedDict. This has no effect other than making it nicer to read.
 
     Example::
+
         >>> json.dumps(sort_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
         {"jsonrpc": "2.0", "result": 5, "id": 1}
 

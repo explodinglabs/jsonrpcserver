@@ -18,12 +18,16 @@ Write functions that will carry out the requests, for example::
     def cat():
         return 'meow'
 
-Then pass JSON-RPC requests to them with `dispatch() <api.html#dispatcher.dispatch>`_::
+Then pass JSON-RPC requests to them with `dispatch()
+<api.html#dispatcher.dispatch>`_::
 
     from jsonrpcserver import dispatch
     response = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
-The return value can be used to respond to a client::
+The first argument is the list of methods that can be called, and the second
+argument is the request itself.
+
+The `return value <api.html#response>`_ can be used to respond to a client::
 
     >>> response.body
     '{"jsonrpc": "2.0", "result": "meow", "id": 1}'
@@ -49,8 +53,8 @@ Example of **positional** arguments::
 
 .. important::
 
-    Methods can take positional or keyword arguments, *but not both in the same
-    method*. This is a `requirement
+    Use positional or keyword arguments, *but not both in the same method*.
+    This is a `requirement
     <http://www.jsonrpc.org/specification#parameter_structures>`_  of the
     JSON-RPC specification.
 
@@ -73,8 +77,7 @@ appropriate response::
     >>> response.http_status
     400
 
-Even uncaught exceptions are handled this way. This ensures we *always* have a
-response for the client.
+This ensures we *always* have a response for the client.
 
 .. tip::
 
