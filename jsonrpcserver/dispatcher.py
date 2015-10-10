@@ -9,7 +9,8 @@ from funcsigs import signature
 
 from jsonrpcserver.response import SuccessResponse, ErrorResponse
 from jsonrpcserver.request import Request
-from jsonrpcserver.exceptions import JsonRpcServerError, InvalidParams, ServerError
+from jsonrpcserver.exceptions import JsonRpcServerError, InvalidParams, \
+    ServerError
 from jsonrpcserver.status import HTTP_STATUS_CODES
 from jsonrpcserver.methods import _get_method
 
@@ -137,6 +138,7 @@ def dispatch(methods, request):
         response = SuccessResponse(r.request_id, result)
     # Log the response
     response_log.info(
-        response.body, extra={'http_code': response.http_status,
-        'http_reason': HTTP_STATUS_CODES[response.http_status]})
+        response.body, extra={
+            'http_code': response.http_status,
+            'http_reason': HTTP_STATUS_CODES[response.http_status]})
     return response
