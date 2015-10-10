@@ -1,8 +1,7 @@
 jsonrpcserver
 *************
 
-Handle incoming `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7
-and 3.3+.
+Handle `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and 3.3+.
 
 Installation
 ============
@@ -14,102 +13,86 @@ Installation
 Usage
 =====
 
-Write functions to carry out the requests::
+Write functions that will carry out the requests, for example::
 
-    >>> from jsonrpcserver import Dispatcher
-    >>> api = Dispatcher()
-    >>> api.register_method(lambda x, y: x + y, 'add')
+    def cat():
+        return 'meow'
 
-You may prefer the decorator syntax::
+Then pass JSON-RPC requests to them with `dispatch() <api.html#dispatcher.dispatch>`_::
 
-    >>> @api.method('add')
-    ... def add(x, y):
-    ...     return x + y
+    from jsonrpcserver import dispatch
+    response = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
-Keyword parameters are also acceptable::
+The return value can be used to respond to a client::
 
-    >>> @api.method('find')
-    ... def find(**kwargs):
-    ...     name = kwargs['name']
+    >>> response.body
+    '{"jsonrpc": "2.0", "result": "meow", "id": 1}'
+    >>> response.http_status
+    200
+
+Writing the methods
+===================
+
+Example of **positional** arguments::
+
+    def multiply(x, y):
+        return x * y
+
+    r = dispatch([multiply], {'jsonrpc': '2.0', 'method': 'multiply', 'params': [2, 3], 'id': 1})
+
+**Keyword** arguments::
+
+    def get_name(**kwargs):
+        return kwargs['name']
+
+    r = dispatch([get_name], {'jsonrpc': '2.0', 'method': 'get_name', 'params': {'name': 'foo'}})
 
 .. important::
 
-    Use either positional or keyword parameters, but not both in the same
-    method. This is a requirement of the `JSON-RPC specs
-    <http://www.jsonrpc.org/specification#parameter_structures>`_.
+    Methods can take positional or keyword arguments, *but not both in the same
+    method*. This is a `requirement
+    <http://www.jsonrpc.org/specification#parameter_structures>`_  of the
+    JSON-RPC specification.
 
-Dispatching
------------
+If arguments are invalid, raise `InvalidParams <api.html#exceptions.InvalidParams>`_::
 
-Dispatch requests with ``dispatch()``::
+    from jsonrpcserver.exceptions import InvalidParams
 
-    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'add', 'params': [2, 3], 'id': 1})
-    ({'jsonrpc': '2.0', 'result': 5, 'id': 1}, 200)
+    def get_name(**kwargs):
+        if 'name' not in kwargs:
+            raise InvalidParams('name is required')
+
+    request = {'jsonrpc': '2.0', 'method': 'get_name', 'params': {}}
+    response = dispatch([get_name], request)
+
+The library catches any exception raised during dispatch, and gives the
+appropriate response::
+
+    >>> response.body
+    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}
+    >>> response.http_status
+    400
+
+Even uncaught exceptions are handled this way. This ensures we *always* have a
+response for the client.
 
 .. tip::
 
-    ``dispatch()`` takes a dictionary. If you have a string, use
-    ``dispatch_str()``.
+    More information can be found in the `body_debug
+    <api.html#response.ErrorResponse.body_debug>`_ property (see the ``data``
+    attribute in this response)::
 
-The returned values - a JSON-RPC response and an HTTP status code - can be used
-to respond to a client.
-
-Exceptions
-==========
-
-On receiving invalid arguments, raise ``InvalidParams``::
-
-    from jsonrpcserver.exceptions import InvalidParams
-    @api.method('find')
-    def find(**kwargs):
-        try:
-            firstname = kwargs['firstname']
-            lastname = kwargs['lastname']
-        except KeyError as e:
-            # A required argument wasn't given
-            raise InvalidParams(str(e))
-
-The library will catch the exception and return the correct JSON-RPC error
-response:
-
-.. code-block:: javascript
-
-    ({"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}, 400)
-
-To notify the client of a server-side error, raise ``ServerError``::
-
-    from jsonrpcserver.exceptions import ServerError
-    try:
-        db.session.commit()
-    except SQLAlchemyError as e:
-        raise ServerError(str(e))
-
-The library will take care of it, returning:
-
-.. code-block:: javascript
-
-    ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}, "id": 1}, 500)
-
-Debugging
-=========
-
-In the above exceptions, extra debugging information is included when raising
-the exceptions. To include this extra information in the JSON-RPC responses,
-enable debugging (pass ``debug=True`` when instantiating the Dispatcher). The
-extra info will then be included in the ``data`` property, like this::
-
-    >>> api.debug = True
-    >>> api.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {'id': 1}, 'id': 1})
-    ({"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "Column 'id' does not exist"}, "id": 1}, 500)
+        >>> r.body_debug
+        {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid params", "data": "name is required"}, "id": 1}
 
 Logging
 =======
 
-The JSON-RPC messages are logged on the ``INFO`` log level. To see them::
+To see the JSON-RPC messages going back and forth, set the log level to
+``INFO``::
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
-
     logging.basicConfig() # Creates a basic StreamHandler with a default format
 
 For better logging, use custom handlers and formats::
@@ -117,10 +100,12 @@ For better logging, use custom handlers and formats::
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
+    # Request log
     request_handler = logging.StreamHandler()
     request_handler.setFormatter(logging.Formatter(fmt='--> %(message)s'))
     logging.getLogger('jsonrpcserver.dispatcher.request').addHandler(request_handler)
 
+    # Response log
     response_handler = logging.StreamHandler()
     response_handler.setFormatter(logging.Formatter(fmt='<-- %(http_code)d %(http_reason)s %(message)s'))
     logging.getLogger('jsonrpcserver.dispatcher.response').addHandler(response_handler)
@@ -150,8 +135,9 @@ Examples
 Links
 =====
 
-- PyPi Package: https://pypi.python.org/pypi/jsonrpcserver
-- Repository: https://bitbucket.org/beau-barker/jsonrpcserver
-- Issue tracker: https://bitbucket.org/beau-barker/jsonrpcserver/issues
+- `PyPi Package <https://pypi.python.org/pypi/jsonrpcserver>`_
+- `Repository <https://bitbucket.org/beau-barker/jsonrpcserver>`_
+- `Issue tracker <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_
+- `Twitter @bbmelb <https://twitter.com/bbmelb>`_
 
 See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_.

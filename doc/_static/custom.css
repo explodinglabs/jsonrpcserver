@@ -1,3 +1,6 @@
 dt {
-  font-weight: bold !important;
+}
+
+dl.class dt code.descname{
+  margin-bottom: 0.5em;
 }
