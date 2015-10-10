@@ -1,14 +1,17 @@
-"""dispatcher.py"""
+"""
+Dispatcher
+**********
+"""
 
 import logging
 
 from funcsigs import signature
 
-from .response import SuccessResponse, ErrorResponse
-from .request import Request
-from .exceptions import JsonRpcServerError, InvalidParams, ServerError
-from .status import HTTP_STATUS_CODES
-from .methods import _get_method
+from jsonrpcserver.response import SuccessResponse, ErrorResponse
+from jsonrpcserver.request import Request
+from jsonrpcserver.exceptions import JsonRpcServerError, InvalidParams, ServerError
+from jsonrpcserver.status import HTTP_STATUS_CODES
+from jsonrpcserver.methods import _get_method
 
 
 logger = logging.getLogger(__name__)
@@ -20,11 +23,11 @@ def _validate_arguments_against_signature(func, args, kwargs):
     """
     Checks if arguments match a function signature and can therefore be passed
     to it.
+
     :param func: The function object.
     :param args: List of positional arguments (or None).
     :param kwargs: Dict of keyword arguments (or None).
     :raises InvalidParams: If the arguments cannot be passed to the function.
-    :returns: None.
     """
     try:
         if not args and not kwargs:
@@ -40,6 +43,7 @@ def _validate_arguments_against_signature(func, args, kwargs):
 def _call(methods, method_name, args=None, kwargs=None):
     """
     Finds a method from a list, then validates the arguments before calling it.
+
     :param methods: The list of methods - either a python list, or Methods obj.
     :param args: Positional arguments (list)
     :param kwargs: Keyword arguments (dict)
@@ -65,13 +69,47 @@ def _call(methods, method_name, args=None, kwargs=None):
 
 def dispatch(methods, request):
     """
-    Dispatch requests to the RPC methods.
-    :param methods: List of methods to dispatch to - either a python list, or a
-    Methods obj.
-    :param request: JSON-RPC request in dict or string format.
-    :returns: Response object containing information which can be used to
-    respond to a client, such as the full JSON-RPC response and a recommended
-    HTTP status code.
+    Dispatch JSON-RPC requests to a list of methods::
+
+        r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
+
+    :param methods: List of methods to dispatch to. Can be any iterable that
+                    yields callable objects. Each item must have a ``__name__``
+                    property.
+    :param request: JSON-RPC request. This can be in dict or string form.
+                    Byte arrays should be `decoded
+                    <https://docs.python.org/3/library/codecs.html#codecs.decode>`_
+                    first.
+    :returns: A `Response`_ object.
+
+    **The list of methods**
+
+    The methods in the list can be any callable object, just make sure they can
+    be identified by the ``__name__`` property.
+
+    Functions already have a ``__name__`` property::
+
+        >>> def cat():
+        ...     return 'meow'
+        ...
+        >>> cat.__name__
+        'cat'
+        >>> dispatch([cat], ...)
+
+    Lambdas require setting it::
+
+        >>> cat = lambda: 'meow'
+        >>> cat.__name__ = 'cat'
+        >>> dispatch([cat], ...)
+
+    As do Partials::
+
+        >>> from functools import partial
+        >>> max_ten = partial(min, 10)
+        >>> max_ten.__name__ = 'max_ten'
+        >>> dispatch([max_ten], ...)
+
+    See the `Methods`_ module for an easy way to build the list of methods.
     """
     r = None
     try:
@@ -89,7 +127,7 @@ def dispatch(methods, request):
     # Catch uncaught exceptions, respond with ServerError
     except Exception as e: #pylint:disable=broad-except
         logger.exception(e)
-        ex = ServerError('See server logs')
+        ex = ServerError(str(e))
         request_id = r.request_id if hasattr(r, 'request_id') else None
         response = ErrorResponse(
             ex.http_status, request_id, ex.jsonrpc_status, str(ex), ex.data)
@@ -99,6 +137,6 @@ def dispatch(methods, request):
         response = SuccessResponse(r.request_id, result)
     # Log the response
     response_log.info(
-        response.body, extra={'http_code': response.http_status, \
+        response.body, extra={'http_code': response.http_status,
         'http_reason': HTTP_STATUS_CODES[response.http_status]})
     return response

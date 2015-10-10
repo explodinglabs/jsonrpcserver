@@ -6,7 +6,7 @@ import pkgutil
 import jsonschema
 from six import string_types
 
-from .exceptions import ParseError, InvalidRequest, InvalidParams
+from jsonrpcserver.exceptions import ParseError, InvalidRequest, InvalidParams
 
 
 json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(

@@ -1,38 +1,40 @@
 """
-exceptions.py
+Exceptions
+**********
 
-Specification: http://www.jsonrpc.org/specification#error_object
-
-For the HTTP Status codes, see
-http://jsonrpc.org/historical/json-rpc-over-http.html
+Errors are defined at the JSON-RPC `specification
+<http://www.jsonrpc.org/specification#error_object>`_. HTTP status codes chosen
+for each error were taken from `this document
+<http://jsonrpc.org/historical/json-rpc-over-http.html>`_.
 """
 
-from . import status
+from jsonrpcserver import status
 
 
 class JsonRpcServerError(Exception):
-    """Base class for the other exceptions"""
+    """
+    Base class for the other exceptions.
+
+    :param http_status: The HTTP status code.
+    :param jsonrpc_status_code: The JSON-RPC status code.
+    :param message: The one-line error message.
+    :param data: Extra info (optional).
+    """
 
     def __init__(self, http_status, jsonrpc_status, message, data=None):
-        """
-        :param http_status: The HTTP error code. See
-            http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.htmlstatus.py.
-        :param jsonrpc_status_code: The JSON-RPC status code. See
-            http://www.jsonrpc.org/specification#error_object
-        :param message: The error message.
-        :param data: Extra info (optional).
-        """
         super(JsonRpcServerError, self).__init__(message)
+        #: Holds the http status code.
         self.http_status = http_status
+        #: Holds the jsonrpc status code.
         self.jsonrpc_status = jsonrpc_status
+        #: Holds the extra information related to the error.
         self.data = data
 
 
 class ParseError(JsonRpcServerError):
     """
-    An error occurred on the server while parsing the JSON string.
-
-    No arguments are needed - there's no need for any further explanation.
+    An error occurred on the server while parsing the JSON string. No arguments
+    are needed - there's no need for any further explanation.
     """
 
     def __init__(self):
@@ -43,15 +45,13 @@ class ParseError(JsonRpcServerError):
 
 class InvalidRequest(JsonRpcServerError):
     """
-    The request is not a JSON-RPC object.
+    The request is not a JSON-RPC object. Raised if the request fails the
+    jsonschema validation.
 
-    Raised if the request fails the jsonschema validation.
+    :param data: Extra information (optional).
     """
 
     def __init__(self, data=None):
-        """
-        :param data: Extra information (optional).
-        """
         super(InvalidRequest, self).__init__(
             status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
             status.JSONRPC_INVALID_REQUEST_CODE,
@@ -60,13 +60,12 @@ class InvalidRequest(JsonRpcServerError):
 
 class MethodNotFound(JsonRpcServerError):
     """
-    The method does not exist / is not available.
+    The method does not exist/is not available.
+
+    :param data: Extra information (optional).
     """
 
     def __init__(self, data=None):
-        """
-        :param data: Extra information (optional).
-        """
         super(MethodNotFound, self).__init__(
             status.JSONRPC_METHOD_NOT_FOUND_HTTP_CODE,
             status.JSONRPC_METHOD_NOT_FOUND_CODE,
@@ -75,20 +74,15 @@ class MethodNotFound(JsonRpcServerError):
 
 class InvalidParams(JsonRpcServerError):
     """
-    Invalid method parameter(s).
+    Invalid method parameter(s). Raised internally if the arguments don't match
+    the method's parameters.  Should also be raised in the application
+    implementation itself, for example if arguments are invalid or a keyword
+    argument is missing.
 
-    (The name of this error is incorrect in the specification, it should really
-    be named "Invalid args".)
-
-    Raised internally if the arguments don't match the method's parameters.
-    Should also be raised in the application implementation itself, for example
-    if arguments are invalid or a keyword argument is missing.
+    :param data: Extra information (optional).
     """
 
     def __init__(self, data=None):
-        """
-        :param data: Extra information (optional).
-        """
         super(InvalidParams, self).__init__(
             status.JSONRPC_INVALID_PARAMS_HTTP_CODE,
             status.JSONRPC_INVALID_PARAMS_CODE,
@@ -97,16 +91,14 @@ class InvalidParams(JsonRpcServerError):
 
 class ServerError(JsonRpcServerError):
     """
-    There was an application specific error on the server-side.
+    There was an application specific error on the server-side. Can be raised
+    by the application on discovering a problem such as a database connection
+    failure.
 
-    Can be raised by the application on discovering a problem such as a database
-    connection failure.
+    :param data: Extra information (optional).
     """
 
     def __init__(self, data=None):
-        """
-        :param data: Extra information (optional).
-        """
         super(ServerError, self).__init__(
             status.JSONRPC_SERVER_ERROR_HTTP_CODE,
             status.JSONRPC_SERVER_ERROR_CODE, status.JSONRPC_SERVER_ERROR_TEXT,
