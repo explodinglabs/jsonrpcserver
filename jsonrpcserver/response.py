@@ -9,14 +9,14 @@ import json
 from collections import OrderedDict
 
 
-def sort_response(response):
+def _sort_response(response):
     """
     Sorts the keys in a JSON-RPC response object, returning a sorted
     OrderedDict. This has no effect other than making it nicer to read.
 
     Example::
 
-        >>> json.dumps(sort_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
+        >>> json.dumps(_sort_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
         {"jsonrpc": "2.0", "result": 5, "id": 1}
 
     :param response: JSON-RPC response in dict format.
@@ -63,7 +63,7 @@ class _Response(object):
     @property
     def body(self):
         """The JSON-RPC response string."""
-        return json.dumps(sort_response(self.json)) if self.json else ''
+        return json.dumps(_sort_response(self.json)) if self.json else ''
 
     @property
     def body_debug(self):
@@ -146,4 +146,4 @@ class ErrorResponse(_Response):
     @property
     def body_debug(self):
         """The JSON-RPC response string, with added ``data`` attribute."""
-        return json.dumps(sort_response(self.json_debug))
+        return json.dumps(_sort_response(self.json_debug))
