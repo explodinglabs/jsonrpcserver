@@ -1,6 +1,10 @@
 jsonrpcserver API
 *****************
 
+:ref:`genindex`
+:ref:`modindex`
+:ref:`modindex`
+
 .. automodule:: dispatcher
     :members:
 
