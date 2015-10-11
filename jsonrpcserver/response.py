@@ -40,10 +40,10 @@ class _Response(object):
     :param http_status: The recommended HTTP status code to respond with,
                         if using HTTP for transport.
     :param request_id: This member is REQUIRED. It MUST be the same as the
-                        value of the id member in the Request Object. If
-                        there was an error in detecting the id in the Request
-                        object (e.g. Parse error/Invalid Request), it MUST be
-                        Null.
+                       value of the id member in the Request Object. If
+                       there was an error in detecting the id in the Request
+                       object (e.g. Parse error/Invalid Request), it MUST be
+                       Null.
     """
 
     def __init__(self, http_status, request_id):
@@ -81,10 +81,10 @@ class SuccessResponse(_Response):
     def __init__(self, request_id, result):
         """
         :param request_id: Matches the original request's id value.
-        :param result: The payload from processing the request. If the request was a
-                    JSON-RPC notification (i.e. the request id is ``None``), the
-                    result must also be ``None`` because notifications don't
-                    require any data returned.
+        :param result: The payload from processing the request. If the request
+                       was a JSON-RPC notification (i.e. the request id is
+                       ``None``), the result must also be ``None`` because
+                       notifications don't require any data returned.
         """
         # Ensure we're not responding to a notification with data
         if result and not request_id:
@@ -111,15 +111,15 @@ class ErrorResponse(_Response):
         :param http_status: The recommended HTTP status code to respond with, if
                             using HTTP for transport.
         :param request_id: Must be the same as the value as the id member in the
-                        Request Object. If there was an error in detecting the id
-                        in the Request object (e.g. Parse error/Invalid Request),
-                        it MUST be Null.
+                           Request Object. If there was an error in detecting
+                           the id in the Request object (e.g. Parse
+                           error/Invalid Request), it MUST be Null.
         :param code: A Number that indicates the error type that occurred. This
-                    MUST be an integer.
+                     MUST be an integer.
         :param message: A string providing a short description of the error, eg.
                         "Invalid params"
         :param data: A Primitive or Structured value that contains additional
-                    information about the error. This may be omitted.
+                     information about the error. This may be omitted.
         """
         super(ErrorResponse, self).__init__(http_status, request_id)
         #: Holds the JSON-RPC error code.
