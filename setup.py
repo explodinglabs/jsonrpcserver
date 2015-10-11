@@ -1,5 +1,4 @@
 """setup.py"""
-#pylint:disable=line-too-long
 
 from setuptools import setup
 from codecs import open as codecs_open
@@ -12,8 +11,8 @@ with codecs_open('HISTORY.rst', 'r', 'utf-8') as f:
 
 setup(
     name='jsonrpcserver',
-    version='2.1.1',
-    description='JSON-RPC server library.',
+    version='3.0.0',
+    description='JSON-RPC server library',
     long_description=readme + '\n\n' + history,
     author='Beau Barker',
     author_email='beauinmelbourne@gmail.com',
