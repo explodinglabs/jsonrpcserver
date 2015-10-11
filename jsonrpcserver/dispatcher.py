@@ -1,6 +1,9 @@
 """
 Dispatcher
 **********
+
+.. _SuccessResponse: #response.SuccessResponse
+.. _ErrorResponse: #response.ErrorResponse
 """
 
 import logging
@@ -74,17 +77,6 @@ def dispatch(methods, request):
 
         r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
-    :param methods: List of methods to dispatch to. Can be any iterable that
-                    yields callable objects. Each item must have a ``__name__``
-                    property.
-    :param request: JSON-RPC request. This can be in dict or string form.
-                    Byte arrays should be `decoded
-                    <https://docs.python.org/3/library/codecs.html#codecs.decode>`_
-                    first.
-    :returns: A `Response`_ object.
-
-    **The list of methods**
-
     The methods in the list can be any callable object, just make sure they can
     be identified by the ``__name__`` property.
 
@@ -100,6 +92,7 @@ def dispatch(methods, request):
     Lambdas require setting it::
 
         >>> cat = lambda: 'meow'
+        >>> cat.__name__
         >>> cat.__name__ = 'cat'
         >>> dispatch([cat], ...)
 
@@ -111,6 +104,18 @@ def dispatch(methods, request):
         >>> dispatch([max_ten], ...)
 
     See the `Methods`_ module for an easy way to build the list of methods.
+
+    :param methods: List of methods to dispatch to. Can be any iterable that
+                    yields callable objects. Each item must have a ``__name__``
+                    property.
+    :param request: JSON-RPC request. This can be in dict or string form.
+                    Byte arrays should be `decoded
+                    <https://docs.python.org/3/library/codecs.html#codecs.decode>`_
+                    first.
+    :returns: A `Response`_ object - either `SuccessResponse`_, or
+              `ErrorResponse`_ if there was a problem processing the request.
+              In any case, the response gives you ``body``, ``body_debug``,
+              ``json``, ``json_debug``, and ``http_status`` values.
     """
     r = None
     try:
