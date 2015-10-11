@@ -1,4 +1,6 @@
-dt {
+div.tip {
+  background-color: #d0e0f7;
+  border: 1px solid #a0d0f0;
 }
 
 dl.class dt code.descname{
