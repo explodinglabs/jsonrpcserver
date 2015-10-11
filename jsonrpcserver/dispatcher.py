@@ -92,7 +92,6 @@ def dispatch(methods, request):
     Lambdas require setting it::
 
         >>> cat = lambda: 'meow'
-        >>> cat.__name__
         >>> cat.__name__ = 'cat'
         >>> dispatch([cat], ...)
 

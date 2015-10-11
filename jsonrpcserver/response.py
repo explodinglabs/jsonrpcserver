@@ -71,8 +71,7 @@ class _Response(object):
 
     @property
     def body_debug(self):
-        """JSON-RPC response string, with ``data`` attribute
-        included."""
+        """JSON-RPC response string."""
         return self.body
 
 
@@ -125,7 +124,7 @@ class ErrorResponse(_Response):
         super(ErrorResponse, self).__init__(http_status, request_id)
         #: Holds the JSON-RPC error code.
         self.code = code
-        #: Holds the one-line message describing the error.
+        #: Holds a one-line message describing the error.
         self.message = message
         #: Holds extra information about the error.
         self.data = data
