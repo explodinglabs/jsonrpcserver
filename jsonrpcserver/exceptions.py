@@ -3,7 +3,7 @@ Exceptions
 **********
 
 These exceptions are raised internally by the library, but can also raised by
-implementations wanting to return an error to the client.
+applications wanting to return an error to the client.
 """
 
 from jsonrpcserver import status
@@ -72,8 +72,8 @@ class MethodNotFound(JsonRpcServerError):
 
 class InvalidParams(JsonRpcServerError):
     """
-    Raised when invalid arguments are passed to a method. Should be raised by
-    implementations, e.g. if a required keyword argument is missing.
+    Raised when invalid arguments are passed to a method. e.g. if a required
+    keyword argument is missing.
 
     :param data: Extra information about the error that occurred (optional).
     """
@@ -87,8 +87,7 @@ class InvalidParams(JsonRpcServerError):
 
 class ServerError(JsonRpcServerError):
     """
-    Raise when there's an application specific error on the server-side, such as
-    a database connection failure.
+    Raised when there's an application specific error on the server-side.
 
     :param data: Extra information about the error that occurred (optional).
     """

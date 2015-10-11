@@ -2,16 +2,14 @@
 Methods
 *******
 
-This module can be used to easily build a list of methods
+This module can be used to easily build a list of methods.
 
-Create a Methods object::
+Create a Methods object and add methods to it::
 
     from jsonrpcserver import Methods
     methods = Methods()
-
-Add methods to it::
-
     methods.add(cat)
+    methods.add(dog)
 
 Then pass it to ``dispatch()`` as you would a regular list::
 
@@ -49,7 +47,7 @@ class Methods(object):
         """
         Add a method to the list.
 
-        Add a function::
+        To add a function::
 
             def cat():
                 return 'meow'
@@ -61,15 +59,6 @@ class Methods(object):
             @methods.add
             def cat():
                 return 'meow'
-
-        Class methods are OK too::
-
-            class Animal():
-                @methods.add
-                def cat():
-                    return 'meow'
-
-            # or methods.add(Animal.cat)
 
         Use a different name by giving a second argument::
 
@@ -88,9 +77,9 @@ class Methods(object):
 
         :param method: The method to add.
         :param name: Name of the method (optional).
-        :raise TypeError: If the method being added has no name. i.e. The method
-                          has no ``__name__`` property, and no ``name`` argument
-                          was given.
+        :raise TypeError: Raised if the method being added has no name. i.e. The
+                          method has no ``__name__`` property, and no ``name``
+                          argument was given.
         """
         # Set the custom name on the method.
         if name:
