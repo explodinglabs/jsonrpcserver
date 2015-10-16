@@ -74,10 +74,15 @@ def dispatch(methods, request):
 
         r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
-    The methods in the list can be any callable object, just make sure they can
-    be identified by the ``__name__`` property.
+    The first parameter can be either:
 
-    Functions already have a ``__name__`` property::
+    - A *list* of functions, each identifiable by its ``__name__`` attribute.
+    - Or a *dictionary* of name:method pairs.
+
+    When using a **list**, the methods must be identifiable by a ``__name__``
+    attribute.
+
+    Functions already have a ``__name__`` attribute::
 
         >>> def cat():
         ...     return 'meow'
@@ -94,16 +99,17 @@ def dispatch(methods, request):
 
     As do Partials::
 
-        >>> from functools import partial
         >>> max_ten = partial(min, 10)
         >>> max_ten.__name__ = 'max_ten'
         >>> dispatch([max_ten], ...)
 
-    See the `Methods`_ module for an easy way to build the list of methods.
+    Alternatively, consider using a **dictionary** instead::
 
-    :param methods: List of methods to dispatch to. Can be any iterable that
-                    yields callable objects. Each item must have a ``__name__``
-                    property.
+        >>> dispatch({'cat': cat, 'max_ten': max_ten}, ...)
+
+    See the `Methods`_ module for another easy way to build the list of methods.
+
+    :param methods: List/dict of methods to dispatch to.
     :param request: JSON-RPC request. This can be in dict or string form.
                     Byte arrays should be `decoded
                     <https://docs.python.org/3/library/codecs.html#codecs.decode>`_

@@ -57,6 +57,18 @@ class TestCall(TestCase):
         double.__name__ = 'double'
         self.assertEqual(6, _call([double], 'double', [3]))
 
+    def test_dict_functions(self):
+        def foo():
+            return 'bar'
+        self.assertEqual('bar', _call({'baz': foo}, 'baz'))
+
+    def test_dict_lambdas(self):
+        self.assertEqual('bar', _call({'baz': lambda: 'bar'}, 'baz'))
+
+    def test_dict_partials(self):
+        multiply = lambda x, y: x * y
+        self.assertEqual(6, _call({'baz': partial(multiply, 2)}, 'baz', [3]))
+
     def test_methods_functions(self):
         methods = Methods()
         def foo():
@@ -119,8 +131,29 @@ class TestDispatch(TestCase):
         multiply = lambda x, y: x * y
         double = partial(multiply, 2)
         double.__name__ = 'double'
-        r = dispatch([double], {'jsonrpc': '2.0', 'method': 'double', 'params':
-                     [3], 'id': 1})
+        r = dispatch([double], {'jsonrpc': '2.0', 'method': 'double',
+                                'params': [3], 'id': 1})
+        self.assertEqual(6, r.result)
+        self.assertEqual(status.HTTP_OK, r.http_status)
+
+    def test_dict_functions(self):
+        def foo():
+            return 'bar'
+        r = dispatch({'baz': foo}, {'jsonrpc': '2.0', 'method': 'baz', 'id': 1})
+        self.assertEqual('bar', r.result)
+        self.assertEqual(status.HTTP_OK, r.http_status)
+
+    def test_dict_lambdas(self):
+        foo = lambda: 'bar'
+        r = dispatch({'baz': foo}, {'jsonrpc': '2.0', 'method': 'baz', 'id': 1})
+        self.assertEqual('bar', r.result)
+        self.assertEqual(status.HTTP_OK, r.http_status)
+
+    def test_dict_partials(self):
+        multiply = lambda x, y: x * y
+        double = partial(multiply, 2)
+        r = dispatch({'dbl': double}, {'jsonrpc': '2.0', 'method': 'dbl',
+                                       'params': [3], 'id': 1})
         self.assertEqual(6, r.result)
         self.assertEqual(status.HTTP_OK, r.http_status)
 
@@ -147,7 +180,7 @@ class TestDispatch(TestCase):
         methods = Methods()
         methods.add(double, 'double')
         r = dispatch(methods, {'jsonrpc': '2.0', 'method': 'double', 'params':
-                     [3], 'id': 1})
+                               [3], 'id': 1})
         self.assertEqual(6, r.result)
         self.assertEqual(status.HTTP_OK, r.http_status)
 
