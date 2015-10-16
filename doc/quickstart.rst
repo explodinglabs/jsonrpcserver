@@ -75,7 +75,7 @@ where we need to inform the client of an error. This is done by raising an
 exception.
 
 For example, if you're unhappy with the arguments received, raise `InvalidParams
-<api.html#exceptions.InvalidParams>`_::
+<api.html#jsonrpcserver.exceptions.InvalidParams>`_::
 
     from jsonrpcserver.exceptions import InvalidParams
 
@@ -93,9 +93,9 @@ The library catches the exception and gives the appropriate response::
     >>> response.http_status
     400
 
-There's also `ServerError <api.html#exceptions.InvalidParams>`_, which lets the
-client know of a problem at the application end. In fact, any other exceptions
-raised will result in a *"Server error"* response::
+There's also `ServerError <api.html#jsonrpcserver.exceptions.ServerError>`_,
+which lets the client know of a problem at the server's end. In fact, any other
+exceptions raised will result in a *"Server error"* response::
 
     def divide_by_zero(**kwargs):
         1/0
