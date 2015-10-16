@@ -14,8 +14,8 @@ json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
 
 
 def _string_to_dict(request):
-    """
-    Convert a JSON-RPC request string, to a dictionary.
+    """Convert a JSON-RPC request string, to a dictionary.
+
     :param request: The JSON-RPC request string.
     :raises ValueError: If the string cannot be parsed to JSON.
     :returns: The same request in dict form.
@@ -27,8 +27,8 @@ def _string_to_dict(request):
 
 
 def _validate_against_schema(request):
-    """
-    Validate against the JSON-RPC schema.
+    """Validate against the JSON-RPC schema.
+
     :param request: JSON-RPC request dict.
     :raises InvalidRequest: If the request is invalid.
     :returns: None
@@ -40,13 +40,13 @@ def _validate_against_schema(request):
 
 
 def _get_arguments(request):
-    """
-    Takes the 'params' part of a JSON-RPC request and converts it to either
+    """Takes the 'params' part of a JSON-RPC request and converts it to either
     positional or keyword arguments usable in Python. The value can be a JSON
     array (python list), object (python dict), or omitted. There are no other
     acceptable options.  Note that a JSON-RPC request can have positional or
     keyword arguments, but not both! See
     http://www.jsonrpc.org/specification#parameter_structures
+
     :param request: JSON-RPC request in dict form.
     :raises InvalidParams: If 'params' was present but was not a list or dict.
     :returns: A tuple containing the positionals (in a list, or None) and
@@ -73,9 +73,10 @@ def _get_arguments(request):
 
 
 class Request(object):
-    """
-    Request class takes a JSON-RPC request and provides details such as the
-    method name, arguments, id, and whether it's a request or a notification.
+    """JSON-RPC Request object.
+
+    Take a JSON-RPC request and provide details such as the method name,
+    arguments, id, and whether it's a request or a notification.
     """
 
     def __init__(self, request, validate=True):
@@ -99,8 +100,7 @@ class Request(object):
 
     @property
     def is_notification(self):
-        """
-        Returns True if the request is a JSON-RPC notification (ie. No response
-        is required, False if it's a request.
+        """Returns True if the request is a JSON-RPC notification (ie. No
+        response is required, False if it's a request.
         """
         return self.request_id is None

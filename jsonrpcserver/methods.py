@@ -20,8 +20,8 @@ from jsonrpcserver.exceptions import MethodNotFound
 
 
 def _get_method(methods, name):
-    """
-    Finds a method in a list.
+    """Finds a method in a list.
+
     :param methods: List of named functions.
     :param name: Method to find.
     :raises MethodNotFound: If the method wasn't in the list.
@@ -44,8 +44,7 @@ class Methods(object):
             yield method
 
     def add(self, method, name=None):
-        """
-        Add a method to the list.
+        """Add a method to the list.
 
         To add a function::
 
