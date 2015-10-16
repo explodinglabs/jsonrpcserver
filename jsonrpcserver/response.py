@@ -12,9 +12,9 @@ from collections import OrderedDict
 
 
 def _sort_response(response):
-    """
-    Sorts the keys in a JSON-RPC response object, returning a sorted
-    OrderedDict. This has no effect other than making it nicer to read.
+    """Sort the keys in a JSON-RPC response object.
+
+    This has no effect other than making it nicer to read.
 
     Example::
 
@@ -34,8 +34,7 @@ def _sort_response(response):
 
 
 class _Response(object):
-    """
-    Parent of SuccessResponse and ErrorResponse
+    """Parent of SuccessResponse and ErrorResponse.
 
     :param http_status: The recommended HTTP status code to respond with,
                         if using HTTP for transport.
@@ -47,8 +46,6 @@ class _Response(object):
     """
 
     def __init__(self, http_status, request_id):
-        """
-        """
         #: Holds the HTTP status code to respond with (if using HTTP).
         self.http_status = http_status
         #: The 'id' part from the request to be sent back in the response.
@@ -56,7 +53,7 @@ class _Response(object):
 
     @property
     def json(self):
-        """Must be overridden in subclasses"""
+        """Must be overridden in subclasses."""
         raise NotImplementedError()
 
     @property
@@ -76,7 +73,9 @@ class _Response(object):
 
 
 class SuccessResponse(_Response):
-    """Returned from `dispatch()`_ after processing a request successfully."""
+    """Response object returned from `dispatch()`_ after processing a request
+    successfully.
+    """
 
     def __init__(self, request_id, result):
         """
@@ -137,14 +136,12 @@ class ErrorResponse(_Response):
 
     @property
     def json_debug(self):
-        """JSON-RPC response, in dictionary form, with ``data`` attribute
-        included."""
+        """JSON-RPC response, in dictionary form, with ``data`` attribute."""
         r = self.json
         r['error']['data'] = self.data
         return r
 
     @property
     def body_debug(self):
-        """JSON-RPC response string, with ``data`` attribute
-        included."""
+        """JSON-RPC response string, with ``data`` attribute."""
         return json.dumps(_sort_response(self.json_debug))

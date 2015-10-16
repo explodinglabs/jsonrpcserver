@@ -24,8 +24,7 @@ response_log = logging.getLogger(__name__+'.response')
 
 
 def _validate_arguments_against_signature(func, args, kwargs):
-    """
-    Checks if arguments match a function signature and can therefore be passed
+    """Check if arguments match a function signature and can therefore be passed
     to it.
 
     :param func: The function object.
@@ -45,8 +44,7 @@ def _validate_arguments_against_signature(func, args, kwargs):
 
 
 def _call(methods, method_name, args=None, kwargs=None):
-    """
-    Finds a method from a list, then validates the arguments before calling it.
+    """Find a method from a list, then validate the arguments before calling it.
 
     :param methods: The list of methods - either a python list, or Methods obj.
     :param args: Positional arguments (list)
@@ -72,8 +70,7 @@ def _call(methods, method_name, args=None, kwargs=None):
 
 
 def dispatch(methods, request):
-    """
-    Dispatch JSON-RPC requests to a list of methods::
+    """Dispatch JSON-RPC requests to a list of methods::
 
         r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
