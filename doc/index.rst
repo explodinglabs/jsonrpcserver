@@ -20,4 +20,4 @@ Links
 - `Issue tracker <https://bitbucket.org/beau-barker/jsonrpcserver/issues>`_
 - `Twitter @bbmelb <https://twitter.com/bbmelb>`_
 
-See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_.
+See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.org/>`_

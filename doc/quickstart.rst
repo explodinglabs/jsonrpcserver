@@ -123,7 +123,7 @@ This ensures we *always* have a response for the client.
 Logging
 =======
 
-To see the JSON-RPC messages going back and forth, set the log level to
+To see the JSON-RPC messages going back and forth, set the logging level to
 ``INFO``::
 
     import logging
