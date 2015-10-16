@@ -20,28 +20,31 @@ from jsonrpcserver.exceptions import MethodNotFound
 
 
 def _get_method(methods, name):
-    """Finds a method in a list.
+    """Finds a method in a list (or dictionary).
 
-    :param methods: List of named functions.
-    :param name: Method to find.
+    :param methods: List or dictionary of named functions.
+    :param name: Name of the method to find.
     :raises MethodNotFound: If the method wasn't in the list.
     :returns: The method from the list.
     """
+    # If it's a dictionary, search for the key
+    if isinstance(methods, dict):
+        try:
+            return methods[name]
+        except KeyError:
+            raise MethodNotFound(name)
+    # Otherwise it must be a list, search the __name__ attributes
     try:
         return next(m for m in methods if m.__name__ == name)
     except StopIteration:
         raise MethodNotFound(name)
 
 
-class Methods(object):
-    """Holds a list of methods."""
+class Methods(dict):
+    """Holds a dict of methods."""
 
-    def __init__(self):
-        self._methods = []
-
-    def __iter__(self):
-        for method in self._methods:
-            yield method
+    def __getitem__(self, key):
+        return self.__dict__[key]
 
     def add(self, method, name=None):
         """Add a method to the list.
@@ -76,14 +79,17 @@ class Methods(object):
 
         :param method: The method to add.
         :param name: Name of the method (optional).
-        :raise TypeError: Raised if the method being added has no name. i.e. The
-                          method has no ``__name__`` property, and no ``name``
-                          argument was given.
+        :raise AttributeError: Raised if the method being added has no name.
+                               i.e. The method has no ``__name__`` property, and
+                               no ``name`` argument was given.
         """
-        # Set the custom name on the method.
-        if name:
-            method.__name__ = name
-        if not hasattr(method, '__name__'):
-            raise TypeError()
-        self._methods.append(method)
+        # If no custom name was given, use the method's __name__ attribute
+        if not name:
+            if not hasattr(method, '__name__'):
+                raise AttributeError(
+                    '%s has no __name__ attribute. '
+                    'Use add(method, name) to specify a method name'
+                    % type(method))
+            name = method.__name__
+        self.__dict__[name] = method
         return method

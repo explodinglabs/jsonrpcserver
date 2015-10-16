@@ -11,19 +11,26 @@ from jsonrpcserver.exceptions import MethodNotFound
 class TestGetMethod(TestCase):
 
     def test_plain_list(self):
-        def meow(): pass # pylint:disable=multiple-statements
-        def woof(): pass # pylint:disable=multiple-statements
-        self.assertIs(meow, _get_method([meow, woof], 'meow'))
-        self.assertIs(woof, _get_method([meow, woof], 'woof'))
+        def cat(): pass # pylint:disable=multiple-statements
+        def dog(): pass # pylint:disable=multiple-statements
+        self.assertIs(cat, _get_method([cat, dog], 'cat'))
+        self.assertIs(dog, _get_method([cat, dog], 'dog'))
+
+    def test_plain_dict(self):
+        def cat(): pass # pylint:disable=multiple-statements
+        def dog(): pass # pylint:disable=multiple-statements
+        d = {'cat_says': cat, 'dog_says': dog}
+        self.assertIs(cat, _get_method(d, 'cat_says'))
+        self.assertIs(dog, _get_method(d, 'dog_says'))
 
     def test_methods_object(self):
-        def meow(): pass # pylint:disable=multiple-statements
-        def woof(): pass # pylint:disable=multiple-statements
+        def cat(): pass # pylint:disable=multiple-statements
+        def dog(): pass # pylint:disable=multiple-statements
         methods = Methods()
-        methods.add(meow)
-        methods.add(woof)
-        self.assertIs(meow, _get_method(methods, 'meow'))
-        self.assertIs(woof, _get_method(methods, 'woof'))
+        methods.add(cat)
+        methods.add(dog)
+        self.assertIs(cat, _get_method(methods, 'cat'))
+        self.assertIs(dog, _get_method(methods, 'dog'))
 
 
 class TestAdd(TestCase):
@@ -63,7 +70,7 @@ class TestAdd(TestCase):
     def test_partial_no_name(self):
         six = partial(lambda x: x + 1, 5)
         methods = Methods()
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             methods.add(six) # Partial has no __name__ !
 
     def test_partial_renamed(self):
@@ -79,6 +86,47 @@ class TestAdd(TestCase):
         methods.add(six, 'six')
         self.assertIs(six, _get_method(methods, 'six'))
 
+    def test_static_method(self):
+        class FooClass(object):
+            @staticmethod
+            def Foo():
+                return 'bar'
+        methods = Methods()
+        methods.add(FooClass.Foo)
+        self.assertIs(FooClass.Foo, _get_method(methods, 'Foo'))
+
+    def test_static_method_custom_name(self):
+        class FooClass(object):
+            @staticmethod
+            def Foo():
+                return 'bar'
+        methods = Methods()
+        methods.add(FooClass.Foo, 'custom')
+        self.assertIs(FooClass.Foo, _get_method(methods, 'custom'))
+
+    def test_instance_method(self):
+        class FooClass(object):
+            def Foo(self): # pylint: disable=no-self-use
+                return 'bar'
+        methods = Methods()
+        methods.add(FooClass().Foo)
+        self.assertEqual('bar', _get_method(methods, 'Foo').__call__())
+
+    def test_instance_method_custom_name(self):
+        class Foo(object):
+            def __init__(self, name):
+                self.name = name
+            def get_name(self):
+                return self.name
+        obj1 = Foo('a')
+        obj2 = Foo('b')
+        methods = Methods()
+        methods.add(obj1.get_name, 'custom1')
+        methods.add(obj2.get_name, 'custom2')
+        # Can't use assertIs, so check the outcome is as expected
+        self.assertEqual('a', _get_method(methods, 'custom1').__call__())
+        self.assertEqual('b', _get_method(methods, 'custom2').__call__())
+
 
 class TestDecorator(TestCase):
 
@@ -87,6 +135,15 @@ class TestDecorator(TestCase):
         @methods.add
         def go(): pass # pylint:disable=multiple-statements
         self.assertIs(go, _get_method(methods, 'go'))
+
+    def test_static_method(self):
+        methods = Methods()
+        class FooClass(object):
+            @staticmethod
+            @methods.add
+            def Foo():
+                return 'bar'
+        self.assertIs(FooClass.Foo, _get_method(methods, 'Foo'))
 
 
 if __name__ == '__main__':
