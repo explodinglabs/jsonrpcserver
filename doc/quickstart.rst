@@ -167,5 +167,6 @@ The response format has these fields:
 Examples
 ========
 
-- `HTTP Server <https://bitbucket.org/snippets/beau-barker/BAXrR/json-rpc-over-http-server-in-python>`_  using Flask
-- `ZeroMQ Server <https://bitbucket.org/snippets/beau-barker/BAMno/json-rpc-over-zeromq-request-reply-server>`_ using PyZMQ
+- HTTP Server using `Werkzeug <https://bitbucket.org/snippets/beau-barker/7Ejaa>`_
+- HTTP Server using `Flask <https://bitbucket.org/snippets/beau-barker/BAXrR>`_
+- ZeroMQ Server using `PyZMQ <https://bitbucket.org/snippets/beau-barker/BAMno>`_
