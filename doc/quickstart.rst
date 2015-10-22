@@ -167,6 +167,6 @@ The response format has these fields:
 Examples
 ========
 
-- HTTP Server using `Werkzeug <https://bitbucket.org/snippets/beau-barker/7Ejaa>`_
-- HTTP Server using `Flask <https://bitbucket.org/snippets/beau-barker/BAXrR>`_
-- ZeroMQ Server using `PyZMQ <https://bitbucket.org/snippets/beau-barker/BAMno>`_
+- `HTTP Server using Werkzeug <https://bitbucket.org/snippets/beau-barker/7Ejaa>`_
+- `HTTP Server using Flask <https://bitbucket.org/snippets/beau-barker/BAXrR>`_
+- `ZeroMQ Server using PyZMQ <https://bitbucket.org/snippets/beau-barker/BAMno>`_
