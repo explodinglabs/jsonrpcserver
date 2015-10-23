@@ -120,6 +120,7 @@ def dispatch(methods, request):
               ``json``, ``json_debug``, and ``http_status`` values.
     """
     r = None
+    error = None
     try:
         # Log the request
         request_log.info(str(request))
@@ -129,27 +130,30 @@ def dispatch(methods, request):
         result = _call(methods, r.method_name, r.args, r.kwargs)
     # Catch any JsonRpcServerError raised (Invalid Request, etc)
     except JsonRpcServerError as e:
-        # Get the 'id' part of the request, if validated OK
-        request_id = r.request_id if hasattr(r, 'request_id') else None
-        # Build an error response object to respond with
-        response = ErrorResponse(
-            e.http_status, request_id, e.jsonrpc_status, str(e), e.data)
+        error = e
     # Catch uncaught exceptions, respond with ServerError
     except Exception as e: # pylint: disable=broad-except
         # Log the uncaught exception
         logger.exception(e)
         # Create an exception object, used to build the response
-        ex = ServerError(str(e))
-        # Get the 'id' part of the request, if validated OK
-        request_id = r.request_id if hasattr(r, 'request_id') else None
-        # Build an error response object to respond with
+        error = ServerError(str(e))
+
+    # Now build a response.
+    # Notifications get "non-response", regardless of success/error
+    if r and r.is_notification:
+        response = SuccessResponse(None, None)
+    # Error response
+    elif error:
+        # Get the 'id' part of the request, to include in error response
+        request_id = r.request_id if r else None
         response = ErrorResponse(
-            ex.http_status, request_id, ex.jsonrpc_status, str(ex), ex.data)
-    else: # Success!
-        result = result if r.request_id else None
-        # Build a success response object to respond with
+            error.http_status, request_id, error.jsonrpc_status, str(error),
+            error.data)
+    # Success response
+    else:
         response = SuccessResponse(r.request_id, result)
-    # Log the response
+
+    # Log the response and return it
     response_log.info(response.body, extra={
         'http_code': response.http_status,
         'http_reason': HTTP_STATUS_CODES[response.http_status]})

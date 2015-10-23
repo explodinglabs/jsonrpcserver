@@ -10,22 +10,32 @@ from jsonrpcserver.exceptions import MethodNotFound
 
 class TestGetMethod(TestCase):
 
-    def test_plain_list(self):
-        def cat(): pass # pylint:disable=multiple-statements
-        def dog(): pass # pylint:disable=multiple-statements
+    def test_list(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        def dog(): pass # pylint: disable=multiple-statements
         self.assertIs(cat, _get_method([cat, dog], 'cat'))
         self.assertIs(dog, _get_method([cat, dog], 'dog'))
 
-    def test_plain_dict(self):
-        def cat(): pass # pylint:disable=multiple-statements
-        def dog(): pass # pylint:disable=multiple-statements
+    def test_list_non_existant(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        with self.assertRaises(MethodNotFound):
+            _get_method([cat], 'cat_says')
+
+    def test_dict(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        def dog(): pass # pylint: disable=multiple-statements
         d = {'cat_says': cat, 'dog_says': dog}
         self.assertIs(cat, _get_method(d, 'cat_says'))
         self.assertIs(dog, _get_method(d, 'dog_says'))
 
+    def test_dict_non_existant(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        with self.assertRaises(MethodNotFound):
+            _get_method({'cat_says': cat}, 'cat')
+
     def test_methods_object(self):
-        def cat(): pass # pylint:disable=multiple-statements
-        def dog(): pass # pylint:disable=multiple-statements
+        def cat(): pass # pylint: disable=multiple-statements
+        def dog(): pass # pylint: disable=multiple-statements
         methods = Methods()
         methods.add(cat)
         methods.add(dog)
@@ -36,7 +46,7 @@ class TestGetMethod(TestCase):
 class TestAdd(TestCase):
 
     def test_function(self):
-        def go(): pass # pylint:disable=multiple-statements
+        def go(): pass # pylint: disable=multiple-statements
         methods = Methods()
         methods.add(go)
         self.assertIs(go, _get_method(methods, 'go'))
