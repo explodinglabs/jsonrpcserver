@@ -1,5 +1,5 @@
 """test_response.py"""
-#pylint:disable=missing-docstring,line-too-long
+# pylint: disable=missing-docstring,line-too-long
 
 from unittest import TestCase, main
 import json

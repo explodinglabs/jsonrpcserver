@@ -1,5 +1,5 @@
 """test_methods.py"""
-#pylint:disable=missing-docstring
+# pylint: disable=missing-docstring
 
 from unittest import TestCase, main
 from functools import partial

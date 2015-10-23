@@ -1,5 +1,5 @@
 """test_status.py"""
-#pylint:disable=missing-docstring,line-too-long,too-many-public-methods
+# pylint: disable=missing-docstring,line-too-long
 
 from unittest import TestCase, main
 
