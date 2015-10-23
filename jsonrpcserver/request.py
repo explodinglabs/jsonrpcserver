@@ -43,7 +43,7 @@ def _get_arguments(request):
     """Takes the 'params' part of a JSON-RPC request and converts it to either
     positional or keyword arguments usable in Python. The value can be a JSON
     array (python list), object (python dict), or omitted. There are no other
-    acceptable options.  Note that a JSON-RPC request can have positional or
+    acceptable options. Note that a JSON-RPC request can have positional or
     keyword arguments, but not both! See
     http://www.jsonrpc.org/specification#parameter_structures
 
