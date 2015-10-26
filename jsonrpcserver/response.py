@@ -2,14 +2,14 @@
 Response
 ********
 
-Defines the responses returned by `dispatch()`_.
+The objects returned by `dispatch()`_.
 
 .. _dispatch(): #dispatcher.dispatch
 """
 
 import json
 from collections import OrderedDict
-
+from jsonrpcserver import status
 
 def _sort_response(response):
     """Sort the keys in a JSON-RPC response object.
@@ -73,9 +73,12 @@ class _Response(object):
 
 
 class SuccessResponse(_Response):
-    """Response object returned from `dispatch()`_ after processing a request
-    successfully.
-    """
+    """Returned from `dispatch()`_ after processing a request successfully."""
+
+    #: The HTTP status to send when there is no JSON response message. Default
+    #: is ``204``, but some clients prefer to get ``200``. Modify this class
+    #: attribute to configure.
+    no_content_http_status = status.HTTP_NO_CONTENT
 
     def __init__(self, request_id, result):
         """
@@ -88,7 +91,9 @@ class SuccessResponse(_Response):
         # Ensure we're not responding to a notification with data
         if result and not request_id:
             raise ValueError('Notifications cannot have a result payload')
-        http_status = 200 if request_id else 204
+        # Which http status to respond with?
+        http_status = status.HTTP_OK if request_id \
+                else self.no_content_http_status
         super(SuccessResponse, self).__init__(http_status, request_id)
         #: Holds the payload from processing the request successfully.
         self.result = result
@@ -103,7 +108,9 @@ class SuccessResponse(_Response):
 
 
 class ErrorResponse(_Response):
-    """Returned from `dispatch()`_ if there's an error processing a request."""
+    """Returned from `dispatch()`_ if there was an error while processing the
+    request.
+    """
 
     def __init__(self, http_status, request_id, code, message, data=None):
         """
@@ -136,12 +143,14 @@ class ErrorResponse(_Response):
 
     @property
     def json_debug(self):
-        """JSON-RPC response, in dictionary form, with ``data`` attribute."""
+        """JSON-RPC response, in dictionary form, with ``data`` attribute
+        included.
+        """
         r = self.json
         r['error']['data'] = self.data
         return r
 
     @property
     def body_debug(self):
-        """JSON-RPC response string, with ``data`` attribute."""
+        """JSON-RPC response string, with ``data`` attribute included."""
         return json.dumps(_sort_response(self.json_debug))

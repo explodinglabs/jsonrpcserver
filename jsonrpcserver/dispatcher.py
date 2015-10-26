@@ -17,7 +17,6 @@ from jsonrpcserver.exceptions import JsonRpcServerError, InvalidParams, \
 from jsonrpcserver.status import HTTP_STATUS_CODES
 from jsonrpcserver.methods import _get_method
 
-
 logger = logging.getLogger(__name__)
 request_log = logging.getLogger(__name__+'.request')
 response_log = logging.getLogger(__name__+'.response')
@@ -69,7 +68,7 @@ def _call(methods, method_name, args=None, kwargs=None):
         return method(**kwargs)
 
 
-def dispatch(methods, request):
+def dispatch(methods, request, notification_errors=False):
     """Dispatch JSON-RPC requests to a list of methods::
 
         r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
@@ -97,7 +96,7 @@ def dispatch(methods, request):
         >>> cat.__name__ = 'cat'
         >>> dispatch([cat], ...)
 
-    As do Partials::
+    As do partials::
 
         >>> max_ten = partial(min, 10)
         >>> max_ten.__name__ = 'max_ten'
@@ -109,16 +108,26 @@ def dispatch(methods, request):
 
     See the `Methods`_ module for another easy way to build the list of methods.
 
-    :param methods: List/dict of methods to dispatch to.
-    :param request: JSON-RPC request. This can be in dict or string form.
-                    Byte arrays should be `decoded
-                    <https://docs.python.org/3/library/codecs.html#codecs.decode>`_
-                    first.
+    :param methods: List or dict of methods to dispatch to.
+    :param request:
+        JSON-RPC request. This can be in dict or string form.  Byte arrays
+        should be `decoded
+        <https://docs.python.org/3/library/codecs.html#codecs.decode>`_ first.
+    :param notification_errors:
+        Should `notifications
+        <http://www.jsonrpc.org/specification#notification>`_ get error
+        responses? Typically notifications don't receive any response, except
+        for "Parse error" and "Invalid request" errors. Enabling this will
+        include all other errors such as "Method not found". A notification is
+        then similar to many unix commands - *"There was no response, so I can
+        assume the request was successful."*
     :returns: A `Response`_ object - either `SuccessResponse`_, or
               `ErrorResponse`_ if there was a problem processing the request.
-              In any case, the response gives you ``body``, ``body_debug``,
+              In any case, the return value gives you ``body``, ``body_debug``,
               ``json``, ``json_debug``, and ``http_status`` values.
     """
+
+    # Process the request
     r = None
     error = None
     try:
@@ -139,19 +148,24 @@ def dispatch(methods, request):
         error = ServerError(str(e))
 
     # Now build a response.
-    # Notifications get "non-response", regardless of success/error
-    if r and r.is_notification:
-        response = SuccessResponse(None, None)
     # Error response
-    elif error:
-        # Get the 'id' part of the request, to include in error response
-        request_id = r.request_id if r else None
-        response = ErrorResponse(
-            error.http_status, request_id, error.jsonrpc_status, str(error),
-            error.data)
+    if error:
+        # Notifications get a non-response - see spec
+        if r and r.is_notification and not notification_errors:
+            response = SuccessResponse(None, None)
+        else:
+            # Get the 'id' part of the request, to include in error response
+            request_id = r.request_id if r else None
+            response = ErrorResponse(
+                error.http_status, request_id, error.code, error.message,
+                error.data)
     # Success response
     else:
-        response = SuccessResponse(r.request_id, result)
+        # Notifications get a non-response
+        if r and r.is_notification:
+            response = SuccessResponse(None, None)
+        else:
+            response = SuccessResponse(r.request_id, result)
 
     # Log the response and return it
     response_log.info(response.body, extra={
