@@ -21,5 +21,11 @@ setup(
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
     install_requires=['jsonschema', 'six', 'funcsigs'],
-    tests_require=['tox']
+    tests_require=['tox'],
+    classifiers=[
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        ],
 )
