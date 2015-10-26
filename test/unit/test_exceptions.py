@@ -5,7 +5,6 @@ from unittest import TestCase, main
 
 from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
     InvalidRequest, MethodNotFound, InvalidParams, ServerError
-from jsonrpcserver import status
 
 
 class TestJsonRpcServerError(TestCase):
