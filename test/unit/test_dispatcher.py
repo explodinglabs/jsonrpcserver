@@ -9,7 +9,6 @@ from jsonrpcserver.dispatcher import _validate_arguments_against_signature, \
     _call
 from jsonrpcserver.methods import Methods
 from jsonrpcserver.dispatcher import dispatch
-from jsonrpcserver import dispatcher
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
 from jsonrpcserver.response import SuccessResponse
