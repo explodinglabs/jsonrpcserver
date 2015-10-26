@@ -12,17 +12,7 @@ class TestJsonRpcServerError(TestCase):
 
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
-            raise JsonRpcServerError(
-                status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-                status.JSONRPC_INVALID_REQUEST_CODE,
-                status.JSONRPC_INVALID_REQUEST_TEXT)
-
-    def test_str(self):
-        e = JsonRpcServerError(
-            status.JSONRPC_INVALID_REQUEST_HTTP_CODE,
-            status.JSONRPC_INVALID_REQUEST_CODE,
-            status.JSONRPC_INVALID_REQUEST_TEXT, 'Foo')
-        self.assertEqual(status.JSONRPC_INVALID_REQUEST_TEXT, str(e))
+            raise JsonRpcServerError()
 
 
 class TestParseError(TestCase):
@@ -30,6 +20,16 @@ class TestParseError(TestCase):
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise ParseError()
+
+    def test_str(self):
+        e = ParseError()
+        self.assertEqual('Parse error', str(e))
+
+    def test_configuration(self):
+        ParseError.message = 'Error parsing'
+        e = ParseError()
+        self.assertEqual('Error parsing', str(e))
+        ParseError.message = 'Parse error'
 
 
 class TestInvalidRequest(TestCase):

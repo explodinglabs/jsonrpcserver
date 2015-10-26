@@ -22,4 +22,4 @@ API
     :members:
 
 .. automodule:: jsonrpcserver.exceptions
-    :members: InvalidParams, ServerError
+    :members:

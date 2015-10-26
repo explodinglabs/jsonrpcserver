@@ -9,8 +9,10 @@ from jsonrpcserver.dispatcher import _validate_arguments_against_signature, \
     _call
 from jsonrpcserver.methods import Methods
 from jsonrpcserver.dispatcher import dispatch
+from jsonrpcserver import dispatcher
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
+from jsonrpcserver.response import SuccessResponse
 
 
 class TestValidateArgumentsAgainstSignature(TestCase):
@@ -131,7 +133,7 @@ class TestDispatchNotifications(TestCase):
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
         self.assertNoResponse(r)
 
-    # Errors
+    # Errors - note that parse error and invalid requests *always* get response
     def test_parse_error(self):
         def foo():
             return 'bar'
@@ -169,6 +171,22 @@ class TestDispatchNotifications(TestCase):
             return 1/0
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
         self.assertNoResponse(r)
+
+    def test_config_notification_errors(self):
+        def foo():
+            return 'bar'
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'baz'},
+                     notification_errors=True)
+        self.assertEqual('Method not found', r.json['error']['message'])
+        self.assertEqual(status.HTTP_NOT_FOUND, r.http_status)
+
+    def test_config_no_content_200_status(self):
+        def foo():
+            return 'bar'
+        SuccessResponse.no_content_http_status = status.HTTP_OK
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual(status.HTTP_OK, r.http_status)
+        SuccessResponse.no_content_http_status = status.HTTP_NO_CONTENT
 
 
 class TestDispatchRequests(TestCase):
