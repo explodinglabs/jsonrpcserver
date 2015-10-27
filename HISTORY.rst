@@ -11,14 +11,14 @@ Recent Changes
   <https://jsonrpcserver.readthedocs.org/api.html#dispatcher.dispatch>`__, to
   force notifications to receive errors.
 
-- Error responses can now be `configured
-  <https://jsonrpcserver.readthedocs.org/api.html#exceptions>`__ by monkey
-  patching.
-
 - The HTTP status returned to notifications, which is 204 by default, can be
   `configured
   <https://jsonrpcserver.readthedocs.org/api.html#response.NotificationResponse.http_status>`__
   by monkey patching.
+
+- Error responses can now be `configured
+  <https://jsonrpcserver.readthedocs.org/api.html#exceptions>`__ by monkey
+  patching.
 
 3.1.0 (2015-10-17)
 ------------------
