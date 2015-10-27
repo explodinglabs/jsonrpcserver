@@ -85,7 +85,7 @@ class TestRequestResponse(TestCase):
     def test_no_id(self):
         # Not OK - requests must have an id.
         with self.assertRaises(ValueError):
-            r = RequestResponse(None, 'foo')
+            RequestResponse(None, 'foo')
 
     def test_no_result(self):
         # Perfectly fine.
