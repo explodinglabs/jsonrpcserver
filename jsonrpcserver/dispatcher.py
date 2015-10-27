@@ -2,7 +2,8 @@
 Dispatcher
 **********
 
-.. _SuccessResponse: #response.SuccessResponse
+.. _RequestResponse: #response.RequestResponse
+.. _NotificationResponse: #response.NotificationResponse
 .. _ErrorResponse: #response.ErrorResponse
 """
 
@@ -10,7 +11,8 @@ import logging
 
 from funcsigs import signature
 
-from jsonrpcserver.response import SuccessResponse, ErrorResponse
+from jsonrpcserver.response import RequestResponse, NotificationResponse, \
+    ErrorResponse
 from jsonrpcserver.request import Request
 from jsonrpcserver.exceptions import JsonRpcServerError, InvalidParams, \
     ServerError
@@ -121,10 +123,11 @@ def dispatch(methods, request, notification_errors=False):
         include all other errors such as "Method not found". A notification is
         then similar to many unix commands - *"There was no response, so I can
         assume the request was successful."*
-    :returns: A `Response`_ object - either `SuccessResponse`_, or
-              `ErrorResponse`_ if there was a problem processing the request.
-              In any case, the return value gives you ``body``, ``body_debug``,
-              ``json``, ``json_debug``, and ``http_status`` values.
+    :returns: A `Response`_ object - either `RequestResponse`_,
+              `NotificationResponse`_, or `ErrorResponse`_ if there was a
+              problem processing the request. In any case, the return value
+              gives you ``body``, ``body_debug``, ``json``, ``json_debug``, and
+              ``http_status`` values.
     """
 
     # Process the request
@@ -148,24 +151,24 @@ def dispatch(methods, request, notification_errors=False):
         error = ServerError(str(e))
 
     # Now build a response.
-    # Error response
+    # Error
     if error:
         # Notifications get a non-response - see spec
         if r and r.is_notification and not notification_errors:
-            response = SuccessResponse(None, None)
+            response = NotificationResponse()
         else:
             # Get the 'id' part of the request, to include in error response
             request_id = r.request_id if r else None
             response = ErrorResponse(
                 error.http_status, request_id, error.code, error.message,
                 error.data)
-    # Success response
+    # Success
     else:
         # Notifications get a non-response
         if r and r.is_notification:
-            response = SuccessResponse(None, None)
+            response = NotificationResponse()
         else:
-            response = SuccessResponse(r.request_id, result)
+            response = RequestResponse(r.request_id, result)
 
     # Log the response and return it
     response_log.info(response.body, extra={

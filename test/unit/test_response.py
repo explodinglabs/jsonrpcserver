@@ -4,8 +4,8 @@
 from unittest import TestCase, main
 import json
 
-from jsonrpcserver.response import _sort_response, _Response, SuccessResponse, \
-        ErrorResponse
+from jsonrpcserver.response import _sort_response, _Response, RequestResponse, \
+    NotificationResponse, ErrorResponse
 from jsonrpcserver import status
 
 class TestSortResponse(TestCase):
@@ -45,65 +45,11 @@ class TestResponse(TestCase):
             _Response(0, 0).body_debug
 
 
-class TestSuccessResponse(TestCase):
-
-    def test_no_id_no_result(self):
-        # Essentially no id means the request was a notification, so we should
-        # return nothing.
-        r = SuccessResponse(None, None)
-        self.assertEqual(None, r.request_id)
-        self.assertEqual('', r.body)
-        self.assertEqual(status.HTTP_NO_CONTENT, r.http_status)
-
-    def test_no_id_with_result(self):
-        # Notification should not have a result.
-        with self.assertRaises(ValueError):
-            SuccessResponse(None, 'foo')
-
-    def test_no_result(self):
-        r = SuccessResponse(1, None)
-        self.assertEqual(None, r.json['result'])
-
-    def test_result_http_status(self):
-        r = SuccessResponse(1, 'foo')
-        self.assertEqual(200, r.http_status)
-
-    def test_result_number(self):
-        r = SuccessResponse(1, 5)
-        self.assertEqual(5, r.json['result'])
-
-    def test_result_string(self):
-        r = SuccessResponse(1, 'foo')
-        self.assertEqual('foo', r.json['result'])
-
-    def test_result_list(self):
-        result = ['foo', [1, 2, 3], {'foo': 'bar', 'answer': 42}]
-        r = SuccessResponse(1, result)
-        self.assertEqual(result, r.json['result'])
-
-    def test_result_dict(self):
-        result = {'foo': 'bar', 'answer': 42, 'list': ['One', 2]}
-        r = SuccessResponse(1, result)
-        self.assertEqual(result, r.json['result'])
-
-    def test_body(self):
-        r = SuccessResponse(1, 'foo')
-        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}', r.body)
-
-    def test_body_debug_off(self):
-        r = SuccessResponse(1, 'foo')
-        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}',
-                         r.body)
-
-    def test_body_debug_on(self):
-        r = SuccessResponse(1, 'foo')
-        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}',
-                         r.body_debug)
-
-
 class TestErrorResponse(TestCase):
 
     def test_no_id(self):
+        # This is OK - we will respond to notifications with errors, such as
+        # parse error and invalid request.
         r = ErrorResponse(status.HTTP_BAD_REQUEST, None,
                           status.JSONRPC_INVALID_REQUEST_CODE, 'foo')
         self.assertEqual(None, r.json['id'])
@@ -114,12 +60,7 @@ class TestErrorResponse(TestCase):
         self.assertEqual({'jsonrpc': '2.0', 'error': {
             'code': -32600, 'message': 'foo'}, 'id': 1}, r.json)
 
-    def test_json_debug_off(self):
-        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertNotIn('data', r.json['error'])
-
-    def test_json_debug_on(self):
+    def test_json_debug(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
                           status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual('bar', r.json_debug['error']['data'])
@@ -131,19 +72,54 @@ class TestErrorResponse(TestCase):
             '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
             r.body)
 
-    def test_body_debug_off(self):
-        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual(
-            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
-            r.body)
-
-    def test_body_debug_on(self):
+    def test_body_debug(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
                           status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
         self.assertEqual(
             '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
             r.body_debug)
+
+
+class TestRequestResponse(TestCase):
+
+    def test_no_id(self):
+        # Not OK - requests must have an id.
+        with self.assertRaises(ValueError):
+            r = RequestResponse(None, 'foo')
+
+    def test_no_result(self):
+        # Perfectly fine.
+        r = RequestResponse(1, None)
+        self.assertEqual({'jsonrpc': '2.0', 'result': None, 'id': 1}, r.json)
+
+    def test_json(self):
+        r = RequestResponse(1, 'foo')
+        self.assertEqual({'jsonrpc': '2.0', 'result': 'foo', 'id': 1}, r.json)
+
+    def test_json_debug(self):
+        r = RequestResponse(1, 'foo')
+        self.assertEqual(
+            {'jsonrpc': '2.0', 'result': 'foo', 'id': 1}, r.json_debug)
+
+    def test_body(self):
+        r = RequestResponse(1, 'foo')
+        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}', r.body)
+
+    def test_body_debug(self):
+        r = RequestResponse(1, 'foo')
+        self.assertEqual(
+            '{"jsonrpc": "2.0", "result": "foo", "id": 1}', r.body_debug)
+
+
+class TestNotificationResponse(TestCase):
+
+    def test(self):
+        r = NotificationResponse()
+        self.assertEqual(None, r.json)
+        self.assertEqual(None, r.json_debug)
+        self.assertEqual('', r.body)
+        self.assertEqual('', r.body_debug)
+        self.assertEqual(204, r.http_status)
 
 
 if __name__ == '__main__':

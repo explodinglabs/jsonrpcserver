@@ -34,7 +34,7 @@ def _sort_response(response):
 
 
 class _Response(object):
-    """Parent of SuccessResponse and ErrorResponse.
+    """Parent of the other responses.
 
     :param http_status: The recommended HTTP status code to respond with,
                         if using HTTP for transport.
@@ -70,41 +70,6 @@ class _Response(object):
     def body_debug(self):
         """JSON-RPC response string."""
         return self.body
-
-
-class SuccessResponse(_Response):
-    """Returned from `dispatch()`_ after processing a request successfully."""
-
-    #: The HTTP status to send when there is no JSON response message. Default
-    #: is ``204``, but some clients prefer to get ``200``. Modify this class
-    #: attribute to configure.
-    no_content_http_status = status.HTTP_NO_CONTENT
-
-    def __init__(self, request_id, result):
-        """
-        :param request_id: Matches the original request's id value.
-        :param result: The payload from processing the request. If the request
-                       was a JSON-RPC notification (i.e. the request id is
-                       ``None``), the result must also be ``None`` because
-                       notifications don't require any data returned.
-        """
-        # Ensure we're not responding to a notification with data
-        if result and not request_id:
-            raise ValueError('Notifications cannot have a result payload')
-        # Which http status to respond with?
-        http_status = status.HTTP_OK if request_id \
-                else self.no_content_http_status
-        super(SuccessResponse, self).__init__(http_status, request_id)
-        #: Holds the payload from processing the request successfully.
-        self.result = result
-
-    @property
-    def json(self):
-        """JSON-RPC response, in dictionary form."""
-        if self.request_id:
-            return {'jsonrpc': '2.0', 'result': self.result, 'id':
-                    self.request_id}
-        # else None
 
 
 class ErrorResponse(_Response):
@@ -154,3 +119,52 @@ class ErrorResponse(_Response):
     def body_debug(self):
         """JSON-RPC response string, with ``data`` attribute included."""
         return json.dumps(_sort_response(self.json_debug))
+
+
+class RequestResponse(_Response):
+    """Returned from `dispatch()`_ in response to a "request" - i.e. a request
+    that wants a response back - after processing successfully.
+    """
+
+    #: The HTTP status to send when responding to requests.
+    http_status = status.HTTP_OK
+
+    def __init__(self, request_id, result):
+        """
+        :param request_id: Matches the original request's id value.
+        :param result:
+            The payload from processing the request. If the request was a
+            JSON-RPC notification (i.e. the request id is ``None``), the result
+            must also be ``None`` because notifications don't require any data
+            returned.
+        """
+        # Ensure we're not responding to a notification with data
+        if not request_id:
+            raise ValueError(
+                'Requests must have an id, use NotificationResponse instead')
+        super(RequestResponse, self).__init__(self.http_status, request_id)
+        #: Holds the payload from processing the request successfully.
+        self.result = result
+
+    @property
+    def json(self):
+        """JSON-RPC response, in dictionary form."""
+        if self.request_id:
+            return {'jsonrpc': '2.0', 'result': self.result, 'id':
+                    self.request_id}
+        # else None
+
+
+class NotificationResponse(_Response):
+    """Returned from `dispatch()`_ in response to notifications."""
+
+    #: The HTTP status to send in response to notifications. Default is ``204``,
+    #: but some clients prefer to get ``200 OK``. Monkey patch to configure.
+    http_status = status.HTTP_NO_CONTENT
+
+    def __init__(self):
+        super(NotificationResponse, self).__init__(self.http_status, None)
+
+    @property
+    def json(self):
+        return None
