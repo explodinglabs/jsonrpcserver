@@ -2,10 +2,9 @@
 Exceptions
 **********
 
-These exceptions are raised internally by the library, but can also be raised by
-applications wanting to return an error to the client.
+These exceptions are raised to trigger returning an error to the client.
 
-Attributes can be monkey patched to configure, for example::
+Attributes can be monkey patched to configure error responses, for example::
 
     from jsonrpcserver.exceptions import InvalidParams
     InvalidParams.message = 'Invalid arguments'
