@@ -30,19 +30,19 @@ class TestResponse(TestCase):
 
     def test_json(self):
         with self.assertRaises(NotImplementedError):
-            _Response(0, 0).json
+            _Response(0).json
 
     def test_json_debug(self):
         with self.assertRaises(NotImplementedError):
-            _Response(0, 0).json_debug
+            _Response(0).json_debug
 
     def test_body(self):
         with self.assertRaises(NotImplementedError):
-            _Response(0, 0).body
+            _Response(0).body
 
     def test_body_debug(self):
         with self.assertRaises(NotImplementedError):
-            _Response(0, 0).body_debug
+            _Response(0).body_debug
 
 
 class TestErrorResponse(TestCase):

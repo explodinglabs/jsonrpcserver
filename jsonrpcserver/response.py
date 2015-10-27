@@ -2,7 +2,7 @@
 Response
 ********
 
-The objects returned by `dispatch()`_.
+The response objects returned by `dispatch()`_.
 
 .. _dispatch(): #dispatcher.dispatch
 """
@@ -36,19 +36,14 @@ def _sort_response(response):
 class _Response(object):
     """Parent of the other responses.
 
-    :param http_status: The recommended HTTP status code to respond with,
-                        if using HTTP for transport.
-    :param request_id: This member is REQUIRED. It MUST be the same as the
-                       value of the id member in the Request Object. If
-                       there was an error in detecting the id in the Request
-                       object (e.g. Parse error/Invalid Request), it MUST be
-                       Null.
+    :param request_id:
+        This member is REQUIRED. It MUST be the same as the value of the id
+        member in the Request Object. If there was an error in detecting the id
+        in the Request object (e.g. Parse error/Invalid Request), it MUST be
+        Null.
     """
 
-    def __init__(self, http_status, request_id):
-        #: Holds the HTTP status code to respond with (if using HTTP).
-        self.http_status = http_status
-        #: The 'id' part from the request to be sent back in the response.
+    def __init__(self, request_id):
         self.request_id = request_id
 
     @property
@@ -58,7 +53,7 @@ class _Response(object):
 
     @property
     def json_debug(self):
-        """JSON-RPC response, in dictionary form."""
+        """Same as the ``json`` property."""
         return self.json
 
     @property
@@ -68,7 +63,7 @@ class _Response(object):
 
     @property
     def body_debug(self):
-        """JSON-RPC response string."""
+        """Same as the ``body`` property."""
         return self.body
 
 
@@ -92,13 +87,15 @@ class ErrorResponse(_Response):
         :param data: A Primitive or Structured value that contains additional
                      information about the error. This may be omitted.
         """
-        super(ErrorResponse, self).__init__(http_status, request_id)
+        super(ErrorResponse, self).__init__(request_id)
         #: Holds the JSON-RPC error code.
         self.code = code
         #: Holds a one-line message describing the error.
         self.message = message
         #: Holds extra information about the error.
         self.data = data
+        #: Holds the recommended HTTP status to respond with (if using HTTP).
+        self.http_status = http_status
 
     @property
     def json(self):
@@ -122,8 +119,8 @@ class ErrorResponse(_Response):
 
 
 class RequestResponse(_Response):
-    """Returned from `dispatch()`_ in response to a "request" - i.e. a request
-    that wants a response back - after processing successfully.
+    """Returned from `dispatch()`_ in response to a "request", (i.e. a request
+    that wants a response back), after processing successfully.
     """
 
     #: The HTTP status to send when responding to requests.
@@ -142,7 +139,7 @@ class RequestResponse(_Response):
         if not request_id:
             raise ValueError(
                 'Requests must have an id, use NotificationResponse instead')
-        super(RequestResponse, self).__init__(self.http_status, request_id)
+        super(RequestResponse, self).__init__(request_id)
         #: Holds the payload from processing the request successfully.
         self.result = result
 
@@ -163,8 +160,9 @@ class NotificationResponse(_Response):
     http_status = status.HTTP_NO_CONTENT
 
     def __init__(self):
-        super(NotificationResponse, self).__init__(self.http_status, None)
+        super(NotificationResponse, self).__init__(None)
 
     @property
     def json(self):
+        """None."""
         return None
