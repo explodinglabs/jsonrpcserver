@@ -27,5 +27,7 @@ API
     :members:
 
 .. automodule:: jsonrpcserver.exceptions
+    :show-inheritance:
     :members:
+    :undoc-members:
     :member-order: bysource

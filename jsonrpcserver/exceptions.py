@@ -2,7 +2,7 @@
 Exceptions
 **********
 
-These exceptions are raised to trigger returning an error to the client.
+These exceptions are raised to return an error to the client.
 
 Attributes can be monkey patched to configure error responses, for example::
 
@@ -30,11 +30,8 @@ class JsonRpcServerError(Exception):
 class ParseError(JsonRpcServerError):
     """The request is not a valid JSON object."""
 
-    #: Error code
     code = -32700
-    #: The message
     message = 'Parse error'
-    #: HTTP status
     http_status = status.HTTP_BAD_REQUEST
 
     def __init__(self):
@@ -47,11 +44,8 @@ class InvalidRequest(JsonRpcServerError):
     :param data: Extra information about the error that occurred (optional).
     """
 
-    #: Error code
     code = -32600
-    #: The message
     message = 'Invalid request'
-    #: HTTP status
     http_status = status.HTTP_BAD_REQUEST
 
     def __init__(self, data=None):
@@ -64,11 +58,8 @@ class MethodNotFound(JsonRpcServerError):
     :param data: Extra information about the error that occurred (optional).
     """
 
-    #: Error code
     code = -32601
-    #: The message
     message = 'Method not found'
-    #: HTTP status
     http_status = status.HTTP_NOT_FOUND
 
     def __init__(self, data=None):
@@ -82,11 +73,8 @@ class InvalidParams(JsonRpcServerError):
     :param data: Extra information about the error that occurred (optional).
     """
 
-    #: Error code
     code = -32602
-    #: The message
     message = 'Invalid params'
-    #: HTTP status
     http_status = status.HTTP_BAD_REQUEST
 
     def __init__(self, data=None):
@@ -99,11 +87,8 @@ class ServerError(JsonRpcServerError):
     :param data: Extra information about the error that occurred (optional).
     """
 
-    #: Error code
     code = -32000
-    #: The message
     message = 'Server error'
-    #: HTTP status
     http_status = status.HTTP_INTERNAL_ERROR
 
     def __init__(self, data=None):
