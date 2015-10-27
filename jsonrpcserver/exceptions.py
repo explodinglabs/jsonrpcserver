@@ -5,7 +5,7 @@ Exceptions
 These exceptions are raised internally by the library, but can also be raised by
 applications wanting to return an error to the client.
 
-Class attributes can be modified to configure error messages, for example::
+Attributes can be monkey patched to configure, for example::
 
     from jsonrpcserver.exceptions import InvalidParams
     InvalidParams.message = 'Invalid arguments'
