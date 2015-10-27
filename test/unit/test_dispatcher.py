@@ -11,7 +11,8 @@ from jsonrpcserver.methods import Methods
 from jsonrpcserver.dispatcher import dispatch
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
-from jsonrpcserver.response import SuccessResponse
+from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
+    RequestResponse
 
 
 class TestValidateArgumentsAgainstSignature(TestCase):
@@ -120,72 +121,67 @@ class TestDispatchNotifications(TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
 
-    def assertNoResponse(self, response):
-        self.assertEqual(None, response.json)
-        self.assertEqual('', response.body)
-        self.assertEqual(status.HTTP_NO_CONTENT, response.http_status)
-
     # Success
     def test_success(self):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
-        self.assertNoResponse(r)
+        self.assertIsInstance(r, NotificationResponse)
 
     # Errors - note that parse error and invalid requests *always* get response
     def test_parse_error(self):
         def foo():
             return 'bar'
         r = dispatch([foo], '{"jsonrpc')
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Parse error', r.json['error']['message'])
-        self.assertEqual(status.HTTP_BAD_REQUEST, r.http_status)
 
     def test_invalid_request(self):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0'})
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Invalid request', r.json['error']['message'])
-        self.assertEqual(status.HTTP_BAD_REQUEST, r.http_status)
 
     def test_method_not_found(self):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'baz'})
-        self.assertNoResponse(r)
+        self.assertIsInstance(r, NotificationResponse)
 
     def test_invalid_params(self):
         def foo(x): # pylint: disable=unused-argument
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
-        self.assertNoResponse(r)
+        self.assertIsInstance(r, NotificationResponse)
 
     def test_explicitly_raised_exception(self):
         def foo():
             raise InvalidParams()
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
-        self.assertNoResponse(r)
+        self.assertIsInstance(r, NotificationResponse)
 
     def test_uncaught_exception(self):
         def foo():
             return 1/0
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
-        self.assertNoResponse(r)
+        self.assertIsInstance(r, NotificationResponse)
 
-    def test_config_notification_errors(self):
+    # Configuration
+    def test_config_notification_errors_on(self):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'baz'},
                      notification_errors=True)
-        self.assertEqual('Method not found', r.json['error']['message'])
-        self.assertEqual(status.HTTP_NOT_FOUND, r.http_status)
+        self.assertIsInstance(r, ErrorResponse)
 
-    def test_config_no_content_200_status(self):
+    def test_configuring_http_status(self):
         def foo():
             return 'bar'
-        SuccessResponse.no_content_http_status = status.HTTP_OK
+        NotificationResponse.http_status = status.HTTP_OK
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
         self.assertEqual(status.HTTP_OK, r.http_status)
-        SuccessResponse.no_content_http_status = status.HTTP_NO_CONTENT
+        NotificationResponse.http_status = status.HTTP_NO_CONTENT
 
 
 class TestDispatchRequests(TestCase):
@@ -196,58 +192,58 @@ class TestDispatchRequests(TestCase):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertIsInstance(r, RequestResponse)
         self.assertEqual('bar', r.result)
-        self.assertEqual(status.HTTP_OK, r.http_status)
 
     def test_string_request(self):
         def foo():
             return 'bar'
         r = dispatch([foo], '{"jsonrpc": "2.0", "method": "foo", "id": 1}')
+        self.assertIsInstance(r, RequestResponse)
         self.assertEqual('bar', r.result)
-        self.assertEqual(status.HTTP_OK, r.http_status)
 
     # Errors
     def test_parse_error(self):
         def foo():
             return 'bar'
         r = dispatch([foo], '{"jsonrpc')
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Parse error', r.json['error']['message'])
-        self.assertEqual(status.HTTP_BAD_REQUEST, r.http_status)
 
     def test_invalid_request(self):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', "id": 1})
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Invalid request', r.json['error']['message'])
-        self.assertEqual(status.HTTP_BAD_REQUEST, r.http_status)
 
     def test_method_not_found(self):
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'baz', 'id': 1})
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Method not found', r.json['error']['message'])
-        self.assertEqual(status.HTTP_NOT_FOUND, r.http_status)
 
     def test_invalid_params(self):
         def foo(x): # pylint: disable=unused-argument
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Invalid params', r.json['error']['message'])
-        self.assertEqual(status.HTTP_BAD_REQUEST, r.http_status)
 
     def test_explicitly_raised_exception(self):
         def foo():
             raise InvalidParams()
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Invalid params', r.json['error']['message'])
-        self.assertEqual(status.HTTP_BAD_REQUEST, r.http_status)
 
     def test_uncaught_exception(self):
         def foo():
             return 1/0
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Server error', r.json['error']['message'])
-        self.assertEqual(status.HTTP_INTERNAL_ERROR, r.http_status)
 
 
 if __name__ == '__main__':

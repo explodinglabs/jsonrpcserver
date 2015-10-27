@@ -9,6 +9,7 @@ Class attributes can be modified to configure error messages, for example::
 
     from jsonrpcserver.exceptions import InvalidParams
     InvalidParams.message = 'Invalid arguments'
+    InvalidParams.http_status = 406
 """
 
 from jsonrpcserver import status
