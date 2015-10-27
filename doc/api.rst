@@ -28,3 +28,4 @@ API
 
 .. automodule:: jsonrpcserver.exceptions
     :members:
+    :member-order: bysource
