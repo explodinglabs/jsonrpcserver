@@ -120,9 +120,7 @@ def dispatch(methods, request, notification_errors=False):
         <http://www.jsonrpc.org/specification#notification>`_ get error
         responses? Typically notifications don't receive any response, except
         for "Parse error" and "Invalid request" errors. Enabling this will
-        include all other errors such as "Method not found". A notification is
-        then similar to many unix commands - *"There was no response, so I can
-        assume the request was successful."*
+        include all other errors such as "Method not found".
     :returns: A `Response`_ object - either `RequestResponse`_,
               `NotificationResponse`_, or `ErrorResponse`_ if there was a
               problem processing the request. In any case, the return value
