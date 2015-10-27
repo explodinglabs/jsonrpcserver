@@ -27,7 +27,33 @@ API
     :members:
 
 .. automodule:: jsonrpcserver.exceptions
-    :show-inheritance:
-    :members:
-    :undoc-members:
-    :member-order: bysource
+
+    .. autoexception:: ParseError
+        :show-inheritance:
+        :members:
+        :undoc-members:
+        :member-order: bysource
+
+    .. autoexception:: InvalidRequest
+        :show-inheritance:
+        :members:
+        :undoc-members:
+        :member-order: bysource
+
+    .. autoexception:: MethodNotFound
+        :show-inheritance:
+        :members:
+        :undoc-members:
+        :member-order: bysource
+
+    .. autoexception:: InvalidParams
+        :show-inheritance:
+        :members:
+        :undoc-members:
+        :member-order: bysource
+
+    .. autoexception:: ServerError
+        :show-inheritance:
+        :members:
+        :undoc-members:
+        :member-order: bysource

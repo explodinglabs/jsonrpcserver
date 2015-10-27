@@ -28,7 +28,7 @@ class JsonRpcServerError(Exception):
 
 
 class ParseError(JsonRpcServerError):
-    """The request is not a valid JSON object."""
+    """Raised when the request is not a valid JSON object."""
 
     code = -32700
     message = 'Parse error'
@@ -39,7 +39,7 @@ class ParseError(JsonRpcServerError):
 
 
 class InvalidRequest(JsonRpcServerError):
-    """The request is not a valid JSON-RPC object.
+    """Raised when the request is not a valid JSON-RPC object.
 
     :param data: Extra information about the error that occurred (optional).
     """
@@ -53,7 +53,7 @@ class InvalidRequest(JsonRpcServerError):
 
 
 class MethodNotFound(JsonRpcServerError):
-    """The method does not exist/is not available.
+    """Raised when the method does not exist/is not available.
 
     :param data: Extra information about the error that occurred (optional).
     """
