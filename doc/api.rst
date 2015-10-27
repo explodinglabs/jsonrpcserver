@@ -8,7 +8,12 @@ API
     :members:
 
 .. automodule:: response
-.. autoclass:: SuccessResponse
+.. autoclass:: RequestResponse
+    :members:
+    :inherited-members:
+    :member-order: alphabetical
+
+.. autoclass:: NotificationResponse
     :members:
     :inherited-members:
     :member-order: alphabetical
