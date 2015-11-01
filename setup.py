@@ -17,6 +17,7 @@ setup(
     author='Beau Barker',
     author_email='beauinmelbourne@gmail.com',
     url='https://jsonrpcserver.readthedocs.org/',
+    license='MIT',
     packages=['jsonrpcserver'],
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
