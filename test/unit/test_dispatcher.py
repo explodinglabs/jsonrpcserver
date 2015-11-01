@@ -75,31 +75,31 @@ class TestCall(TestCase):
         methods = Methods()
         def foo():
             return 'bar'
-        methods.add(foo)
+        methods.add_method(foo)
         self.assertEqual('bar', _call(methods, 'foo'))
 
     def test_methods_functions_with_decorator(self):
         methods = Methods()
-        @methods.add
+        @methods.add_method
         def foo(): # pylint: disable=unused-variable
             return 'bar'
         self.assertEqual('bar', _call(methods, 'foo'))
 
     def test_methods_lambdas(self):
         methods = Methods()
-        methods.add(lambda: 'bar', 'foo')
+        methods.add_method(lambda: 'bar', 'foo')
         self.assertEqual('bar', _call(methods, 'foo'))
 
     def test_methods_partials(self):
         multiply = lambda x, y: x * y
         double = partial(multiply, 2)
         methods = Methods()
-        methods.add(double, 'double')
+        methods.add_method(double, 'double')
         self.assertEqual(6, _call(methods, 'double', [3]))
 
     def test_positionals(self):
         methods = Methods()
-        methods.add(lambda x: x * x, 'square')
+        methods.add_method(lambda x: x * x, 'square')
         self.assertEqual(9, _call(methods, 'square', [3]))
 
     def test_keywords(self):
