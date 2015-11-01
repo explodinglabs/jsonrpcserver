@@ -37,8 +37,8 @@ class TestGetMethod(TestCase):
         def cat(): pass # pylint: disable=multiple-statements
         def dog(): pass # pylint: disable=multiple-statements
         methods = Methods()
-        methods.add(cat)
-        methods.add(dog)
+        methods.add_method(cat)
+        methods.add_method(dog)
         self.assertIs(cat, _get_method(methods, 'cat'))
         self.assertIs(dog, _get_method(methods, 'dog'))
 
@@ -48,19 +48,19 @@ class TestAdd(TestCase):
     def test_function(self):
         def go(): pass # pylint: disable=multiple-statements
         methods = Methods()
-        methods.add(go)
+        methods.add_method(go)
         self.assertIs(go, _get_method(methods, 'go'))
 
     def test_function_custom_name(self):
         def go(): pass # pylint:disable=multiple-statements
         methods = Methods()
-        methods.add(go, 'go_now')
+        methods.add_method(go, 'go_now')
         self.assertIs(go, _get_method(methods, 'go_now'))
 
     def test_lambda_no_name(self):
         add = lambda x, y: x + y
         methods = Methods()
-        methods.add(add) # Lambda's __name__ will be '<lambda>'!
+        methods.add_method(add) # Lambda's __name__ will be '<lambda>'!
         with self.assertRaises(MethodNotFound):
             _get_method(methods, 'add')
 
@@ -68,32 +68,32 @@ class TestAdd(TestCase):
         add = lambda x, y: x + y
         add.__name__ = 'add'
         methods = Methods()
-        methods.add(add)
+        methods.add_method(add)
         self.assertIs(add, _get_method(methods, 'add'))
 
     def test_lambda_custom_name(self):
         add = lambda x, y: x + y
         methods = Methods()
-        methods.add(add, 'add')
+        methods.add_method(add, 'add')
         self.assertIs(add, _get_method(methods, 'add'))
 
     def test_partial_no_name(self):
         six = partial(lambda x: x + 1, 5)
         methods = Methods()
         with self.assertRaises(AttributeError):
-            methods.add(six) # Partial has no __name__ !
+            methods.add_method(six) # Partial has no __name__ !
 
     def test_partial_renamed(self):
         six = partial(lambda x: x + 1, 5)
         six.__name__ = 'six'
         methods = Methods()
-        methods.add(six)
+        methods.add_method(six)
         self.assertIs(six, _get_method(methods, 'six'))
 
     def test_partial_custom_name(self):
         six = partial(lambda x: x + 1, 5)
         methods = Methods()
-        methods.add(six, 'six')
+        methods.add_method(six, 'six')
         self.assertIs(six, _get_method(methods, 'six'))
 
     def test_static_method(self):
@@ -102,7 +102,7 @@ class TestAdd(TestCase):
             def Foo():
                 return 'bar'
         methods = Methods()
-        methods.add(FooClass.Foo)
+        methods.add_method(FooClass.Foo)
         self.assertIs(FooClass.Foo, _get_method(methods, 'Foo'))
 
     def test_static_method_custom_name(self):
@@ -111,7 +111,7 @@ class TestAdd(TestCase):
             def Foo():
                 return 'bar'
         methods = Methods()
-        methods.add(FooClass.Foo, 'custom')
+        methods.add_method(FooClass.Foo, 'custom')
         self.assertIs(FooClass.Foo, _get_method(methods, 'custom'))
 
     def test_instance_method(self):
@@ -119,7 +119,7 @@ class TestAdd(TestCase):
             def Foo(self): # pylint: disable=no-self-use
                 return 'bar'
         methods = Methods()
-        methods.add(FooClass().Foo)
+        methods.add_method(FooClass().Foo)
         self.assertEqual('bar', _get_method(methods, 'Foo').__call__())
 
     def test_instance_method_custom_name(self):
@@ -131,8 +131,8 @@ class TestAdd(TestCase):
         obj1 = Foo('a')
         obj2 = Foo('b')
         methods = Methods()
-        methods.add(obj1.get_name, 'custom1')
-        methods.add(obj2.get_name, 'custom2')
+        methods.add_method(obj1.get_name, 'custom1')
+        methods.add_method(obj2.get_name, 'custom2')
         # Can't use assertIs, so check the outcome is as expected
         self.assertEqual('a', _get_method(methods, 'custom1').__call__())
         self.assertEqual('b', _get_method(methods, 'custom2').__call__())
@@ -142,7 +142,7 @@ class TestDecorator(TestCase):
 
     def test_function(self):
         methods = Methods()
-        @methods.add
+        @methods.add_method
         def go(): pass # pylint:disable=multiple-statements
         self.assertIs(go, _get_method(methods, 'go'))
 
@@ -150,7 +150,7 @@ class TestDecorator(TestCase):
         methods = Methods()
         class FooClass(object):
             @staticmethod
-            @methods.add
+            @methods.add_method
             def Foo():
                 return 'bar'
         self.assertIs(FooClass.Foo, _get_method(methods, 'Foo'))
