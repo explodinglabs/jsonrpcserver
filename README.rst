@@ -1,8 +1,6 @@
 jsonrpcserver
 *************
 
-.. image:: https://drone.io/github.com/bcb/jsonrpcserver/status.png
-
 Process incoming `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7
 and 3.3+.
 
