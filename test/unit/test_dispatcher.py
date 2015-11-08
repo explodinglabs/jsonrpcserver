@@ -248,14 +248,71 @@ class TestDispatchRequests(TestCase):
 
 class TestDispatchBatch(TestCase):
 
-    # Success
-    def test(self):
+    # These are direct from the examples in the specification
+
+    def invalid_json(self):
         def foo():
             return 'bar'
-        r = dispatch([foo], [{'jsonrpc': '2.0', 'method': 'foo', 'id': 1}])
-        print(r.message)
-        self.assertIsInstance(r, list)
-#        self.assertEqual('bar', r.result[0]['result'])
+        self.assertEqual(
+            {"jsonrpc": "2.0", "error": {"code": -32700, "message":
+                "Parse error"}, "id": null}
+            dispatch([{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4],
+                "id": "1"}, {"jsonrpc": "2.0", "method"],
+        )
+
+    def empty_array(self):
+        def foo():
+            return 'bar'
+        self.assertEqual(
+            {"jsonrpc": "2.0", "error": {"code": -32600,
+                "message": "Invalid Request"}, "id": null},
+            dispatch([foo], []))
+
+    def invalid_request(self):
+        def foo():
+            return 'bar'
+        self.assertEqual(
+            [{"jsonrpc": "2.0", "error": {"code": -32600, "message":
+                "Invalid Request"}, "id": null}],
+            dispatch([foo], [1])
+
+    def multiple_invalid_requests(self):
+        def foo():
+            return 'bar'
+        self.assertEqual([
+            [{"jsonrpc": "2.0", "error": {"code": -32600, "message":
+                "Invalid Request"}, "id": null},
+            {"jsonrpc": "2.0", "error": {"code": -32600, "message":
+                "Invalid Request"}, "id": null},
+            {"jsonrpc": "2.0", "error": {"code": -32600, "message":
+                "Invalid Request"}, "id": null}],
+            dispatch([foo], [1, 2, 3])
+
+    def mixed_requests_and_notifications(self):
+        def foo():
+            return 'bar'
+        self.assertEqual(
+            [{"jsonrpc": "2.0", "result": 7, "id": "1"},
+            {"jsonrpc": "2.0", "result": 19, "id": "2"},
+            {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null},
+            {"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "5"},
+            {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"}],
+            dispatch([foo],
+                [{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
+                {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
+                {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
+                {"foo": "boo"},
+                {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},
+                {"jsonrpc": "2.0", "method": "get_data", "id": "9"}])
+
+    def all_notifications(self):
+        def foo():
+            return 'bar'
+        self.assertEqual(
+            None,
+            dispatch([foo],
+                [{"jsonrpc": "2.0", "method": "notify_sum", "params": [1,2,4]},
+                {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}])
 
 
 if __name__ == '__main__':
