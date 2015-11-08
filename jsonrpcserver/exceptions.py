@@ -4,7 +4,7 @@ Exceptions
 
 These exceptions are raised to return an error to the client.
 
-Attributes can be monkey patched to configure error responses, for example::
+Attributes can be modified to configure error responses, for example::
 
     from jsonrpcserver.exceptions import InvalidParams
     InvalidParams.message = 'Invalid arguments'

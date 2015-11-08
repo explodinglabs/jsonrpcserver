@@ -13,12 +13,10 @@ Recent Changes
 
 - The HTTP status returned to notifications, which is 204 by default, can be
   `configured
-  <https://jsonrpcserver.readthedocs.org/api.html#response.NotificationResponse.http_status>`__
-  by monkey patching.
+  <https://jsonrpcserver.readthedocs.org/api.html#response.NotificationResponse.http_status>`__.
 
 - Error responses can now be `configured
-  <https://jsonrpcserver.readthedocs.org/api.html#exceptions>`__ by monkey
-  patching.
+  <https://jsonrpcserver.readthedocs.org/api.html#exceptions>`__.
 
 3.1.0 (2015-10-17)
 ------------------
