@@ -2,117 +2,24 @@
 # pylint: disable=missing-docstring
 
 from unittest import TestCase, main
-from functools import partial
 import logging
 
-from jsonrpcserver.dispatcher import _validate_arguments_against_signature, \
-    _call
-from jsonrpcserver.methods import Methods
-from jsonrpcserver.dispatcher import dispatch
-from jsonrpcserver.exceptions import InvalidParams
+from jsonrpcserver.dispatcher import dispatch, _string_to_dict
+from jsonrpcserver.exceptions import ParseError, InvalidParams
 from jsonrpcserver import status
 from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
     RequestResponse
 
 
-class TestValidateArgumentsAgainstSignature(TestCase):
-    """Keep it simple here. No need to test the signature.bind function."""
+class TestStringToDict(TestCase):
 
-    @staticmethod
-    def test_no_arguments():
-        _validate_arguments_against_signature(lambda: None, None, None)
+    def test_ok(self):
+        self.assertEqual({'jsonrpc': '2.0', 'method': 'foo'}, _string_to_dict(
+            '{"jsonrpc": "2.0", "method": "foo"}'))
 
-    def test_no_arguments_too_many_positionals(self):
-        with self.assertRaises(InvalidParams):
-            _validate_arguments_against_signature(lambda: None, ['foo'], None)
-
-    @staticmethod
-    def test_positionals():
-        _validate_arguments_against_signature(lambda x: None, [1], None)
-
-    def test_positionals_not_passed(self):
-        with self.assertRaises(InvalidParams):
-            _validate_arguments_against_signature(
-                lambda x: None, None, {'foo': 'bar'})
-
-    @staticmethod
-    def test_keywords():
-        _validate_arguments_against_signature(
-            lambda **kwargs: None, None, {'foo': 'bar'})
-
-
-class TestCall(TestCase):
-
-    def test_list_functions(self):
-        def foo():
-            return 'bar'
-        self.assertEqual('bar', _call([foo], 'foo'))
-
-    def test_list_lambdas(self):
-        foo = lambda: 'bar'
-        foo.__name__ = 'foo'
-        self.assertEqual('bar', _call([foo], 'foo'))
-
-    def test_list_partials(self):
-        multiply = lambda x, y: x * y
-        double = partial(multiply, 2)
-        double.__name__ = 'double'
-        self.assertEqual(6, _call([double], 'double', [3]))
-
-    def test_dict_functions(self):
-        def foo():
-            return 'bar'
-        self.assertEqual('bar', _call({'baz': foo}, 'baz'))
-
-    def test_dict_lambdas(self):
-        self.assertEqual('bar', _call({'baz': lambda: 'bar'}, 'baz'))
-
-    def test_dict_partials(self):
-        multiply = lambda x, y: x * y
-        self.assertEqual(6, _call({'baz': partial(multiply, 2)}, 'baz', [3]))
-
-    def test_methods_functions(self):
-        methods = Methods()
-        def foo():
-            return 'bar'
-        methods.add_method(foo)
-        self.assertEqual('bar', _call(methods, 'foo'))
-
-    def test_methods_functions_with_decorator(self):
-        methods = Methods()
-        @methods.add_method
-        def foo(): # pylint: disable=unused-variable
-            return 'bar'
-        self.assertEqual('bar', _call(methods, 'foo'))
-
-    def test_methods_lambdas(self):
-        methods = Methods()
-        methods.add_method(lambda: 'bar', 'foo')
-        self.assertEqual('bar', _call(methods, 'foo'))
-
-    def test_methods_partials(self):
-        multiply = lambda x, y: x * y
-        double = partial(multiply, 2)
-        methods = Methods()
-        methods.add_method(double, 'double')
-        self.assertEqual(6, _call(methods, 'double', [3]))
-
-    def test_positionals(self):
-        methods = Methods()
-        methods.add_method(lambda x: x * x, 'square')
-        self.assertEqual(9, _call(methods, 'square', [3]))
-
-    def test_keywords(self):
-        def get_name(**kwargs):
-            return kwargs['name']
-        self.assertEqual('foo', _call([get_name], 'get_name', None,
-                                      {'name': 'foo'}))
-
-    def test_positionals_and_keywords(self):
-        def foo(*args, **kwargs): # pylint: disable=unused-argument
-            return 'bar'
-        with self.assertRaises(InvalidParams):
-            _call([foo], 'foo', [3], {'foo': 'bar'})
+    def test_invalid(self):
+        with self.assertRaises(ParseError):
+            _string_to_dict('{"jsonrpc": "2.0}')
 
 
 class TestDispatchNotifications(TestCase):
@@ -169,6 +76,7 @@ class TestDispatchNotifications(TestCase):
 
     # Configuration
     def test_config_notification_errors_on(self):
+        # Should return "method not found" error
         def foo():
             return 'bar'
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'baz'},
@@ -255,10 +163,9 @@ class TestDispatchBatch(TestCase):
             return 'bar'
         self.assertEqual(
             {"jsonrpc": "2.0", "error": {"code": -32700, "message":
-                "Parse error"}, "id": null}
-            dispatch([{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4],
-                "id": "1"}, {"jsonrpc": "2.0", "method"],
-        )
+                "Parse error"}, "id": null},
+            dispatch('[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], \
+                "id": "1"}, {"jsonrpc": "2.0", "method"]'))
 
     def empty_array(self):
         def foo():
@@ -274,19 +181,19 @@ class TestDispatchBatch(TestCase):
         self.assertEqual(
             [{"jsonrpc": "2.0", "error": {"code": -32600, "message":
                 "Invalid Request"}, "id": null}],
-            dispatch([foo], [1])
+            dispatch([foo], [1]))
 
     def multiple_invalid_requests(self):
         def foo():
             return 'bar'
-        self.assertEqual([
+        self.assertEqual(
             [{"jsonrpc": "2.0", "error": {"code": -32600, "message":
                 "Invalid Request"}, "id": null},
             {"jsonrpc": "2.0", "error": {"code": -32600, "message":
                 "Invalid Request"}, "id": null},
             {"jsonrpc": "2.0", "error": {"code": -32600, "message":
                 "Invalid Request"}, "id": null}],
-            dispatch([foo], [1, 2, 3])
+            dispatch([foo], [1, 2, 3]))
 
     def mixed_requests_and_notifications(self):
         def foo():
@@ -303,7 +210,7 @@ class TestDispatchBatch(TestCase):
                 {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
                 {"foo": "boo"},
                 {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},
-                {"jsonrpc": "2.0", "method": "get_data", "id": "9"}])
+                {"jsonrpc": "2.0", "method": "get_data", "id": "9"}]))
 
     def all_notifications(self):
         def foo():
@@ -312,7 +219,7 @@ class TestDispatchBatch(TestCase):
             None,
             dispatch([foo],
                 [{"jsonrpc": "2.0", "method": "notify_sum", "params": [1,2,4]},
-                {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}])
+                {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}]))
 
 
 if __name__ == '__main__':

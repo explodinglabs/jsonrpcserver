@@ -11,17 +11,15 @@ import logging
 import json
 import pkgutil
 
-from funcsigs import signature
 from six import string_types
 import jsonschema
 
-from jsonrpcserver.response import RequestResponse, NotificationResponse, \
-    ErrorResponse
+from jsonrpcserver.response import _Response, RequestResponse, \
+    NotificationResponse, ErrorResponse
 from jsonrpcserver.request import Request
-from jsonrpcserver.exceptions import JsonRpcServerError, InvalidParams, \
-    ServerError
+from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
+    InvalidRequest, ServerError
 from jsonrpcserver.status import HTTP_STATUS_CODES
-from jsonrpcserver.methods import _get_method
 
 logger = logging.getLogger(__name__)
 request_log = logging.getLogger(__name__+'.request')
@@ -30,6 +28,19 @@ response_log = logging.getLogger(__name__+'.response')
 
 json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
     __name__, 'request-schema.json').decode('utf-8')))
+
+
+def _string_to_dict(request):
+    """Convert a JSON-RPC request string, to a dictionary.
+
+    :param request: The JSON-RPC request string.
+    :raises ValueError: If the string cannot be parsed to JSON.
+    :returns: The same request in dict form.
+    """
+    try:
+        return json.loads(request)
+    except ValueError:
+        raise ParseError()
 
 
 def _validate_against_schema(request):
@@ -43,52 +54,6 @@ def _validate_against_schema(request):
         json_validator.validate(request)
     except jsonschema.ValidationError as e:
         raise InvalidRequest(e.message)
-
-
-def _validate_arguments_against_signature(func, args, kwargs):
-    """Check if arguments match a function signature and can therefore be passed
-    to it.
-
-    :param func: The function object.
-    :param args: List of positional arguments (or None).
-    :param kwargs: Dict of keyword arguments (or None).
-    :raises InvalidParams: If the arguments cannot be passed to the function.
-    """
-    try:
-        if not args and not kwargs:
-            signature(func).bind()
-        elif args:
-            signature(func).bind(*args)
-        elif kwargs:
-            signature(func).bind(**kwargs)
-    except TypeError as e:
-        raise InvalidParams(str(e))
-
-
-def _call(methods, method_name, args=None, kwargs=None):
-    """Find a method from a list, then validate the arguments before calling it.
-
-    :param methods: The list of methods - either a python list, or Methods obj.
-    :param args: Positional arguments (list)
-    :param kwargs: Keyword arguments (dict)
-    :raises MethodNotFound: If the method is not in the list.
-    :raises InvalidParams: If the arguments don't match the method signature.
-    :returns: The return value from the method called.
-    """
-    # Get the method object from a list of rpc methods
-    method = _get_method(methods, method_name)
-    # Ensure the arguments match the method's signature
-    _validate_arguments_against_signature(method, args, kwargs)
-    # Call the method
-    if args and kwargs:
-        # Cannot have both positional and keyword arguments in JSON-RPC.
-        raise InvalidParams()
-    elif not args and not kwargs:
-        return method()
-    elif args:
-        return method(*args)
-    elif kwargs:
-        return method(**kwargs)
 
 
 def dispatch(methods, request, notification_errors=False, validate=True):
@@ -142,15 +107,16 @@ def dispatch(methods, request, notification_errors=False, validate=True):
         responses? Typically notifications don't receive any response, except
         for "Parse error" and "Invalid request" errors. Enabling this will
         include all other errors such as "Method not found".
-    :returns: A `Response`_ object - either `RequestResponse`_,
+    :returns: A `Response`_ object, or for batch requests, a list of responses.
+              The responses themselves are either `RequestResponse`_,
               `NotificationResponse`_, or `ErrorResponse`_ if there was a
               problem processing the request. In any case, the return value
               gives you ``body``, ``body_debug``, ``json``, ``json_debug``, and
-              ``http_status`` values.
+              ``http_status`` attributes.
     """
     # Process the request
-    r = None
     error = None
+    response = None
     try:
         # Log the request
         request_log.info(str(request))
@@ -162,43 +128,23 @@ def dispatch(methods, request, notification_errors=False, validate=True):
             _validate_against_schema(request)
         # Batch requests
         if isinstance(request, list):
-            for req in request:
-                r = Request(req)
-                append(_call(methods, r.method_name, r.args, r.kwargs)
+            response = [Request(r).process(
+                methods, notification_errors) for r in request]
         # Single request
         else:
-            # Create request object (also validates the request)
-            r = Request(request)
-            # Call the requested method
-            result = _call(methods, r.method_name, r.args, r.kwargs)
-    # Catch any JsonRpcServerError raised (Invalid Request, etc)
+            response = Request(request).process(methods, notification_errors)
     except JsonRpcServerError as e:
         error = e
-    # Catch uncaught exceptions, respond with ServerError
     except Exception as e: # pylint: disable=broad-except
         # Log the uncaught exception
         logger.exception(e)
-        # Create an exception object, used to build the response
-        error = ServerError(str(e))
-    # Now build a response.
-    # Error
+        error = ServerError(e)
     if error:
-        # Notifications get a non-response - see spec
-        if r and r.is_notification and not notification_errors:
-            response = NotificationResponse()
-        else:
-            # Get the 'id' part of the request, to include in error response
-            request_id = r.request_id if r else None
-            response = ErrorResponse(
-                error.http_status, request_id, error.code, error.message,
-                error.data)
-    # Success
-    else:
-        # Notifications get a non-response
-        if r and r.is_notification:
-            response = NotificationResponse()
-        else:
-            response = RequestResponse(r.request_id, result)
+        print(error.data)
+        response = ErrorResponse(
+            error.http_status, None, error.code, error.message, error.data)
+    assert isinstance(response, _Response) \
+        or all([isinstance(r, _Response) for r in response])
     # Log the response and return it
     response_log.info(response.body, extra={
         'http_code': response.http_status,
