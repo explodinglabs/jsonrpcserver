@@ -246,5 +246,17 @@ class TestDispatchRequests(TestCase):
         self.assertEqual('Server error', r.json['error']['message'])
 
 
+class TestDispatchBatch(TestCase):
+
+    # Success
+    def test(self):
+        def foo():
+            return 'bar'
+        r = dispatch([foo], [{'jsonrpc': '2.0', 'method': 'foo', 'id': 1}])
+        print(r.message)
+        self.assertIsInstance(r, list)
+#        self.assertEqual('bar', r.result[0]['result'])
+
+
 if __name__ == '__main__':
     main()

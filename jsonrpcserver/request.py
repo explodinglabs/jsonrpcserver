@@ -1,16 +1,10 @@
 """request.py"""
 
 import json
-import pkgutil
 
-import jsonschema
 from six import string_types
 
 from jsonrpcserver.exceptions import ParseError, InvalidRequest, InvalidParams
-
-
-json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
-    __name__, 'request-schema.json').decode('utf-8')))
 
 
 def _string_to_dict(request):
@@ -24,19 +18,6 @@ def _string_to_dict(request):
         return json.loads(request)
     except ValueError:
         raise ParseError()
-
-
-def _validate_against_schema(request):
-    """Validate against the JSON-RPC schema.
-
-    :param request: JSON-RPC request dict.
-    :raises InvalidRequest: If the request is invalid.
-    :returns: None
-    """
-    try:
-        json_validator.validate(request)
-    except jsonschema.ValidationError as e:
-        raise InvalidRequest(e.message)
 
 
 def _get_arguments(request):
@@ -79,17 +60,10 @@ class Request(object):
     arguments, id, and whether it's a request or a notification.
     """
 
-    def __init__(self, request, validate=True):
+    def __init__(self, request):
         """
         :param request: JSON-RPC request, in dict or string form
-        :param validate: Check the request against the JSON-RPC schema?
         """
-        # If the request is a string, convert it to a dict first
-        if isinstance(request, string_types):
-            request = _string_to_dict(request)
-        # Validate against the JSON-RPC schema
-        if validate:
-            _validate_against_schema(request)
         # Get method name from the request. We can assume the key exists because
         # the request passed the schema.
         self.method_name = request['method']

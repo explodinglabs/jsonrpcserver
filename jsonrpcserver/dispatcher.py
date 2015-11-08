@@ -8,8 +8,12 @@ Dispatcher
 """
 
 import logging
+import json
+import pkgutil
 
 from funcsigs import signature
+from six import string_types
+import jsonschema
 
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
     ErrorResponse
@@ -22,6 +26,23 @@ from jsonrpcserver.methods import _get_method
 logger = logging.getLogger(__name__)
 request_log = logging.getLogger(__name__+'.request')
 response_log = logging.getLogger(__name__+'.response')
+
+
+json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
+    __name__, 'request-schema.json').decode('utf-8')))
+
+
+def _validate_against_schema(request):
+    """Validate against the JSON-RPC schema.
+
+    :param request: JSON-RPC request dict.
+    :raises InvalidRequest: If the request is invalid.
+    :returns: None
+    """
+    try:
+        json_validator.validate(request)
+    except jsonschema.ValidationError as e:
+        raise InvalidRequest(e.message)
 
 
 def _validate_arguments_against_signature(func, args, kwargs):
@@ -70,7 +91,7 @@ def _call(methods, method_name, args=None, kwargs=None):
         return method(**kwargs)
 
 
-def dispatch(methods, request, notification_errors=False):
+def dispatch(methods, request, notification_errors=False, validate=True):
     """Dispatch JSON-RPC requests to a list of methods::
 
         r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
@@ -127,17 +148,29 @@ def dispatch(methods, request, notification_errors=False):
               gives you ``body``, ``body_debug``, ``json``, ``json_debug``, and
               ``http_status`` values.
     """
-
     # Process the request
     r = None
     error = None
     try:
         # Log the request
         request_log.info(str(request))
-        # Create request object (also validates the request)
-        r = Request(request)
-        # Call the requested method
-        result = _call(methods, r.method_name, r.args, r.kwargs)
+        # If the request is a string, convert it to a dict first
+        if isinstance(request, string_types):
+            request = _string_to_dict(request)
+        # Validate against the JSON-RPC schema
+        if validate:
+            _validate_against_schema(request)
+        # Batch requests
+        if isinstance(request, list):
+            for req in request:
+                r = Request(req)
+                append(_call(methods, r.method_name, r.args, r.kwargs)
+        # Single request
+        else:
+            # Create request object (also validates the request)
+            r = Request(request)
+            # Call the requested method
+            result = _call(methods, r.method_name, r.args, r.kwargs)
     # Catch any JsonRpcServerError raised (Invalid Request, etc)
     except JsonRpcServerError as e:
         error = e
@@ -147,7 +180,6 @@ def dispatch(methods, request, notification_errors=False):
         logger.exception(e)
         # Create an exception object, used to build the response
         error = ServerError(str(e))
-
     # Now build a response.
     # Error
     if error:
@@ -167,7 +199,6 @@ def dispatch(methods, request, notification_errors=False):
             response = NotificationResponse()
         else:
             response = RequestResponse(r.request_id, result)
-
     # Log the response and return it
     response_log.info(response.body, extra={
         'http_code': response.http_status,
