@@ -156,7 +156,7 @@ class NotificationResponse(_Response):
     """Returned from `dispatch()`_ in response to notifications."""
 
     #: The HTTP status to send in response to notifications. Default is ``204``,
-    #: but some clients prefer to get ``200 OK``. Monkey patch to configure.
+    #: but some clients prefer to get ``200 OK``. Modify to configure.
     http_status = status.HTTP_NO_CONTENT
 
     def __init__(self):
