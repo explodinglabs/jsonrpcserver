@@ -6,7 +6,7 @@ and 3.3+.
 
 .. sourcecode:: python
 
-    >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat'})
+    >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
     'meow'
 
 Full documentation is available at `readthedocs
