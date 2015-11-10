@@ -13,7 +13,7 @@ import jsonschema
 import pkgutil
 
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
-    ErrorResponse
+    ErrorResponse, ExceptionResponse
 from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
     InvalidParams, ServerError
 from jsonrpcserver.methods import _get_method
@@ -160,14 +160,12 @@ class Request(object):
         except Exception as e: # pylint: disable=broad-except
             # Log the uncaught exception
             logger.exception(e)
-            error = ServerError(str(e))
+            error = e
         if error:
             if self.is_notification and not self.notification_errors:
                 return NotificationResponse()
             else:
-                return ErrorResponse(
-                    error.http_status, self.request_id, error.code,
-                    error.message, error.data)
+                return ExceptionResponse(error, self.request_id)
         # Success
         if self.is_notification:
             return NotificationResponse()

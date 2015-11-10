@@ -109,7 +109,7 @@ def dispatch(methods, request):
                 try:
                     req = Request(r)
                 except InvalidRequest as e:
-                    resp = ExceptionResponse(None, e)
+                    resp = ExceptionResponse(e, None)
                 else:
                     resp = req.process(methods)
                 response.append(resp)
@@ -123,11 +123,11 @@ def dispatch(methods, request):
         else:
             response = Request(request).process(methods)
     except JsonRpcServerError as e:
-        response = ExceptionResponse(None, e)
+        response = ExceptionResponse(e, None)
     except Exception as e: # pylint: disable=broad-except
         # Log the uncaught exception
         logger.exception(e)
-        response = ExceptionResponse(None, e)
+        response = ExceptionResponse(e, None)
 #    assert isinstance(response, _Response) \
 #        or all([isinstance(r, _Response) for r in response])
     http_status = 200 if isinstance(request, list) else response.http_status

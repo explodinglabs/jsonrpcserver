@@ -35,6 +35,18 @@ def _sort_response(response):
         response.items(), key=lambda k: root_order.index(k[0])))
 
 
+class NotificationResponse(object):
+    """Returned from `dispatch()`_ in response to notifications."""
+
+    #: The HTTP status to send in response to notifications. Default is ``204``,
+    #: but some clients prefer to get ``200 OK``. Monkey patch to configure.
+    http_status = status.HTTP_NO_CONTENT
+
+    @property
+    def body(self):
+        return ''
+
+
 class _Response(dict):
     """Parent of the other responses.
 
@@ -53,49 +65,6 @@ class _Response(dict):
     def body(self):
         """JSON-RPC response string."""
         return json.dumps(_sort_response(self))
-
-
-class ErrorResponse(_Response):
-    """Returned from `dispatch()`_ if there was an error while processing the
-    request.
-    """
-    debug = False
-
-    def __init__(self, http_status, request_id, code, message, data=None):
-        """
-        :param http_status: The recommended HTTP status code to respond with, if
-                            using HTTP for transport.
-        :param request_id: Must be the same as the value as the id member in the
-                           Request Object. If there was an error in detecting
-                           the id in the Request object (e.g. Parse
-                           error/Invalid Request), it MUST be Null.
-        :param code: A Number that indicates the error type that occurred. This
-                     MUST be an integer.
-        :param message: A string providing a short description of the error, eg.
-                        "Invalid params"
-        :param data: A Primitive or Structured value that contains additional
-                     information about the error. This may be omitted.
-        """
-        super(ErrorResponse, self).__init__(request_id)
-        self['error'] = dict()
-        #: Holds the JSON-RPC error code.
-        self['error']['code'] = code
-        #: Holds a one-line message describing the error.
-        self['error']['message'] = message
-        #: Holds extra information about the error.
-        if self.debug:
-            self['error']['data'] = data
-        #: Holds the recommended HTTP status to respond with (if using HTTP).
-        self.http_status = http_status
-
-
-class ExceptionResponse(ErrorResponse):
-    """Returns an ErrorResponse built from an exception"""
-    def __init__(self, request_id, ex):
-        if not isinstance(ex, JsonRpcServerError):
-            ex = ServerError(ex)
-        super(ExceptionResponse, self).__init__(ex.http_status, request_id,
-            ex.code, ex.message, ex.data)
 
 
 class RequestResponse(_Response):
@@ -124,16 +93,45 @@ class RequestResponse(_Response):
         self['result'] = result
 
 
-class NotificationResponse(_Response):
-    """Returned from `dispatch()`_ in response to notifications."""
+class ErrorResponse(_Response):
+    """Returned from `dispatch()`_ if there was an error while processing the
+    request.
+    """
+    debug = False
+    notification_errors = False
 
-    #: The HTTP status to send in response to notifications. Default is ``204``,
-    #: but some clients prefer to get ``200 OK``. Monkey patch to configure.
-    http_status = status.HTTP_NO_CONTENT
+    def __init__(self, http_status, request_id, code, message, data=None):
+        """
+        :param http_status: The recommended HTTP status code to respond with, if
+                            using HTTP for transport.
+        :param request_id: Must be the same as the value as the id member in the
+                           Request Object. If there was an error in detecting
+                           the id in the Request object (e.g. Parse
+                           error/Invalid Request), it MUST be Null.
+        :param code: A Number that indicates the error type that occurred. This
+                     MUST be an integer.
+        :param message: A string providing a short description of the error, eg.
+                        "Invalid params"
+        :param data: A Primitive or Structured value that contains additional
+                     information about the error. This may be omitted.
+        """
+        super(ErrorResponse, self).__init__(request_id)
+        self['error'] = dict()
+        #: Holds the JSON-RPC error code.
+        self['error']['code'] = code
+        #: Holds a one-line message describing the error.
+        self['error']['message'] = message
+        #: Holds extra information about the error.
+        if self.debug and data:
+            self['error']['data'] = data
+        #: Holds the recommended HTTP status to respond with (if using HTTP).
+        self.http_status = http_status
 
-    def __init__(self):
-        super(NotificationResponse, self).__init__(None)
 
-    @property
-    def body(self):
-        return ''
+class ExceptionResponse(ErrorResponse):
+    """Returns an ErrorResponse built from an exception"""
+    def __init__(self, ex, request_id):
+        if not isinstance(ex, JsonRpcServerError):
+            ex = ServerError(str(ex))
+        super(ExceptionResponse, self).__init__(ex.http_status, request_id,
+            ex.code, ex.message, ex.data)
