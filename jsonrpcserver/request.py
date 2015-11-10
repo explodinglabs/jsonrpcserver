@@ -9,14 +9,33 @@ import logging
 
 from six import string_types
 from funcsigs import signature
+import jsonschema
+import pkgutil
 
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
     ErrorResponse
-from jsonrpcserver.exceptions import JsonRpcServerError, InvalidParams, \
-    ServerError
+from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
+    InvalidParams, ServerError
 from jsonrpcserver.methods import _get_method
 
 logger = logging.getLogger(__name__)
+
+json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
+    __name__, 'request-schema.json').decode('utf-8')))
+
+
+def _validate_against_schema(request):
+    """Validate against the JSON-RPC schema.
+
+    :param request: JSON-RPC request dict.
+    :raises InvalidRequest: If the request is invalid.
+    :returns: None
+    """
+    try:
+        json_validator.validate(request)
+    except jsonschema.ValidationError as e:
+        raise InvalidRequest(e.message)
+
 
 def _validate_arguments_against_signature(func, args, kwargs):
     """Check if arguments match a function signature and can therefore be passed
@@ -104,10 +123,16 @@ class Request(object):
     arguments, id, and whether it's a request or a notification.
     """
 
+    schema_validation = True
+    notification_errors = False
+
     def __init__(self, request):
         """
         :param request: JSON-RPC request, in dict or string form
         """
+        # Validate against the JSON-RPC schema
+        if self.schema_validation:
+            _validate_against_schema(request)
         # Get method name from the request. We can assume the key exists because
         # the request passed the schema.
         self.method_name = request['method']
@@ -123,8 +148,8 @@ class Request(object):
         """
         return self.request_id is None
 
-    def process(self, methods, notification_errors):
-        """Takes one Request object and returns a Response object."""
+    def process(self, methods):
+        """Calls the method and returns a Response object."""
         error = None
         try:
             result = _call(methods, self.method_name, self.args, self.kwargs)
@@ -136,9 +161,8 @@ class Request(object):
             # Log the uncaught exception
             logger.exception(e)
             error = ServerError(str(e))
-            print(error.data)
         if error:
-            if self.is_notification and not notification_errors:
+            if self.is_notification and not self.notification_errors:
                 return NotificationResponse()
             else:
                 return ErrorResponse(

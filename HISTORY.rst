@@ -4,6 +4,24 @@ Recent Changes
 3.1.1 (2015-10-27)
 ------------------
 
+- ``dispatch`` no longer takes a ``notification_errors`` argument. To enable
+  notification errors::
+
+    >> from jsonrpcserver.request import Request
+    >> Request.notification_errors = False
+
+- To disable schema validation::
+
+    >> from jsonrpcserver.request import Request
+    >> Request.schema_validation = False
+
+- Response object is now a dict. Attributes result, request_id and json are
+  gone. Simply use eg. ``response['result']``. body_debug and json_debug are
+  also gone. To enable debugging::
+
+    >> from jsonrpcserver.response import ErrorResponse
+    >> ErrorResponse.debug = True
+
 - Notifications are no longer responded to, not even if there's an error. This
   is a `requirement <http://www.jsonrpc.org/specification#notification>`__ of
   the JSON-RPC specification. However, it can be overridden when calling

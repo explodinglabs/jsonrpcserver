@@ -9,13 +9,11 @@ Dispatcher
 
 import logging
 import json
-import pkgutil
 
 from six import string_types
-import jsonschema
 
 from jsonrpcserver.response import _Response, RequestResponse, \
-    NotificationResponse, ErrorResponse
+    NotificationResponse, ErrorResponse, ExceptionResponse
 from jsonrpcserver.request import Request
 from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
     InvalidRequest, ServerError
@@ -24,10 +22,6 @@ from jsonrpcserver.status import HTTP_STATUS_CODES
 logger = logging.getLogger(__name__)
 request_log = logging.getLogger(__name__+'.request')
 response_log = logging.getLogger(__name__+'.response')
-
-
-json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
-    __name__, 'request-schema.json').decode('utf-8')))
 
 
 def _string_to_dict(request):
@@ -43,20 +37,7 @@ def _string_to_dict(request):
         raise ParseError()
 
 
-def _validate_against_schema(request):
-    """Validate against the JSON-RPC schema.
-
-    :param request: JSON-RPC request dict.
-    :raises InvalidRequest: If the request is invalid.
-    :returns: None
-    """
-    try:
-        json_validator.validate(request)
-    except jsonschema.ValidationError as e:
-        raise InvalidRequest(e.message)
-
-
-def dispatch(methods, request, notification_errors=False, validate=True):
+def dispatch(methods, request):
     """Dispatch JSON-RPC requests to a list of methods::
 
         r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
@@ -101,12 +82,6 @@ def dispatch(methods, request, notification_errors=False, validate=True):
         JSON-RPC request. This can be in dict or string form.  Byte arrays
         should be `decoded
         <https://docs.python.org/3/library/codecs.html#codecs.decode>`_ first.
-    :param notification_errors:
-        Should `notifications
-        <http://www.jsonrpc.org/specification#notification>`_ get error
-        responses? Typically notifications don't receive any response, except
-        for "Parse error" and "Invalid request" errors. Enabling this will
-        include all other errors such as "Method not found".
     :returns: A `Response`_ object, or for batch requests, a list of responses.
               The responses themselves are either `RequestResponse`_,
               `NotificationResponse`_, or `ErrorResponse`_ if there was a
@@ -123,30 +98,40 @@ def dispatch(methods, request, notification_errors=False, validate=True):
         # If the request is a string, convert it to a dict first
         if isinstance(request, string_types):
             request = _string_to_dict(request)
-        # Validate against the JSON-RPC schema
-        if validate:
-            _validate_against_schema(request)
         # Batch requests
         if isinstance(request, list):
-            response = [Request(r).process(
-                methods, notification_errors) for r in request]
+            # Empty list returns Invalid Request
+            if 0 == len(request):
+                raise InvalidRequest()
+            # Process each request
+            response = list()
+            for r in request:
+                try:
+                    req = Request(r)
+                except InvalidRequest as e:
+                    resp = ExceptionResponse(None, e)
+                else:
+                    resp = req.process(methods)
+                response.append(resp)
+            # Remove Notification responses
+            response = [r for r in response if not isinstance(r,
+                NotificationResponse)]
+            # "Nothing is returned for all notification batches"
+            if not response:
+                response = NotificationResponse()
         # Single request
         else:
-            response = Request(request).process(methods, notification_errors)
+            response = Request(request).process(methods)
     except JsonRpcServerError as e:
-        error = e
+        response = ExceptionResponse(None, e)
     except Exception as e: # pylint: disable=broad-except
         # Log the uncaught exception
         logger.exception(e)
-        error = ServerError(e)
-    if error:
-        print(error.data)
-        response = ErrorResponse(
-            error.http_status, None, error.code, error.message, error.data)
-    assert isinstance(response, _Response) \
-        or all([isinstance(r, _Response) for r in response])
-    # Log the response and return it
-    response_log.info(response.body, extra={
-        'http_code': response.http_status,
-        'http_reason': HTTP_STATUS_CODES[response.http_status]})
+        response = ExceptionResponse(None, e)
+#    assert isinstance(response, _Response) \
+#        or all([isinstance(r, _Response) for r in response])
+    http_status = 200 if isinstance(request, list) else response.http_status
+    response_log.info(str(response), extra={
+        'http_code': http_status,
+        'http_reason': HTTP_STATUS_CODES[http_status]})
     return response

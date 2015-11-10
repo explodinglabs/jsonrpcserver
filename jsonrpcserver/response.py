@@ -10,6 +10,8 @@ The response objects returned by `dispatch()`_.
 import json
 from collections import OrderedDict
 from jsonrpcserver import status
+from jsonrpcserver.exceptions import JsonRpcServerError, ServerError
+
 
 def _sort_response(response):
     """Sort the keys in a JSON-RPC response object.
@@ -33,7 +35,7 @@ def _sort_response(response):
         response.items(), key=lambda k: root_order.index(k[0])))
 
 
-class _Response(object):
+class _Response(dict):
     """Parent of the other responses.
 
     :param request_id:
@@ -44,33 +46,20 @@ class _Response(object):
     """
 
     def __init__(self, request_id):
-        self.request_id = request_id
-
-    @property
-    def json(self):
-        """Must be overridden in subclasses."""
-        raise NotImplementedError()
-
-    @property
-    def json_debug(self):
-        """Same as the ``json`` property."""
-        return self.json
+        self['jsonrpc'] = '2.0'
+        self['id'] = request_id
 
     @property
     def body(self):
         """JSON-RPC response string."""
-        return json.dumps(_sort_response(self.json)) if self.json else ''
-
-    @property
-    def body_debug(self):
-        """Same as the ``body`` property."""
-        return self.body
+        return json.dumps(_sort_response(self))
 
 
 class ErrorResponse(_Response):
     """Returned from `dispatch()`_ if there was an error while processing the
     request.
     """
+    debug = False
 
     def __init__(self, http_status, request_id, code, message, data=None):
         """
@@ -88,34 +77,25 @@ class ErrorResponse(_Response):
                      information about the error. This may be omitted.
         """
         super(ErrorResponse, self).__init__(request_id)
+        self['error'] = dict()
         #: Holds the JSON-RPC error code.
-        self.code = code
+        self['error']['code'] = code
         #: Holds a one-line message describing the error.
-        self.message = message
+        self['error']['message'] = message
         #: Holds extra information about the error.
-        self.data = data
+        if self.debug:
+            self['error']['data'] = data
         #: Holds the recommended HTTP status to respond with (if using HTTP).
         self.http_status = http_status
 
-    @property
-    def json(self):
-        """JSON-RPC response, in dictionary form."""
-        return {'jsonrpc': '2.0', 'error': {
-            'code': self.code, 'message': self.message}, 'id': self.request_id}
 
-    @property
-    def json_debug(self):
-        """JSON-RPC response, in dictionary form, with ``data`` attribute
-        included.
-        """
-        r = self.json
-        r['error']['data'] = self.data
-        return r
-
-    @property
-    def body_debug(self):
-        """JSON-RPC response string, with ``data`` attribute included."""
-        return json.dumps(_sort_response(self.json_debug))
+class ExceptionResponse(ErrorResponse):
+    """Returns an ErrorResponse built from an exception"""
+    def __init__(self, request_id, ex):
+        if not isinstance(ex, JsonRpcServerError):
+            ex = ServerError(ex)
+        super(ExceptionResponse, self).__init__(ex.http_status, request_id,
+            ex.code, ex.message, ex.data)
 
 
 class RequestResponse(_Response):
@@ -141,15 +121,7 @@ class RequestResponse(_Response):
                 'Requests must have an id, use NotificationResponse instead')
         super(RequestResponse, self).__init__(request_id)
         #: Holds the payload from processing the request successfully.
-        self.result = result
-
-    @property
-    def json(self):
-        """JSON-RPC response, in dictionary form."""
-        if self.request_id:
-            return {'jsonrpc': '2.0', 'result': self.result, 'id':
-                    self.request_id}
-        # else None
+        self['result'] = result
 
 
 class NotificationResponse(_Response):
@@ -163,6 +135,5 @@ class NotificationResponse(_Response):
         super(NotificationResponse, self).__init__(None)
 
     @property
-    def json(self):
-        """None."""
-        return None
+    def body(self):
+        return ''

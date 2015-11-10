@@ -2,13 +2,17 @@
 # pylint: disable=missing-docstring,line-too-long
 
 from unittest import TestCase, main
+import logging
 
 from functools import partial
 
 from jsonrpcserver.request import Request, _get_arguments, \
     _validate_arguments_against_signature, _call
+from jsonrpcserver.response import ErrorResponse, RequestResponse, \
+    NotificationResponse
 from jsonrpcserver.exceptions import ParseError, InvalidRequest, InvalidParams
 from jsonrpcserver.methods import Methods
+from jsonrpcserver import status
 
 
 class TestValidateArgumentsAgainstSignature(TestCase):
@@ -141,7 +145,7 @@ class TestGetArguments(TestCase):
 class TestRequestInit(TestCase):
 
     def test_invalid_request(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(InvalidRequest):
             Request({'jsonrpc': '2.0'})
 
     def test_ok(self):
@@ -174,6 +178,74 @@ class TestRequestIsNotification(TestCase):
     def test_false(self):
         r = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 99})
         self.assertFalse(r.is_notification)
+
+
+class TestRequestProcessNotifications(TestCase):
+    """Go easy here, no need to test the _call function"""
+
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+
+    # Success
+    def test_success(self):
+        def foo():
+            return 'bar'
+        r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
+        self.assertIsInstance(r, NotificationResponse)
+
+    def test_method_not_found(self):
+        def foo():
+            return 'bar'
+        r = Request({'jsonrpc': '2.0', 'method': 'baz'}).process([foo])
+        self.assertIsInstance(r, NotificationResponse)
+
+    def test_invalid_params(self):
+        def foo(x): # pylint: disable=unused-argument
+            return 'bar'
+        r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
+        self.assertIsInstance(r, NotificationResponse)
+
+    def test_explicitly_raised_exception(self):
+        def foo():
+            raise InvalidParams()
+        r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
+        self.assertIsInstance(r, NotificationResponse)
+
+    def test_uncaught_exception(self):
+        def foo():
+            return 1/0
+        r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
+        self.assertIsInstance(r, NotificationResponse)
+
+    # Configuration
+    def test_config_notification_errors_on(self):
+        # Should return "method not found" error
+        def foo():
+            return 'bar'
+        request = Request({'jsonrpc': '2.0', 'method': 'baz'})
+        request.notification_errors = True
+        r = request.process([foo])
+        self.assertIsInstance(r, ErrorResponse)
+
+    def test_configuring_http_status(self):
+        def foo():
+            return 'bar'
+        NotificationResponse.http_status = status.HTTP_OK
+        r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
+        self.assertEqual(status.HTTP_OK, r.http_status)
+        NotificationResponse.http_status = status.HTTP_NO_CONTENT
+
+
+class TestRequestProcessRequests(TestCase):
+    """Go easy here, no need to test the _call function"""
+
+    # Success
+    def test(self):
+        def foo():
+            return 'bar'
+        r = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 1}).process([foo])
+        self.assertIsInstance(r, RequestResponse)
+        self.assertEqual('bar', r['result'])
 
 
 if __name__ == '__main__':
