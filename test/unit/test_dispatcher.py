@@ -17,9 +17,9 @@ def foo():
 
 class TestStringToDict(TestCase):
 
-    def test_ok(self):
-        self.assertEqual({'jsonrpc': '2.0', 'method': 'foo'}, _string_to_dict(
-            '{"jsonrpc": "2.0", "method": "foo"}'))
+    def test(self):
+        self.assertEqual([{'jsonrpc': '2.0', 'method': 'foo'}], _string_to_dict(
+            '[{"jsonrpc": "2.0", "method": "foo"}]'))
 
     def test_invalid(self):
         with self.assertRaises(ParseError):

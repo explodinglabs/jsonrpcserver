@@ -33,7 +33,7 @@ def _string_to_dict(request):
     """
     try:
         return json.loads(request)
-    except ValueError:
+    except ValueError as e:
         raise ParseError()
 
 
