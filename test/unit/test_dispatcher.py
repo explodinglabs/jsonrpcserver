@@ -47,6 +47,15 @@ class TestDispatchNotifications(TestCase):
         self.assertIsInstance(r, ErrorResponse)
         self.assertEqual('Parse error', r['error']['message'])
 
+    def test_errors_disabled(self):
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'non_existant'})
+        self.assertIsInstance(r, NotificationResponse)
+
+    def test_errors_enabled(self):
+        Request.notification_errors = True
+        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'non_existant'})
+        self.assertIsInstance(r, ErrorResponse)
+
 
 class TestDispatchRequests(TestCase):
     """Go easy here, no need to test the _call function. Also don't duplicate

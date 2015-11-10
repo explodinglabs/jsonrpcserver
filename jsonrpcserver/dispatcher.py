@@ -100,7 +100,7 @@ def dispatch(methods, request):
             request = _string_to_dict(request)
         # Batch requests
         if isinstance(request, list):
-            # Empty list returns Invalid Request
+            # An empty list should return Invalid Request
             if 0 == len(request):
                 raise InvalidRequest()
             # Process each request
