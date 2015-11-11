@@ -1,5 +1,5 @@
 """test_request.py"""
-# pylint: disable=missing-docstring,line-too-long
+# pylint: disable=missing-docstring,line-too-long,blacklisted-name
 
 from unittest import TestCase, main
 import logging
@@ -10,10 +10,12 @@ from jsonrpcserver.request import Request, _get_arguments, \
     _validate_arguments_against_signature, _call
 from jsonrpcserver.response import ErrorResponse, RequestResponse, \
     NotificationResponse
-from jsonrpcserver.exceptions import ParseError, InvalidRequest, InvalidParams
+from jsonrpcserver.exceptions import InvalidRequest, InvalidParams
 from jsonrpcserver.methods import Methods
 from jsonrpcserver import status
 
+def foo():
+    return 'bar'
 
 class TestValidateArgumentsAgainstSignature(TestCase):
     """Keep it simple here. No need to test the signature.bind function."""
@@ -44,12 +46,10 @@ class TestValidateArgumentsAgainstSignature(TestCase):
 class TestCall(TestCase):
 
     def test_list_functions(self):
-        def foo():
-            return 'bar'
         self.assertEqual('bar', _call([foo], 'foo'))
 
     def test_list_lambdas(self):
-        foo = lambda: 'bar'
+        foo = lambda: 'bar' # pylint: disable=redefined-outer-name
         foo.__name__ = 'foo'
         self.assertEqual('bar', _call([foo], 'foo'))
 
@@ -60,8 +60,6 @@ class TestCall(TestCase):
         self.assertEqual(6, _call([double], 'double', [3]))
 
     def test_dict_functions(self):
-        def foo():
-            return 'bar'
         self.assertEqual('bar', _call({'baz': foo}, 'baz'))
 
     def test_dict_lambdas(self):
@@ -73,15 +71,13 @@ class TestCall(TestCase):
 
     def test_methods_functions(self):
         methods = Methods()
-        def foo():
-            return 'bar'
         methods.add_method(foo)
         self.assertEqual('bar', _call(methods, 'foo'))
 
     def test_methods_functions_with_decorator(self):
         methods = Methods()
         @methods.add_method
-        def foo(): # pylint: disable=unused-variable
+        def foo(): # pylint: disable=redefined-outer-name,unused-variable
             return 'bar'
         self.assertEqual('bar', _call(methods, 'foo'))
 
@@ -109,7 +105,7 @@ class TestCall(TestCase):
                                       {'name': 'foo'}))
 
     def test_positionals_and_keywords(self):
-        def foo(*args, **kwargs): # pylint: disable=unused-argument
+        def foo(*args, **kwargs): # pylint: disable=redefined-outer-name,unused-argument
             return 'bar'
         with self.assertRaises(InvalidParams):
             _call([foo], 'foo', [3], {'foo': 'bar'})
@@ -188,31 +184,27 @@ class TestRequestProcessNotifications(TestCase):
 
     # Success
     def test_success(self):
-        def foo():
-            return 'bar'
         r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
         self.assertIsInstance(r, NotificationResponse)
 
     def test_method_not_found(self):
-        def foo():
-            return 'bar'
         r = Request({'jsonrpc': '2.0', 'method': 'baz'}).process([foo])
         self.assertIsInstance(r, NotificationResponse)
 
     def test_invalid_params(self):
-        def foo(x): # pylint: disable=unused-argument
+        def foo(x): # pylint: disable=redefined-outer-name,unused-argument
             return 'bar'
         r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
         self.assertIsInstance(r, NotificationResponse)
 
     def test_explicitly_raised_exception(self):
-        def foo():
+        def foo(): # pylint: disable=redefined-outer-name
             raise InvalidParams()
         r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
         self.assertIsInstance(r, NotificationResponse)
 
     def test_uncaught_exception(self):
-        def foo():
+        def foo(): # pylint: disable=redefined-outer-name
             return 1/0
         r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
         self.assertIsInstance(r, NotificationResponse)
@@ -220,16 +212,12 @@ class TestRequestProcessNotifications(TestCase):
     # Configuration
     def test_config_notification_errors_on(self):
         # Should return "method not found" error
-        def foo():
-            return 'bar'
         request = Request({'jsonrpc': '2.0', 'method': 'baz'})
         request.notification_errors = True
         r = request.process([foo])
         self.assertIsInstance(r, ErrorResponse)
 
     def test_configuring_http_status(self):
-        def foo():
-            return 'bar'
         NotificationResponse.http_status = status.HTTP_OK
         r = Request({'jsonrpc': '2.0', 'method': 'foo'}).process([foo])
         self.assertEqual(status.HTTP_OK, r.http_status)
@@ -241,8 +229,6 @@ class TestRequestProcessRequests(TestCase):
 
     # Success
     def test(self):
-        def foo():
-            return 'bar'
         r = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 1}).process([foo])
         self.assertIsInstance(r, RequestResponse)
         self.assertEqual('bar', r['result'])

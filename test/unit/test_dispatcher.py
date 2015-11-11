@@ -1,18 +1,16 @@
 """test_dispatcher.py"""
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,line-too-long
 
 from unittest import TestCase, main
-import logging
 
 from jsonrpcserver.dispatcher import dispatch, _string_to_dict
-from jsonrpcserver.exceptions import ParseError, InvalidParams
-from jsonrpcserver import status
+from jsonrpcserver.exceptions import ParseError
 from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
     RequestResponse, BatchResponse
 from jsonrpcserver.request import Request
 
 
-def foo():
+def foo(): # pylint: disable=blacklisted-name
     return 'bar'
 
 class TestStringToDict(TestCase):
@@ -22,12 +20,14 @@ class TestStringToDict(TestCase):
             _string_to_dict('{"jsonrpc": "2.0}')
 
     def test(self):
-        self.assertEqual({'jsonrpc': '2.0', 'method': 'foo'}, _string_to_dict(
-            '{"jsonrpc": "2.0", "method": "foo"}'))
+        self.assertEqual(
+            {'jsonrpc': '2.0', 'method': 'foo'},
+            _string_to_dict('{"jsonrpc": "2.0", "method": "foo"}'))
 
     def test_list(self):
-        self.assertEqual([{'jsonrpc': '2.0', 'method': 'foo'}], _string_to_dict(
-            '[{"jsonrpc": "2.0", "method": "foo"}]'))
+        self.assertEqual(
+            [{'jsonrpc': '2.0', 'method': 'foo'}],
+            _string_to_dict('[{"jsonrpc": "2.0", "method": "foo"}]'))
 
 
 class TestDispatchNotifications(TestCase):
@@ -113,34 +113,34 @@ class TestDispatchBatch(TestCase):
         self.assertIsInstance(r, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
-            {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
-            {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}],
+             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
+             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}],
             r)
 
     def test_mixed_requests_and_notifications(self):
         r = dispatch(
             {'sum': lambda *args: sum(args), 'notify_hello': lambda *args: 19,
-                'subtract': lambda *args: args[0] - sum(args[1:]), 'get_data':
-                lambda: ['hello', 5]},
-            [{'jsonrpc': '2.0', 'method': 'sum', 'params': [1,2,4], 'id': '1'},
-            {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]},
-            {'jsonrpc': '2.0', 'method': 'subtract', 'params': [42,23], 'id': '2'},
-            {'foo': 'boo'},
-            {'jsonrpc': '2.0', 'method': 'foo.get', 'params': {'name': 'myself'}, 'id': '5'},
-            {'jsonrpc': '2.0', 'method': 'get_data', 'id': '9'}])
+             'subtract': lambda *args: args[0] - sum(args[1:]), 'get_data':
+             lambda: ['hello', 5]},
+            [{'jsonrpc': '2.0', 'method': 'sum', 'params': [1, 2, 4], 'id': '1'},
+             {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]},
+             {'jsonrpc': '2.0', 'method': 'subtract', 'params': [42, 23], 'id': '2'},
+             {'foo': 'boo'},
+             {'jsonrpc': '2.0', 'method': 'foo.get', 'params': {'name': 'myself'}, 'id': '5'},
+             {'jsonrpc': '2.0', 'method': 'get_data', 'id': '9'}])
         self.assertIsInstance(r, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'result': 7, 'id': '1'},
-            {'jsonrpc': '2.0', 'result': 19, 'id': '2'},
-            {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
-            {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': '5'},
-            {'jsonrpc': '2.0', 'result': ['hello', 5], 'id': '9'}], r)
+             {'jsonrpc': '2.0', 'result': 19, 'id': '2'},
+             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
+             {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': '5'},
+             {'jsonrpc': '2.0', 'result': ['hello', 5], 'id': '9'}], r)
 
     def test_all_notifications(self):
         r = dispatch(
             [foo],
-            [{'jsonrpc': '2.0', 'method': 'notify_sum', 'params': [1,2,4]},
-            {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]}])
+            [{'jsonrpc': '2.0', 'method': 'notify_sum', 'params': [1, 2, 4]},
+             {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]}])
         self.assertIsInstance(r, NotificationResponse)
 
 

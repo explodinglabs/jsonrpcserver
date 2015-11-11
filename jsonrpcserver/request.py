@@ -7,15 +7,14 @@ A JSON-RPC request object.
 import json
 import logging
 
-from six import string_types
 from funcsigs import signature
 import jsonschema
 import pkgutil
 
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
-    ErrorResponse, ExceptionResponse
+    ExceptionResponse
 from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
-    InvalidParams, ServerError
+    InvalidParams
 from jsonrpcserver.methods import _get_method
 
 logger = logging.getLogger(__name__)

@@ -12,11 +12,11 @@ import json
 
 from six import string_types
 
-from jsonrpcserver.response import _Response, RequestResponse, \
-    NotificationResponse, ErrorResponse, ExceptionResponse, BatchResponse
+from jsonrpcserver.response import NotificationResponse, ExceptionResponse, \
+    BatchResponse
 from jsonrpcserver.request import Request
 from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
-    InvalidRequest, ServerError
+    InvalidRequest
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def _string_to_dict(request):
     """
     try:
         return json.loads(request)
-    except ValueError as e:
+    except ValueError:
         raise ParseError()
 
 
@@ -89,7 +89,6 @@ def dispatch(methods, request):
               gives you ``http_status`` attribute.
     """
     # Process the request
-    error = None
     response = None
     try:
         # Log the request
@@ -113,8 +112,9 @@ def dispatch(methods, request):
                     resp = req.process(methods)
                 response.append(resp)
             # Remove Notification responses
-            response = BatchResponse([r for r in response if not isinstance(r,
-                NotificationResponse)])
+            response = BatchResponse(
+                [r for r in response if not isinstance(
+                    r, NotificationResponse)])
             # "Nothing is returned for all notification batches"
             if not response:
                 response = NotificationResponse()

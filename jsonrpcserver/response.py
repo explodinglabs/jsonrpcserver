@@ -57,7 +57,7 @@ class _Response(dict):
     """
 
     def __str__(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class RequestResponse(_Response):
@@ -81,10 +81,8 @@ class RequestResponse(_Response):
         if not request_id:
             raise ValueError(
                 'Requests must have an id, use NotificationResponse instead')
-        self['jsonrpc'] = '2.0'
-        self['id'] = request_id
-        #: Holds the payload from processing the request successfully.
-        self['result'] = result
+        super(RequestResponse, self).__init__(
+            {'jsonrpc': '2.0', 'result': result, 'id': request_id})
 
     def __str__(self):
         """JSON-RPC response string."""
@@ -113,13 +111,9 @@ class ErrorResponse(_Response):
         :param data: A Primitive or Structured value that contains additional
                      information about the error. This may be omitted.
         """
-        self['jsonrpc'] = '2.0'
-        self['id'] = request_id
-        self['error'] = dict()
-        #: Holds the JSON-RPC error code.
-        self['error']['code'] = code
-        #: Holds a one-line message describing the error.
-        self['error']['message'] = message
+        super(ErrorResponse, self).__init__(
+            {'jsonrpc': '2.0', 'error': {'code': code, 'message': message},
+             'id': request_id})
         #: Holds extra information about the error.
         if self.debug and data:
             self['error']['data'] = data
@@ -136,11 +130,12 @@ class ExceptionResponse(ErrorResponse):
     def __init__(self, ex, request_id):
         if not isinstance(ex, JsonRpcServerError):
             ex = ServerError(str(ex))
-        super(ExceptionResponse, self).__init__(ex.http_status, request_id,
-            ex.code, ex.message, ex.data)
+        super(ExceptionResponse, self).__init__(
+            ex.http_status, request_id, ex.code, ex.message, ex.data)
 
 
 class BatchResponse(list):
+    """A collection of the other Responses"""
 
     http_status = status.HTTP_OK
 
