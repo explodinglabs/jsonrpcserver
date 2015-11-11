@@ -35,7 +35,7 @@ def _sort_response(response):
         response.items(), key=lambda k: root_order.index(k[0])))
 
 
-class NotificationResponse(_Response):
+class NotificationResponse(object):
     """Returned from `dispatch()`_ in response to notifications."""
 
     #: The HTTP status to send in response to notifications. Default is ``204``,
