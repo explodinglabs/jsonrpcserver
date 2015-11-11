@@ -8,7 +8,7 @@ from jsonrpcserver.dispatcher import dispatch, _string_to_dict
 from jsonrpcserver.exceptions import ParseError, InvalidParams
 from jsonrpcserver import status
 from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
-    RequestResponse
+    RequestResponse, BatchResponse
 from jsonrpcserver.request import Request
 
 
@@ -17,27 +17,40 @@ def foo():
 
 class TestStringToDict(TestCase):
 
-    def test(self):
-        self.assertEqual([{'jsonrpc': '2.0', 'method': 'foo'}], _string_to_dict(
-            '[{"jsonrpc": "2.0", "method": "foo"}]'))
-
     def test_invalid(self):
         with self.assertRaises(ParseError):
             _string_to_dict('{"jsonrpc": "2.0}')
+
+    def test(self):
+        self.assertEqual({'jsonrpc': '2.0', 'method': 'foo'}, _string_to_dict(
+            '{"jsonrpc": "2.0", "method": "foo"}'))
+
+    def test_list(self):
+        self.assertEqual([{'jsonrpc': '2.0', 'method': 'foo'}], _string_to_dict(
+            '[{"jsonrpc": "2.0", "method": "foo"}]'))
 
 
 class TestDispatchNotifications(TestCase):
     """Go easy here, no need to test the _call function"""
 
     def setUp(self):
-        logging.disable(logging.CRITICAL)
+#        logging.disable(logging.CRITICAL)
         Request.notification_errors = False
 
     def tearDown(self):
         Request.notification_errors = False
 
     # Success
-    def test_success(self):
+    def test(self):
+        r = dispatch([foo], '{"jsonrpc": "2.0", "method": "foo"}')
+        self.assertIsInstance(r, NotificationResponse)
+
+    def test_invalid_str(self):
+        # Single quotes around identifiers are invalid!
+        r = dispatch([foo], "{'jsonrpc': '2.0', 'method': 'foo'}")
+        self.assertIsInstance(r, ErrorResponse)
+
+    def test_object(self):
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
         self.assertIsInstance(r, NotificationResponse)
 
@@ -76,24 +89,28 @@ class TestDispatchBatch(TestCase):
         r = dispatch(
             [foo],
             '[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]')
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual(
             {'jsonrpc': '2.0', 'error': {'code': -32700, 'message': 'Parse error'}, 'id': None},
             r)
 
     def test_empty_array(self):
         r = dispatch([foo], [])
+        self.assertIsInstance(r, ErrorResponse)
         self.assertEqual(
             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
             r)
 
     def test_invalid_request(self):
         r = dispatch([foo], [1])
+        self.assertIsInstance(r, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}],
             r)
 
     def test_multiple_invalid_requests(self):
         r = dispatch([foo], [1, 2, 3])
+        self.assertIsInstance(r, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
@@ -111,6 +128,7 @@ class TestDispatchBatch(TestCase):
             {'foo': 'boo'},
             {'jsonrpc': '2.0', 'method': 'foo.get', 'params': {'name': 'myself'}, 'id': '5'},
             {'jsonrpc': '2.0', 'method': 'get_data', 'id': '9'}])
+        self.assertIsInstance(r, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'result': 7, 'id': '1'},
             {'jsonrpc': '2.0', 'result': 19, 'id': '2'},

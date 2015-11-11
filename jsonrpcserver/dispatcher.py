@@ -13,7 +13,7 @@ import json
 from six import string_types
 
 from jsonrpcserver.response import _Response, RequestResponse, \
-    NotificationResponse, ErrorResponse, ExceptionResponse
+    NotificationResponse, ErrorResponse, ExceptionResponse, BatchResponse
 from jsonrpcserver.request import Request
 from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
     InvalidRequest, ServerError
@@ -86,15 +86,14 @@ def dispatch(methods, request):
               The responses themselves are either `RequestResponse`_,
               `NotificationResponse`_, or `ErrorResponse`_ if there was a
               problem processing the request. In any case, the return value
-              gives you ``body``, ``body_debug``, ``json``, ``json_debug``, and
-              ``http_status`` attributes.
+              gives you ``http_status`` attribute.
     """
     # Process the request
     error = None
     response = None
     try:
         # Log the request
-        request_log.info(str(request))
+        request_log.info(request)
         # If the request is a string, convert it to a dict first
         if isinstance(request, string_types):
             request = _string_to_dict(request)
@@ -104,7 +103,7 @@ def dispatch(methods, request):
             if 0 == len(request):
                 raise InvalidRequest()
             # Process each request
-            response = list()
+            response = BatchResponse()
             for r in request:
                 try:
                     req = Request(r)
@@ -114,8 +113,8 @@ def dispatch(methods, request):
                     resp = req.process(methods)
                 response.append(resp)
             # Remove Notification responses
-            response = [r for r in response if not isinstance(r,
-                NotificationResponse)]
+            response = BatchResponse([r for r in response if not isinstance(r,
+                NotificationResponse)])
             # "Nothing is returned for all notification batches"
             if not response:
                 response = NotificationResponse()
@@ -128,8 +127,6 @@ def dispatch(methods, request):
         # Log the uncaught exception
         logger.exception(e)
         response = ExceptionResponse(e, None)
-#    assert isinstance(response, _Response) \
-#        or all([isinstance(r, _Response) for r in response])
     http_status = 200 if isinstance(request, list) else response.http_status
     response_log.info(str(response), extra={
         'http_code': http_status,
