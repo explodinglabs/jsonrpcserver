@@ -35,15 +35,14 @@ def _sort_response(response):
         response.items(), key=lambda k: root_order.index(k[0])))
 
 
-class NotificationResponse(object):
+class NotificationResponse(_Response):
     """Returned from `dispatch()`_ in response to notifications."""
 
     #: The HTTP status to send in response to notifications. Default is ``204``,
     #: but some clients prefer to get ``200 OK``. Monkey patch to configure.
     http_status = status.HTTP_NO_CONTENT
 
-    @property
-    def body(self):
+    def __str__(self):
         return ''
 
 
@@ -57,14 +56,8 @@ class _Response(dict):
         Null.
     """
 
-    def __init__(self, request_id):
-        self['jsonrpc'] = '2.0'
-        self['id'] = request_id
-
-    @property
-    def body(self):
-        """JSON-RPC response string."""
-        return json.dumps(_sort_response(self))
+    def __str__(self):
+        raise NotImplemented()
 
 
 class RequestResponse(_Response):
@@ -88,9 +81,14 @@ class RequestResponse(_Response):
         if not request_id:
             raise ValueError(
                 'Requests must have an id, use NotificationResponse instead')
-        super(RequestResponse, self).__init__(request_id)
+        self['jsonrpc'] = '2.0'
+        self['id'] = request_id
         #: Holds the payload from processing the request successfully.
         self['result'] = result
+
+    def __str__(self):
+        """JSON-RPC response string."""
+        return json.dumps(_sort_response(self))
 
 
 class ErrorResponse(_Response):
@@ -115,7 +113,8 @@ class ErrorResponse(_Response):
         :param data: A Primitive or Structured value that contains additional
                      information about the error. This may be omitted.
         """
-        super(ErrorResponse, self).__init__(request_id)
+        self['jsonrpc'] = '2.0'
+        self['id'] = request_id
         self['error'] = dict()
         #: Holds the JSON-RPC error code.
         self['error']['code'] = code
@@ -127,6 +126,10 @@ class ErrorResponse(_Response):
         #: Holds the recommended HTTP status to respond with (if using HTTP).
         self.http_status = http_status
 
+    def __str__(self):
+        """JSON-RPC response string."""
+        return json.dumps(_sort_response(self))
+
 
 class ExceptionResponse(ErrorResponse):
     """Returns an ErrorResponse built from an exception"""
@@ -135,3 +138,12 @@ class ExceptionResponse(ErrorResponse):
             ex = ServerError(str(ex))
         super(ExceptionResponse, self).__init__(ex.http_status, request_id,
             ex.code, ex.message, ex.data)
+
+
+class BatchResponse(list):
+
+    http_status = status.HTTP_OK
+
+    def __str__(self):
+        """JSON-RPC response string."""
+        return json.dumps(self)

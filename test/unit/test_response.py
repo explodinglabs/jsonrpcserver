@@ -30,7 +30,7 @@ class TestNotificationResponse(TestCase):
 
     def test(self):
         r = NotificationResponse()
-        self.assertEqual('', r.body)
+        self.assertEqual('', str(r))
         self.assertEqual(204, r.http_status)
 
 
@@ -50,12 +50,18 @@ class TestRequestResponse(TestCase):
         r = RequestResponse(1, 'foo')
         self.assertEqual({'jsonrpc': '2.0', 'result': 'foo', 'id': 1}, r)
 
-    def test_body(self):
+    def test_str(self):
         r = RequestResponse(1, 'foo')
-        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}', r.body)
+        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}', str(r))
 
 
 class TestErrorResponse(TestCase):
+
+    def setUp(self):
+        ErrorResponse.debug = False
+
+    def tearDown(self):
+        ErrorResponse.debug = False
 
     def test(self):
         r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
@@ -63,13 +69,13 @@ class TestErrorResponse(TestCase):
         self.assertEqual({'jsonrpc': '2.0', 'error': {'code': -32600,
             'message': 'foo'}, 'id': 1}, r)
 
-    def test_body(self):
+    def test_str(self):
         r = ErrorResponse(
             status.HTTP_BAD_REQUEST, 1, status.JSONRPC_INVALID_REQUEST_CODE,
             'foo', 'bar')
         self.assertEqual(
             '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
-            r.body)
+            str(r))
 
     def test_no_id(self):
         # This is OK - we do respond to notifications with certain errors, such
