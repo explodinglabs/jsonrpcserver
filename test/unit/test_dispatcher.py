@@ -82,8 +82,47 @@ class TestDispatchRequests(TestCase):
         self.assertEqual(1, r['id'])
 
 
-class TestDispatchBatch(TestCase):
+class TestDispatchSpecificationExamples(TestCase):
     """These are direct from the examples in the specification"""
+
+    def test_positional_parameters(self):
+        def subtract(x, y):
+            return x - y
+        r = dispatch(
+            [subtract],
+            {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1})
+        self.assertIsInstance(r, RequestResponse)
+        self.assertEqual({'jsonrpc': '2.0', 'result': 19, 'id': 1}, r)
+        # Second example
+        r = dispatch(
+            [subtract],
+            {"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2})
+        self.assertIsInstance(r, RequestResponse)
+        self.assertEqual({'jsonrpc': '2.0', 'result': -19, 'id': 2}, r)
+
+    def test_named_parameters(self):
+        def subtract(**kwargs):
+            return kwargs['minuend'] - kwargs['subtrahend']
+        r = dispatch(
+            [subtract],
+            {"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3})
+        self.assertIsInstance(r, RequestResponse)
+        self.assertEqual({"jsonrpc": "2.0", "result": 19, "id": 3}, r)
+        # Second example
+        r = dispatch(
+            [subtract],
+            {"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4})
+        self.assertIsInstance(r, RequestResponse)
+        self.assertEqual({"jsonrpc": "2.0", "result": 19, "id": 4}, r)
+
+    def notification(self):
+        methods = {'update': lambda: None, 'foobar': lambda: None}
+        r = dispatch(
+            methods,
+            {"jsonrpc": "2.0", "method": "update", "params": [1,2,3,4,5]})
+        self.assertIsInstance(r, NotificationResponse)
+        r = dispatch(methods, {"jsonrpc": "2.0", "method": "foobar"})
+        self.assertIsInstance(r, NotificationResponse)
 
     def test_invalid_json(self):
         r = dispatch(
