@@ -123,10 +123,6 @@ def dispatch(methods, request):
             response = Request(request).process(methods)
     except JsonRpcServerError as e:
         response = ExceptionResponse(e, None)
-    except Exception as e: # pylint: disable=broad-except
-        # Log the uncaught exception
-        logger.exception(e)
-        response = ExceptionResponse(e, None)
     http_status = 200 if isinstance(request, list) else response.http_status
     response_log.info(str(response), extra={
         'http_code': http_status,
