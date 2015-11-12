@@ -5,7 +5,8 @@ from unittest import TestCase, main
 import json
 
 from jsonrpcserver.response import _sort_response, RequestResponse, \
-    NotificationResponse, ErrorResponse, ExceptionResponse
+    NotificationResponse, ErrorResponse, ExceptionResponse, BatchResponse, \
+    _Response
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
 
@@ -28,6 +29,13 @@ class TestNotificationResponse(TestCase):
         r = NotificationResponse()
         self.assertEqual('', str(r))
         self.assertEqual(204, r.http_status)
+
+
+class TestResponse(TestCase):
+
+    def test(self):
+        with self.assertRaises(NotImplementedError):
+            str(_Response())
 
 
 class TestRequestResponse(TestCase):
@@ -123,6 +131,13 @@ class TestExceptionResponse(TestCase):
         self.assertEqual(
             {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params', 'data': 'Password missing'}, 'id': 1},
             r)
+
+
+class TestBatchResponse(TestCase):
+
+    def test(self):
+        r = BatchResponse()
+        str(r)
 
 
 if __name__ == '__main__':
