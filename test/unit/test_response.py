@@ -4,8 +4,9 @@
 from unittest import TestCase, main
 import json
 
-from jsonrpcserver.response import _sort_response, _Response, RequestResponse, \
-    NotificationResponse, ErrorResponse
+from jsonrpcserver.response import _sort_response, RequestResponse, \
+    NotificationResponse, ErrorResponse, ExceptionResponse
+from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
 
 class TestSortResponse(TestCase):
@@ -13,71 +14,20 @@ class TestSortResponse(TestCase):
     def test_sort_response_success(self):
         self.assertEqual(
             '{"jsonrpc": "2.0", "result": 5, "id": 1}',
-            json.dumps(_sort_response({'id': 1, 'result': 5, 'jsonrpc': '2.0'}))
-        )
+            json.dumps(_sort_response({'id': 1, 'result': 5, 'jsonrpc': '2.0'})))
 
     def test_sort_response_error(self):
         self.assertEqual(
             '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
-            json.dumps(_sort_response({'id': 1, 'error': {
-                'data': 'bar', 'message': 'foo', 'code':
-                status.JSONRPC_INVALID_REQUEST_CODE}, 'jsonrpc': '2.0'})),
-        )
+            json.dumps(_sort_response({'id': 1, 'error': {'data': 'bar', 'message': 'foo', 'code': status.JSONRPC_INVALID_REQUEST_CODE}, 'jsonrpc': '2.0'})))
 
 
-class TestResponse(TestCase):
-    # pylint: disable=expression-not-assigned
+class TestNotificationResponse(TestCase):
 
-    def test_json(self):
-        with self.assertRaises(NotImplementedError):
-            _Response(0).json
-
-    def test_json_debug(self):
-        with self.assertRaises(NotImplementedError):
-            _Response(0).json_debug
-
-    def test_body(self):
-        with self.assertRaises(NotImplementedError):
-            _Response(0).body
-
-    def test_body_debug(self):
-        with self.assertRaises(NotImplementedError):
-            _Response(0).body_debug
-
-
-class TestErrorResponse(TestCase):
-
-    def test_no_id(self):
-        # This is OK - we will respond to notifications with errors, such as
-        # parse error and invalid request.
-        r = ErrorResponse(status.HTTP_BAD_REQUEST, None,
-                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo')
-        self.assertEqual(None, r.json['id'])
-
-    def test_json(self):
-        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual({'jsonrpc': '2.0', 'error': {
-            'code': -32600, 'message': 'foo'}, 'id': 1}, r.json)
-
-    def test_json_debug(self):
-        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual('bar', r.json_debug['error']['data'])
-
-    def test_body(self):
-        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual(
-            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
-            r.body)
-
-    def test_body_debug(self):
-        r = ErrorResponse(status.HTTP_BAD_REQUEST, 1,
-                          status.JSONRPC_INVALID_REQUEST_CODE, 'foo', 'bar')
-        self.assertEqual(
-            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
-            r.body_debug)
+    def test(self):
+        r = NotificationResponse()
+        self.assertEqual('', str(r))
+        self.assertEqual(204, r.http_status)
 
 
 class TestRequestResponse(TestCase):
@@ -90,36 +40,89 @@ class TestRequestResponse(TestCase):
     def test_no_result(self):
         # Perfectly fine.
         r = RequestResponse(1, None)
-        self.assertEqual({'jsonrpc': '2.0', 'result': None, 'id': 1}, r.json)
-
-    def test_json(self):
-        r = RequestResponse(1, 'foo')
-        self.assertEqual({'jsonrpc': '2.0', 'result': 'foo', 'id': 1}, r.json)
-
-    def test_json_debug(self):
-        r = RequestResponse(1, 'foo')
-        self.assertEqual(
-            {'jsonrpc': '2.0', 'result': 'foo', 'id': 1}, r.json_debug)
-
-    def test_body(self):
-        r = RequestResponse(1, 'foo')
-        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}', r.body)
-
-    def test_body_debug(self):
-        r = RequestResponse(1, 'foo')
-        self.assertEqual(
-            '{"jsonrpc": "2.0", "result": "foo", "id": 1}', r.body_debug)
-
-
-class TestNotificationResponse(TestCase):
+        self.assertEqual({'jsonrpc': '2.0', 'result': None, 'id': 1}, r)
 
     def test(self):
-        r = NotificationResponse()
-        self.assertEqual(None, r.json)
-        self.assertEqual(None, r.json_debug)
-        self.assertEqual('', r.body)
-        self.assertEqual('', r.body_debug)
-        self.assertEqual(204, r.http_status)
+        r = RequestResponse(1, 'foo')
+        self.assertEqual({'jsonrpc': '2.0', 'result': 'foo', 'id': 1}, r)
+
+    def test_str(self):
+        r = RequestResponse(1, 'foo')
+        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}', str(r))
+
+
+class TestErrorResponse(TestCase):
+
+    def setUp(self):
+        ErrorResponse.debug = False
+
+    def tearDown(self):
+        ErrorResponse.debug = False
+
+    def test(self):
+        r = ErrorResponse(
+            status.HTTP_BAD_REQUEST, 1, status.JSONRPC_INVALID_REQUEST_CODE,
+            'foo', 'bar')
+        self.assertEqual(
+            {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'foo'}, 'id': 1},
+            r)
+
+    def test_str(self):
+        r = ErrorResponse(
+            status.HTTP_BAD_REQUEST, 1, status.JSONRPC_INVALID_REQUEST_CODE,
+            'foo', 'bar')
+        self.assertEqual(
+            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo"}, "id": 1}',
+            str(r))
+
+    def test_no_id(self):
+        # This is OK - we do respond to notifications with certain errors, such
+        # as parse error and invalid request.
+        r = ErrorResponse(
+            status.HTTP_BAD_REQUEST, None, status.JSONRPC_INVALID_REQUEST_CODE,
+            'foo')
+        self.assertEqual(None, r['id'])
+
+    def test_debug(self):
+        ErrorResponse.debug = True
+        r = ErrorResponse(
+            status.HTTP_BAD_REQUEST, 1, status.JSONRPC_INVALID_REQUEST_CODE,
+            'foo', 'bar')
+        self.assertEqual('bar', r['error']['data'])
+
+
+class TestExceptionResponse(TestCase):
+
+    def setUp(self):
+        ErrorResponse.debug = False
+
+    def tearDown(self):
+        ErrorResponse.debug = False
+
+    def test_jsonrpcservererror(self):
+        r = ExceptionResponse(InvalidParams(), None)
+        self.assertEqual(
+            {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': None},
+            r)
+
+    def test_non_jsonrpcservererror(self):
+        r = ExceptionResponse(ValueError(), None)
+        self.assertEqual(
+            {'jsonrpc': '2.0', 'error': {'code': -32000, 'message': 'Server error'}, 'id': None},
+            r)
+
+    def test_with_id(self):
+        r = ExceptionResponse(InvalidParams(), 1)
+        self.assertEqual(
+            {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1},
+            r)
+
+    def test_with_data(self):
+        ErrorResponse.debug = True
+        r = ExceptionResponse(InvalidParams('Password missing'), 1)
+        self.assertEqual(
+            {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params', 'data': 'Password missing'}, 'id': 1},
+            r)
 
 
 if __name__ == '__main__':

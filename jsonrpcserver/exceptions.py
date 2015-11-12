@@ -45,7 +45,7 @@ class InvalidRequest(JsonRpcServerError):
     """
 
     code = -32600
-    message = 'Invalid request'
+    message = 'Invalid Request'
     http_status = status.HTTP_BAD_REQUEST
 
     def __init__(self, data=None):

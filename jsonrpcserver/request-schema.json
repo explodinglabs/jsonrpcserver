@@ -1,30 +1,37 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "JSON-RPC 2.0 Request Schema",
-  "description": "A JSON-RPC 2.0 request message",
-  "type": "object",
-  "properties": {
-    "jsonrpc": {
-      "type": "string",
-      "enum": ["2.0"]
-    },
-    "id": {
-      "oneOf": [
-        {"type": "string"},
-        {"type": "integer"},
-        {"type": "null"}
-      ]
-    },
-    "method": {
-      "type": "string",
-      "pattern": "^[^r]|^r[^p]|^rp[^c]|^rpc[^.]|^rpc$"
-    },
-    "params": {
-      "oneOf": [
-        {"type": "object"},
-        {"type": "array"}
-      ]
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "A JSON RPC 2.0 request",
+    "oneOf": [
+        {
+            "description": "An individual request",
+            "$ref": "#/definitions/request"
+        },
+        {
+            "description": "An array of requests",
+            "type": "array",
+            "items": { "$ref": "#/definitions/request" }
+        }
+    ],
+    "definitions": {
+        "request": {
+            "type": "object",
+            "required": [ "jsonrpc", "method" ],
+            "properties": {
+                "jsonrpc": { "enum": [ "2.0" ] },
+                "method": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": [ "string", "number", "null" ],
+                    "note": [
+                        "While allowed, null should be avoided: http://www.jsonrpc.org/specification#id1",
+                        "While allowed, a number with a fractional part should be avoided: http://www.jsonrpc.org/specification#id2"
+                    ]
+                },
+                "params": {
+                    "type": [ "array", "object" ]
+                }
+            }
+        }
     }
-  },
-  "required": ["jsonrpc", "method"]
 }
