@@ -1,10 +1,6 @@
 """
 Dispatcher
 **********
-
-.. _RequestResponse: #response.RequestResponse
-.. _NotificationResponse: #response.NotificationResponse
-.. _ErrorResponse: #response.ErrorResponse
 """
 
 import logging
@@ -38,14 +34,14 @@ def _string_to_dict(request):
 
 
 def dispatch(methods, request):
-    """Dispatch JSON-RPC requests to a list of methods::
+    """Dispatch JSON-RPC requests to a collection of methods::
 
-        r = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
+        r = dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
     The first parameter can be either:
 
-    - A *list* of functions, each identifiable by its ``__name__`` attribute.
-    - Or a *dictionary* of name:method pairs.
+    - A *dictionary* of name:method pairs, or
+    - A *list* of methods, each identifiable by their ``__name__`` attributes.
 
     When using a **list**, the methods must be identifiable by a ``__name__``
     attribute.
@@ -71,22 +67,20 @@ def dispatch(methods, request):
         >>> max_ten.__name__ = 'max_ten'
         >>> dispatch([max_ten], ...)
 
-    Alternatively, consider using a **dictionary** instead::
+    Alternatively, use a **dictionary**::
 
         >>> dispatch({'cat': cat, 'max_ten': max_ten}, ...)
 
-    See the `Methods`_ module for another easy way to build the list of methods.
+    The :mod:`methods` module also gives nice and easy ways to build the
+    collection of methods.
 
-    :param methods: List or dict of methods to dispatch to.
+    :param methods:
+        Collection of methods to dispatch to.
     :param request:
-        JSON-RPC request. This can be in dict or string form.  Byte arrays
-        should be `decoded
-        <https://docs.python.org/3/library/codecs.html#codecs.decode>`_ first.
-    :returns: A `Response`_ object, or for batch requests, a list of responses.
-              The responses themselves are either `RequestResponse`_,
-              `NotificationResponse`_, or `ErrorResponse`_ if there was a
-              problem processing the request. In any case, the return value
-              gives you ``http_status`` attribute.
+        JSON-RPC request - can be a JSON-serializable object, or a string.
+        Strings must be valid json (use double quotes!).
+    :returns:
+        A :mod:`response` object.
     """
     # Process the request
     response = None

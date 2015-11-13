@@ -2,16 +2,18 @@
 Methods
 *******
 
-This module can be used to easily build a list of methods.
-
-Create a Methods object and add methods to it::
+This class can be used to easily build a collection of methods.  Essentially
+it's a ``dict`` with some extra functionality::
 
     from jsonrpcserver import Methods
     methods = Methods()
-    methods.add_method(cat)
-    methods.add_method(dog)
+    methods['cat'] = lambda: 'meow'
+    methods.add_method(lambda: 'moo', 'cow')
 
-Then pass it to ``dispatch()`` as you would a regular list::
+:meth:`add_method() <methods.Methods.add_method>` can be used as a decorator too
+which is very handy. (see below)
+
+Pass the object to :func:`dispatch() <dispatcher.dispatch>` as usual::
 
     dispatch(methods, ...)
 """
@@ -41,7 +43,7 @@ def _get_method(methods, name):
 
 
 class Methods(dict):
-    """Holds a dict of methods."""
+    """Holds a collection of methods."""
 
     def __getitem__(self, key):
         return self.__dict__[key]
@@ -53,7 +55,6 @@ class Methods(dict):
 
             def cat():
                 return 'meow'
-
             methods.add_method(cat)
 
         Alternatively, use the decorator::
@@ -69,7 +70,6 @@ class Methods(dict):
         Lambdas::
 
             methods.add_method(lambda: 'meow', 'cat')
-            methods.add_method(lambda: 'woof', 'dog')
 
         Partials::
 
@@ -79,9 +79,9 @@ class Methods(dict):
 
         :param method: The method to add.
         :param name: Name of the method (optional).
-        :raise AttributeError: Raised if the method being added has no name.
-                               (i.e. it has no ``__name__`` property, and no
-                               ``name`` argument was given.)
+        :raise AttributeError:
+            Raised if the method being added has no name.  (i.e. it has no
+            ``__name__`` property, and no ``name`` argument was given.)
         """
         # If no custom name was given, use the method's __name__ attribute
         if not name:

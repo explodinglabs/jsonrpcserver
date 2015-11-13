@@ -2,9 +2,9 @@
 Exceptions
 **********
 
-These exceptions are raised to return an error to the client.
+These are raised to return an error to the client.
 
-Attributes can be modified to configure error responses, for example::
+Modify attributes to configure error responses, for example::
 
     from jsonrpcserver.exceptions import InvalidParams
     InvalidParams.message = 'Invalid arguments'
@@ -18,18 +18,16 @@ class JsonRpcServerError(Exception):
 
     :param data: Extra info (optional).
     """
-
     message = None
 
     def __init__(self, data=None):
         super(JsonRpcServerError, self).__init__(self.message)
-        #: Holds the extra information related to the error.
+        # Holds extra information related to the error.
         self.data = data
 
 
 class ParseError(JsonRpcServerError):
     """Raised when the request is not a valid JSON object."""
-
     code = -32700
     message = 'Parse error'
     http_status = status.HTTP_BAD_REQUEST
@@ -43,7 +41,6 @@ class InvalidRequest(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
-
     code = -32600
     message = 'Invalid Request'
     http_status = status.HTTP_BAD_REQUEST
@@ -57,7 +54,6 @@ class MethodNotFound(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
-
     code = -32601
     message = 'Method not found'
     http_status = status.HTTP_NOT_FOUND
@@ -72,7 +68,6 @@ class InvalidParams(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
-
     code = -32602
     message = 'Invalid params'
     http_status = status.HTTP_BAD_REQUEST
@@ -86,7 +81,6 @@ class ServerError(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
-
     code = -32000
     message = 'Server error'
     http_status = status.HTTP_INTERNAL_ERROR

@@ -118,11 +118,13 @@ def _get_arguments(request):
 class Request(object):
     """JSON-RPC Request object.
 
-    Take a JSON-RPC request and provide details such as the method name,
+    Takes a JSON-RPC request and provides details such as the method name,
     arguments, id, and whether it's a request or a notification.
     """
-
+    #: Validate requests?
     schema_validation = True
+
+    #: Should notifications respond with errors? (else returns no response)
     notification_errors = False
 
     def __init__(self, request):

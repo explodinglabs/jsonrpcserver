@@ -2,9 +2,14 @@
 Response
 ********
 
-The response objects returned by `dispatch()`_.
-
-.. _dispatch(): #dispatcher.dispatch
+These are the response objects returned by :func:`dispatch()
+<dispatcher.dispatch>`, designed to be returned to to a client after processing
+a request. As per the `spec
+<http://www.jsonrpc.org/specification#response_object>`__, the response
+depends on the type of request and the result of processing. Regardless, all are
+valid JSON-serializable objects. Use ``str(response)`` to get a JSON serialized
+string. An additional ``http_status`` attribute can help to respond to an HTTP
+request (if using HTTP).
 """
 
 import json
@@ -36,10 +41,12 @@ def _sort_response(response):
 
 
 class NotificationResponse(object):
-    """Returned from `dispatch()`_ in response to notifications."""
+    """Returned to a `Notification
+    <http://www.jsonrpc.org/specification#notification>`_.
+    """
 
     #: The HTTP status to send in response to notifications. Default is ``204``,
-    #: but some clients prefer to get ``200 OK``. Monkey patch to configure.
+    #: but some clients prefer to get ``200 OK``. Modify to configure.
     http_status = status.HTTP_NO_CONTENT
 
     def __str__(self):
@@ -47,22 +54,15 @@ class NotificationResponse(object):
 
 
 class _Response(dict):
-    """Parent of the other responses.
-
-    :param request_id:
-        This member is REQUIRED. It MUST be the same as the value of the id
-        member in the Request Object. If there was an error in detecting the id
-        in the Request object (e.g. Parse error/Invalid Request), it MUST be
-        Null.
-    """
+    """Parent of the other responses."""
 
     def __str__(self):
         raise NotImplementedError()
 
 
 class RequestResponse(_Response):
-    """Returned from `dispatch()`_ in response to a "request", (i.e. a request
-    that wants a response back), after processing successfully.
+    """Returned to a request with an ``id`` member (indicating that a payload is
+    expected).
     """
 
     #: The HTTP status to send when responding to requests.
@@ -70,7 +70,8 @@ class RequestResponse(_Response):
 
     def __init__(self, request_id, result):
         """
-        :param request_id: Matches the original request's id value.
+        :param request_id:
+            Matches the original request's id value.
         :param result:
             The payload from processing the request. If the request was a
             JSON-RPC notification (i.e. the request id is ``None``), the result
@@ -90,26 +91,33 @@ class RequestResponse(_Response):
 
 
 class ErrorResponse(_Response):
-    """Returned from `dispatch()`_ if there was an error while processing the
-    request.
+    """Returned if there was an error while processing the request.
     """
+    #: Include the ``data`` attribute when responding to the client? Modify to
+    #: configure.
     debug = False
+    #: Respond to notifications if there's an error (such as method not found)?
+    #: Modify to configure.
     notification_errors = False
 
     def __init__(self, http_status, request_id, code, message, data=None):
         """
-        :param http_status: The recommended HTTP status code to respond with, if
-                            using HTTP for transport.
-        :param request_id: Must be the same as the value as the id member in the
-                           Request Object. If there was an error in detecting
-                           the id in the Request object (e.g. Parse
-                           error/Invalid Request), it MUST be Null.
-        :param code: A Number that indicates the error type that occurred. This
-                     MUST be an integer.
-        :param message: A string providing a short description of the error, eg.
-                        "Invalid params"
-        :param data: A Primitive or Structured value that contains additional
-                     information about the error. This may be omitted.
+        :param http_status:
+            The recommended HTTP status code to respond with, if using HTTP for
+            transport.
+        :param request_id:
+            Must be the same as the value as the id member in the Request
+            Object. If there was an error in detecting the id in the Request
+            object (e.g. Parse error/Invalid Request), it MUST be Null.
+        :param code:
+            A Number that indicates the error type that occurred. This MUST be
+            an integer.
+        :param message:
+            A string providing a short description of the error, eg.  "Invalid
+            params"
+        :param data:
+            A Primitive or Structured value that contains additional information
+            about the error. This may be omitted.
         """
         super(ErrorResponse, self).__init__(
             {'jsonrpc': '2.0', 'error': {'code': code, 'message': message},
@@ -135,7 +143,9 @@ class ExceptionResponse(ErrorResponse):
 
 
 class BatchResponse(list):
-    """A collection of the other Responses"""
+    """Returned to batch requests. Essentially just a list of the other response
+    objects.
+    """
 
     http_status = status.HTTP_OK
 

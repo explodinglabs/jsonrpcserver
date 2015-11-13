@@ -1,5 +1,4 @@
-.. rubric::
-    `jsonrpcserver <index.html>`_
+.. rubric:: :doc:`index`
 
 Quickstart
 **********
@@ -19,8 +18,8 @@ Write functions that will carry out the requests, for example::
     def cat():
         return 'meow'
 
-Then pass JSON-RPC requests to them with `dispatch()
-<api.html#dispatcher.dispatch>`_::
+Then pass JSON-RPC requests to them with :func:`dispatch()
+<dispatcher.dispatch>`::
 
     from jsonrpcserver import dispatch
     response = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
@@ -30,23 +29,15 @@ argument is the request itself.
 
 The return value can be used to respond to a client::
 
-    >>> response.body
-    '{"jsonrpc": "2.0", "result": "meow", "id": 1}'
+    >>> response
+    {'jsonrpc': '2.0', 'result': 'meow', 'id': 1}
     >>> response.http_status
     200
 
 Writing the methods
 ===================
 
-Example of positional arguments::
-
-    def multiply(x, y):
-        return x * y
-
-    request = {'jsonrpc': '2.0', 'method': 'multiply', 'params': [2, 3], 'id': 1}
-    response = dispatch([multiply], request)
-
-Keyword arguments::
+Taking arguments::
 
     def get_name(**kwargs):
         return kwargs['name']
@@ -74,8 +65,8 @@ The library automatically handles some client errors, but there are other times
 where we need to inform the client of an error. This is done by raising an
 exception.
 
-For example, if you're unhappy with the arguments received, raise `InvalidParams
-<api.html#jsonrpcserver.exceptions.InvalidParams>`_::
+For example, if you're unhappy with the arguments received, raise
+:class:`InvalidParams <jsonrpcserver.exceptions.InvalidParams>`::
 
     from jsonrpcserver.exceptions import InvalidParams
 
@@ -88,13 +79,13 @@ For example, if you're unhappy with the arguments received, raise `InvalidParams
 
 The library catches the exception and gives the appropriate response::
 
-    >>> response.body
-    {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}
+    >>> response
+    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
     >>> response.http_status
     400
 
-There's also `ServerError <api.html#jsonrpcserver.exceptions.ServerError>`_,
-which lets the client know of a problem at the server's end. In fact, any other
+There's also :class:`ServerError <jsonrpcserver.exceptions.ServerError>`, which
+lets the client know of a problem at the server's end. In fact, any other
 exceptions raised will result in a *"Server error"* response::
 
     def divide_by_zero(**kwargs):
@@ -105,8 +96,8 @@ exceptions raised will result in a *"Server error"* response::
 
 ::
 
-    >>> response.body
-    {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Server error"}, "id": 1}
+    >>> response
+    {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Server error'}, 'id': 1}
     >>> response.http_status
     500
 
@@ -114,11 +105,11 @@ This ensures we *always* have a response for the client.
 
 .. tip::
 
-    The `body_debug <api.html#response.ErrorResponse.body_debug>`_ property
-    gives further details about an error, in the ``data`` attribute::
+    Enable debug mode to include further details about an error in the ``data``
+    attribute::
 
-        >>> response.body_debug
-        {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Server error", "data": "divide by zero"}, "id": 1}
+        >>> from jsonrpcserver.response import ErrorResponse
+        >>> ErrorResponse.debug = True
 
 Logging
 =======

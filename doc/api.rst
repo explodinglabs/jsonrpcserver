@@ -1,17 +1,10 @@
-.. rubric::
-    `jsonrpcserver <index.html>`_
+.. rubric:: :doc:`index`
 
 API
 ***
 
 .. automodule:: dispatcher
-
 .. automodule:: response
-    :inherited-members: http_status
-    :member-order: alphabetical
-    :undoc-members:
-
+    :exclude-members: ExceptionResponse
 .. automodule:: methods
-
 .. automodule:: jsonrpcserver.exceptions
-    :exclude-members: JsonRpcServerError
