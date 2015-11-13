@@ -4,7 +4,7 @@ API
 ***
 
 .. automodule:: dispatcher
+.. automodule:: methods
 .. automodule:: response
     :exclude-members: ExceptionResponse
-.. automodule:: methods
 .. automodule:: jsonrpcserver.exceptions

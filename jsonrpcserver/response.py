@@ -3,13 +3,14 @@ Response
 ********
 
 These are the response objects returned by :func:`dispatch()
-<dispatcher.dispatch>`, designed to be returned to to a client after processing
-a request. As per the `spec
-<http://www.jsonrpc.org/specification#response_object>`__, the response
-depends on the type of request and the result of processing. Regardless, all are
-valid JSON-serializable objects. Use ``str(response)`` to get a JSON serialized
-string. An additional ``http_status`` attribute can help to respond to an HTTP
-request (if using HTTP).
+<dispatcher.dispatch>`, designed to be returned to a client after processing a
+request. As per the specification, the type of response depends on the type of
+request and the result of processing. Regardless, all are valid `JSON-RPC
+Response objects <http://www.jsonrpc.org/specification#response_object>`_. For
+example, after successfully processing a request, the payload data is in
+``response['result']``. Use ``str(response)`` to get a JSON serialized string.
+An additional ``http_status`` attribute can help to respond to an HTTP request
+(if using HTTP).
 """
 
 import json
@@ -143,7 +144,7 @@ class ExceptionResponse(ErrorResponse):
 
 
 class BatchResponse(list):
-    """Returned to batch requests. Essentially just a list of the other response
+    """Returned to batch requests. Basically a list of the other response
     objects.
     """
 

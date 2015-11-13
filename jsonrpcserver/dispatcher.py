@@ -40,8 +40,8 @@ def dispatch(methods, request):
 
     The first parameter can be either:
 
-    - A *dictionary* of name:method pairs, or
-    - A *list* of methods, each identifiable by their ``__name__`` attributes.
+    - A *list* of methods, or
+    - A *dictionary* of name:method pairs.
 
     When using a **list**, the methods must be identifiable by a ``__name__``
     attribute.

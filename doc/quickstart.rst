@@ -31,13 +31,17 @@ The return value can be used to respond to a client::
 
     >>> response
     {'jsonrpc': '2.0', 'result': 'meow', 'id': 1}
+
+The ``http_status`` attribute gives a suggested HTTP status code to respond
+with, (useful only if using http)::
+
     >>> response.http_status
     200
 
-Writing the methods
-===================
+Taking arguments
+----------------
 
-Taking arguments::
+Take arguments as you would any other function, for example::
 
     def get_name(**kwargs):
         return kwargs['name']
@@ -55,18 +59,20 @@ Taking arguments::
 Responding to the client
 ------------------------
 
-To send payload data back in the response message, simply ``return`` it from the
-method as shown above. Any string, number, list or dictionary is fine.
+To send payload data back in the response message, simply ``return`` it as shown
+above.
 
 Sending an Error response
 -------------------------
 
-The library automatically handles some client errors, but there are other times
-where we need to inform the client of an error. This is done by raising an
-exception.
+The library handles many client errors, but there are other times where we need
+to inform the client of an error. This is done by raising an exception.
 
-For example, if you're unhappy with the arguments received, raise
-:class:`InvalidParams <jsonrpcserver.exceptions.InvalidParams>`::
+For example, if you're not satisfied with the arguments received, raise
+:class:`InvalidParams <jsonrpcserver.exceptions.InvalidParams>`:
+
+.. code-block:: python
+    :emphasize-lines: 5
 
     from jsonrpcserver.exceptions import InvalidParams
 
@@ -81,11 +87,9 @@ The library catches the exception and gives the appropriate response::
 
     >>> response
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
-    >>> response.http_status
-    400
 
 There's also :class:`ServerError <jsonrpcserver.exceptions.ServerError>`, which
-lets the client know of a problem at the server's end. In fact, any other
+lets the client know there was a problem at the server's end. In fact, any other
 exceptions raised will result in a *"Server error"* response::
 
     def divide_by_zero(**kwargs):
@@ -98,8 +102,6 @@ exceptions raised will result in a *"Server error"* response::
 
     >>> response
     {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Server error'}, 'id': 1}
-    >>> response.http_status
-    500
 
 This ensures we *always* have a response for the client.
 

@@ -7,8 +7,8 @@ it's a ``dict`` with some extra functionality::
 
     from jsonrpcserver import Methods
     methods = Methods()
-    methods['cat'] = lambda: 'meow'
-    methods.add_method(lambda: 'moo', 'cow')
+    methods.add_method(lambda: 'meow', 'cat')
+    methods['dog'] = lambda: 'woof'
 
 :meth:`add_method() <methods.Methods.add_method>` can be used as a decorator too
 which is very handy. (see below)
@@ -55,6 +55,7 @@ class Methods(dict):
 
             def cat():
                 return 'meow'
+
             methods.add_method(cat)
 
         Alternatively, use the decorator::
@@ -80,7 +81,7 @@ class Methods(dict):
         :param method: The method to add.
         :param name: Name of the method (optional).
         :raise AttributeError:
-            Raised if the method being added has no name.  (i.e. it has no
+            Raised if the method being added has no name. (i.e. it has no
             ``__name__`` property, and no ``name`` argument was given.)
         """
         # If no custom name was given, use the method's __name__ attribute
