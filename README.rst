@@ -1,7 +1,7 @@
 jsonrpcserver
 *************
 
-Process incoming `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7
+Process incoming `JSON-RPC <http://www.jsonrpc.org/>`__ requests in Python 2.7
 and 3.3+.
 
 .. sourcecode:: python
@@ -10,4 +10,4 @@ and 3.3+.
     'meow'
 
 Full documentation is available at `readthedocs
-<https://jsonrpcserver.readthedocs.org/>`_.
+<https://jsonrpcserver.readthedocs.org/>`__.
