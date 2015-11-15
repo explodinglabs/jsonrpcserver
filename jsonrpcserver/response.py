@@ -33,13 +33,15 @@ def _sort_response(response):
     :param response: JSON-RPC response, in dictionary form.
     :return: The same response, sorted in an ``OrderedDict``.
     """
+
     root_order = ['jsonrpc', 'result', 'error', 'id']
     error_order = ['code', 'message', 'data']
-    if 'error' in response:
-        response['error'] = OrderedDict(sorted(
-            response['error'].items(), key=lambda k: error_order.index(k[0])))
-    return OrderedDict(sorted(
+    r = OrderedDict(sorted(
         response.items(), key=lambda k: root_order.index(k[0])))
+    if 'error' in response:
+        r['error'] = OrderedDict(sorted(
+            response['error'].items(), key=lambda k: error_order.index(k[0])))
+    return r
 
 
 class NotificationResponse(object):
