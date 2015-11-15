@@ -4,29 +4,29 @@ Recent Changes
 3.2.0 (15 Nov 2015)
 -------------------
 
-- Now accepts `batch requests <http://www.jsonrpc.org/specification#batch>`.
+- Now accepts `batch requests <http://www.jsonrpc.org/specification#batch>`__.
 
 - ``dispatch()`` now returns a JSON-RPC response object. Previously this was
   accessed in the ``json`` attribute. Now just access parts of the response
   directly, (like ``response['result']``).  Accordingly, **most of the
   attributes have been removed**:
   
-  - ``result`` (use ``response['result']``),
-  - ``request_id`` (use ``response['id']``),
-  - ``body`` (use ``str(response)``),
-  - ``body_debug`` (`enable debugging
-    <http://jsonrpcserver.readthedocs.org/api.html#response.ErrorResponse>`__
-    and use ``str(response)``,
-  - ``json`` (access the response object directly, e.g.
+  - ``response.result`` (use ``response['result']`` instead),
+  - ``response.request_id`` (use ``response['id']``),
+  - ``response.body`` (use ``str(response)``),
+  - ``response.body_debug`` (`enable debugging
+    <http://jsonrpcserver.readthedocs.org/api.html#response.ErrorResponse.debug>`__
+    and use ``str(response)``),
+  - ``response.json`` (access the response object directly, e.g.
     ``response['result']``), and
-  - ``json_debug`` (`enable debugging
-    <http://jsonrpcserver.readthedocs.org/api.html#response.ErrorResponse>`__
+  - ``response.json_debug`` (`enable debugging
+    <http://jsonrpcserver.readthedocs.org/api.html#response.ErrorResponse.debug>`__
     and access the object directly, e.g. ``response['error']['data']``)
 
   Only the ``http_status`` attribute remains.
 
 - ``dispatch()`` no longer takes a ``notification_errors`` parameter. To use
-  that, instead set:: 
+  that, set:: 
 
     from jsonrpcserver.response import ErrorResponse
     ErrorResponse.notification_errors = True
@@ -35,7 +35,7 @@ Recent Changes
   the requests)::
 
     from jsonrpcserver.request import Request
-    Request.schema_validation = True
+    Request.schema_validation = False
 
 3.1.1 (27 Oct 2015)
 -------------------
