@@ -1,6 +1,11 @@
 Recent Changes
 ==============
 
+3.2.1 (15 Nov 2015)
+-------------------
+
+- Fix: ``dispatch()`` returning an OrderedDict for errors.
+
 3.2.0 (15 Nov 2015)
 -------------------
 
