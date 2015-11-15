@@ -117,19 +117,13 @@ Or use a custom log format::
 
 The request format has these fields:
 
-%(message)s
-    The JSON request (the body).
+:%(message)s: The JSON request (the body).
 
 The response format has these fields:
 
-%(http_code)s
-    The recommended HTTP status code, if using HTTP, eg. *400*.
-
-%(http_reason)s
-    Description of the above HTTP status code, eg. *"BAD REQUEST"*.
-
-%(message)s
-    The JSON response (the body).
+:%(http_code)s: The recommended HTTP status code, if using HTTP, eg. *400*.
+:%(http_reason)s: Description of the above HTTP status code, eg. *"BAD REQUEST"*.
+:%(message)s: The JSON response (the body).
 
 Examples
 ========
