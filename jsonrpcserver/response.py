@@ -3,14 +3,15 @@ Response
 ********
 
 These are the response objects returned by :func:`dispatch()
-<dispatcher.dispatch>`, designed to be returned to a client after processing a
-request. As per the specification, the type of response depends on the type of
-request and the result of processing. Regardless, all are valid `JSON-RPC
-Response objects <http://www.jsonrpc.org/specification#response_object>`_. For
-example, after successfully processing a request, the payload data is in
-``response['result']``. Use ``str(response)`` to get a JSON serialized string.
-An additional ``http_status`` attribute can help to respond to an HTTP request
-(if using HTTP).
+<dispatcher.dispatch>`.
+
+As per the `specification
+<http://www.jsonrpc.org/specification#response_object>`__, the type of response
+depends on the type of request, and the result of processing it. For example,
+after successfully processing a request with an ``id``, the payload data is in
+``response['result']``.  Use ``str(response)`` to get a JSON-serialized string.
+An additional ``http_status`` attribute has a suggested status code to respond
+with (useful if using HTTP).
 """
 
 import json
@@ -47,7 +48,7 @@ class NotificationResponse(object):
     """
 
     #: The HTTP status to send in response to notifications. Default is ``204``,
-    #: but some clients prefer to get ``200 OK``. Modify to configure.
+    #: but some clients do prefer ``200 OK``. Modify to configure.
     http_status = status.HTTP_NO_CONTENT
 
     def __str__(self):
@@ -66,7 +67,7 @@ class RequestResponse(_Response):
     expected).
     """
 
-    #: The HTTP status to send when responding to requests.
+    #: The recommended HTTP status code.
     http_status = status.HTTP_OK
 
     def __init__(self, request_id, result):
@@ -94,18 +95,19 @@ class RequestResponse(_Response):
 class ErrorResponse(_Response):
     """Returned if there was an error while processing the request.
     """
-    #: Include the ``data`` attribute when responding to the client? Modify to
-    #: configure.
+    #: Should we include the ``data`` member when sending an error back to
+    #: the client? It holds extra details about the error, for example if
+    #: ``ServerError('Database error')`` was raised, it would hold ``'Database
+    #: error'``. Modify to configure.
     debug = False
-    #: Respond to notifications if there's an error (such as method not found)?
-    #: Modify to configure.
+    #: Should we respond to notifications if there's an error, such as *Method
+    #: not found*? The specification says no. Modify to configure.
     notification_errors = False
 
     def __init__(self, http_status, request_id, code, message, data=None):
         """
         :param http_status:
-            The recommended HTTP status code to respond with, if using HTTP for
-            transport.
+            The recommended HTTP status code.
         :param request_id:
             Must be the same as the value as the id member in the Request
             Object. If there was an error in detecting the id in the Request
@@ -126,7 +128,7 @@ class ErrorResponse(_Response):
         #: Holds extra information about the error.
         if self.debug and data:
             self['error']['data'] = data
-        #: Holds the recommended HTTP status to respond with (if using HTTP).
+        #: The recommended HTTP status code.
         self.http_status = http_status
 
     def __str__(self):

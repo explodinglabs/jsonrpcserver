@@ -2,16 +2,12 @@
 Methods
 *******
 
-This class can be used to easily build a collection of methods.  Essentially
-it's a ``dict`` with some extra functionality::
+The ``Methods`` class can be used to easily build a collection of methods.
+Essentially it's a ``dict`` with some extra functionality::
 
     from jsonrpcserver import Methods
     methods = Methods()
     methods.add_method(lambda: 'meow', 'cat')
-    methods['dog'] = lambda: 'woof'
-
-:meth:`add_method() <methods.Methods.add_method>` can be used as a decorator too
-which is very handy. (see below)
 
 Pass the object to :func:`dispatch() <dispatcher.dispatch>` as usual::
 
@@ -58,25 +54,26 @@ class Methods(dict):
 
             methods.add_method(cat)
 
-        Alternatively, use the decorator::
-
-            @methods.add_method
-            def cat():
-                return 'meow'
-
         Use a different name by giving a second argument::
 
             methods.add_method(cat, 'say_meow')
 
-        Lambdas::
+        Which is useful for lambdas::
 
             methods.add_method(lambda: 'meow', 'cat')
 
-        Partials::
+        And partials::
 
             multiply = lambda x, y: x * y
             methods.add_method(partial(multiply, 2), 'double')
             methods.add_method(partial(multiply, 3), 'triple')
+
+        Alternatively, use ``add_method`` as a decorator (handy for building an
+        API)::
+
+            @methods.add_method
+            def cat():
+                return 'meow'
 
         :param method: The method to add.
         :param name: Name of the method (optional).

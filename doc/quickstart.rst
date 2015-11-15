@@ -18,36 +18,24 @@ Write functions that will carry out the requests, for example::
     def cat():
         return 'meow'
 
-Then pass JSON-RPC requests to them with :func:`dispatch()
-<dispatcher.dispatch>`::
+Dispatch JSON-RPC requests to them::
 
-    from jsonrpcserver import dispatch
-    response = dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
-
-The first argument is the list of methods that can be called. The second
-argument is the request itself.
-
-The return value can be used to respond to a client::
-
-    >>> response
+    >>> from jsonrpcserver import dispatch
+    >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
     {'jsonrpc': '2.0', 'result': 'meow', 'id': 1}
 
-The ``http_status`` attribute gives a suggested HTTP status code to respond
-with, (useful only if using http)::
+Parameters
+----------
 
-    >>> response.http_status
-    200
+An example of taking keyword arguments::
 
-Taking arguments
-----------------
+    def up(**kwargs):
+        return kwargs['name'].upper()
 
-Take arguments as you would any other function, for example::
+::
 
-    def get_name(**kwargs):
-        return kwargs['name']
-
-    request = {'jsonrpc': '2.0', 'method': 'get_name', 'params': {'name': 'foo'}, 'id': 1}
-    response = dispatch([get_name], request)
+    >>> dispatch([up], {'jsonrpc': '2.0', 'method': 'up', 'params': {'name': 'foo'}, 'id': 1})
+    {'jsonrpc': '2.0', 'result': 'FOO', 'id': 1}
 
 .. important::
 
@@ -59,17 +47,17 @@ Take arguments as you would any other function, for example::
 Responding to the client
 ------------------------
 
-To send payload data back in the response message, simply ``return`` it as shown
-above.
+To send payload data back in the response message, simply ``return`` it as
+shown above.
 
-Sending an Error response
+Sending an error response
 -------------------------
 
 The library handles many client errors, but there are other times where we need
 to inform the client of an error. This is done by raising an exception.
 
-For example, if you're not satisfied with the arguments received, raise
-:class:`InvalidParams <jsonrpcserver.exceptions.InvalidParams>`:
+For example, if the arguments are unsatisfactory, raise :class:`InvalidParams
+<jsonrpcserver.exceptions.InvalidParams>`:
 
 .. code-block:: python
     :emphasize-lines: 5
@@ -78,40 +66,26 @@ For example, if you're not satisfied with the arguments received, raise
 
     def get_name(**kwargs):
         if 'name' not in kwargs:
-            raise InvalidParams('name is required')
-
-    request = {'jsonrpc': '2.0', 'method': 'get_name', 'params': {}, 'id': 1}
-    response = dispatch([get_name], request)
+            raise InvalidParams()
 
 The library catches the exception and gives the appropriate response::
 
-    >>> response
+    >>> dispatch([get_name], {'jsonrpc': '2.0', 'method': 'get_name', 'params': [], 'id': 1})
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 
 There's also :class:`ServerError <jsonrpcserver.exceptions.ServerError>`, which
-lets the client know there was a problem at the server's end. In fact, any other
-exceptions raised will result in a *"Server error"* response::
+lets the client know there was a problem at the server's end. In fact, any
+other exceptions raised will result in a *"Server error"* response::
 
-    def divide_by_zero(**kwargs):
+    def fail():
         1/0
-
-    request = {'jsonrpc': '2.0', 'method': 'divide_by_zero', 'id': 1}
-    response = dispatch([divide_by_zero], request)
 
 ::
 
-    >>> response
+    >>> dispatch([fail], {'jsonrpc': '2.0', 'method': 'fail', 'id': 1})
     {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Server error'}, 'id': 1}
 
 This ensures we *always* have a response for the client.
-
-.. tip::
-
-    Enable debug mode to include further details about an error in the ``data``
-    attribute::
-
-        >>> from jsonrpcserver.response import ErrorResponse
-        >>> ErrorResponse.debug = True
 
 Logging
 =======
@@ -122,11 +96,11 @@ To see the JSON-RPC messages going back and forth, set the logging level to
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
 
-Then create a basic handler::
+Then add a basic handler::
 
-    logging.basicConfig() # Creates a StreamHandler with a default format
+    logging.getLogger('jsonrpcserver').addHandler(logging.StreamHandler())
 
-Or use custom handlers and formats::
+Or use a custom log format::
 
     request_format = '--> %(message)s'
     response_format = '<-- %(http_code)d %(http_reason)s %(message)s'
