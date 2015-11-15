@@ -119,7 +119,7 @@ class TestDispatchSpecificationExamples(TestCase):
         methods = {'update': lambda: None, 'foobar': lambda: None}
         r = dispatch(
             methods,
-            {"jsonrpc": "2.0", "method": "update", "params": [1,2,3,4,5]})
+            {"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]})
         self.assertIsInstance(r, NotificationResponse)
         r = dispatch(methods, {"jsonrpc": "2.0", "method": "foobar"})
         self.assertIsInstance(r, NotificationResponse)

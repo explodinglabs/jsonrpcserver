@@ -135,7 +135,7 @@ class TestExceptionResponse(TestCase):
 
 class TestBatchResponse(TestCase):
 
-    def test(self):
+    def test(self): # pylint: disable=no-self-use
         r = BatchResponse()
         str(r)
 
