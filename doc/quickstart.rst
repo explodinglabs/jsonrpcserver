@@ -117,17 +117,19 @@ Or use a custom log format::
 
 The request format has these fields:
 
-:%(message)s: The JSON request (the body).
+:message: The JSON request (the body).
 
 The response format has these fields:
 
-:%(http_code)s: The recommended HTTP status code, if using HTTP, eg. *400*.
-:%(http_reason)s: Description of the above HTTP status code, eg. *"BAD REQUEST"*.
-:%(message)s: The JSON response (the body).
+:http_code: The recommended HTTP status code, if using HTTP, eg. *400*.
+:http_reason: Description of the above HTTP status code, eg. *"BAD REQUEST"*.
+:message: The JSON response (the body).
 
 Examples
 ========
 
-- `HTTP Server using Werkzeug <https://gist.github.com/bcb/54d33c971d6b2c011b7d>`_
+- `HTTP Server using Werkzeug
+  <https://gist.github.com/bcb/54d33c971d6b2c011b7d>`_
 - `HTTP Server using Flask <https://gist.github.com/bcb/66e650746298af072734>`_
-- `ZeroMQ Server using PyZMQ <https://gist.github.com/bcb/f03108f8429ef2180c04>`_
+- `ZeroMQ Server using PyZMQ
+  <https://gist.github.com/bcb/f03108f8429ef2180c04>`_
