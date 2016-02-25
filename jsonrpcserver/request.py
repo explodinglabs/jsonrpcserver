@@ -74,10 +74,13 @@ def _call(methods, method_name, args=None, kwargs=None):
     if args and kwargs:
         # Cannot have both positional and keyword arguments in JSON-RPC.
         raise InvalidParams()
+    # No arguments
     elif not args and not kwargs:
         return method()
+    # Positional arguments
     elif args:
         return method(*args)
+    # Keyword arguments
     elif kwargs:
         return method(**kwargs)
 

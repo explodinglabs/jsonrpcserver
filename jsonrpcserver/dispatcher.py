@@ -92,7 +92,7 @@ def dispatch(methods, request):
             request = _string_to_dict(request)
         # Batch requests
         if isinstance(request, list):
-            # An empty list should return Invalid Request
+            # An empty list is invalid
             if 0 == len(request):
                 raise InvalidRequest()
             # Process each request
@@ -117,7 +117,9 @@ def dispatch(methods, request):
             response = Request(request).process(methods)
     except JsonRpcServerError as e:
         response = ExceptionResponse(e, None)
+    # Batch requests can have mixed results, just return 200
     http_status = 200 if isinstance(request, list) else response.http_status
+    # Log the response
     response_log.info(str(response), extra={
         'http_code': http_status,
         'http_reason': HTTP_STATUS_CODES[http_status]})
