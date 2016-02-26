@@ -6,6 +6,7 @@ A JSON-RPC request object.
 
 import json
 import logging
+import re
 
 from funcsigs import signature
 import jsonschema
@@ -21,6 +22,12 @@ logger = logging.getLogger(__name__)
 
 json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
     __name__, 'request-schema.json').decode('utf-8')))
+
+
+def _convert_camel_case(name):
+    """Convert a camelCase string to under_score"""
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 def _validate_against_schema(request):
@@ -130,6 +137,9 @@ class Request(object):
     #: Should notifications respond with errors? (else returns no response)
     notification_errors = False
 
+    #: Convert camelCase keys to underscore before dispatch?
+    convert_camel_case_keys = False
+
     def __init__(self, request):
         """
         :param request: JSON-RPC request, in dict or string form
@@ -144,6 +154,12 @@ class Request(object):
         self.args, self.kwargs = _get_arguments(request)
         # Get request id, if any
         self.request_id = request.get('id')
+        # Convert camelCase to underscore
+        if self.convert_camel_case_keys:
+            self.method_name = _convert_camel_case(self.method_name)
+            if self.kwargs:
+                self.kwargs = {
+                    _convert_camel_case(k): v for k, v in self.kwargs.items()}
 
     @property
     def is_notification(self):

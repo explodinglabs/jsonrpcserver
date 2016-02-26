@@ -6,16 +6,24 @@ import logging
 
 from functools import partial
 
-from jsonrpcserver.request import Request, _get_arguments, \
-    _validate_arguments_against_signature, _call
+from jsonrpcserver.request import _convert_camel_case, \
+    _validate_arguments_against_signature, _call, _get_arguments, Request
 from jsonrpcserver.response import ErrorResponse, RequestResponse, \
     NotificationResponse
 from jsonrpcserver.exceptions import InvalidRequest, InvalidParams
 from jsonrpcserver.methods import Methods
 from jsonrpcserver import status
 
+
 def foo():
     return 'bar'
+
+
+class TestConvertCamelCase(TestCase):
+
+    def test_(self):
+        self.assertEqual('foo_bar', _convert_camel_case('fooBar'))
+
 
 class TestValidateArgumentsAgainstSignature(TestCase):
     """Keep it simple here. No need to test the signature.bind function."""
@@ -163,6 +171,14 @@ class TestRequestInit(TestCase):
     def test_request_id_notification(self):
         r = Request({'jsonrpc': '2.0', 'method': 'foo'})
         self.assertEqual(None, r.request_id)
+
+    def test_convert_camel_case(self):
+        Request.convert_camel_case_keys = True
+        r = Request({'jsonrpc': '2.0', 'method': 'fooMethod', 'params': \
+            {'fooParam': 'fooValue'}})
+        self.assertEqual('foo_method', r.method_name)
+        self.assertEqual({'foo_param': 'fooValue'}, r.kwargs)
+        Request.convert_camel_case_keys = False
 
 
 class TestRequestIsNotification(TestCase):
