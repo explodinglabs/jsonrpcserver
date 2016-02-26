@@ -182,12 +182,12 @@ class TestRequestInit(TestCase):
         self.assertEqual(None, r.request_id)
 
     def test_convert_camel_case(self):
-        Request.convert_camel_case_keys = True
+        Request.convert_camel_case = True
         r = Request({'jsonrpc': '2.0', 'method': 'fooMethod', 'params': {
             'fooParam': 1, 'aDict': {'barParam': 1}}})
         self.assertEqual('foo_method', r.method_name)
         self.assertEqual({'foo_param': 1, 'a_dict': {'bar_param': 1}}, r.kwargs)
-        Request.convert_camel_case_keys = False
+        Request.convert_camel_case = False
 
 
 class TestRequestIsNotification(TestCase):

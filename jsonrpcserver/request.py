@@ -149,7 +149,7 @@ class Request(object):
     notification_errors = False
 
     #: Convert camelCase keys to underscore before dispatch?
-    convert_camel_case_keys = False
+    convert_camel_case = False
 
     def __init__(self, request):
         """
@@ -166,7 +166,7 @@ class Request(object):
         # Get request id, if any
         self.request_id = request.get('id')
         # Convert camelCase to underscore
-        if self.convert_camel_case_keys:
+        if self.convert_camel_case:
             self.method_name = _convert_camel_case(self.method_name)
             if self.kwargs:
                 self.kwargs = _convert_camel_case_keys(self.kwargs)
