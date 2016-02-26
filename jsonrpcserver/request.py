@@ -7,10 +7,10 @@ A JSON-RPC request object.
 import json
 import logging
 import re
+import pkgutil
 
 from funcsigs import signature
 import jsonschema
-import pkgutil
 
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
     ExceptionResponse
@@ -180,7 +180,7 @@ class Request(object):
         except Exception as e: # pylint: disable=broad-except
             # Log the uncaught exception
             logger.exception(e)
-            error = e
+            error = e # pylint: disable=redefined-variable-type
         if error:
             if self.is_notification and not self.notification_errors:
                 return NotificationResponse()

@@ -93,7 +93,7 @@ def dispatch(methods, request):
         # Batch requests
         if isinstance(request, list):
             # An empty list is invalid
-            if 0 == len(request):
+            if len(request) == 0:
                 raise InvalidRequest()
             # Process each request
             response = BatchResponse()
@@ -111,7 +111,7 @@ def dispatch(methods, request):
                     r, NotificationResponse)])
             # "Nothing is returned for all notification batches"
             if not response:
-                response = NotificationResponse()
+                response = NotificationResponse() # pylint: disable=redefined-variable-type
         # Single request
         else:
             response = Request(request).process(methods)
