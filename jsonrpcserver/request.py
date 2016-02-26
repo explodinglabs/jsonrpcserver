@@ -1,7 +1,8 @@
 """
-request.py
-**********
-A JSON-RPC request object.
+Request
+*******
+A JSON-RPC request object. Used internally by the library, but can be imported
+externally to configure various options for handling requests.
 """
 
 import json
@@ -31,11 +32,12 @@ def _convert_camel_case(name):
 
 
 def _convert_camel_case_keys(original_dict):
-    """Converts all keys of a dict from camelCase to under_score"""
+    """Converts all keys of a dict from camelCase to under_score, recursively"""
     new_dict = dict()
     for k, v in original_dict.items():
         if isinstance(v, dict):
-            new_dict[_convert_camel_case(k)] = _convert_camel_case_keys(v) # recurse
+            # Recurse
+            new_dict[_convert_camel_case(k)] = _convert_camel_case_keys(v)
         else:
             new_dict[_convert_camel_case(k)] = v
     return new_dict
@@ -139,16 +141,21 @@ def _get_arguments(request):
 class Request(object):
     """JSON-RPC Request object.
 
-    Takes a JSON-RPC request and provides details such as the method name,
-    arguments, id, and whether it's a request or a notification.
+    Encapsulates a JSON-RPC request, providing details such as the method name,
+    arguments, and whether it's a request or a notification, and provides a
+    ``process`` method to execute the request.
     """
-    #: Validate requests?
+    #: Should requests be validated against the schema? Can be disabled to speed
+    #: up processing.
     schema_validation = True
 
-    #: Should notifications respond with errors? (else returns no response)
+    #: Should notifications respond with errors? If False, errors returns do not
+    #: return a response, which is the specification. In most cases I enable
+    #: this feature.
     notification_errors = False
 
-    #: Convert camelCase keys to underscore before dispatch?
+    #: Convert camelCase keys to underscore before dispatch? Saves time
+    #: converting messy camelCase methods and param names. I always enable this.
     convert_camel_case = False
 
     def __init__(self, request):

@@ -4,19 +4,31 @@ Recent Changes
 3.2.2 (26 Feb 2016)
 -------------------
 
-- I was frustrated handling requests with camelCase key names. (which they
-  should be in JSON right?). So now simply set
-  ``Request.convert_camel_case_keys = True`` and continue as though they were
-  underscores. See example below::
+- Added ``Request.convert_camel_case`` option.
+
+A common problem was handling requests with *camelCase* methods and key names,
+like this:
+
+.. sourcecode:: javascript
+
+    {'jsonrpc': '2.0', 'method': 'getCustomer', 'params: {'firstName': 'Beau'}, 'id': 1}
+
+This was difficult to handle cleanly, because of the camelCase names. One had
+to convert "firstName" to first_name, or use camel-case inside the python
+functions, which is just ugly.
+
+An option was added to automatically convert them to underscore format, making
+handling these requests much simpler::
 
     from jsonrpcserver import dispatch
     from jsonrpcserver.request import Request
-    Request.convert_camel_case_keys = True
+    Request.convert_camel_case = True
 
-    # Can be handled with underscores like this::
+    # Camel-case requests can now be handled as though they were underscores like this::
     def get_customer(**kwargs):
         return 'Found {}'.format(kwargs['first_name'])
 
-    # A request with camelcase method and params like this::
-    req = {"jsonrpc": "2.0", "method": "getCustomer", "params: {"firstName": "Beau"}, "id": 1}
-    dispatch([get_customer], req)
+    >>> dispatch([get_customer], {'jsonrpc': '2.0', 'method': 'getCustomer', 'params: {'firstName': 'Beau'}, 'id': 1})
+    {'jsonrpc': '2.0', 'result': 'Found Beau', 'id': 1}
+
+Too easy!
