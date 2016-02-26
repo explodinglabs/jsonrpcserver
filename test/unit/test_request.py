@@ -7,7 +7,8 @@ import logging
 from functools import partial
 
 from jsonrpcserver.request import _convert_camel_case, \
-    _validate_arguments_against_signature, _call, _get_arguments, Request
+    _convert_camel_case_keys, _validate_arguments_against_signature, _call, \
+    _get_arguments, Request
 from jsonrpcserver.response import ErrorResponse, RequestResponse, \
     NotificationResponse
 from jsonrpcserver.exceptions import InvalidRequest, InvalidParams
@@ -21,8 +22,16 @@ def foo():
 
 class TestConvertCamelCase(TestCase):
 
-    def test_(self):
+    def test(self):
         self.assertEqual('foo_bar', _convert_camel_case('fooBar'))
+
+
+class TestConvertCamelCaseKeys(TestCase):
+
+    def test(self):
+        d = {'fooKey': 1, 'aDict': {'fooKey': 1, 'barKey': 2}}
+        self.assertEqual({'foo_key': 1, 'a_dict': {'foo_key': 1, 'bar_key': 2}}, \
+                _convert_camel_case_keys(d))
 
 
 class TestValidateArgumentsAgainstSignature(TestCase):
@@ -174,10 +183,10 @@ class TestRequestInit(TestCase):
 
     def test_convert_camel_case(self):
         Request.convert_camel_case_keys = True
-        r = Request({'jsonrpc': '2.0', 'method': 'fooMethod', 'params': \
-            {'fooParam': 'fooValue'}})
+        r = Request({'jsonrpc': '2.0', 'method': 'fooMethod', 'params': {
+            'fooParam': 1, 'aDict': {'barParam': 1}}})
         self.assertEqual('foo_method', r.method_name)
-        self.assertEqual({'foo_param': 'fooValue'}, r.kwargs)
+        self.assertEqual({'foo_param': 1, 'a_dict': {'bar_param': 1}}, r.kwargs)
         Request.convert_camel_case_keys = False
 
 

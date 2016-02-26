@@ -30,6 +30,17 @@ def _convert_camel_case(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
+def _convert_camel_case_keys(original_dict):
+    """Converts all keys of a dict from camelCase to under_score"""
+    new_dict = dict()
+    for k, v in original_dict.items():
+        if isinstance(v, dict):
+            new_dict[_convert_camel_case(k)] = _convert_camel_case_keys(v) # recurse
+        else:
+            new_dict[_convert_camel_case(k)] = v
+    return new_dict
+
+
 def _validate_against_schema(request):
     """Validate against the JSON-RPC schema.
 
@@ -158,8 +169,8 @@ class Request(object):
         if self.convert_camel_case_keys:
             self.method_name = _convert_camel_case(self.method_name)
             if self.kwargs:
-                self.kwargs = {
-                    _convert_camel_case(k): v for k, v in self.kwargs.items()}
+                self.kwargs = _convert_camel_case_keys(self.kwargs)
+
 
     @property
     def is_notification(self):
