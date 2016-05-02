@@ -66,7 +66,7 @@ For example, if the arguments are unsatisfactory, raise :class:`InvalidParams
 
     def get_name(**kwargs):
         if 'name' not in kwargs:
-            raise InvalidParams()
+            raise InvalidParams('name is required')
 
 The library catches the exception and gives the appropriate response::
 
