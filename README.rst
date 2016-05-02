@@ -10,5 +10,5 @@ and 3.3+.
     >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
     {'jsonrpc': '2.0', 'result': 'meow', 'id': 1}
 
-Full documentation is at `jsonrpcserver.readthedocs.org
-<https://jsonrpcserver.readthedocs.org/>`__.
+Full documentation is at `jsonrpcserver.readthedocs.io
+<https://jsonrpcserver.readthedocs.io/>`__.
