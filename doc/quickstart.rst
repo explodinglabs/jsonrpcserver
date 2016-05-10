@@ -131,5 +131,7 @@ Examples
 - `HTTP Server using Werkzeug
   <https://gist.github.com/bcb/54d33c971d6b2c011b7d>`_
 - `HTTP Server using Flask <https://gist.github.com/bcb/66e650746298af072734>`_
+- `Socket.IO Server using Flask-SocketIO
+  <https://gist.github.com/bcb/f031b9c7c62fb89355d9a4d4acd67cb4>`_
 - `ZeroMQ Server using PyZMQ
   <https://gist.github.com/bcb/f03108f8429ef2180c04>`_
