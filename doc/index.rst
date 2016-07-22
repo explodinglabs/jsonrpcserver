@@ -15,9 +15,9 @@ Guides
 Links
 =====
 
-- `PyPi Package <https://pypi.python.org/pypi/jsonrpcserver>`_
-- `Repository <https://github.com/bcb/jsonrpcserver>`_
-- `Issue tracker <https://github.com/bcb/jsonrpcserver/issues>`_
+- `Github <https://github.com/bcb/jsonrpcserver>`_
+- `Issues <https://github.com/bcb/jsonrpcserver/issues>`_
+- `PyPi <https://pypi.python.org/pypi/jsonrpcserver>`_
 - `Twitter @bbmelb <https://twitter.com/bbmelb>`_
 
 See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.io/>`_
