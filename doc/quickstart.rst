@@ -132,4 +132,4 @@ Examples
 - `HTTP Server using Flask <https://bcb.github.io/python/flask/jsonrpc>`_
 - `HTTP Server using Python's HTTPServer module <https://bcb.github.io/python/httpserver/jsonrpc>`_
 - `ZeroMQ Server using PyZMQ <https://bcb.github.io/python/pyzmq/jsonrpc>`_
-- `Socket.IO Server using Flask-SocketIO <https://gist.github.com/bcb/f031b9c7c62fb89355d9a4d4acd67cb4>`_
+- `Socket.IO Server using Flask-SocketIO <https://bcb.github.io/python/flask-socketio/jsonrpc>`_
