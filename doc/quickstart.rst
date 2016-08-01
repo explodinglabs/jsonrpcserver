@@ -128,8 +128,8 @@ The response format has these fields:
 Examples
 ========
 
-- `HTTP Server using Werkzeug <https://bcb.github.io/python/werkzeug/jsonrpc>`_
-- `HTTP Server using Flask <https://bcb.github.io/python/flask/jsonrpc>`_
-- `HTTP Server using Python's HTTPServer module <https://bcb.github.io/python/httpserver/jsonrpc>`_
-- `ZeroMQ Server using PyZMQ <https://bcb.github.io/python/pyzmq/jsonrpc>`_
-- `Socket.IO Server using Flask-SocketIO <https://bcb.github.io/python/flask-socketio/jsonrpc>`_
+- `HTTP Server using Werkzeug <https://bcb.github.io/jsonrpc/werkzeug>`_
+- `HTTP Server using Flask <https://bcb.github.io/jsonrpc/flask>`_
+- `HTTP Server using Python's HTTPServer module <https://bcb.github.io/jsonrpc/httpserver>`_
+- `ZeroMQ Server using PyZMQ <https://bcb.github.io/jsonrpc/pyzmq>`_
+- `Socket.IO Server using Flask-SocketIO <https://bcb.github.io/jsonrpc/flask-socketio>`_
