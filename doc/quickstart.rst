@@ -76,9 +76,7 @@ when responding to the client:
 Configuration
 =============
 
-Attributes of the :class:`~request.Request` and
-:class:`~response.ErrorResponse` classes can be modified to configure various
-options.
+See the :mod:`config <config>` api for how to configure various options.
 
 Logging
 =======

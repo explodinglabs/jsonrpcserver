@@ -1,12 +1,13 @@
 """
 Configuration
 *************
-Import this module to configure various options, for example::
+Import ``config`` to configure various settings, for example enabling debug
+mode::
 
     from jsonrpcserver import config
     config.debug = True
 """
-#: Debug mode - includes more information in error messages.
+#: Include more information in error messages.
 debug = False
 
 #: Validate requests against the schema. Disable to speed up processing.
