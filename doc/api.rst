@@ -3,12 +3,12 @@
 API
 ***
 
+.. automodule:: config
 .. automodule:: dispatcher
 .. automodule:: methods
-.. automodule:: request
-    :exclude-members: is_notification, process
 .. automodule:: response
     :exclude-members: ExceptionResponse
 .. automodule:: jsonrpcserver.exceptions
+    :exclude-members: JsonRpcServerError
 
 :doc:`Back home <index>`

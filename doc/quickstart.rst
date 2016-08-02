@@ -52,8 +52,8 @@ turn on debug mode:
 
 .. code-block:: python
 
-    >>> from jsonrpcserver.response import ErrorResponse
-    >>> ErrorResponse.debug = True
+    >>> from jsonrpcserver import config
+    >>> config.debug = True
     >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params', 'data': 'num is required'}, 'id': 1}
 

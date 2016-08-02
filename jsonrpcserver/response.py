@@ -16,8 +16,10 @@ with (useful if using HTTP).
 
 import json
 from collections import OrderedDict
+
 from jsonrpcserver import status
 from jsonrpcserver.exceptions import JsonRpcServerError, ServerError
+from jsonrpcserver import config
 
 
 def _sort_response(response):
@@ -97,11 +99,6 @@ class RequestResponse(_Response):
 class ErrorResponse(_Response):
     """Returned if there was an error while processing the request.
     """
-    #: Should we include the ``data`` member when sending an error back to
-    #: the client? It holds extra details about the error, for example if
-    #: ``ServerError('Database error')`` was raised, it would hold ``'Database
-    #: error'``. Modify to configure.
-    debug = False
 
     def __init__(self, http_status, request_id, code, message, data=None):
         """
@@ -125,7 +122,7 @@ class ErrorResponse(_Response):
             {'jsonrpc': '2.0', 'error': {'code': code, 'message': message},
              'id': request_id})
         #: Holds extra information about the error.
-        if self.debug and data:
+        if config.debug and data:
             self['error']['data'] = data
         #: The recommended HTTP status code.
         self.http_status = http_status

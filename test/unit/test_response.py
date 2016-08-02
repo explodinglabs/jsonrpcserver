@@ -9,6 +9,7 @@ from jsonrpcserver.response import _sort_response, RequestResponse, \
     _Response
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
+from jsonrpcserver import config
 
 class TestSortResponse(TestCase):
 
@@ -62,10 +63,10 @@ class TestRequestResponse(TestCase):
 class TestErrorResponse(TestCase):
 
     def setUp(self):
-        ErrorResponse.debug = False
+        config.debug = False
 
     def tearDown(self):
-        ErrorResponse.debug = False
+        config.debug = False
 
     def test(self):
         r = ErrorResponse(
@@ -92,7 +93,7 @@ class TestErrorResponse(TestCase):
         self.assertEqual(None, r['id'])
 
     def test_debug(self):
-        ErrorResponse.debug = True
+        config.debug = True
         r = ErrorResponse(
             status.HTTP_BAD_REQUEST, 1, status.JSONRPC_INVALID_REQUEST_CODE,
             'foo', 'bar')
@@ -102,10 +103,10 @@ class TestErrorResponse(TestCase):
 class TestExceptionResponse(TestCase):
 
     def setUp(self):
-        ErrorResponse.debug = False
+        config.debug = False
 
     def tearDown(self):
-        ErrorResponse.debug = False
+        config.debug = False
 
     def test_jsonrpcservererror(self):
         r = ExceptionResponse(InvalidParams(), None)
@@ -126,7 +127,7 @@ class TestExceptionResponse(TestCase):
             r)
 
     def test_with_data(self):
-        ErrorResponse.debug = True
+        config.debug = True
         r = ExceptionResponse(InvalidParams('Password missing'), 1)
         self.assertEqual(
             {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params', 'data': 'Password missing'}, 'id': 1},

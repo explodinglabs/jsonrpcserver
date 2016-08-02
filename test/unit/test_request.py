@@ -14,6 +14,7 @@ from jsonrpcserver.response import ErrorResponse, RequestResponse, \
 from jsonrpcserver.exceptions import InvalidRequest, InvalidParams
 from jsonrpcserver.methods import Methods
 from jsonrpcserver import status
+from jsonrpcserver import config
 
 
 def foo():
@@ -157,6 +158,9 @@ class TestGetArguments(TestCase):
 
 class TestRequestInit(TestCase):
 
+    def tearDown(self):
+        config.convert_camel_case = False
+
     def test_invalid_request(self):
         with self.assertRaises(InvalidRequest):
             Request({'jsonrpc': '2.0'})
@@ -182,12 +186,11 @@ class TestRequestInit(TestCase):
         self.assertEqual(None, r.request_id)
 
     def test_convert_camel_case(self):
-        Request.convert_camel_case = True
+        config.convert_camel_case = True
         r = Request({'jsonrpc': '2.0', 'method': 'fooMethod', 'params': {
             'fooParam': 1, 'aDict': {'barParam': 1}}})
         self.assertEqual('foo_method', r.method_name)
         self.assertEqual({'foo_param': 1, 'a_dict': {'bar_param': 1}}, r.kwargs)
-        Request.convert_camel_case = False
 
 
 class TestRequestIsNotification(TestCase):
@@ -206,6 +209,9 @@ class TestRequestProcessNotifications(TestCase):
 
     def setUp(self):
         logging.disable(logging.CRITICAL)
+
+    def tearDown(self):
+        config.notification_errors = False
 
     # Success
     def test_success(self):
@@ -238,7 +244,7 @@ class TestRequestProcessNotifications(TestCase):
     def test_config_notification_errors_on(self):
         # Should return "method not found" error
         request = Request({'jsonrpc': '2.0', 'method': 'baz'})
-        request.notification_errors = True
+        config.notification_errors = True
         r = request.process([foo])
         self.assertIsInstance(r, ErrorResponse)
 

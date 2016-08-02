@@ -13,6 +13,7 @@ import pkgutil
 from funcsigs import signature
 import jsonschema
 
+from jsonrpcserver import config
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
     ExceptionResponse
 from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
@@ -145,24 +146,13 @@ class Request(object):
     arguments, and whether it's a request or a notification, and provides a
     ``process`` method to execute the request.
     """
-    #: Should requests be validated against the schema? Disabling this can speed
-    #: up processing.
-    schema_validation = True
-
-    #: Should notifications respond with errors? The JSON-RPC spec says no, but
-    #: I prefer to receive errors.
-    notification_errors = False
-
-    #: Convert camelCase keys to under_score before dispatching? This saves
-    #: time by cleaning up messy key names for you. *Recommended*
-    convert_camel_case = False
 
     def __init__(self, request):
         """
         :param request: JSON-RPC request, in dict or string form
         """
         # Validate against the JSON-RPC schema
-        if self.schema_validation:
+        if config.schema_validation:
             _validate_against_schema(request)
         # Get method name from the request. We can assume the key exists because
         # the request passed the schema.
@@ -172,7 +162,7 @@ class Request(object):
         # Get request id, if any
         self.request_id = request.get('id')
         # Convert camelCase to underscore
-        if self.convert_camel_case:
+        if config.convert_camel_case:
             self.method_name = _convert_camel_case(self.method_name)
             if self.kwargs:
                 self.kwargs = _convert_camel_case_keys(self.kwargs)
@@ -199,7 +189,7 @@ class Request(object):
             logger.exception(e)
             error = e # pylint: disable=redefined-variable-type
         if error:
-            if self.is_notification and not self.notification_errors:
+            if self.is_notification and not config.notification_errors:
                 return NotificationResponse()
             else:
                 return ExceptionResponse(error, self.request_id)

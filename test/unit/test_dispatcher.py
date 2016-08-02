@@ -8,6 +8,7 @@ from jsonrpcserver.exceptions import ParseError
 from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
     RequestResponse, BatchResponse
 from jsonrpcserver.request import Request
+from jsonrpcserver import config
 
 
 def foo(): # pylint: disable=blacklisted-name
@@ -33,12 +34,8 @@ class TestStringToDict(TestCase):
 class TestDispatchNotifications(TestCase):
     """Go easy here, no need to test the _call function"""
 
-    def setUp(self):
-#        logging.disable(logging.CRITICAL)
-        Request.notification_errors = False
-
     def tearDown(self):
-        Request.notification_errors = False
+        config.notification_errors = False
 
     # Success
     def test(self):
@@ -65,7 +62,7 @@ class TestDispatchNotifications(TestCase):
         self.assertIsInstance(r, NotificationResponse)
 
     def test_errors_enabled(self):
-        Request.notification_errors = True
+        config.notification_errors = True
         r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'non_existant'})
         self.assertIsInstance(r, ErrorResponse)
 

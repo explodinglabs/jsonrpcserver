@@ -2,7 +2,6 @@
 jsonrpcserver
 *************
 """
-
 import logging
 logging.getLogger('jsonrpcserver').addHandler(logging.NullHandler())
 
