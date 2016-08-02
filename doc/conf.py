@@ -111,6 +111,7 @@ html_theme = 'alabaster'
 # documentation.
 html_theme_options = {
     'page_width': '800px',
+    'analytics_id': 'UA-81795603-3',
     'github_button': False,
     'extra_nav_links': {
         'Test': 'index.html'
