@@ -1,17 +1,17 @@
 """
 Methods
 *******
-
-The ``Methods`` class can be used to easily build a collection of methods.
-Essentially it's a ``dict`` with some extra functionality::
+Use this to easily build a list of methods to dispatch to::
 
     from jsonrpcserver import Methods
+
     methods = Methods()
-    methods.add_method(lambda: 'meow', 'cat')
 
-Pass the object to :func:`dispatch() <dispatcher.dispatch>` as usual::
+    @methods.add_method
+    def cat():
+        return 'meow'
 
-    dispatch(methods, ...)
+    dispatch(methods, request)
 """
 
 from jsonrpcserver.exceptions import MethodNotFound
@@ -39,7 +39,7 @@ def _get_method(methods, name):
 
 
 class Methods(dict):
-    """Holds a collection of methods."""
+    """Holds a list of methods."""
 
     def __getitem__(self, key):
         return self.__dict__[key]
@@ -47,18 +47,11 @@ class Methods(dict):
     def add_method(self, method, name=None):
         """Add a method to the list.
 
-        To add a function::
-
-            def cat():
-                return 'meow'
-
-            methods.add_method(cat)
-
         Use a different name by giving a second argument::
 
             methods.add_method(cat, 'say_meow')
 
-        Which is useful for lambdas::
+        This is useful for lambdas because they don't have a name::
 
             methods.add_method(lambda: 'meow', 'cat')
 
@@ -68,7 +61,7 @@ class Methods(dict):
             methods.add_method(partial(multiply, 2), 'double')
             methods.add_method(partial(multiply, 3), 'triple')
 
-        Alternatively, use ``add_method`` as a decorator::
+        Alternatively, use it as a decorator::
 
             @methods.add_method
             def cat():

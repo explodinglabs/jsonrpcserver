@@ -34,45 +34,17 @@ def _string_to_dict(request):
 
 
 def dispatch(methods, request):
-    """Dispatch JSON-RPC requests to a collection of methods::
+    """Dispatch a JSON-RPC request to a collection of methods::
 
-        r = dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
+        >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
-    The first parameter can be either:
-
-    - A *list* of methods, or
-    - A *dictionary* of name:method pairs.
-
-    When using a **list**, the methods must be identifiable by a ``__name__``
-    attribute.
-
-    Functions already have a ``__name__`` attribute::
-
-        >>> def cat():
-        ...     return 'meow'
-        ...
-        >>> cat.__name__
-        'cat'
-        >>> dispatch([cat], ...)
-
-    Lambdas require setting it::
-
-        >>> cat = lambda: 'meow'
-        >>> cat.__name__ = 'cat'
-        >>> dispatch([cat], ...)
-
-    As do partials::
-
-        >>> max_ten = partial(min, 10)
-        >>> max_ten.__name__ = 'max_ten'
-        >>> dispatch([max_ten], ...)
-
-    Alternatively, use a **dictionary**::
+    The first parameter can be either a list of methods as above, or a
+    dictionary of name:method pairs:
 
         >>> dispatch({'cat': cat, 'max_ten': max_ten}, ...)
 
-    The :mod:`methods` module also gives nice and easy ways to build the
-    collection of methods.
+    If you have more than a few methods, look into the :class:`~methods.Methods`
+    class.
 
     :param methods:
         Collection of methods to dispatch to.

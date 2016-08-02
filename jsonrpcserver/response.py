@@ -1,17 +1,12 @@
 """
 Response
 ********
+These are the objects returned by
+:func:`~dispatcher.dispatch`.
 
-These are the response objects returned by :func:`dispatch()
-<dispatcher.dispatch>`.
-
-As per the `specification
-<http://www.jsonrpc.org/specification#response_object>`__, the type of response
-depends on the type of request, and the result of processing it. For example,
-after successfully processing a request with an ``id``, the payload data is in
-``response['result']``.  Use ``str(response)`` to get a JSON-serialized string.
-An additional ``http_status`` attribute has a suggested status code to respond
-with (useful if using HTTP).
+There are a number of different types, but they're all valid `JSON-RPC response
+objects <http://www.jsonrpc.org/specification#response_object>`_ with an
+``http_status`` attribute for responding to HTTP requests.
 """
 
 import json
@@ -47,12 +42,11 @@ def _sort_response(response):
 
 
 class NotificationResponse(object):
-    """Returned to a `Notification
+    """Returned from processing a successful `notification
     <http://www.jsonrpc.org/specification#notification>`_.
     """
 
-    #: The HTTP status to send in response to notifications. Default is ``204``,
-    #: but some clients do prefer ``200 OK``. Modify to configure.
+    #: The HTTP status to send in response to notifications.
     http_status = status.HTTP_NO_CONTENT
 
     def __str__(self):
@@ -67,8 +61,9 @@ class _Response(dict):
 
 
 class RequestResponse(_Response):
-    """Returned to a request with an ``id`` member (indicating that a payload is
-    expected).
+    """Returned from processing a successful `request
+    <http://www.jsonrpc.org/specification#request_object>`_ (with an ``id``
+    member, indicating that a payload is expected).
     """
 
     #: The recommended HTTP status code.
@@ -124,7 +119,7 @@ class ErrorResponse(_Response):
         #: Holds extra information about the error.
         if config.debug and data:
             self['error']['data'] = data
-        #: The recommended HTTP status code.
+        #: The recommended HTTP status code. (depends on the error)
         self.http_status = http_status
 
     def __str__(self):
