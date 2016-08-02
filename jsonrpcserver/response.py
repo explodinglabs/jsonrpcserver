@@ -102,9 +102,6 @@ class ErrorResponse(_Response):
     #: ``ServerError('Database error')`` was raised, it would hold ``'Database
     #: error'``. Modify to configure.
     debug = False
-    #: Should we respond to notifications if there's an error, such as *Method
-    #: not found*? The specification says no. Modify to configure.
-    notification_errors = False
 
     def __init__(self, http_status, request_id, code, message, data=None):
         """
