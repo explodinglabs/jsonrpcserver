@@ -68,8 +68,7 @@ class Methods(dict):
             methods.add_method(partial(multiply, 2), 'double')
             methods.add_method(partial(multiply, 3), 'triple')
 
-        Alternatively, use ``add_method`` as a decorator (handy for building an
-        API)::
+        Alternatively, use ``add_method`` as a decorator::
 
             @methods.add_method
             def cat():

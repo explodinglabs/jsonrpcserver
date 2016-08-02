@@ -1,8 +1,8 @@
 """
 Request
 *******
-A JSON-RPC request object. Used internally by the library, but can be imported
-externally to configure various options for handling requests.
+A JSON-RPC request object. Used internally by the library, but class attributes
+can be modified to configure various options for handling requests.
 """
 
 import json
@@ -145,17 +145,16 @@ class Request(object):
     arguments, and whether it's a request or a notification, and provides a
     ``process`` method to execute the request.
     """
-    #: Should requests be validated against the schema? Can be disabled to speed
+    #: Should requests be validated against the schema? Disabling this can speed
     #: up processing.
     schema_validation = True
 
-    #: Should notifications respond with errors? If False, errors returns do not
-    #: return a response, which is the specification. In most cases I enable
-    #: this feature.
+    #: Should notifications respond with errors? The JSON-RPC spec says no, but
+    #: I prefer to receive errors.
     notification_errors = False
 
-    #: Convert camelCase keys to underscore before dispatch? Saves time
-    #: converting messy camelCase methods and param names. I always enable this.
+    #: Convert camelCase keys to under_score before dispatching? This saves
+    #: time by cleaning up messy key names for you. *Recommended*
     convert_camel_case = False
 
     def __init__(self, request):

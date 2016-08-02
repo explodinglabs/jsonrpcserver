@@ -10,3 +10,5 @@ API
 .. automodule:: response
     :exclude-members: ExceptionResponse
 .. automodule:: jsonrpcserver.exceptions
+
+:doc:`Back home <index>`

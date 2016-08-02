@@ -13,94 +13,84 @@ Installation
 Usage
 =====
 
-Write functions that will carry out the requests, for example::
-
-    def cat():
-        return 'meow'
-
-Dispatch JSON-RPC requests to them::
-
-    >>> from jsonrpcserver import dispatch
-    >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
-    {'jsonrpc': '2.0', 'result': 'meow', 'id': 1}
-
-Parameters
-----------
-
-An example of taking keyword arguments::
-
-    def up(**kwargs):
-        return kwargs['name'].upper()
-
-::
-
-    >>> dispatch([up], {'jsonrpc': '2.0', 'method': 'up', 'params': {'name': 'foo'}, 'id': 1})
-    {'jsonrpc': '2.0', 'result': 'FOO', 'id': 1}
-
-.. important::
-
-    Use positional or keyword arguments, *but not both in the same method*.
-    This is a `requirement
-    <http://www.jsonrpc.org/specification#parameter_structures>`_  of the
-    JSON-RPC specification.
-
-Responding to the client
-------------------------
-
-To send payload data back in the response message, simply ``return`` it as
-shown above.
-
-Sending an error response
--------------------------
-
-The library handles many client errors, but there are other times where we need
-to inform the client of an error. This is done by raising an exception.
-
-For example, if the arguments are unsatisfactory, raise :class:`InvalidParams
-<jsonrpcserver.exceptions.InvalidParams>`:
+Write functions to carry out requests. Here we simply cube a number:
 
 .. code-block:: python
-    :emphasize-lines: 5
 
-    from jsonrpcserver.exceptions import InvalidParams
+    >>> def cube(**kwargs):
+    ...     return kwargs['num']**3
 
-    def get_name(**kwargs):
-        if 'name' not in kwargs:
-            raise InvalidParams('name is required')
+Dispatch JSON-RPC requests to the function(s):
 
-The library catches the exception and gives the appropriate response::
+.. code-block:: python
 
-    >>> dispatch([get_name], {'jsonrpc': '2.0', 'method': 'get_name', 'params': [], 'id': 1})
+    >>> from jsonrpcserver import dispatch
+    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1})
+    {'jsonrpc': '2.0', 'result': 27, 'id': 1}
+
+If arguments are unsatisfactory, raise :class:`InvalidParams
+<jsonrpcserver.exceptions.InvalidParams>` in your method:
+
+.. code-block:: python
+    :emphasize-lines: 3-4
+
+    >>> from jsonrpcserver.exceptions import InvalidParams
+    >>> def cube(**kwargs):
+    ...    if 'num' not in kwargs:
+    ...        raise InvalidParams('num is required')
+    ...    return kwargs['num']**3
+
+The library catches the exception and gives the appropriate response:
+
+.. code-block:: python
+
+    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 
-There's also :class:`ServerError <jsonrpcserver.exceptions.ServerError>`, which
-lets the client know there was a problem at the server's end. In fact, any
-other exceptions raised will result in a *"Server error"* response::
+To include the *"num is required"* message given when the exception was raised,
+turn on debug mode:
 
-    def fail():
-        1/0
+.. code-block:: python
 
-::
+    >>> from jsonrpcserver.response import ErrorResponse
+    >>> ErrorResponse.debug = True
+    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
+    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params', 'data': 'num is required'}, 'id': 1}
 
-    >>> dispatch([fail], {'jsonrpc': '2.0', 'method': 'fail', 'id': 1})
-    {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Server error'}, 'id': 1}
+Note the extra 'data' key in the response.
 
-This ensures we *always* have a response for the client.
+You can also raise :class:`ServerError <jsonrpcserver.exceptions.ServerError>`
+to let the client know there was an error on the server side.
+
+If you're processing HTTP requests, an ``http_status`` attribute can be used
+when responding to the client:
+
+.. code-block:: python
+
+    >>> r = dispatch([cube], {})
+    >>> r
+    {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}
+    >>> r.http_status
+    400
+
+Configuration
+=============
+
+Attributes of the :class:`~request.Request` and
+:class:`~response.ErrorResponse` classes can be modified to configure various
+options.
 
 Logging
 =======
 
 To see the JSON-RPC messages going back and forth, set the logging level to
-``INFO``::
+``INFO`` and add a basic handler::
 
     import logging
     logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
-
-Then add a basic handler::
-
     logging.getLogger('jsonrpcserver').addHandler(logging.StreamHandler())
 
-Or use a custom log format::
+Alternatively, use a custom log format::
 
     request_format = '--> %(message)s'
     response_format = '<-- %(http_code)d %(http_reason)s %(message)s'
@@ -130,6 +120,8 @@ Examples
 
 - `HTTP Server using Werkzeug <https://bcb.github.io/jsonrpc/werkzeug>`_
 - `HTTP Server using Flask <https://bcb.github.io/jsonrpc/flask>`_
-- `HTTP Server using Python's HTTPServer module <https://bcb.github.io/jsonrpc/httpserver>`_
+- `HTTP Server using Python's http.server module <https://bcb.github.io/jsonrpc/httpserver>`_
 - `ZeroMQ Server using PyZMQ <https://bcb.github.io/jsonrpc/pyzmq>`_
 - `Socket.IO Server using Flask-SocketIO <https://bcb.github.io/jsonrpc/flask-socketio>`_
+
+:doc:`Back home <index>`
