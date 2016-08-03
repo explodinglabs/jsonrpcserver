@@ -9,6 +9,7 @@ import json
 import logging
 import re
 import pkgutil
+from collections.abc import Mapping, Sequence
 
 from funcsigs import signature
 import jsonschema
@@ -17,13 +18,35 @@ from jsonrpcserver import config
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
     ExceptionResponse
 from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
-    InvalidParams
-from jsonrpcserver.methods import _get_method
+    InvalidParams, MethodNotFound
 
 logger = logging.getLogger(__name__)
 
 json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
     __name__, 'request-schema.json').decode('utf-8')))
+
+
+def _get_method(methods, name):
+    """Finds a method in a list (or dictionary).
+
+    :param methods: List or dictionary of named functions.
+    :param name: Name of the method to find.
+    :raises MethodNotFound: If the method wasn't in the list.
+    :returns: The method from the list.
+    """
+    # If it's a Mapping (dict-like), search for the key
+    if isinstance(methods, Mapping):
+        try:
+            return methods[name]
+        except KeyError:
+            raise MethodNotFound(name)
+    # Otherwise it must be a Sequence (list-like), search the __name__
+    # attributes
+    elif isinstance(methods, Sequence):
+        try:
+            return next(m for m in methods if m.__name__ == name)
+        except StopIteration:
+            raise MethodNotFound(name)
 
 
 def _convert_camel_case(name):

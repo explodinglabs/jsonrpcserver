@@ -7,11 +7,12 @@ import logging
 from functools import partial
 
 from jsonrpcserver.request import _convert_camel_case, \
-    _convert_camel_case_keys, _validate_arguments_against_signature, _call, \
-    _get_arguments, Request
+    _convert_camel_case_keys, _validate_arguments_against_signature, \
+    _get_method, _call, _get_arguments, Request
 from jsonrpcserver.response import ErrorResponse, RequestResponse, \
     NotificationResponse
-from jsonrpcserver.exceptions import InvalidRequest, InvalidParams
+from jsonrpcserver.exceptions import InvalidRequest, InvalidParams, \
+    MethodNotFound
 from jsonrpcserver.methods import Methods
 from jsonrpcserver import status
 from jsonrpcserver import config
@@ -61,6 +62,42 @@ class TestValidateArgumentsAgainstSignature(TestCase):
             lambda **kwargs: None, None, {'foo': 'bar'})
 
 
+
+class TestGetMethod(TestCase):
+
+    def test_list(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        def dog(): pass # pylint: disable=multiple-statements
+        self.assertIs(cat, _get_method([cat, dog], 'cat'))
+        self.assertIs(dog, _get_method([cat, dog], 'dog'))
+
+    def test_list_non_existant(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        with self.assertRaises(MethodNotFound):
+            _get_method([cat], 'cat_says')
+
+    def test_dict(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        def dog(): pass # pylint: disable=multiple-statements
+        d = {'cat_says': cat, 'dog_says': dog}
+        self.assertIs(cat, _get_method(d, 'cat_says'))
+        self.assertIs(dog, _get_method(d, 'dog_says'))
+
+    def test_dict_non_existant(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        with self.assertRaises(MethodNotFound):
+            _get_method({'cat_says': cat}, 'cat')
+
+    def test_methods_object(self):
+        def cat(): pass # pylint: disable=multiple-statements
+        def dog(): pass # pylint: disable=multiple-statements
+        methods = Methods()
+        methods.add(cat)
+        methods.add(dog)
+        self.assertIs(cat, _get_method(methods, 'cat'))
+        self.assertIs(dog, _get_method(methods, 'dog'))
+
+
 class TestCall(TestCase):
 
     def test_list_functions(self):
@@ -89,31 +126,31 @@ class TestCall(TestCase):
 
     def test_methods_functions(self):
         methods = Methods()
-        methods.add_method(foo)
+        methods.add(foo)
         self.assertEqual('bar', _call(methods, 'foo'))
 
     def test_methods_functions_with_decorator(self):
         methods = Methods()
-        @methods.add_method
+        @methods.add
         def foo(): # pylint: disable=redefined-outer-name,unused-variable
             return 'bar'
         self.assertEqual('bar', _call(methods, 'foo'))
 
     def test_methods_lambdas(self):
         methods = Methods()
-        methods.add_method(lambda: 'bar', 'foo')
+        methods.add(lambda: 'bar', 'foo')
         self.assertEqual('bar', _call(methods, 'foo'))
 
     def test_methods_partials(self):
         multiply = lambda x, y: x * y
         double = partial(multiply, 2)
         methods = Methods()
-        methods.add_method(double, 'double')
+        methods.add(double, 'double')
         self.assertEqual(6, _call(methods, 'double', [3]))
 
     def test_positionals(self):
         methods = Methods()
-        methods.add_method(lambda x: x * x, 'square')
+        methods.add(lambda x: x * x, 'square')
         self.assertEqual(9, _call(methods, 'square', [3]))
 
     def test_keywords(self):
