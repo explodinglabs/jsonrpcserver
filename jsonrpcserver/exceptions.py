@@ -67,7 +67,7 @@ class InvalidParams(JsonRpcServerError):
 
 
 class ServerError(JsonRpcServerError):
-    """Raised when there's an application specific error on the server-side.
+    """Raised when there's an application-specific error on the server side.
 
     :param data: Extra information about the error that occurred (optional).
     """

@@ -66,13 +66,13 @@ The dispatcher catches the exception and gives the appropriate response:
     >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 
-To include the *"num is required"* message given when the exception was
-raised, turn on :mod:`debug mode <config.debug>`
+To include the *"num is required"* message given when the exception was raised,
+turn on :mod:`debug mode <config.debug>`.
 
 Exceptions
 ==========
 
-See the :doc:`full list of exceptions <exceptions>` raised by jsonrpcserver.
+See the :doc:`list of exceptions <exceptions>` raised by jsonrpcserver.
 
 Configuration
 =============

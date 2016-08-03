@@ -1,5 +1,9 @@
 """At the core of jsonrpcserver is the dispatcher, which processes JSON-RPC
-requests and passes them to your functions.
+requests.
+
+::
+
+    >>> from jsonrpcserver import dispatch
 """
 import logging
 import json
@@ -37,12 +41,13 @@ def dispatch(methods, request):
 
     .. code-block:: python
 
-        >>> from jsonrpcserver import dispatch
         >>> response = dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1})
+        --> {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1}
+        <-- {'jsonrpc': '2.0', 'result': 27, 'id': 1}
 
     :param methods:
         Collection of methods to dispatch to. Can be a ``list`` of functions, a
-        ``dict`` of name:method pairs, or a :class:`~methods.Methods` object.
+        ``dict`` of name:method pairs, or a ``Methods`` object.
     :param request:
         A JSON-RPC request. Can be a JSON-serializable object, or a string.
         (Strings must be valid JSON - use double quotes!)

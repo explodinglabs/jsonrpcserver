@@ -1,5 +1,5 @@
-""":func:`~dispatcher.dispatch` takes a ``list`` of functions, but you can also
-give it a ``Methods`` object::
+""":func:`~dispatcher.dispatch` takes a ``list`` of functions, but it can also
+take a ``Methods`` object::
 
     from jsonrpcserver import Methods
     methods = Methods()
