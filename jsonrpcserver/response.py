@@ -6,8 +6,8 @@ object.
     >>> response
     {'jsonrpc': '2.0', 'result': 27, 'id': 1}
 
-If you're processing http requests, the return value has a recommended http
-status code which you can send back to the client.
+If you're processing http requests, it also has a recommended http status code
+which you can send back to the client.
 
 .. code-block:: python
 

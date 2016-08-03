@@ -31,18 +31,18 @@ Dispatcher
 
 .. automodule:: dispatcher
 
+Methods
+-------
+
+.. automodule:: methods
+    :exclude-members: Methods
+
 Response
 --------
 
 .. automodule:: response
     :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
         ErrorResponse, BatchResponse
-
-Methods
--------
-
-.. automodule:: methods
-    :exclude-members: Methods
 
 Validation
 ==========
@@ -69,15 +69,15 @@ The dispatcher catches the exception and gives the appropriate response:
 To include the *"num is required"* message given when the exception was raised,
 turn on :mod:`debug mode <config.debug>`.
 
-Exceptions
-==========
-
-See the :doc:`list of exceptions <exceptions>` raised by jsonrpcserver.
-
 Configuration
 =============
 
 .. automodule:: config
+
+Exceptions
+==========
+
+See the :doc:`list of exceptions <exceptions>` raised by jsonrpcserver.
 
 Examples
 ========
