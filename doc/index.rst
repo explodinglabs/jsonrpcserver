@@ -3,20 +3,17 @@ jsonrpcserver
 
 Process `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and 3.3+.
 
-.. toctree::
-    :maxdepth: 2
-
 .. code-block:: python
 
-    from jsonrpcserver import HTTPServer
-    server = HTTPServer()
+    from jsonrpcserver import Methods
+    methods = Methods()
 
-    @server.add_method
+    @methods.add
     def cube(**kwargs):
         return kwargs['num']**3
 
     if __name__ == '__main__':
-        server.serve_forever()
+        methods.serve_forever()
 
 Start the server:
 
@@ -26,7 +23,7 @@ Start the server:
     $ python server.py
     * Listening on http://localhost:5000/
 
-This example uses the built-in server, but you can process requests in any
+This example uses the built-in HTTP server, but you can process requests in any
 application, (such as a Flask or Django app), by using the :mod:`dispatcher`.
 
 Dispatcher
