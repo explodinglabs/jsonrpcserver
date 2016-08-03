@@ -1,16 +1,14 @@
-"""
-Configuration
-*************
-Import ``config`` to configure various settings, for example::
+"""To configure various options, import ``config`` and modify the attributes.
+For example::
 
     from jsonrpcserver import config
     config.debug = True
 """
+#: Validate requests against the JSON-RPC schema. Disable to speed up processing.
+schema_validation = True
+
 #: Include more information in error messages.
 debug = False
-
-#: Validate requests against the schema. Disable to speed up processing.
-schema_validation = True
 
 #: Respond to notifications with errors. The JSON-RPC specification says
 #: notifications should not be responded to, so enabling this breaks the spec.

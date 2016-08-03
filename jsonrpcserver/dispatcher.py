@@ -1,7 +1,6 @@
-"""At the core of jsonrpcserver is the ``dispatch`` function.  It processes a
-JSON-RPC request, and calls the relevant Python function from a list.
+"""At the core of jsonrpcserver is the dispatcher, which processes JSON-RPC
+requests and passes them to your functions.
 """
-
 import logging
 import json
 
@@ -33,38 +32,19 @@ def _string_to_dict(request):
 
 
 def dispatch(methods, request):
-    """::
+    """Process a JSON-RPC request, calling the requested method.
 
-        >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
+    .. code-block:: python
 
-    The first parameter can be either a list of methods as above, or a
-    dictionary of name:method pairs:
-
-        >>> dispatch({'cat': cat, 'max_ten': max_ten}, ...)
-
-    If you have more than a few methods, look into the :class:`~methods.Methods`
-    class.
-
-Write methods to carry out requests. Here we simply cube a number:
-
-.. code-block:: python
-
-    >>> def cube(**kwargs):
-    ...     return kwargs['num']**3
-
-Dispatch JSON-RPC requests to the methods:
-
-.. code-block:: python
-
-    >>> from jsonrpcserver import dispatch
-    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1})
-    {'jsonrpc': '2.0', 'result': 27, 'id': 1}
+        >>> from jsonrpcserver import dispatch
+        >>> response = dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1})
 
     :param methods:
-        Collection of methods to dispatch to.
+        Collection of methods to dispatch to. Can be a ``list`` of functions, a
+        ``dict`` of name:method pairs, or a :class:`~methods.Methods` object.
     :param request:
-        JSON-RPC request - can be a JSON-serializable object, or a string.
-        Strings must be valid json (use double quotes!).
+        A JSON-RPC request. Can be a JSON-serializable object, or a string.
+        (Strings must be valid JSON - use double quotes!)
     :returns:
         A :mod:`response` object.
     """

@@ -1,17 +1,14 @@
-"""
-Methods
-*******
-Use this to easily build a list of methods to dispatch to::
+""":func:`~dispatcher.dispatch` takes a ``list`` of functions, but you can also
+give it a ``Methods`` object::
 
     from jsonrpcserver import Methods
-
     methods = Methods()
 
     @methods.add_method
-    def cat():
-        return 'meow'
+    def cube(**kwargs):
+        return kwargs['num']**3
 
-    dispatch(methods, request)
+    dispatch(methods, ...)
 """
 
 from jsonrpcserver.exceptions import MethodNotFound
@@ -39,33 +36,21 @@ def _get_method(methods, name):
 
 
 class Methods(dict):
-    """Holds a list of methods."""
+    """Holds a list of methods"""
 
     def __getitem__(self, key):
         return self.__dict__[key]
 
     def add_method(self, method, name=None):
-        """Add a method to the list.
+        """Add a method to the list::
 
-        Use a different name by giving a second argument::
+            methods.add_method(cube)
 
-            methods.add_method(cat, 'say_meow')
-
-        This is useful for lambdas because they don't have a name::
-
-            methods.add_method(lambda: 'meow', 'cat')
-
-        And partials::
-
-            multiply = lambda x, y: x * y
-            methods.add_method(partial(multiply, 2), 'double')
-            methods.add_method(partial(multiply, 3), 'triple')
-
-        Alternatively, use it as a decorator::
+        Alternatively, use as a decorator::
 
             @methods.add_method
-            def cat():
-                return 'meow'
+            def cube(**kwargs):
+                return kwargs['num']**3
 
         :param method: The method to add.
         :param name: Name of the method (optional).

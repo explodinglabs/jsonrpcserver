@@ -1,46 +1,4 @@
 """
-Exceptions are raised to return an error to the client.
-
-If arguments are unsatisfactory, raise :class:`InvalidParams
-<jsonrpcserver.exceptions.InvalidParams>` in your method:
-
-.. code-block:: python
-    :emphasize-lines: 3-4
-
-    >>> from jsonrpcserver.exceptions import InvalidParams
-    >>> def cube(**kwargs):
-    ...     if 'num' not in kwargs:
-    ...         raise InvalidParams('num is required')
-    ...     return kwargs['num']**3
-
-The library catches the exception and gives the appropriate response:
-
-.. code-block:: python
-
-    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
-    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
-
-To include the *"num is required"* message given when the exception was raised,
-turn on debug mode:
-
-.. code-block:: python
-
-    >>> from jsonrpcserver import config
-    >>> config.debug = True
-    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
-    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params', 'data': 'num is required'}, 'id': 1}
-
-Note the extra 'data' key in the response.
-
-You can also raise :class:`ServerError <jsonrpcserver.exceptions.ServerError>`
-to let the client know there was an error on the server side.
-
-
-Modify attributes to configure error responses, for example::
-
-    from jsonrpcserver.exceptions import InvalidParams
-    InvalidParams.message = 'Invalid arguments'
-    InvalidParams.http_status = 406
 """
 
 from jsonrpcserver import status

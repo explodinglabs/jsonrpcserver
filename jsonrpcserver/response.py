@@ -1,24 +1,18 @@
-"""
-Response
-********
-These are the objects returned by
-:func:`~dispatcher.dispatch`.
-
-There are a number of different types, but they're all valid `JSON-RPC response
-objects <http://www.jsonrpc.org/specification#response_object>`_ with an
-``http_status`` attribute for responding to HTTP requests.
-
-If you're processing HTTP requests, an ``http_status`` attribute can be used
-when responding to the client:
+"""The return value from :func:`~dispatcher.dispatch` is a JSON-RPC response
+object.
 
 .. code-block:: python
 
-    >>> r = dispatch([cube], {})
-    >>> r
-    {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}
-    >>> r.http_status
-    400
+    >>> response
+    {'jsonrpc': '2.0', 'result': 27, 'id': 1}
 
+If you're processing http requests, the return value has a recommended http
+status code which you can use to respond with.
+
+.. code-block:: python
+
+    >>> response.http_status
+    200
 """
 
 import json
@@ -55,7 +49,8 @@ def _sort_response(response):
 
 class NotificationResponse(object):
     """Returned from processing a successful `notification
-    <http://www.jsonrpc.org/specification#notification>`_.
+    <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
+    no ``id`` member).
     """
 
     #: The HTTP status to send in response to notifications.
@@ -73,9 +68,8 @@ class _Response(dict):
 
 
 class RequestResponse(_Response):
-    """Returned from processing a successful `request
-    <http://www.jsonrpc.org/specification#request_object>`_ (with an ``id``
-    member, indicating that a payload is expected).
+    """Returned from processing a successful request with an ``id`` member,
+    (indicating that a payload is expected back).
     """
 
     #: The recommended HTTP status code.
@@ -131,7 +125,8 @@ class ErrorResponse(_Response):
         #: Holds extra information about the error.
         if config.debug and data:
             self['error']['data'] = data
-        #: The recommended HTTP status code. (depends on the error)
+        #: The recommended HTTP status code. (the status code depends on the
+        #: error)
         self.http_status = http_status
 
     def __str__(self):

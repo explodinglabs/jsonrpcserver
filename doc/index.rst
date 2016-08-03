@@ -1,8 +1,10 @@
 jsonrpcserver
 *************
 
-Process `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and
-3.3+.
+Process `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and 3.3+.
+
+.. toctree::
+    :maxdepth: 2
 
 .. code-block:: python
 
@@ -10,13 +12,13 @@ Process `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and
     server = HTTPServer()
 
     @server.add_method
-    def cat():
-        return 'meow'
+    def cube(**kwargs):
+        return kwargs['num']**3
 
     if __name__ == '__main__':
         server.serve_forever()
 
-To start:
+Start the server:
 
 .. code-block:: sh
 
@@ -24,69 +26,72 @@ To start:
     $ python server.py
     * Listening on http://localhost:5000/
 
-Lower-Level
-===========
+This example uses the built-in server, but you can process requests in any
+application, (such as a Flask or Django app), by using the :mod:`dispatcher`.
 
-The above example uses the built-in HTTP server. You can also use the library
-with many other frameworks by using the ``dispatch`` method.
-
-Dispatch
---------
+Dispatcher
+==========
 
 .. automodule:: dispatcher
 
+Response
+--------
+
+.. automodule:: response
+    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
+        ErrorResponse, BatchResponse
+
+Methods
+-------
+
+.. automodule:: methods
+    :exclude-members: Methods
+
+Validation
+==========
+
+If arguments are unsatisfactory, raise :class:`InvalidParams
+<jsonrpcserver.exceptions.InvalidParams>`:
+
+.. code-block:: python
+    :emphasize-lines: 3-4
+
+    >>> from jsonrpcserver.exceptions import InvalidParams
+    >>> def cube(**kwargs):
+    ...     if 'num' not in kwargs:
+    ...         raise InvalidParams('num is required')
+    ...     return kwargs['num']**3
+
+The dispatcher catches the exception and gives the appropriate response:
+
+.. code-block:: python
+
+    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
+    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
+
+To include the *"num is required"* message given when the exception was
+raised, turn on :mod:`debug mode <config.debug>`
+
+Exceptions
+==========
+
+See the :doc:`full list of exceptions <exceptions>` raised by jsonrpcserver.
+
+Configuration
+=============
+
 .. automodule:: config
-
-Logging
-=======
-
-To see the JSON-RPC messages going back and forth, set the logging level to
-``INFO`` and add a basic handler::
-
-    import logging
-    logging.getLogger('jsonrpcserver').setLevel(logging.INFO)
-    logging.getLogger('jsonrpcserver').addHandler(logging.StreamHandler())
-
-Alternatively, use a custom log format::
-
-    request_format = '--> %(message)s'
-    response_format = '<-- %(http_code)d %(http_reason)s %(message)s'
-
-    request_handler = logging.StreamHandler()
-    request_handler.setFormatter(logging.Formatter(fmt=request_format))
-    logging.getLogger('jsonrpcserver.dispatcher.request').addHandler(
-        request_handler)
-
-    response_handler = logging.StreamHandler()
-    response_handler.setFormatter(logging.Formatter(fmt=response_format))
-    logging.getLogger('jsonrpcserver.dispatcher.response').addHandler(
-        response_handler)
-
-The request format has these fields:
-
-:message: The JSON request (the body).
-
-The response format has these fields:
-
-:http_code: The recommended HTTP status code, if using HTTP, eg. *400*.
-:http_reason: Description of the above HTTP status code, eg. *"BAD REQUEST"*.
-:message: The JSON response (the body).
 
 Examples
 ========
 
-- `HTTP Server using Werkzeug <https://bcb.github.io/jsonrpc/werkzeug>`_
-- `HTTP Server using Flask <https://bcb.github.io/jsonrpc/flask>`_
-- `HTTP Server using Python's http.server module <https://bcb.github.io/jsonrpc/httpserver>`_
-- `ZeroMQ Server using PyZMQ <https://bcb.github.io/jsonrpc/pyzmq>`_
-- `Socket.IO Server using Flask-SocketIO <https://bcb.github.io/jsonrpc/flask-socketio>`_
+See code snippets making use of jsonrpcserver in
+`Flask <https://bcb.github.io/jsonrpc/flask>`_,
+`Werkzeug <https://bcb.github.io/jsonrpc/werkzeug>`_,
+`ZeroMQ <https://bcb.github.io/jsonrpc/pyzmq>`_,
+`Socket.io <https://bcb.github.io/jsonrpc/flask-socketio>`_, and
+`http.server <https://bcb.github.io/jsonrpc/httpserver>`_.
 
-Links
-=====
-
-- `Github <https://github.com/bcb/jsonrpcserver>`_
-- `Issues <https://github.com/bcb/jsonrpcserver/issues>`_
-- `PyPi <https://pypi.python.org/pypi/jsonrpcserver>`_
-- `Twitter @bbmelb <https://twitter.com/bbmelb>`_
+Contribute on `Github <https://github.com/bcb/jsonrpcserver>`_.
 
 See also: `jsonrpcclient <https://jsonrpcclient.readthedocs.io/>`_
