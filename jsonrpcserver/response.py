@@ -7,6 +7,18 @@ These are the objects returned by
 There are a number of different types, but they're all valid `JSON-RPC response
 objects <http://www.jsonrpc.org/specification#response_object>`_ with an
 ``http_status`` attribute for responding to HTTP requests.
+
+If you're processing HTTP requests, an ``http_status`` attribute can be used
+when responding to the client:
+
+.. code-block:: python
+
+    >>> r = dispatch([cube], {})
+    >>> r
+    {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}
+    >>> r.http_status
+    400
+
 """
 
 import json

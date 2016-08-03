@@ -1,6 +1,5 @@
-"""
-Dispatcher
-**********
+"""At the core of jsonrpcserver is the ``dispatch`` function.  It processes a
+JSON-RPC request, and calls the relevant Python function from a list.
 """
 
 import logging
@@ -34,7 +33,7 @@ def _string_to_dict(request):
 
 
 def dispatch(methods, request):
-    """Dispatch a JSON-RPC request to a collection of methods::
+    """::
 
         >>> dispatch([cat, dog], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
 
@@ -45,6 +44,21 @@ def dispatch(methods, request):
 
     If you have more than a few methods, look into the :class:`~methods.Methods`
     class.
+
+Write methods to carry out requests. Here we simply cube a number:
+
+.. code-block:: python
+
+    >>> def cube(**kwargs):
+    ...     return kwargs['num']**3
+
+Dispatch JSON-RPC requests to the methods:
+
+.. code-block:: python
+
+    >>> from jsonrpcserver import dispatch
+    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1})
+    {'jsonrpc': '2.0', 'result': 27, 'id': 1}
 
     :param methods:
         Collection of methods to dispatch to.

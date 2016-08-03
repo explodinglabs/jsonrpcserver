@@ -1,8 +1,7 @@
 """
 Configuration
 *************
-Import ``config`` to configure various settings, for example enabling debug
-mode::
+Import ``config`` to configure various settings, for example::
 
     from jsonrpcserver import config
     config.debug = True
