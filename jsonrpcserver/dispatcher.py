@@ -6,6 +6,7 @@ import json
 
 from six import string_types
 
+from jsonrpcserver.logging import _log
 from jsonrpcserver.response import NotificationResponse, ExceptionResponse, \
     BatchResponse
 from jsonrpcserver.request import Request
@@ -14,8 +15,8 @@ from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
 logger = logging.getLogger(__name__)
-request_log = logging.getLogger(__name__+'.request')
-response_log = logging.getLogger(__name__+'.response')
+_request_log = logging.getLogger(__name__+'.request')
+_response_log = logging.getLogger(__name__+'.response')
 
 
 def _string_to_dict(request):
@@ -52,7 +53,7 @@ def dispatch(methods, request):
     response = None
     try:
         # Log the request
-        request_log.info(request)
+        _log(_request_log, 'info', request, fmt='--> %(message)s')
         # If the request is a string, convert it to a dict first
         if isinstance(request, string_types):
             request = _string_to_dict(request)
@@ -86,7 +87,7 @@ def dispatch(methods, request):
     # Batch requests can have mixed results, just return 200
     http_status = 200 if isinstance(request, list) else response.http_status
     # Log the response
-    response_log.info(str(response), extra={
+    _log(_response_log, 'info', str(response), fmt='<-- %(message)s', extra={
         'http_code': http_status,
         'http_reason': HTTP_STATUS_CODES[http_status]})
     return response

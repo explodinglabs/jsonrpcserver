@@ -10,7 +10,6 @@ give it a ``Methods`` object::
 
     dispatch(methods, ...)
 """
-
 from jsonrpcserver.exceptions import MethodNotFound
 
 
