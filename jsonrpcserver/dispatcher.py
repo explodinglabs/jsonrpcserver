@@ -6,7 +6,7 @@ import json
 
 from six import string_types
 
-from jsonrpcserver.logging import _log
+from jsonrpcserver.log import _log
 from jsonrpcserver.response import NotificationResponse, ExceptionResponse, \
     BatchResponse
 from jsonrpcserver.request import Request
