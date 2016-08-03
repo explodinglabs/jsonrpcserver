@@ -13,66 +13,6 @@ Installation
 Usage
 =====
 
-Write functions to carry out requests. Here we simply cube a number:
-
-.. code-block:: python
-
-    >>> def cube(**kwargs):
-    ...     return kwargs['num']**3
-
-Dispatch JSON-RPC requests to the function(s):
-
-.. code-block:: python
-
-    >>> from jsonrpcserver import dispatch
-    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1})
-    {'jsonrpc': '2.0', 'result': 27, 'id': 1}
-
-If arguments are unsatisfactory, raise :class:`InvalidParams
-<jsonrpcserver.exceptions.InvalidParams>` in your method:
-
-.. code-block:: python
-    :emphasize-lines: 3-4
-
-    >>> from jsonrpcserver.exceptions import InvalidParams
-    >>> def cube(**kwargs):
-    ...    if 'num' not in kwargs:
-    ...        raise InvalidParams('num is required')
-    ...    return kwargs['num']**3
-
-The library catches the exception and gives the appropriate response:
-
-.. code-block:: python
-
-    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
-    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
-
-To include the *"num is required"* message given when the exception was raised,
-turn on debug mode:
-
-.. code-block:: python
-
-    >>> from jsonrpcserver import config
-    >>> config.debug = True
-    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
-    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params', 'data': 'num is required'}, 'id': 1}
-
-Note the extra 'data' key in the response.
-
-You can also raise :class:`ServerError <jsonrpcserver.exceptions.ServerError>`
-to let the client know there was an error on the server side.
-
-If you're processing HTTP requests, an ``http_status`` attribute can be used
-when responding to the client:
-
-.. code-block:: python
-
-    >>> r = dispatch([cube], {})
-    >>> r
-    {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}
-    >>> r.http_status
-    400
-
 Configuration
 =============
 

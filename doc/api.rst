@@ -3,7 +3,6 @@
 API
 ***
 
-.. automodule:: config
 .. automodule:: dispatcher
 .. automodule:: methods
 .. automodule:: response
