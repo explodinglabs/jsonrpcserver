@@ -65,3 +65,10 @@ class Methods(MutableMapping):
             raise AttributeError('%s has no name' % type(method))
         self.update({name: method})
         return method
+
+    def add_method(self, *args, **kwargs):
+        """
+        ... deprecated:: 3.2.3
+            Use add instead.
+        """
+        return self.add(*args, **kwargs)
