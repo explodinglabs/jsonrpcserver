@@ -14,7 +14,10 @@ from collections.abc import MutableMapping
 
 
 class Methods(MutableMapping):
-    """Holds a list of methods"""
+    """Holds a list of methods
+    ... versionchanged:: 3.2.2
+        Subclass MutableMapping instead of dict.
+    """
 
     def __init__(self):
         self._items = {}
