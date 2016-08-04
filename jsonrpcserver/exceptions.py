@@ -1,5 +1,4 @@
-"""
-"""
+"""Exceptions raised by jsonrpcserver."""
 
 from jsonrpcserver import status
 

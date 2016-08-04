@@ -9,7 +9,12 @@ import json
 import logging
 import re
 import pkgutil
-from collections.abc import Mapping, Sequence
+try:
+    # Python 2
+    from collections import Mapping, Sequence
+except ImportError:
+    # Python 3
+    from collections.abc import Mapping, Sequence
 
 from funcsigs import signature
 import jsonschema

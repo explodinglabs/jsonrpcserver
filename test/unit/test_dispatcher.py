@@ -7,7 +7,6 @@ from jsonrpcserver.dispatcher import dispatch, _string_to_dict
 from jsonrpcserver.exceptions import ParseError
 from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
     RequestResponse, BatchResponse
-from jsonrpcserver.request import Request
 from jsonrpcserver import config
 
 

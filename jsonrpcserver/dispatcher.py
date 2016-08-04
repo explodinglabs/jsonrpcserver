@@ -37,11 +37,13 @@ def _string_to_dict(request):
 
 
 def dispatch(methods, request):
+    # pylint:disable=line-too-long
     """Process a JSON-RPC request, calling the requested method.
 
     .. code-block:: python
 
-        >>> response = dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1})
+        >>> request = {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1}
+        >>> response = dispatch([cube], request)
         --> {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1}
         <-- {'jsonrpc': '2.0', 'result': 27, 'id': 1}
 

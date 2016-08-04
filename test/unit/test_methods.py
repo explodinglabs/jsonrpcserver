@@ -5,7 +5,6 @@ from unittest import TestCase, main
 from functools import partial
 
 from jsonrpcserver.methods import Methods
-from jsonrpcserver.exceptions import MethodNotFound
 
 
 class TestAdd(TestCase):
@@ -31,8 +30,7 @@ class TestAdd(TestCase):
         add = lambda x, y: x + y
         m = Methods()
         m.add(add) # Lambda's __name__ will be '<lambda>'!
-        with self.assertRaises(KeyError):
-            m['add']
+        self.assertNotIn('add', m)
 
     def test_lambda_renamed(self):
         add = lambda x, y: x + y
@@ -115,10 +113,12 @@ class TestAddDictLike(TestCase):
         def ping():
             return 'pong'
         m['ping'] = ping
+        self.assertTrue(callable(m['ping']))
 
     def test_lambda(self):
         m = Methods()
         m['ping'] = lambda: 'pong'
+        self.assertTrue(callable(m['ping']))
 
     def test_non_callable(self):
         m = Methods()

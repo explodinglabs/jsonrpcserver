@@ -10,7 +10,12 @@ take a ``Methods`` object::
 
     dispatch(methods, ...)
 """
-from collections.abc import MutableMapping
+try:
+    # Python 2
+    from collections import MutableMapping
+except ImportError:
+    # Python 3
+    from collections.abc import MutableMapping
 
 
 class Methods(MutableMapping):
@@ -34,10 +39,10 @@ class Methods(MutableMapping):
             raise TypeError('%s is not callable' % type(value))
         self._items[key] = value
 
-    def __delitem__():
+    def __delitem__(self, key):
         raise NotImplementedError
 
-    def __iter__():
+    def __iter__(self):
         raise NotImplementedError
 
     def __len__(self):

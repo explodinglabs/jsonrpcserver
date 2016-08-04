@@ -4,7 +4,8 @@ For example::
     from jsonrpcserver import config
     config.debug = True
 """
-#: Validate requests against the JSON-RPC schema. Disable to speed up processing.
+#: Validate requests against the JSON-RPC schema. Disable to speed up
+#: processing.
 schema_validation = True
 
 #: Include more information in error messages.
