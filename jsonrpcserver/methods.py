@@ -20,7 +20,7 @@ except ImportError:
 
 class Methods(MutableMapping):
     """Holds a list of methods
-    ... versionchanged:: 3.2.2
+    ... versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
     """
 
