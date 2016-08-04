@@ -10,8 +10,35 @@ take a ``Methods`` object::
 
     dispatch(methods, ...)
 """
-class Methods(dict):
+from collections.abc import MutableMapping
+
+
+class Methods(MutableMapping):
     """Holds a list of methods"""
+
+    def __init__(self):
+        self._items = {}
+
+    def __repr__(self):
+        return str(self._items)
+
+    def __getitem__(self, key):
+        return self._items[key]
+
+    def __setitem__(self, key, value):
+        # Method must be callable
+        if not callable(value):
+            raise TypeError('%s is not callable' % type(value))
+        self._items[key] = value
+
+    def __delitem__():
+        raise NotImplementedError
+
+    def __iter__():
+        raise NotImplementedError
+
+    def __len__(self):
+        raise NotImplementedError
 
     def add(self, method, name=None):
         """Add a method to the list::
@@ -32,11 +59,9 @@ class Methods(dict):
         """
         # If no custom name was given, use the method's __name__ attribute
         if not name:
-            if not hasattr(method, '__name__'):
-                raise AttributeError(
-                    '%s has no __name__ attribute. '
-                    'Use add(method, name) to specify a method name'
-                    % type(method))
             name = method.__name__
-        self[name] = method
+        # Method must have a name
+        if not name:
+            raise AttributeError('%s has no name' % type(method))
+        self.update({name: method})
         return method
