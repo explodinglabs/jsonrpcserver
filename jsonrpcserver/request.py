@@ -1,8 +1,5 @@
-"""
-Request
-*******
-A JSON-RPC request object. Used internally by the library, but class attributes
-can be modified to configure various options for handling requests.
+"""A JSON-RPC request object. Used internally by the library, but class
+attributes can be modified to configure various options for handling requests.
 """
 
 import json
