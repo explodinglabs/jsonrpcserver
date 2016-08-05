@@ -21,68 +21,12 @@ Start the server:
 
     $ pip install jsonrpcserver
     $ python server.py
-    * Listening on http://localhost:5000/
+     * Listening on port 5000
 
 This example uses the built-in HTTP server, but you can process requests in any
 application, (such as a Flask or Django app), by using the :mod:`dispatcher`.
-
-Dispatcher
-==========
-
-.. automodule:: dispatcher
-
-Methods
--------
-
-.. automodule:: methods
-    :exclude-members: Methods
-
-Response
---------
-
-.. automodule:: response
-    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
-        ErrorResponse, BatchResponse
-
-Validation
-==========
-
-If arguments are unsatisfactory, raise :class:`InvalidParams
-<jsonrpcserver.exceptions.InvalidParams>`:
-
-.. code-block:: python
-    :emphasize-lines: 3-4
-
-    >>> from jsonrpcserver.exceptions import InvalidParams
-    >>> def cube(**kwargs):
-    ...     if 'num' not in kwargs:
-    ...         raise InvalidParams('num is required')
-    ...     return kwargs['num']**3
-
-The dispatcher catches the exception and gives the appropriate response:
-
-.. code-block:: python
-
-    >>> dispatch([cube], {'jsonrpc': '2.0', 'method': 'cube', 'params': {}, 'id': 1})
-    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
-
-To include the *"num is required"* message given when the exception was raised,
-turn on :mod:`debug mode <config.debug>`.
-
-Configuration
-=============
-
-.. automodule:: config
-
-Exceptions
-==========
-
-See the :doc:`list of exceptions <exceptions>` raised by jsonrpcserver.
-
-Examples
-========
-
-See code snippets making use of jsonrpcserver in
+The :doc:`guide` has details, including :mod:`configuration <config>` of the
+package. There are also examples of the dispatcher in
 `Flask <https://bcb.github.io/jsonrpc/flask>`_,
 `Werkzeug <https://bcb.github.io/jsonrpc/werkzeug>`_,
 `ZeroMQ <https://bcb.github.io/jsonrpc/pyzmq>`_,

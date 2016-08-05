@@ -42,10 +42,10 @@ def dispatch(methods, request):
 
     .. code-block:: python
 
-        >>> request = {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1}
-        >>> response = dispatch([cube], request)
-        --> {'jsonrpc': '2.0', 'method': 'cube', 'params': {'num': 3}, 'id': 1}
-        <-- {'jsonrpc': '2.0', 'result': 27, 'id': 1}
+        >>> request = {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
+        >>> response = dispatch({'ping': lambda: 'pong'}, request)
+        --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
+        <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
 
     :param methods:
         Collection of methods to dispatch to. Can be a ``list`` of functions, a
