@@ -1,17 +1,19 @@
 jsonrpcserver
 *************
 
-Process incoming `JSON-RPC <http://www.jsonrpc.org/>`__ requests in Python 2.7
-and 3.3+.
+Process `JSON-RPC <http://www.jsonrpc.org/>`__ requests in Python 2.7 and 3.3+.
 
 .. sourcecode:: python
 
-    >>> def cat():
-    ...     return 'meow'
-    ...
-    >>> from jsonrpcserver import dispatch
-    >>> dispatch([cat], {'jsonrpc': '2.0', 'method': 'cat', 'id': 1})
-    {'jsonrpc': '2.0', 'result': 'meow', 'id': 1}
+    from jsonrpcserver import Methods
+    methods = Methods()
+
+    @methods.add
+    def ping():
+        return 'pong'
+
+    if __name__ == '__main__':
+        methods.serve_forever()
 
 Full documentation is at `jsonrpcserver.readthedocs.io
 <https://jsonrpcserver.readthedocs.io/>`__.
