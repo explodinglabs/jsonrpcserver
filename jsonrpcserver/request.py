@@ -192,7 +192,6 @@ class Request(object):
             if self.kwargs:
                 self.kwargs = _convert_camel_case_keys(self.kwargs)
 
-
     @property
     def is_notification(self):
         """Returns True if the request is a JSON-RPC notification (ie. No
