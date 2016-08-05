@@ -40,13 +40,13 @@ class Methods(MutableMapping):
         self._items[key] = value
 
     def __delitem__(self, key):
-        raise NotImplementedError
+        del self._items[key]
 
     def __iter__(self):
-        raise NotImplementedError
+        return iter(self._items)
 
     def __len__(self):
-        raise NotImplementedError
+        return len(self._items)
 
     def add(self, method, name=None):
         """Add a method to the list::
