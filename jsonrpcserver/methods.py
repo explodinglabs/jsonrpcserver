@@ -16,9 +16,10 @@ try:
 except ImportError:
     # Python 3
     from collections.abc import MutableMapping
+from jsonrpcserver.http_server import MethodsServer
 
 
-class Methods(MutableMapping):
+class Methods(MutableMapping, MethodsServer):
     """Holds a list of methods
     ... versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
