@@ -11,7 +11,7 @@ def _configure_logger(logger, fmt):
         logger.addHandler(handler)
 
 
-def _log(logger, level, message, fmt='%(message)s', **kwargs):
+def _log(logger, level, message, *args, fmt='%(message)s', **kwargs):
     """Configure before logging"""
     _configure_logger(logger, fmt)
-    getattr(logger, level)(message, **kwargs)
+    getattr(logger, level)(message, *args, **kwargs)
