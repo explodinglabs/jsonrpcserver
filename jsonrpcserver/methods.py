@@ -25,8 +25,9 @@ class Methods(MutableMapping, MethodsServer):
         Subclass MutableMapping instead of dict.
     """
 
-    def __init__(self):
+    def __init__(self, *args):
         self._items = {}
+        self.update(*args)
 
     def __repr__(self):
         return str(self._items)
