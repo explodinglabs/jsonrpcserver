@@ -18,7 +18,6 @@ from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
     InvalidRequest
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
-logger = logging.getLogger(__name__)
 _request_log = logging.getLogger(__name__+'.request')
 _response_log = logging.getLogger(__name__+'.response')
 
