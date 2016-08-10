@@ -1,7 +1,7 @@
 .. rubric:: :doc:`index`
 
-jsonrpcserver Guide
-*******************
+jsonrpcserver API
+*****************
 
 Dispatcher
 ==========
