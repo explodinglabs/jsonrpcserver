@@ -3,7 +3,7 @@ requests.
 
 ::
 
-    >>> from jsonrpcserver import dispatch
+    from jsonrpcserver import dispatch
 """
 import logging
 import json

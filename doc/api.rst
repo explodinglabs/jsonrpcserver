@@ -30,11 +30,11 @@ If arguments are unsatisfactory, raise :class:`InvalidParams
 .. code-block:: python
     :emphasize-lines: 3-4
 
-    >>> from jsonrpcserver.exceptions import InvalidParams
-    >>> def cube(**kwargs):
-    ...     if 'num' not in kwargs:
-    ...         raise InvalidParams('num is required')
-    ...     return kwargs['num']**3
+    from jsonrpcserver.exceptions import InvalidParams
+    def cube(**kwargs):
+        if 'num' not in kwargs:
+            raise InvalidParams('num is required')
+        return kwargs['num']**3
 
 The dispatcher catches the exception and gives the appropriate response:
 
