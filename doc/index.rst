@@ -25,7 +25,7 @@ Start the server:
 
 This example uses the built-in HTTP server, but you can process requests in any
 application, (such as a Flask or Django app), by using the :mod:`dispatcher`.
-The :doc:`guide` has details, including :mod:`configuration <config>` of the
+The :doc:`api` has details, including :mod:`configuration <config>` of the
 package. There are also examples of the dispatcher in
 `Flask <https://bcb.github.io/jsonrpc/flask>`_,
 `Werkzeug <https://bcb.github.io/jsonrpc/werkzeug>`_,
