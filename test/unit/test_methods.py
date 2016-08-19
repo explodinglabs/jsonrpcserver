@@ -13,7 +13,7 @@ class TestInit(TestCase):
         m = Methods({'ping': lambda: 'pong'})
         self.assertIn('ping', m)
 
-    def test_dict(self):
+    def test_named_args(self):
         m = Methods(ping=lambda: 'pong')
         self.assertIn('ping', m)
 
