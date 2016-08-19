@@ -7,6 +7,17 @@ from functools import partial
 from jsonrpcserver.methods import Methods
 
 
+class TestInit(TestCase):
+
+    def test_dict(self):
+        m = Methods({'ping': lambda: 'pong'})
+        self.assertIn('ping', m)
+
+    def test_dict(self):
+        m = Methods(ping=lambda: 'pong')
+        self.assertIn('ping', m)
+
+
 class TestAdd(TestCase):
 
     def test_non_callable(self):
