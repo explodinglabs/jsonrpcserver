@@ -1,14 +1,14 @@
 """The methods passed to :func:`~dispatcher.dispatch` can be list of functions
-like ``[speak, eat]``, a dictionary, or a ``Methods`` object::
+like ``[eat, drink]``, a dictionary, or a ``Methods`` object::
 
     from jsonrpcserver import Methods
     methods = Methods()
 
     @methods.add
-    def ping():
-        return 'pong'
+    def multiply(a, b):
+        return a * b
 
-    methods.serve_forever()
+    dispatch(methods, ...)
 """
 try:
     # Python 2
