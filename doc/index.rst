@@ -9,8 +9,8 @@ Process `JSON-RPC <http://www.jsonrpc.org/>`_ requests in Python 2.7 and 3.3+.
     methods = Methods()
 
     @methods.add
-    def cube(**kwargs):
-        return kwargs['num']**3
+    def ping():
+        return 'pong'
 
     if __name__ == '__main__':
         methods.serve_forever()
