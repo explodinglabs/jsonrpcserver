@@ -5,10 +5,10 @@ like ``[speak, eat]``, a dictionary, or a ``Methods`` object::
     methods = Methods()
 
     @methods.add
-    def cube(**kwargs):
-        return kwargs['num']**3
+    def ping():
+        return 'pong'
 
-    dispatch(methods, ...)
+    methods.serve_forever()
 """
 try:
     # Python 2
