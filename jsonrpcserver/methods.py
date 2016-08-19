@@ -53,13 +53,13 @@ class Methods(MutableMapping, MethodsServer):
     def add(self, method, name=None):
         """Add a method to the list::
 
-            methods.add(cube)
+            methods.add(multiply)
 
         Alternatively, use as a decorator::
 
             @methods.add
-            def cube(**kwargs):
-                return kwargs['num']**3
+            def multiply(a, b):
+                return a + b
 
         :param method: The method to add.
         :param name: Name of the method (optional).
