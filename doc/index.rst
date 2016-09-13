@@ -27,7 +27,7 @@ This example uses the built-in HTTP server, but you can process requests in any
 application, (such as a Flask or Django app), by using the :mod:`dispatcher`.
 The :doc:`api` has details, including :mod:`configuration <config>` of the
 package. There are also :doc:`examples` of the dispatcher in http.server,
-Flask, Werkzeug, ZeroMQ, Socket.IO.
+Flask, Werkzeug, ZeroMQ, Socket.IO and Tornado.
 
 Contribute on `Github <https://github.com/bcb/jsonrpcserver>`_.
 
