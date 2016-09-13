@@ -12,7 +12,7 @@ transport protocols.
 Plain jsonrpcserver
 ===================
 
-Using jsonrpcserver's built-in `serve_forever` method to serve.
+Using jsonrpcserver's built-in `serve_forever` method.
 
 ::
 
@@ -35,6 +35,35 @@ Using the `@methods` decorator::
 
     if __name__ == '__main__':
         methods.serve_forever()
+
+Flask
+=====
+
+::
+
+    $ pip install jsonrpcserver flask
+
+::
+
+    from flask import Flask, request, Response
+    from jsonrpcserver import Methods, dispatch
+
+    app = Flask(__name__)
+    methods = Methods()
+
+    @methods.add
+    def ping():
+        return 'pong'
+
+    @app.route('/', methods=['POST'])
+    def index():
+        r = dispatch(methods, request.get_data().decode('utf-8'))
+        return Response(str(r), r.http_status, mimetype='application/json')
+
+    if __name__ == '__main__':
+        app.run()
+
+See `blog post <https://bcb.github.io/jsonrpc/flask>`__.
 
 http.server
 ===========
@@ -73,94 +102,7 @@ Python's built-in `http.server
 
 See `blog post <https://bcb.github.io/jsonrpc/httpserver>`__.
 
-Werkzeug
-========
-
-::
-
-    $ pip install jsonrpcserver werkzeug
-
-::
-
-    from werkzeug.wrappers import Request, Response
-    from werkzeug.serving import run_simple
-    from jsonrpcserver import Methods, dispatch
-
-    methods = Methods()
-
-    @methods.add
-    def ping():
-        return 'pong'
-
-    @Request.application
-    def application(request):
-        r = dispatch(methods, request.data.decode('utf-8'))
-        return Response(str(r), r.http_status, mimetype='application/json')
-
-    if __name__ == '__main__':
-        run_simple('localhost', 5000, application)
-
-See `blog post <https://bcb.github.io/jsonrpc/werkzeug>`__.
-
-Flask
-=====
-
-::
-
-    $ pip install jsonrpcserver flask
-
-::
-
-    from flask import Flask, request, Response
-    from jsonrpcserver import Methods, dispatch
-
-    app = Flask(__name__)
-    methods = Methods()
-
-    @methods.add
-    def ping():
-        return 'pong'
-
-    @app.route('/', methods=['POST'])
-    def index():
-        r = dispatch(methods, request.get_data().decode('utf-8'))
-        return Response(str(r), r.http_status, mimetype='application/json')
-
-    if __name__ == '__main__':
-        app.run()
-
-See `blog post <https://bcb.github.io/jsonrpc/flask>`__.
-
-ZeroMQ
-======
-
-::
-
-    $ pip install jsonrpcserver pyzmq
-
-::
-
-    import zmq
-    from jsonrpcserver import Methods, dispatch
-
-    methods = Methods()
-
-    @methods.add
-    def ping():
-        return 'pong'
-
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.bind('tcp://*:5000')
-
-    while True:
-        request = socket.recv().decode('UTF-8')
-        response = dispatch(methods, request)
-        socket.send_string(str(response))
-
-See `blog post <https://bcb.github.io/jsonrpc/pyzmq>`__.
-
-socket.io
+Socket.IO
 =========
 
 ::
@@ -221,3 +163,61 @@ Tornado
         ioloop.IOLoop.current().start()
 
 See `blog post <https://bcb.github.io/jsonrpc/tornado>`__.
+
+Werkzeug
+========
+
+::
+
+    $ pip install jsonrpcserver werkzeug
+
+::
+
+    from werkzeug.wrappers import Request, Response
+    from werkzeug.serving import run_simple
+    from jsonrpcserver import Methods, dispatch
+
+    methods = Methods()
+
+    @methods.add
+    def ping():
+        return 'pong'
+
+    @Request.application
+    def application(request):
+        r = dispatch(methods, request.data.decode('utf-8'))
+        return Response(str(r), r.http_status, mimetype='application/json')
+
+    if __name__ == '__main__':
+        run_simple('localhost', 5000, application)
+
+See `blog post <https://bcb.github.io/jsonrpc/werkzeug>`__.
+
+ZeroMQ
+======
+
+::
+
+    $ pip install jsonrpcserver pyzmq
+
+::
+
+    import zmq
+    from jsonrpcserver import Methods, dispatch
+
+    methods = Methods()
+
+    @methods.add
+    def ping():
+        return 'pong'
+
+    context = zmq.Context()
+    socket = context.socket(zmq.REP)
+    socket.bind('tcp://*:5000')
+
+    while True:
+        request = socket.recv().decode('UTF-8')
+        response = dispatch(methods, request)
+        socket.send_string(str(response))
+
+See `blog post <https://bcb.github.io/jsonrpc/pyzmq>`__.
