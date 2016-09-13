@@ -9,33 +9,6 @@ transport protocols.
 .. contents::
     :local:
 
-Plain jsonrpcserver
-===================
-
-Using jsonrpcserver's built-in `serve_forever` method.
-
-::
-
-    $ pip install jsonrpcserver
-
-The quickest way to start the server::
-
-    from jsonrpcserver import Methods
-    Methods(ping=lambda:'pong').serve_forever()
-
-Using the `@methods` decorator::
-
-    from jsonrpcserver import Methods
-
-    methods = Methods()
-
-    @methods.add
-    def ping():
-        return 'pong'
-
-    if __name__ == '__main__':
-        methods.serve_forever()
-
 Flask
 =====
 
@@ -65,7 +38,7 @@ Flask
 
 See `blog post <https://bcb.github.io/jsonrpc/flask>`__.
 
-http.server
+Http.server
 ===========
 
 Python's built-in `http.server
@@ -101,6 +74,33 @@ Python's built-in `http.server
         HTTPServer(('localhost', 5000), TestHttpServer).serve_forever()
 
 See `blog post <https://bcb.github.io/jsonrpc/httpserver>`__.
+
+Plain jsonrpcserver
+===================
+
+Using jsonrpcserver's built-in `serve_forever` method.
+
+::
+
+    $ pip install jsonrpcserver
+
+The quickest way to serve a method::
+
+    from jsonrpcserver import Methods
+    Methods(ping=lambda:'pong').serve_forever()
+
+Using the `@methods` decorator::
+
+    from jsonrpcserver import Methods
+
+    methods = Methods()
+
+    @methods.add
+    def ping():
+        return 'pong'
+
+    if __name__ == '__main__':
+        methods.serve_forever()
 
 Socket.IO
 =========
