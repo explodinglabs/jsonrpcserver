@@ -1,8 +1,5 @@
-div.tip {
-  background-color: #d0e0f7;
-  border: 1px solid #a0d0f0;
-}
-
-dl.class dt code.descname{
-  margin-bottom: 0.5em;
+/* Stop headings from appearing as links when 'contents' is used */
+h2 a {
+    color: inherit;
+    text-decoration: none;
 }
