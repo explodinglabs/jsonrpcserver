@@ -191,3 +191,33 @@ socket.io
         socketio.run(app, port=5000)
 
 See `blog post <https://bcb.github.io/jsonrpc/flask-socketio>`__.
+
+Tornado
+=======
+
+::
+
+    $ pip install tornado jsonrpcserver
+
+::
+
+    from tornado import ioloop, web
+    from jsonrpcserver import Methods, dispatch
+
+    methods = Methods()
+
+    @methods.add
+    def ping():
+        return 'pong'
+
+    class MainHandler(web.RequestHandler):
+        def post(self):
+            response = dispatch(methods, self.request.body.decode('utf-8'))
+            self.write(response)
+
+    if __name__ == "__main__":
+        app = web.Application([(r"/", MainHandler)])
+        app.listen(5000)
+        ioloop.IOLoop.current().start()
+
+See `blog post <https://bcb.github.io/jsonrpc/tornado>`__.
