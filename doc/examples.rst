@@ -220,4 +220,4 @@ ZeroMQ
         response = dispatch(methods, request)
         socket.send_string(str(response))
 
-See `blog post <https://bcb.github.io/jsonrpc/pyzmq>`__.
+See `blog post <https://bcb.github.io/jsonrpc/zeromq>`__.
