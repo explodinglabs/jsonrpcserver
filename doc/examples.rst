@@ -3,8 +3,8 @@
 jsonrpcserver Examples
 **********************
 
-How to receive JSON-RPC requests in Python using various frameworks and
-transport protocols.
+Showing examples of taking JSON-RPC requests various frameworks and transport
+protocols.
 
 .. contents::
     :local:
