@@ -4,8 +4,9 @@ import logging
 
 def _configure_logger(logger, fmt):
     """Set up a logger, if no handler has been configured for it"""
-    if not logging.root.handlers and logger.level == logging.NOTSET:
+    if logger.level == logging.NOTSET:
         logger.setLevel(logging.INFO)
+    if not logging.root.handlers and not logger.handlers:
         handler = logging.StreamHandler()
         handler.setFormatter(logging.Formatter(fmt=fmt))
         logger.addHandler(handler)
