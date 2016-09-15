@@ -4,6 +4,7 @@ attributes can be modified to configure various options for handling requests.
 
 import json
 import logging
+import traceback
 import re
 import pkgutil
 try:
@@ -17,6 +18,7 @@ from funcsigs import signature
 import jsonschema
 
 from jsonrpcserver import config
+from jsonrpcserver.log import _log
 from jsonrpcserver.response import RequestResponse, NotificationResponse, \
     ExceptionResponse
 from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
@@ -210,7 +212,7 @@ class Request(object):
         # Catch uncaught exceptions and respond with ServerError
         except Exception as e: # pylint: disable=broad-except
             # Log the uncaught exception
-            logger.exception(e)
+            _log(logger, 'error', traceback.format_exc())
             error = e # pylint: disable=redefined-variable-type
         if error:
             if self.is_notification and not config.notification_errors:
