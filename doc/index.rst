@@ -23,10 +23,16 @@ Start the server:
     $ python server.py
      * Listening on port 5000
 
-This example uses the built-in HTTP server, but you can process requests in any
+This example uses the built-in server, but you can process requests in any
 application, (such as a Flask or Django app), by using the :mod:`dispatcher`.
-See :doc:`examples <examples>` of the dispatcher in http.server, Flask,
-Werkzeug, ZeroMQ, Socket.IO and Tornado. The :doc:`api` has details, including
+:doc:`Examples <examples>` are given in
+Flask,
+http.server,
+Socket.IO,
+Tornado,
+Werkzeug and
+ZeroMQ.
+The :doc:`api` has details, including
 :mod:`configuration <config>` of the package.
 
 Contribute on `Github <https://github.com/bcb/jsonrpcserver>`_.

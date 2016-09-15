@@ -3,8 +3,8 @@
 jsonrpcserver Examples
 **********************
 
-How to receive JSON-RPC requests in Python using various frameworks and
-transport protocols.
+Showing how to take JSON-RPC requests in various frameworks and transport
+protocols.
 
 .. contents::
     :local:
@@ -38,7 +38,7 @@ Flask
 
 See `blog post <https://bcb.github.io/jsonrpc/flask>`__.
 
-Http.server
+http.server
 ===========
 
 Python's built-in `http.server
