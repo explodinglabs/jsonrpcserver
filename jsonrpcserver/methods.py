@@ -19,7 +19,7 @@ except ImportError:
 from jsonrpcserver.http_server import MethodsServer
 
 
-class Methods(MutableMapping, MethodsServer):
+class Methods(MutableMapping, MethodsServer): #pylint:disable=too-many-ancestors
     """Holds a list of methods
     ... versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
