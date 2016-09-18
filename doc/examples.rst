@@ -54,7 +54,6 @@ Python's built-in `http.server
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
-
     @methods.add
     def ping():
         return 'pong'
@@ -94,7 +93,6 @@ Using the `@methods` decorator::
     from jsonrpcserver import Methods
 
     methods = Methods()
-
     @methods.add
     def ping():
         return 'pong'
@@ -120,7 +118,6 @@ Socket.IO
     socketio = SocketIO(app)
 
     methods = Methods()
-
     @methods.add
     def ping():
         return 'pong'
@@ -147,7 +144,6 @@ Tornado
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
-
     @methods.add
     def ping():
         return 'pong'
@@ -178,7 +174,6 @@ Werkzeug
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
-
     @methods.add
     def ping():
         return 'pong'
@@ -206,7 +201,6 @@ ZeroMQ
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
-
     @methods.add
     def ping():
         return 'pong'
