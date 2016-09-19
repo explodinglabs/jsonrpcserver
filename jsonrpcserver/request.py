@@ -27,7 +27,7 @@ from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
 logger = logging.getLogger(__name__)
 
 json_validator = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
-    __name__, 'request-schema.json').decode('utf-8')))
+    __name__, 'request-schema.json').decode()))
 
 
 def _get_method(methods, name):

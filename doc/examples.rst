@@ -30,7 +30,7 @@ Flask
 
     @app.route('/', methods=['POST'])
     def index():
-        r = dispatch(methods, request.get_data().decode('utf-8'))
+        r = dispatch(methods, request.get_data().decode())
         return Response(str(r), r.http_status, mimetype='application/json')
 
     if __name__ == '__main__':
@@ -61,13 +61,13 @@ Python's built-in `http.server
     class TestHttpServer(BaseHTTPRequestHandler):
         def do_POST(self):
             # Process request
-            request = self.rfile.read(int(self.headers['Content-Length'])).decode('utf-8')
+            request = self.rfile.read(int(self.headers['Content-Length'])).decode()
             r = dispatch(methods, request)
             # Return response
             self.send_response(r.http_status)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(str(r).encode('utf-8'))
+            self.wfile.write(str(r).encode())
 
     if __name__ == '__main__':
         HTTPServer(('localhost', 5000), TestHttpServer).serve_forever()
@@ -134,7 +134,7 @@ Tornado
 
 ::
 
-    $ pip install tornado jsonrpcserver
+    $ pip install jsonrpcserver tornado
 
 ::
 
@@ -148,7 +148,7 @@ Tornado
 
     class MainHandler(web.RequestHandler):
         def post(self):
-            response = dispatch(methods, self.request.body.decode('utf-8'))
+            response = dispatch(methods, self.request.body.decode())
             self.write(response)
 
     if __name__ == "__main__":
@@ -178,7 +178,7 @@ Werkzeug
 
     @Request.application
     def application(request):
-        r = dispatch(methods, request.data.decode('utf-8'))
+        r = dispatch(methods, request.data.decode())
         return Response(str(r), r.http_status, mimetype='application/json')
 
     if __name__ == '__main__':
@@ -208,7 +208,7 @@ ZeroMQ
     socket.bind('tcp://*:5000')
 
     while True:
-        request = socket.recv().decode('UTF-8')
+        request = socket.recv().decode()
         response = dispatch(methods, request)
         socket.send_string(str(response))
 

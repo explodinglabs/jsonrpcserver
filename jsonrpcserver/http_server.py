@@ -25,13 +25,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         """Takes a HTTP POST request, processes it and returns the result"""
         # Process request
         request = self.rfile.read(
-            int(self.headers['Content-Length'])).decode('utf-8')
+            int(self.headers['Content-Length'])).decode()
         r = dispatch(self.server.methods, request)
         # Return response
         self.send_response(r.http_status)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(str(r).encode('utf-8'))
+        self.wfile.write(str(r).encode())
 
 
 class MethodsServer(object):
