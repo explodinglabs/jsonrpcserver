@@ -142,6 +142,7 @@ Socket.IO
     app = Flask(__name__)
     socketio = SocketIO(app)
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
