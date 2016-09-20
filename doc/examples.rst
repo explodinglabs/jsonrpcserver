@@ -59,8 +59,7 @@ Flask
         r = dispatch(methods, request.get_data().decode())
         return Response(str(r), r.http_status, mimetype='application/json')
 
-    if __name__ == '__main__':
-        app.run()
+    app.run()
 
 See `blog post <https://bcb.github.io/jsonrpc/flask>`__.
 
@@ -95,8 +94,7 @@ Python's built-in `http.server
             self.end_headers()
             self.wfile.write(str(r).encode())
 
-    if __name__ == '__main__':
-        HTTPServer(('localhost', 5000), TestHttpServer).serve_forever()
+    HTTPServer(('localhost', 5000), TestHttpServer).serve_forever()
 
 See `blog post <https://bcb.github.io/jsonrpc/httpserver>`__.
 
@@ -123,8 +121,7 @@ Using the `@methods` decorator::
     def ping():
         return 'pong'
 
-    if __name__ == '__main__':
-        methods.serve_forever()
+    methods.serve_forever()
 
 Socket.IO
 =========
@@ -151,8 +148,7 @@ Socket.IO
     def handle_message(request):
         return dispatch(methods, request)
 
-    if __name__ == '__main__':
-        socketio.run(app, port=5000)
+    socketio.run(app, port=5000)
 
 See `blog post <https://bcb.github.io/jsonrpc/flask-socketio>`__.
 
@@ -178,10 +174,9 @@ Tornado
             response = dispatch(methods, self.request.body.decode())
             self.write(response)
 
-    if __name__ == "__main__":
-        app = web.Application([(r"/", MainHandler)])
-        app.listen(5000)
-        ioloop.IOLoop.current().start()
+    app = web.Application([(r"/", MainHandler)])
+    app.listen(5000)
+    ioloop.IOLoop.current().start()
 
 See `blog post <https://bcb.github.io/jsonrpc/tornado>`__.
 
@@ -208,8 +203,7 @@ Werkzeug
         r = dispatch(methods, request.data.decode())
         return Response(str(r), r.http_status, mimetype='application/json')
 
-    if __name__ == '__main__':
-        run_simple('localhost', 5000, application)
+    run_simple('localhost', 5000, application)
 
 See `blog post <https://bcb.github.io/jsonrpc/werkzeug>`__.
 
