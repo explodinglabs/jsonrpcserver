@@ -21,7 +21,9 @@ aiohttp
     from aiohttp import web
     from jsonrpcserver import Methods, dispatch
 
+    app = web.Application()
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
@@ -31,7 +33,6 @@ aiohttp
         response = dispatch(methods, request)
         return web.json_response(response)
 
-    app = web.Application()
     app.router.add_post('/', handle)
 
     if __name__ == '__main__':
@@ -49,12 +50,13 @@ Flask
     from flask import Flask, request, Response
     from jsonrpcserver import Methods, dispatch
 
+    app = Flask(__name__)
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
 
-    app = Flask(__name__)
     @app.route('/', methods=['POST'])
     def index():
         r = dispatch(methods, request.get_data().decode())
@@ -81,6 +83,7 @@ Python's built-in `http.server
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
@@ -120,6 +123,7 @@ Using the `@methods` decorator::
     from jsonrpcserver import Methods
 
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
@@ -132,7 +136,7 @@ Socket.IO
 
 ::
 
-    $ pip install jsonrpcserver flask-socketio eventlet
+    $ pip install jsonrpcserver flask flask-socketio eventlet
 
 ::
 
@@ -141,13 +145,13 @@ Socket.IO
     from jsonrpcserver import Methods, dispatch
 
     app = Flask(__name__)
-
+    socketio = SocketIO(app)
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
 
-    socketio = SocketIO(app)
     @socketio.on('message')
     def handle_message(request):
         return dispatch(methods, request)
@@ -170,6 +174,7 @@ Tornado
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
@@ -201,6 +206,7 @@ Werkzeug
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
@@ -228,12 +234,11 @@ ZeroMQ
     from jsonrpcserver import Methods, dispatch
 
     methods = Methods()
+    socket = zmq.Context().socket(zmq.REP)
+
     @methods.add
     def ping():
         return 'pong'
-
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
 
     if __name__ == '__main__':
         socket.bind('tcp://*:5000')

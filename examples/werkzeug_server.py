@@ -3,6 +3,7 @@ from werkzeug.serving import run_simple
 from jsonrpcserver import Methods, dispatch
 
 methods = Methods()
+
 @methods.add
 def ping():
     return 'pong'

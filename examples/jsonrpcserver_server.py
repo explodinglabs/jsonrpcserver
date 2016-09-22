@@ -1,6 +1,7 @@
 from jsonrpcserver import Methods
 
 methods = Methods()
+
 @methods.add
 def ping():
     return 'pong'

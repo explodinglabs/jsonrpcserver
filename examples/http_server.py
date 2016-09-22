@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from jsonrpcserver import Methods, dispatch
 
 methods = Methods()
+
 @methods.add
 def ping():
     return 'pong'

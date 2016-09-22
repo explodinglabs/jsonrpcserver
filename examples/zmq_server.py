@@ -2,12 +2,11 @@ import zmq
 from jsonrpcserver import Methods, dispatch
 
 methods = Methods()
+socket = zmq.Context().socket(zmq.REP)
+
 @methods.add
 def ping():
     return 'pong'
-
-context = zmq.Context()
-socket = context.socket(zmq.REP)
 
 if __name__ == '__main__':
     socket.bind('tcp://*:5000')
