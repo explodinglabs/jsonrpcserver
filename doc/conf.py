@@ -119,7 +119,7 @@ html_theme_path = [alabaster.get_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'Process JSON-RPC requests in Python 2.7 and 3.3+, v'+release
+html_title = 'Process JSON-RPC requests in Python 2.7 and 3.3+'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
