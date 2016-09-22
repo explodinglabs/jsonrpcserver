@@ -1,3 +1,8 @@
+3.3.4 (Sep 22, 2016)
+~~~~~~~~~~~~~~~~~~~~
+
+- Fix Methods.serve_forever in python 2 (thanks @bplower)
+
 3.3.3 (Sep 15, 2016)
 ~~~~~~~~~~~~~~~~~~~~
 
