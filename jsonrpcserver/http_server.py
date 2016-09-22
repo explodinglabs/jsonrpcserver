@@ -6,7 +6,7 @@ https://docs.python.org/3/library/http.server.html
 import logging
 try:
     # Python 2
-    import SimpleHTTPServer as HTTPServer
+    from BaseHTTPServer import HTTPServer
     from BaseHTTPServer import BaseHTTPRequestHandler
 except ImportError:
     # Python 3
