@@ -25,8 +25,8 @@ Start the server:
 
 This example uses the built-in server, but you can process requests in any
 application, (such as a Flask or Django app), by using the :mod:`dispatcher`.
-See :doc:`examples <examples>` of usage in various frameworks. The :doc:`api`
-has details, including :mod:`configuration <config>` of the package.
+See :doc:`examples <examples>` showing usage in various frameworks. The
+:doc:`api` has details, including :mod:`configuration <config>` of the package.
 
 Contribute on `Github <https://github.com/bcb/jsonrpcserver>`_.
 
