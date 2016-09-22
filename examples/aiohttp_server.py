@@ -13,4 +13,6 @@ async def handle(request):
 
 app = web.Application()
 app.router.add_post('/', handle)
-web.run_app(app, port=5000)
+
+if __name__ == '__main__':
+    web.run_app(app, port=5000)

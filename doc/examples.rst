@@ -33,7 +33,9 @@ aiohttp
 
     app = web.Application()
     app.router.add_post('/', handle)
-    web.run_app(app, port=5000)
+
+    if __name__ == '__main__':
+        web.run_app(app, port=5000)
 
 Flask
 =====
@@ -47,19 +49,19 @@ Flask
     from flask import Flask, request, Response
     from jsonrpcserver import Methods, dispatch
 
-    app = Flask(__name__)
     methods = Methods()
-
     @methods.add
     def ping():
         return 'pong'
 
+    app = Flask(__name__)
     @app.route('/', methods=['POST'])
     def index():
         r = dispatch(methods, request.get_data().decode())
         return Response(str(r), r.http_status, mimetype='application/json')
 
-    app.run()
+    if __name__ == '__main__':
+        app.run()
 
 See `blog post <https://bcb.github.io/jsonrpc/flask>`__.
 
@@ -94,7 +96,8 @@ Python's built-in `http.server
             self.end_headers()
             self.wfile.write(str(r).encode())
 
-    HTTPServer(('localhost', 5000), TestHttpServer).serve_forever()
+    if __name__ == '__main__':
+        HTTPServer(('localhost', 5000), TestHttpServer).serve_forever()
 
 See `blog post <https://bcb.github.io/jsonrpc/httpserver>`__.
 
@@ -121,7 +124,8 @@ Using the `@methods` decorator::
     def ping():
         return 'pong'
 
-    methods.serve_forever()
+    if __name__ == '__main__':
+        methods.serve_forever()
 
 Socket.IO
 =========
@@ -137,18 +141,19 @@ Socket.IO
     from jsonrpcserver import Methods, dispatch
 
     app = Flask(__name__)
-    socketio = SocketIO(app)
-    methods = Methods()
 
+    methods = Methods()
     @methods.add
     def ping():
         return 'pong'
 
+    socketio = SocketIO(app)
     @socketio.on('message')
     def handle_message(request):
         return dispatch(methods, request)
 
-    socketio.run(app, port=5000)
+    if __name__ == '__main__':
+        socketio.run(app, port=5000)
 
 See `blog post <https://bcb.github.io/jsonrpc/flask-socketio>`__.
 
@@ -175,8 +180,10 @@ Tornado
             self.write(response)
 
     app = web.Application([(r"/", MainHandler)])
-    app.listen(5000)
-    ioloop.IOLoop.current().start()
+
+    if __name__ == '__main__':
+        app.listen(5000)
+        ioloop.IOLoop.current().start()
 
 See `blog post <https://bcb.github.io/jsonrpc/tornado>`__.
 
@@ -203,7 +210,8 @@ Werkzeug
         r = dispatch(methods, request.data.decode())
         return Response(str(r), r.http_status, mimetype='application/json')
 
-    run_simple('localhost', 5000, application)
+    if __name__ == '__main__':
+        run_simple('localhost', 5000, application)
 
 See `blog post <https://bcb.github.io/jsonrpc/werkzeug>`__.
 
@@ -226,11 +234,12 @@ ZeroMQ
 
     context = zmq.Context()
     socket = context.socket(zmq.REP)
-    socket.bind('tcp://*:5000')
 
-    while True:
-        request = socket.recv().decode()
-        response = dispatch(methods, request)
-        socket.send_string(str(response))
+    if __name__ == '__main__':
+        socket.bind('tcp://*:5000')
+        while True:
+            request = socket.recv().decode()
+            response = dispatch(methods, request)
+            socket.send_string(str(response))
 
 See `blog post <https://bcb.github.io/jsonrpc/zeromq>`__.
