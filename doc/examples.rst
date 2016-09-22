@@ -18,6 +18,8 @@ aiohttp
 
 .. literalinclude:: ../examples/aiohttp_server.py
 
+See `blog post <https://bcb.github.io/jsonrpc/aiohttp>`__.
+
 Flask
 =====
 
