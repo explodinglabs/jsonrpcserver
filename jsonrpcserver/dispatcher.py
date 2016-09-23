@@ -82,7 +82,7 @@ def dispatch(methods, request):
             response = BatchResponse(
                 [r for r in response if not isinstance(
                     r, NotificationResponse)])
-            # "Nothing is returned for all notification batches"
+            # "Nothing is returned for all-notification batches"
             if not response:
                 response = NotificationResponse() # pylint: disable=redefined-variable-type
         # Single request
