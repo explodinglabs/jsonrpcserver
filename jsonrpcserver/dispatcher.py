@@ -73,6 +73,8 @@ def dispatch(methods, request):
             for r in request:
                 try:
                     req = Request(r)
+                # A single invalid request shouldn't abort all processing, so
+                # just add an error to the batch of responses
                 except InvalidRequest as e:
                     resp = ExceptionResponse(e, None)
                 else:
