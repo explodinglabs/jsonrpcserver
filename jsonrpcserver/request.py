@@ -176,7 +176,7 @@ class Request(object):
 
     def __init__(self, request):
         """
-        :param request: JSON-RPC request, in dict or string form
+        :param request: JSON-RPC request, in dict form
         """
         # Validate against the JSON-RPC schema
         if config.schema_validation:
