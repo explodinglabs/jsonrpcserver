@@ -104,35 +104,6 @@ def _validate_arguments_against_signature(func, args, kwargs):
         raise InvalidParams(str(e))
 
 
-def _call(methods, method_name, args=None, kwargs=None):
-    """Find a method from a list, then validate the arguments before calling it.
-
-    :param methods: The list of methods - either a python list, or Methods obj.
-    :param args: Positional arguments (list)
-    :param kwargs: Keyword arguments (dict)
-    :raises MethodNotFound: If the method is not in the list.
-    :raises InvalidParams: If the arguments don't match the method signature.
-    :returns: The return value from the method called.
-    """
-    # Get the method object from a list of rpc methods
-    method = _get_method(methods, method_name)
-    # Ensure the arguments match the method's signature
-    _validate_arguments_against_signature(method, args, kwargs)
-    # Call the method
-    if args and kwargs:
-        # Cannot have both positional and keyword arguments in JSON-RPC.
-        raise InvalidParams()
-    # No arguments
-    elif not args and not kwargs:
-        return method()
-    # Positional arguments
-    elif args:
-        return method(*args)
-    # Keyword arguments
-    elif kwargs:
-        return method(**kwargs)
-
-
 def _get_arguments(request):
     """Takes the 'params' part of a JSON-RPC request and converts it to either
     positional or keyword arguments usable in Python. The value can be a JSON
@@ -201,11 +172,40 @@ class Request(object):
         """
         return self.request_id is None
 
+    def _call(self, methods):
+        """Find a method from a list, then validate the arguments before calling
+        it.
+
+        :param methods: The list of methods to choose from - either a python
+            list, dictionary of name:value pairs, or Methods object
+        :raises MethodNotFound: If the method is not in the list.
+        :raises InvalidParams: If the arguments don't match the method
+            signature.
+        :returns: The return value from the method called.
+        """
+        # Get the method object from a list
+        method = _get_method(methods, self.method_name)
+        # Ensure the arguments match the method's signature
+        _validate_arguments_against_signature(method, self.args, self.kwargs)
+        # Cannot have both positional and keyword arguments in JSON-RPC.
+        if self.args and self.kwargs:
+            raise InvalidParams()
+        # Now ready to call the method.
+        # No arguments
+        if not self.args and not self.kwargs:
+            return method()
+        # Positional arguments
+        elif self.args:
+            return method(*self.args)
+        # Keyword arguments
+        elif self.kwargs:
+            return method(**self.kwargs)
+
     def process(self, methods):
         """Calls the method and returns a Response object."""
         error = None
         try:
-            result = _call(methods, self.method_name, self.args, self.kwargs)
+            result = self._call(methods)
         # Catch any JsonRpcServerError raised (Invalid Request, etc)
         except JsonRpcServerError as e:
             error = e

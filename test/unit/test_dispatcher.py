@@ -9,7 +9,6 @@ from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
     RequestResponse, BatchResponse
 from jsonrpcserver import config
 
-
 def foo(): # pylint: disable=blacklisted-name
     return 'bar'
 

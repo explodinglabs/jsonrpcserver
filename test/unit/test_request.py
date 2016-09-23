@@ -8,7 +8,7 @@ from functools import partial
 
 from jsonrpcserver.request import _convert_camel_case, \
     _convert_camel_case_keys, _validate_arguments_against_signature, \
-    _get_method, _call, _get_arguments, Request
+    _get_method, _get_arguments, Request
 from jsonrpcserver.response import ErrorResponse, RequestResponse, \
     NotificationResponse
 from jsonrpcserver.exceptions import InvalidRequest, InvalidParams, \
@@ -101,69 +101,82 @@ class TestGetMethod(TestCase):
 class TestCall(TestCase):
 
     def test_list_functions(self):
-        self.assertEqual('bar', _call([foo], 'foo'))
+        req = Request({'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('bar', req._call([foo]))
 
     def test_list_lambdas(self):
         foo = lambda: 'bar' # pylint: disable=redefined-outer-name
         foo.__name__ = 'foo'
-        self.assertEqual('bar', _call([foo], 'foo'))
+        req = Request({'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('bar', req._call([foo]))
 
     def test_list_partials(self):
         multiply = lambda x, y: x * y
         double = partial(multiply, 2)
         double.__name__ = 'double'
-        self.assertEqual(6, _call([double], 'double', [3]))
+        req = Request({'jsonrpc': '2.0', 'method': 'double', 'params': [3]})
+        self.assertEqual(6, req._call([double]))
 
     def test_dict_functions(self):
-        self.assertEqual('bar', _call({'baz': foo}, 'baz'))
+        req = Request({'jsonrpc': '2.0', 'method': 'baz'})
+        self.assertEqual('bar', req._call({'baz': foo}))
 
     def test_dict_lambdas(self):
-        self.assertEqual('bar', _call({'baz': lambda: 'bar'}, 'baz'))
+        req = Request({'jsonrpc': '2.0', 'method': 'baz'})
+        self.assertEqual('bar', req._call({'baz': lambda: 'bar'}))
 
     def test_dict_partials(self):
         multiply = lambda x, y: x * y
-        self.assertEqual(6, _call({'baz': partial(multiply, 2)}, 'baz', [3]))
+        req = Request({'jsonrpc': '2.0', 'method': 'baz', 'params': [3]})
+        self.assertEqual(6, req._call({'baz': partial(multiply, 2)}))
 
     def test_methods_functions(self):
         methods = Methods()
         methods.add(foo)
-        self.assertEqual('bar', _call(methods, 'foo'))
+        req = Request({'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('bar', req._call(methods))
 
     def test_methods_functions_with_decorator(self):
         methods = Methods()
         @methods.add
         def foo(): # pylint: disable=redefined-outer-name,unused-variable
             return 'bar'
-        self.assertEqual('bar', _call(methods, 'foo'))
+        req = Request({'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('bar', req._call(methods))
 
     def test_methods_lambdas(self):
         methods = Methods()
         methods.add(lambda: 'bar', 'foo')
-        self.assertEqual('bar', _call(methods, 'foo'))
+        req = Request({'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertEqual('bar', req._call(methods))
 
     def test_methods_partials(self):
         multiply = lambda x, y: x * y
         double = partial(multiply, 2)
         methods = Methods()
         methods.add(double, 'double')
-        self.assertEqual(6, _call(methods, 'double', [3]))
+        req = Request({'jsonrpc': '2.0', 'method': 'double', 'params': [3]})
+        self.assertEqual(6, req._call(methods))
 
     def test_positionals(self):
         methods = Methods()
         methods.add(lambda x: x * x, 'square')
-        self.assertEqual(9, _call(methods, 'square', [3]))
+        req = Request({'jsonrpc': '2.0', 'method': 'square', 'params': [3]})
+        self.assertEqual(9, req._call(methods))
 
     def test_keywords(self):
         def get_name(**kwargs):
             return kwargs['name']
-        self.assertEqual('foo', _call([get_name], 'get_name', None,
-                                      {'name': 'foo'}))
+        req = Request({'jsonrpc': '2.0', 'method': 'get_name', 'params': {'name': 'foo'}})
+        self.assertEqual('foo', req._call([get_name]))
 
     def test_positionals_and_keywords(self):
         def foo(*args, **kwargs): # pylint: disable=redefined-outer-name,unused-argument
             return 'bar'
+        req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': {'name': 'foo'}})
+        req.args = [3]
         with self.assertRaises(InvalidParams):
-            _call([foo], 'foo', [3], {'foo': 'bar'})
+            req._call([foo])
 
 
 class TestGetArguments(TestCase):
