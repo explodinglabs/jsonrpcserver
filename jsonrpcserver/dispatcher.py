@@ -78,7 +78,7 @@ def dispatch(methods, request):
                 except InvalidRequest as e:
                     resp = ExceptionResponse(e, None)
                 else:
-                    resp = req.process(methods)
+                    resp = req.call(methods)
                 response.append(resp)
             # Remove Notification responses
             response = BatchResponse(
@@ -89,7 +89,7 @@ def dispatch(methods, request):
                 response = NotificationResponse() # pylint: disable=redefined-variable-type
         # Single request
         else:
-            response = Request(request).process(methods)
+            response = Request(request).call(methods)
     except JsonRpcServerError as e:
         response = ExceptionResponse(e, None)
     # Batch requests can have mixed results, just return 200
