@@ -129,11 +129,13 @@ def _get_arguments(request):
     # Params is a dict. Taken as keyword arguments.
     elif isinstance(params, dict):
         keywords = params
-    # Anything else is invalid. (This should never happen if the request has
+    # Any other type is invalid. (This should never happen if the request has
     # passed the schema validation.)
     else:
         raise InvalidParams('Params of type %s is not allowed' % \
             type(params).__name__)
+    assert not (positionals and keywords), \
+        'Cannot have both positional and keyword arguments in JSON-RPC.'
     return (positionals, keywords)
 
 
@@ -187,9 +189,6 @@ class Request(object):
         method = _get_method(methods, self.method_name)
         # Ensure the arguments match the method's signature
         _validate_arguments_against_signature(method, self.args, self.kwargs)
-        # Cannot have both positional and keyword arguments in JSON-RPC.
-        if self.args and self.kwargs:
-            raise InvalidParams()
         # Now ready to call the method.
         # No arguments
         if not self.args and not self.kwargs:

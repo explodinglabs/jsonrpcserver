@@ -170,14 +170,6 @@ class TestCall(TestCase):
         req = Request({'jsonrpc': '2.0', 'method': 'get_name', 'params': {'name': 'foo'}})
         self.assertEqual('foo', req._call([get_name]))
 
-    def test_positionals_and_keywords(self):
-        def foo(*args, **kwargs): # pylint: disable=redefined-outer-name,unused-argument
-            return 'bar'
-        req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': {'name': 'foo'}})
-        req.args = [3]
-        with self.assertRaises(InvalidParams):
-            req._call([foo])
-
 
 class TestGetArguments(TestCase):
 
