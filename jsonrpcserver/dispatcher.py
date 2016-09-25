@@ -71,19 +71,12 @@ def dispatch(methods, request):
             # Process each request
             response = BatchResponse()
             for r in request:
-                try:
-                    req = Request(r)
-                # A single invalid request shouldn't abort all processing, so
-                # just add an error to the batch of responses
-                except InvalidRequest as e:
-                    resp = ExceptionResponse(e, None)
-                else:
-                    resp = req.call(methods)
+                req = Request(r)
+                resp = req.call(methods)
                 response.append(resp)
             # Remove Notification responses
             response = BatchResponse(
-                [r for r in response if not isinstance(
-                    r, NotificationResponse)])
+                [r for r in response if not isinstance(r, NotificationResponse)])
             # "Nothing is returned for all-notification batches"
             if not response:
                 response = NotificationResponse() # pylint: disable=redefined-variable-type

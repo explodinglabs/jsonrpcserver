@@ -9,6 +9,12 @@ from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
     RequestResponse, BatchResponse
 from jsonrpcserver import config
 
+def setUpModule():
+    config.debug = True
+
+def tearDownModule():
+    config.debug = False
+
 def foo(): # pylint: disable=blacklisted-name
     return 'bar'
 
@@ -139,16 +145,16 @@ class TestDispatchSpecificationExamples(TestCase):
         r = dispatch([foo], [1])
         self.assertIsInstance(r, BatchResponse)
         self.assertEqual(
-            [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}],
+            [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '1 is not valid under any of the given schemas'}, 'id': None}],
             r)
 
     def test_multiple_invalid_requests(self):
         r = dispatch([foo], [1, 2, 3])
         self.assertIsInstance(r, BatchResponse)
         self.assertEqual(
-            [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
-             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
-             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None}],
+            [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '1 is not valid under any of the given schemas'}, 'id': None},
+             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '2 is not valid under any of the given schemas'}, 'id': None},
+             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '3 is not valid under any of the given schemas'}, 'id': None}],
             r)
 
     def test_mixed_requests_and_notifications(self):
@@ -166,8 +172,8 @@ class TestDispatchSpecificationExamples(TestCase):
         self.assertEqual(
             [{'jsonrpc': '2.0', 'result': 7, 'id': '1'},
              {'jsonrpc': '2.0', 'result': 19, 'id': '2'},
-             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
-             {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found'}, 'id': '5'},
+             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': "{'foo': 'boo'} is not valid under any of the given schemas"}, 'id': None},
+             {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found', 'data': 'foo.get'}, 'id': '5'},
              {'jsonrpc': '2.0', 'result': ['hello', 5], 'id': '9'}], r)
 
     def test_all_notifications(self):

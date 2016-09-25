@@ -16,6 +16,12 @@ from jsonrpcserver.methods import Methods
 from jsonrpcserver import status
 from jsonrpcserver import config
 
+def setUpModule():
+    config.debug = True
+
+def tearDownModule():
+    config.debug = False
+
 
 def foo():
     return 'bar'
@@ -207,8 +213,8 @@ class TestRequestInit(TestCase):
         config.convert_camel_case = False
 
     def test_invalid_request(self):
-        with self.assertRaises(InvalidRequest):
-            Request({'jsonrpc': '2.0'})
+        r = Request({'jsonrpc': '2.0'})
+        self.assertIsInstance(r.response, ErrorResponse)
 
     def test_ok(self):
         r = Request({'jsonrpc': '2.0', 'method': 'foo'})
