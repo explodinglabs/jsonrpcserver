@@ -22,7 +22,7 @@ _REQUEST_LOG = logging.getLogger(__name__+'.request')
 _RESPONSE_LOG = logging.getLogger(__name__+'.response')
 
 
-class Requests(object):
+class Requests(object): #pylint:disable=too-few-public-methods
     """Requests"""
 
     @staticmethod
