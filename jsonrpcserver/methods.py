@@ -29,9 +29,6 @@ class Methods(MutableMapping, MethodsServer): #pylint:disable=too-many-ancestors
         self._items = {}
         self.update(*args, **kwargs)
 
-    def __repr__(self):
-        return str(self._items)
-
     def __getitem__(self, key):
         return self._items[key]
 
@@ -68,11 +65,9 @@ class Methods(MutableMapping, MethodsServer): #pylint:disable=too-many-ancestors
             ``__name__`` property, and no ``name`` argument was given.)
         """
         # If no custom name was given, use the method's __name__ attribute
+        # Raises AttributeError otherwise
         if not name:
             name = method.__name__
-        # Method must have a name
-        if not name:
-            raise AttributeError('%s has no name' % type(method))
         self.update({name: method})
         return method
 

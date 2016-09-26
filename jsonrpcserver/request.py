@@ -99,8 +99,8 @@ class Request(object):
                 return methods[name]
             except KeyError:
                 raise MethodNotFound(name)
-        # Otherwise it must be a Sequence (list-like), search the __name__
-        # attributes
+        # Otherwise it must be a Sequence, search the __name__ attributes of
+        # its items
         elif isinstance(methods, Sequence):
             try:
                 return next(m for m in methods if m.__name__ == name)

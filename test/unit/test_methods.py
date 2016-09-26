@@ -18,12 +18,32 @@ class TestInit(TestCase):
         self.assertIn('ping', m)
 
 
+class TestMutableMapping(TestCase):
+
+    def test_iter(self):
+        m = Methods(ping=lambda: 'pong')
+        iter(m)
+
+    def test_len(self):
+        m = Methods(ping=lambda: 'pong')
+        self.assertEqual(1, len(m))
+
+    def test_del(self):
+        m = Methods(ping=lambda: 'pong')
+        del m['ping']
+
+
 class TestAdd(TestCase):
 
     def test_non_callable(self):
         m = Methods()
         with self.assertRaises(TypeError):
             m.add(None, 'ping')
+
+    def test_non_callable(self):
+        m = Methods()
+        with self.assertRaises(AttributeError):
+            m.add(None)
 
     def test_function(self):
         def go(): pass # pylint: disable=multiple-statements
@@ -115,6 +135,15 @@ class TestAdd(TestCase):
         # Can't use assertIs, so check the outcome is as expected
         self.assertEqual('a', m['custom1'].__call__())
         self.assertEqual('b', m['custom2'].__call__())
+
+
+class TestAddMethod(TestCase):
+    """add_method is the old way to add, still need to support it"""
+    def test(self):
+        def go(): pass # pylint: disable=multiple-statements
+        m = Methods()
+        m.add_method(go)
+        self.assertIs(go, m['go'])
 
 
 class TestAddDictLike(TestCase):
