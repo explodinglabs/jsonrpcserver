@@ -69,7 +69,7 @@ class Requests(object): #pylint:disable=too-few-public-methods
             self.response = ExceptionResponse(exc, None)
 
     def dispatch(self, methods):
-        """Process a JSON-RPC request, calling the requested method.
+        """Process a JSON-RPC request, calling the requested method(s).
 
         .. code-block:: python
 
