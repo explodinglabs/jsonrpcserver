@@ -23,6 +23,16 @@ setup(
     include_package_data=True,
     install_requires=['jsonschema', 'six', 'funcsigs'],
     tests_require=['tox'],
+    extras_require={
+        'examples': [
+            'aiohttp',
+            'flask',
+            'flask-socketio',
+            'tornado',
+            'werkzeug',
+            'pyzmq'
+        ]
+    },
     classifiers=[
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
