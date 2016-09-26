@@ -1,8 +1,11 @@
+"""Asynchronous dispatch"""
+
 from .dispatcher import Requests
 from .async_request import AsyncRequest
+from .response import BatchResponse, NotificationResponse
 
 class AsyncRequests(Requests): #pylint:disable=too-few-public-methods
-    """Requests"""
+    """Asynchronous requests"""
 
     def __init__(self, requests):
         super(AsyncRequests, self).__init__(requests, request_type=AsyncRequest)

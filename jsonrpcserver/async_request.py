@@ -1,7 +1,11 @@
+"""Asynchronous request"""
+
 from .request import Request
 from .response import ExceptionResponse, NotificationResponse, RequestResponse
 
 class AsyncRequest(Request):
+    """Asynchronous request"""
+
     async def call(self, methods):
         """Find the method from the passed list, and call it, returning a
         Response"""
@@ -15,7 +19,8 @@ class AsyncRequest(Request):
                 # Ensure the arguments match the method's signature
                 self._validate_arguments_against_signature(callable_)
                 # Call the method
-                result = await callable_(*(self.args or []), **(self.kwargs or {}))
+                result = await callable_(*(self.args or []),
+                                         **(self.kwargs or {}))
                 # Set the response
                 if self.is_notification:
                     self.response = NotificationResponse()
