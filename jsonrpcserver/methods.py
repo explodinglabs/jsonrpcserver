@@ -31,7 +31,7 @@ from .dispatcher import dispatch
 _LOGGER = logging.getLogger(__name__)
 
 
-class Methods(MutableMapping): #pylint:disable=too-many-ancestors
+class Methods(MutableMapping):
     """Holds a list of methods
     ... versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
@@ -91,12 +91,12 @@ class Methods(MutableMapping): #pylint:disable=too-many-ancestors
         return self.add(*args, **kwargs)
 
     def serve_forever(self, name='', port=5000):
-        """Serve the methods with a basic http server"""
+        """A basic http server to serve the methods"""
 
         class RequestHandler(BaseHTTPRequestHandler):
-            """Handles HTTP requests"""
+            """Request handler"""
             def do_POST(self): #pylint:disable=invalid-name
-                """Takes a HTTP POST request, processes it and returns the result"""
+                """HTTP POST"""
                 # Process request
                 request = self.rfile.read(
                     int(self.headers['Content-Length'])).decode()
