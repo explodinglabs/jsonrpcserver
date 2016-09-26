@@ -22,8 +22,8 @@ setup(
     package_data={'jsonrpcserver': ['request-schema.json']},
     include_package_data=True,
     install_requires=['jsonschema', 'six', 'funcsigs'],
-    tests_require=['tox'],
     extras_require={
+        'tox': ['tox','pylint'],
         'examples': [
             'aiohttp',
             'flask',
