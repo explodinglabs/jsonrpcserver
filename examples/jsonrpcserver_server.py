@@ -1,6 +1,4 @@
-from jsonrpcserver import Methods
-
-methods = Methods()
+from jsonrpcserver import methods
 
 @methods.add
 def ping():

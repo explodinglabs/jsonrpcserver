@@ -1,7 +1,5 @@
 from tornado import ioloop, web
-from jsonrpcserver import Methods, dispatch
-
-methods = Methods()
+from jsonrpcserver import methods, dispatch
 
 @methods.add
 def ping():

@@ -1,8 +1,7 @@
 from flask import Flask, request, Response
-from jsonrpcserver import Methods, dispatch
+from jsonrpcserver import methods, dispatch
 
 app = Flask(__name__)
-methods = Methods()
 
 @methods.add
 def ping():

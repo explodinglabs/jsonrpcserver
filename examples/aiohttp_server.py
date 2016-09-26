@@ -1,8 +1,7 @@
 from aiohttp import web
-from jsonrpcserver import Methods, dispatch
+from jsonrpcserver import methods, dispatch
 
 app = web.Application()
-methods = Methods()
 
 @methods.add
 def ping():

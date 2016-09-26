@@ -1,8 +1,6 @@
 import asyncio
-from jsonrpcserver import Methods
+from jsonrpcserver import methods
 from jsonrpcserver.async_dispatcher import dispatch
-
-methods = Methods()
 
 @methods.add
 async def ping():

@@ -1,7 +1,6 @@
 import zmq
-from jsonrpcserver import Methods, dispatch
+from jsonrpcserver import methods, dispatch
 
-methods = Methods()
 socket = zmq.Context().socket(zmq.REP)
 
 @methods.add
