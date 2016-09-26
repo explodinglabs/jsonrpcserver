@@ -9,6 +9,8 @@ Process `JSON-RPC <http://www.jsonrpc.org/>`__ requests in Python 2.7 and 3.3+.
 
     methods = Methods()
 
+    methods = Methods()
+
     @methods.add
     def ping():
         return 'pong'
