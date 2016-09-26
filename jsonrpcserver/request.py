@@ -167,7 +167,6 @@ class Request(object):
             else:
                 self.response = ExceptionResponse( #pylint:disable=redefined-variable-type
                     exc, getattr(self, 'request_id', None))
-        return True
 
     def __init__(self, request):
         """
