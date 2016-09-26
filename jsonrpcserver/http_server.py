@@ -12,8 +12,8 @@ except ImportError:
     # Python 3
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from jsonrpcserver.log import log_
-from jsonrpcserver.dispatcher import dispatch
+from .log import log_
+from .dispatcher import dispatch
 
 _LOGGER = logging.getLogger(__name__)
 

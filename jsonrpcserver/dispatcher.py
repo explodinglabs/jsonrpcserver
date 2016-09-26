@@ -10,13 +10,11 @@ import json
 
 from six import string_types
 
-from jsonrpcserver.log import log_
-from jsonrpcserver.response import NotificationResponse, ExceptionResponse, \
-    BatchResponse
-from jsonrpcserver.request import Request
-from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
-    InvalidRequest
-from jsonrpcserver.status import HTTP_STATUS_CODES
+from .log import log_
+from .response import NotificationResponse, ExceptionResponse, BatchResponse
+from .request import Request
+from .exceptions import JsonRpcServerError, ParseError, InvalidRequest
+from .status import HTTP_STATUS_CODES
 
 _REQUEST_LOG = logging.getLogger(__name__+'.request')
 _RESPONSE_LOG = logging.getLogger(__name__+'.response')

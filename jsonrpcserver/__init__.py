@@ -1,3 +1,3 @@
 """jsonrpcserver.__init__"""
-from jsonrpcserver.methods import Methods
-from jsonrpcserver.dispatcher import dispatch
+from .methods import Methods
+from .dispatcher import dispatch

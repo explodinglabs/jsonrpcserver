@@ -18,9 +18,8 @@ the client.
 import json
 from collections import OrderedDict
 
-from jsonrpcserver import status
-from jsonrpcserver.exceptions import JsonRpcServerError, ServerError
-from jsonrpcserver import config
+from . import status, config
+from .exceptions import JsonRpcServerError, ServerError
 
 
 def _sort_response(response):

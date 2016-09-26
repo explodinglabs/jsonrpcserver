@@ -18,12 +18,11 @@ from contextlib import contextmanager
 from funcsigs import signature
 import jsonschema
 
-from jsonrpcserver import config
-from jsonrpcserver.log import log_
-from jsonrpcserver.response import RequestResponse, NotificationResponse, \
-    ExceptionResponse
-from jsonrpcserver.exceptions import JsonRpcServerError, InvalidRequest, \
-    InvalidParams, MethodNotFound
+from . import config
+from .log import log_
+from .response import RequestResponse, NotificationResponse, ExceptionResponse
+from .exceptions import JsonRpcServerError, InvalidRequest, InvalidParams, \
+    MethodNotFound
 
 _LOGGER = logging.getLogger(__name__)
 

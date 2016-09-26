@@ -16,7 +16,7 @@ try:
 except ImportError:
     # Python 3
     from collections.abc import MutableMapping
-from jsonrpcserver.http_server import MethodsServer
+from .http_server import MethodsServer
 
 
 class Methods(MutableMapping, MethodsServer): #pylint:disable=too-many-ancestors
