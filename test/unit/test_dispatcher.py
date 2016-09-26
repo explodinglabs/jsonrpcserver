@@ -9,10 +9,10 @@ from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
     RequestResponse, BatchResponse
 from jsonrpcserver import config
 
-def setUpModule():
+def setUpModule(): #pylint:disable=invalid-name
     config.debug = True
 
-def tearDownModule():
+def tearDownModule(): #pylint:disable=invalid-name
     config.debug = False
 
 def foo(): # pylint: disable=blacklisted-name
@@ -22,17 +22,17 @@ class TestStringToDict(TestCase):
 
     def test_invalid(self):
         with self.assertRaises(ParseError):
-            Requests._string_to_dict('{"jsonrpc": "2.0}')
+            Requests._string_to_dict('{"jsonrpc": "2.0}') #pylint:disable=protected-access
 
     def test(self):
         self.assertEqual(
             {'jsonrpc': '2.0', 'method': 'foo'},
-            Requests._string_to_dict('{"jsonrpc": "2.0", "method": "foo"}'))
+            Requests._string_to_dict('{"jsonrpc": "2.0", "method": "foo"}')) #pylint:disable=protected-access
 
     def test_list(self):
         self.assertEqual(
             [{'jsonrpc': '2.0', 'method': 'foo'}],
-            Requests._string_to_dict('[{"jsonrpc": "2.0", "method": "foo"}]'))
+            Requests._string_to_dict('[{"jsonrpc": "2.0", "method": "foo"}]')) #pylint:disable=protected-access
 
 
 class TestDispatchNotifications(TestCase):
@@ -43,32 +43,32 @@ class TestDispatchNotifications(TestCase):
 
     # Success
     def test(self):
-        r = dispatch([foo], '{"jsonrpc": "2.0", "method": "foo"}')
-        self.assertIsInstance(r, NotificationResponse)
+        req = dispatch([foo], '{"jsonrpc": "2.0", "method": "foo"}')
+        self.assertIsInstance(req, NotificationResponse)
 
     def test_invalid_str(self):
         # Single quotes around identifiers are invalid!
-        r = dispatch([foo], "{'jsonrpc': '2.0', 'method': 'foo'}")
-        self.assertIsInstance(r, ErrorResponse)
+        req = dispatch([foo], "{'jsonrpc': '2.0', 'method': 'foo'}")
+        self.assertIsInstance(req, ErrorResponse)
 
     def test_object(self):
-        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
-        self.assertIsInstance(r, NotificationResponse)
+        req = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo'})
+        self.assertIsInstance(req, NotificationResponse)
 
     # Errors
     def test_parse_error(self):
-        r = dispatch([foo], '{"jsonrpc')
-        self.assertIsInstance(r, ErrorResponse)
-        self.assertEqual('Parse error', r['error']['message'])
+        req = dispatch([foo], '{"jsonrpc')
+        self.assertIsInstance(req, ErrorResponse)
+        self.assertEqual('Parse error', req['error']['message'])
 
     def test_notification_errors_disabled(self):
-        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'non_existant'})
-        self.assertIsInstance(r, NotificationResponse)
+        req = dispatch([foo], {'jsonrpc': '2.0', 'method': 'non_existant'})
+        self.assertIsInstance(req, NotificationResponse)
 
     def test_notification_errors_enabled(self):
         config.notification_errors = True
-        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'non_existant'})
-        self.assertIsInstance(r, ErrorResponse)
+        req = dispatch([foo], {'jsonrpc': '2.0', 'method': 'non_existant'})
+        self.assertIsInstance(req, ErrorResponse)
 
 
 class TestDispatchRequests(TestCase):
@@ -77,88 +77,88 @@ class TestDispatchRequests(TestCase):
 
     # Success
     def test(self):
-        r = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
-        self.assertIsInstance(r, RequestResponse)
-        self.assertEqual('bar', r['result'])
-        self.assertEqual(1, r['id'])
+        req = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        self.assertIsInstance(req, RequestResponse)
+        self.assertEqual('bar', req['result'])
+        self.assertEqual(1, req['id'])
 
 
 class TestDispatchSpecificationExamples(TestCase):
     """These are direct from the examples in the specification"""
 
     def test_positional_parameters(self):
-        def subtract(x, y):
-            return x - y
-        r = dispatch(
+        def subtract(minuend, subtrahend):
+            return minuend - subtrahend
+        req = dispatch(
             [subtract],
             {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1})
-        self.assertIsInstance(r, RequestResponse)
-        self.assertEqual({'jsonrpc': '2.0', 'result': 19, 'id': 1}, r)
+        self.assertIsInstance(req, RequestResponse)
+        self.assertEqual({'jsonrpc': '2.0', 'result': 19, 'id': 1}, req)
         # Second example
-        r = dispatch(
+        req = dispatch(
             [subtract],
             {"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2})
-        self.assertIsInstance(r, RequestResponse)
-        self.assertEqual({'jsonrpc': '2.0', 'result': -19, 'id': 2}, r)
+        self.assertIsInstance(req, RequestResponse)
+        self.assertEqual({'jsonrpc': '2.0', 'result': -19, 'id': 2}, req)
 
     def test_named_parameters(self):
         def subtract(**kwargs):
             return kwargs['minuend'] - kwargs['subtrahend']
-        r = dispatch(
+        req = dispatch(
             [subtract],
             {"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3})
-        self.assertIsInstance(r, RequestResponse)
-        self.assertEqual({"jsonrpc": "2.0", "result": 19, "id": 3}, r)
+        self.assertIsInstance(req, RequestResponse)
+        self.assertEqual({"jsonrpc": "2.0", "result": 19, "id": 3}, req)
         # Second example
-        r = dispatch(
+        req = dispatch(
             [subtract],
             {"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4})
-        self.assertIsInstance(r, RequestResponse)
-        self.assertEqual({"jsonrpc": "2.0", "result": 19, "id": 4}, r)
+        self.assertIsInstance(req, RequestResponse)
+        self.assertEqual({"jsonrpc": "2.0", "result": 19, "id": 4}, req)
 
     def notification(self):
         methods = {'update': lambda: None, 'foobar': lambda: None}
-        r = dispatch(
+        req = dispatch(
             methods,
             {"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]})
-        self.assertIsInstance(r, NotificationResponse)
-        r = dispatch(methods, {"jsonrpc": "2.0", "method": "foobar"})
-        self.assertIsInstance(r, NotificationResponse)
+        self.assertIsInstance(req, NotificationResponse)
+        req = dispatch(methods, {"jsonrpc": "2.0", "method": "foobar"})
+        self.assertIsInstance(req, NotificationResponse)
 
     def test_invalid_json(self):
-        r = dispatch(
+        req = dispatch(
             [foo],
             '[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]')
-        self.assertIsInstance(r, ErrorResponse)
+        self.assertIsInstance(req, ErrorResponse)
         self.assertEqual(
             {'jsonrpc': '2.0', 'error': {'code': -32700, 'message': 'Parse error'}, 'id': None},
-            r)
+            req)
 
     def test_empty_array(self):
-        r = dispatch([foo], [])
-        self.assertIsInstance(r, ErrorResponse)
+        req = dispatch([foo], [])
+        self.assertIsInstance(req, ErrorResponse)
         self.assertEqual(
             {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request'}, 'id': None},
-            r)
+            req)
 
     def test_invalid_request(self):
-        r = dispatch([foo], [1])
-        self.assertIsInstance(r, BatchResponse)
+        req = dispatch([foo], [1])
+        self.assertIsInstance(req, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '1 is not valid under any of the given schemas'}, 'id': None}],
-            r)
+            req)
 
     def test_multiple_invalid_requests(self):
-        r = dispatch([foo], [1, 2, 3])
-        self.assertIsInstance(r, BatchResponse)
+        req = dispatch([foo], [1, 2, 3])
+        self.assertIsInstance(req, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '1 is not valid under any of the given schemas'}, 'id': None},
              {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '2 is not valid under any of the given schemas'}, 'id': None},
              {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': '3 is not valid under any of the given schemas'}, 'id': None}],
-            r)
+            req)
 
     def test_mixed_requests_and_notifications(self):
-        r = dispatch(
+        req = dispatch(
             {'sum': lambda *args: sum(args), 'notify_hello': lambda *args: 19,
              'subtract': lambda *args: args[0] - sum(args[1:]), 'get_data':
              lambda: ['hello', 5]},
@@ -168,20 +168,20 @@ class TestDispatchSpecificationExamples(TestCase):
              {'foo': 'boo'},
              {'jsonrpc': '2.0', 'method': 'foo.get', 'params': {'name': 'myself'}, 'id': '5'},
              {'jsonrpc': '2.0', 'method': 'get_data', 'id': '9'}])
-        self.assertIsInstance(r, BatchResponse)
+        self.assertIsInstance(req, BatchResponse)
         self.assertEqual(
             [{'jsonrpc': '2.0', 'result': 7, 'id': '1'},
              {'jsonrpc': '2.0', 'result': 19, 'id': '2'},
              {'jsonrpc': '2.0', 'error': {'code': -32600, 'message': 'Invalid Request', 'data': "{'foo': 'boo'} is not valid under any of the given schemas"}, 'id': None},
              {'jsonrpc': '2.0', 'error': {'code': -32601, 'message': 'Method not found', 'data': 'foo.get'}, 'id': '5'},
-             {'jsonrpc': '2.0', 'result': ['hello', 5], 'id': '9'}], r)
+             {'jsonrpc': '2.0', 'result': ['hello', 5], 'id': '9'}], req)
 
     def test_all_notifications(self):
-        r = dispatch(
+        req = dispatch(
             [foo],
             [{'jsonrpc': '2.0', 'method': 'notify_sum', 'params': [1, 2, 4]},
              {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]}])
-        self.assertIsInstance(r, NotificationResponse)
+        self.assertIsInstance(req, NotificationResponse)
 
 
 if __name__ == '__main__':

@@ -12,29 +12,29 @@ except ImportError:
     # Python 3
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from jsonrpcserver.log import _log
+from jsonrpcserver.log import log_
 from jsonrpcserver.dispatcher import dispatch
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class RequestHandler(BaseHTTPRequestHandler):
     """Handles HTTP requests"""
 
-    def do_POST(self):
+    def do_POST(self): #pylint:disable=invalid-name
         """Takes a HTTP POST request, processes it and returns the result"""
         # Process request
         request = self.rfile.read(
             int(self.headers['Content-Length'])).decode()
-        r = dispatch(self.server.methods, request)
+        response = dispatch(self.server.methods, request)
         # Return response
-        self.send_response(r.http_status)
+        self.send_response(response.http_status)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(str(r).encode())
+        self.wfile.write(str(response).encode())
 
 
-class MethodsServer(object):
+class MethodsServer(object): #pylint:disable=too-few-public-methods
     """HTTP server mixin"""
 
     def serve_forever(self, name='', port=5000):
@@ -42,5 +42,5 @@ class MethodsServer(object):
         httpd = HTTPServer((name, port), RequestHandler)
         # Let the request handler know which methods to dispatch to
         httpd.methods = self
-        _log(logger, 'info', ' * Listening on port %s', port)
+        log_(_LOGGER, 'info', ' * Listening on port %s', port)
         httpd.serve_forever()

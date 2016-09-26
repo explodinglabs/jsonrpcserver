@@ -4,6 +4,8 @@ For example::
     from jsonrpcserver import config
     config.debug = True
 """
+#pylint:disable=invalid-name
+
 #: Validate requests against the JSON-RPC schema. Disable to speed up
 #: processing.
 schema_validation = True

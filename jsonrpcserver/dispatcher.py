@@ -10,7 +10,7 @@ import json
 
 from six import string_types
 
-from jsonrpcserver.log import _log
+from jsonrpcserver.log import log_
 from jsonrpcserver.response import NotificationResponse, ExceptionResponse, \
     BatchResponse
 from jsonrpcserver.request import Request
@@ -18,8 +18,8 @@ from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
     InvalidRequest
 from jsonrpcserver.status import HTTP_STATUS_CODES
 
-_request_log = logging.getLogger(__name__+'.request')
-_response_log = logging.getLogger(__name__+'.response')
+_REQUEST_LOG = logging.getLogger(__name__+'.request')
+_RESPONSE_LOG = logging.getLogger(__name__+'.response')
 
 
 class Requests(object):
@@ -41,16 +41,16 @@ class Requests(object):
     @staticmethod
     def _log_response(response):
         """Log a response"""
-        _log(_response_log, 'info', str(response), fmt='<-- %(message)s',
-             extra={'http_code': response.http_status, 'http_reason':
-             HTTP_STATUS_CODES[response.http_status]})
+        log_(_RESPONSE_LOG, 'info', str(response), fmt='<-- %(message)s',
+             extra={'http_code': response.http_status,
+                    'http_reason': HTTP_STATUS_CODES[response.http_status]})
 
     def __init__(self, requests):
         """Logs the request, and builds a list of Requests. Will set the
         respnose attribute if there's an problem with the request."""
         self.response = None
         # Log the request
-        _log(_request_log, 'info', requests, fmt='--> %(message)s')
+        log_(_REQUEST_LOG, 'info', requests, fmt='--> %(message)s')
         try:
             # If the request is a string, convert it to a dict
             if isinstance(requests, string_types):
@@ -65,8 +65,8 @@ class Requests(object):
             else:
                 self.requests = Request(requests)
         # Set the response attribute if there's a problem with the request
-        except JsonRpcServerError as e:
-            self.response = ExceptionResponse(e, None)
+        except JsonRpcServerError as exc:
+            self.response = ExceptionResponse(exc, None)
 
     def dispatch(self, methods):
         """Process a JSON-RPC request, calling the requested method.
@@ -94,11 +94,12 @@ class Requests(object):
             if isinstance(self.requests, list):
                 # Batch requests - call each request, and exclude Notifications
                 # from the list of responses
-                self.response = BatchResponse(
-                    [r.call(methods) for r in self.requests if not r.is_notification])
+                self.response = BatchResponse([r.call(methods)
+                                               for r in self.requests
+                                               if not r.is_notification])
                 # If the response list is empty, it should return nothing
                 if not self.response:
-                    self.response = NotificationResponse()
+                    self.response = NotificationResponse() #pylint:disable=redefined-variable-type
             # Single request
             else:
                 self.response = self.requests.call(methods)
@@ -109,4 +110,5 @@ class Requests(object):
 
 
 def dispatch(methods, requests):
+    """Main public dispatch method"""
     return Requests(requests).dispatch(methods)

@@ -39,15 +39,15 @@ def _sort_response(response):
 
     root_order = ['jsonrpc', 'result', 'error', 'id']
     error_order = ['code', 'message', 'data']
-    r = OrderedDict(sorted(
+    req = OrderedDict(sorted(
         response.items(), key=lambda k: root_order.index(k[0])))
     if 'error' in response:
-        r['error'] = OrderedDict(sorted(
+        req['error'] = OrderedDict(sorted(
             response['error'].items(), key=lambda k: error_order.index(k[0])))
-    return r
+    return req
 
 
-class NotificationResponse(object):
+class NotificationResponse(object): #pylint:disable=too-few-public-methods
     """Returned from processing a successful `notification
     <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
     no ``id`` member).

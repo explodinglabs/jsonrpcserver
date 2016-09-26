@@ -21,13 +21,11 @@ class TestParseError(TestCase):
             raise ParseError()
 
     def test_str(self):
-        e = ParseError()
-        self.assertEqual('Parse error', str(e))
+        self.assertEqual('Parse error', str(ParseError()))
 
     def test_configuration(self):
         ParseError.message = 'Error parsing'
-        e = ParseError()
-        self.assertEqual('Error parsing', str(e))
+        self.assertEqual('Error parsing', str(ParseError()))
         ParseError.message = 'Parse error'
 
 
