@@ -1,8 +1,6 @@
 from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
-from jsonrpcserver import Methods, dispatch
-
-methods = Methods()
+from jsonrpcserver import methods, dispatch
 
 @methods.add
 def ping():

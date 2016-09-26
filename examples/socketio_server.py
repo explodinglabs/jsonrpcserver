@@ -1,10 +1,9 @@
 from flask import Flask
 from flask_socketio import SocketIO
-from jsonrpcserver import Methods, dispatch
+from jsonrpcserver import methods, dispatch
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-methods = Methods()
 
 @methods.add
 def ping():
