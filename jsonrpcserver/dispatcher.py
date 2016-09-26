@@ -45,7 +45,7 @@ class Requests(object): #pylint:disable=too-few-public-methods
              extra={'http_code': response.http_status,
                     'http_reason': HTTP_STATUS_CODES[response.http_status]})
 
-    def __init__(self, requests):
+    def __init__(self, requests, request_type=Request):
         """Logs the request, and builds a list of Requests. Will set the
         respnose attribute if there's an problem with the request."""
         self.response = None
@@ -60,10 +60,10 @@ class Requests(object): #pylint:disable=too-few-public-methods
                 # An empty list is invalid
                 if not requests:
                     raise InvalidRequest()
-                self.requests = [Request(r) for r in requests]
+                self.requests = [request_type(r) for r in requests]
             # Single request
             else:
-                self.requests = Request(requests)
+                self.requests = request_type(requests)
         # Set the response attribute if there's a problem with the request
         except JsonRpcServerError as exc:
             self.response = ExceptionResponse(exc, None)
