@@ -156,7 +156,7 @@ class Request(object):
             yield
         except Exception as exc: #pylint:disable=broad-except
             # Log the exception if it wasn't explicitly raised by the method
-            if type(exc) is not JsonRpcServerError:
+            if not isinstance(exc, JsonRpcServerError):
                 _log(logger, 'error', traceback.format_exc())
             # Notifications should not be responded to, even for errors (unless
             # overridden in configuration)
