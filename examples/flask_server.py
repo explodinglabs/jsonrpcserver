@@ -1,5 +1,5 @@
 from flask import Flask, request, Response
-from jsonrpcserver import methods, dispatch
+from jsonrpcserver import methods
 
 app = Flask(__name__)
 
@@ -9,8 +9,9 @@ def ping():
 
 @app.route('/', methods=['POST'])
 def index():
-    r = dispatch(methods, request.get_data().decode())
-    return Response(str(r), r.http_status, mimetype='application/json')
+    response = methods.dispatch(request.get_data().decode())
+    return Response(str(response), response.http_status,
+                    mimetype='application/json')
 
 if __name__ == '__main__':
     app.run()

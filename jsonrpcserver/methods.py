@@ -90,6 +90,9 @@ class Methods(MutableMapping):
         """
         return self.add(*args, **kwargs)
 
+    def dispatch(self, request):
+        return dispatch(self, request)
+
     def serve_forever(self, name='', port=5000):
         """A basic http server to serve the methods"""
 

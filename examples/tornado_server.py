@@ -1,6 +1,5 @@
 from tornado import ioloop, web
-from jsonrpcserver import methods
-from jsonrpcserver.async_dispatcher import dispatch
+from jsonrpcserver.aio import methods
 
 @methods.add
 async def ping():
@@ -8,7 +7,8 @@ async def ping():
 
 class MainHandler(web.RequestHandler):
     async def post(self):
-        response = await dispatch(methods, self.request.body.decode())
+        request = self.request.body.decode()
+        response = await methods.dispatch(request)
         self.write(response)
 
 app = web.Application([(r"/", MainHandler)])
