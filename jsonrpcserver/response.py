@@ -1,15 +1,16 @@
-"""The return value from :func:`~jsonrpcserver.dispatcher.dispatch` is a
-JSON-RPC response object.
-
-.. code-block:: python
+"""The return value from :func:`~jsonrpcserver.methods.Methods.dispatch` is a
+JSON-RPC response object::
 
     >>> response
     {'jsonrpc': '2.0', 'result': 27, 'id': 1}
 
-If you're processing HTTP requests, a status code is provided for responding to
-the client.
+Use ``str()`` to get a JSON-encoded string::
 
-.. code-block:: python
+    >>> str(response)
+    '{"jsonrpc": "2.0", "result": 27, "id": 1}'
+
+If you're processing HTTP requests, a status code is provided for responding to
+the client::
 
     >>> response.http_status
     200

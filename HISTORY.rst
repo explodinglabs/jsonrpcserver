@@ -5,7 +5,6 @@
 - Added a *methods* object to the jsonrpcserver module (so you can import
   jsonrpcserver.methods, rather than instantiating your own).
 - Added methods.dispatch().
-- *A ton of refactoring.*
 
 3.3.4 (Sep 22, 2016)
 ~~~~~~~~~~~~~~~~~~~~

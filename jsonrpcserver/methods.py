@@ -1,13 +1,24 @@
-"""At the core of the library are the "methods", which handle JSON-RPC requests.
-With a methods object, you can register functions and dispatch requests to them.
+"""Methods are the list of functions that can be called from a JSON-RPC request.
+
+Use the ``add`` decorator to register a function to the list::
 
     from jsonrpcserver import methods
 
-Register functions using the ``add`` decorator:
-
     @methods.add
-    def subtract(minuend, subtrahend):
-        return minuend - subtrahend
+    def ping():
+        return 'pong'
+
+Then dispatch JSON-RPC requests to them::
+
+    >>> methods.dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+    --> {"jsonrpc": "2.0", "method": "ping", "id": 1}
+    <-- {"jsonrpc": "2.0", "result": "pong", "id": 1}
+    {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
+
+Or simply serve the methods::
+
+    >>> methods.serve_forever()
+     * Listening on port 5000
 """
 import logging
 try:
@@ -32,11 +43,12 @@ _LOGGER = logging.getLogger(__name__)
 
 class Methods(MutableMapping):
     """Holds a list of methods.
-    ... versionchanged:: 3.3
+
+    .. versionchanged:: 3.4
+        Added dispatch and moved serve_forever into here (was previously in a
+        parent class).
+    .. versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
-    ... versionchanged:: 3.4
-        Added dispatch(), and moved serve_forever() into here (previously was in
-        a parent class).
     """
 
     def __init__(self, *args, **kwargs):
@@ -62,18 +74,19 @@ class Methods(MutableMapping):
         return len(self._items)
 
     def add(self, method, name=None):
-        """Add a method to the list::
+        """Register a function to the list::
 
-            methods.add(multiply)
+            methods.add(subtract)
 
         Alternatively, use as a decorator::
 
             @methods.add
-            def multiply(a, b):
-                return a + b
+            def ping():
+                return 'pong'
 
-        :param method: The method to add.
-        :param name: Name of the method (optional).
+        :param method: The function to add
+        :type method: Function or class method
+        :param str name: Rename the original function
         :raise AttributeError:
             Raised if the method being added has no name. (i.e. it has no
             ``__name__`` property, and no ``name`` argument was given.)
@@ -87,16 +100,27 @@ class Methods(MutableMapping):
 
     def add_method(self, *args, **kwargs):
         """
-        ... deprecated:: 3.2.3
-            Use add instead.
+        .. deprecated:: 3.2.3
+            Use ``add`` instead.
         """
         return self.add(*args, **kwargs)
 
     def dispatch(self, request):
+        """Dispatch a request to the list of methods.
+
+        :param request: The JSON-RPC request to dispatch
+        :type request: A JSON-encoded string, or JSON-serializable object
+        :returns: A JSON-RPC response
+        :rtype: :mod:`Response <jsonrpcserver.response>`
+        """
         return dispatch(self, request)
 
     def serve_forever(self, name='', port=5000):
-        """A basic http server to serve the methods"""
+        """A basic way to serve the methods.
+
+        :param str name: Server address
+        :param int port: Server port
+        """
 
         class RequestHandler(BaseHTTPRequestHandler):
             """Request handler"""
