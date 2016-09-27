@@ -1,5 +1,5 @@
-"""The methods passed to :func:`~dispatcher.dispatch` can be list of functions
-like ``[eat, drink]``, a dictionary, or a ``Methods`` object::
+"""The methods passed to :func:`~jsonrpcserver.dispatcher.dispatch` can be list
+of functions like ``[eat, drink]``, a dictionary, or a ``Methods`` object::
 
     from jsonrpcserver import Methods
     methods = Methods()
@@ -8,7 +8,7 @@ like ``[eat, drink]``, a dictionary, or a ``Methods`` object::
     def multiply(a, b):
         return a * b
 
-    dispatch(methods, ...)
+    response = methods.dispatch(request)
 """
 import logging
 try:
