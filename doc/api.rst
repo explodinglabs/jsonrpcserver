@@ -46,7 +46,9 @@ Asynchronous
 
 Python 3.5+ users can dispatch requests to coroutines.
 
-Usage is the same as before, but this time import from ``jsonrpcserver.aio``::
+Usage is the same as before, but this time import from ``jsonrpcserver.aio``:
+
+.. code-block:: python
 
     from jsonrpcserver.aio import methods
 
@@ -54,7 +56,9 @@ Usage is the same as before, but this time import from ``jsonrpcserver.aio``::
     async def ping():
         return await some_long_running_task()
 
-Then ``await`` the dispatch::
+Then ``await`` the dispatch:
+
+.. code-block:: python
 
     await methods.dispatch(request)
 
