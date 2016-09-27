@@ -1,6 +1,5 @@
-"""Methods are the list of functions that can be called from a JSON-RPC request.
-
-Use the ``add`` decorator to register a function to the list::
+"""Build a list of functions that can be called from a JSON-RPC request. Use
+the ``add`` decorator to register a function to the list::
 
     from jsonrpcserver import methods
 
@@ -45,8 +44,8 @@ class Methods(MutableMapping):
     """Holds a list of methods.
 
     .. versionchanged:: 3.4
-        Added dispatch and moved serve_forever into here (was previously in a
-        parent class).
+        Added ``dispatch``, and moved serve_forever into here (was previously in
+        a parent class).
     .. versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
     """
@@ -81,10 +80,10 @@ class Methods(MutableMapping):
         Alternatively, use as a decorator::
 
             @methods.add
-            def ping():
-                return 'pong'
+            def subtract(minuend, subtrahend):
+                return minuend - subtrahend
 
-        :param method: The function to add
+        :param method: Function to register to the list
         :type method: Function or class method
         :param str name: Rename the original function
         :raise AttributeError:

@@ -1,9 +1,7 @@
-"""
-Added in version 3.4 is the ability for Python 3.5+ users to dispatch requests
-asynchronously to coroutines.
+"""Python 3.5+ users can dispatch requests asynchronously to coroutines.
 
-Use the methods and dispatcher in the same way as before, but this time import
-from ``jsonrpcserver.aio``::
+Use methods the same way as before, but this time import from
+``jsonrpcserver.aio``::
 
     from jsonrpcserver.aio import methods
 
@@ -11,9 +9,10 @@ from ``jsonrpcserver.aio``::
     async def ping():
         return await some_long_running_task()
 
-You can then ``await methods.dispatch(request)`` in your event loop.
-"""
+You can then ``await`` the dispatch::
 
+    await methods.dispatch(request)
+"""
 from .methods import Methods
 from .async_dispatcher import dispatch
 

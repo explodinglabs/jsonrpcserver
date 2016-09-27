@@ -8,6 +8,19 @@ Methods
 
 .. automodule:: jsonrpcserver.methods
 
+Response
+========
+
+.. automodule:: jsonrpcserver.response
+    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
+        ErrorResponse, BatchResponse
+
+Asynchronous methods
+====================
+
+.. automodule:: jsonrpcserver.async_methods
+    :exclude-members: AsyncMethods
+
 Validation
 ==========
 
@@ -32,19 +45,6 @@ The dispatcher catches the exception and gives the appropriate response:
 
 To include the *"name is required"* message given when the exception was
 raised, turn on :mod:`debug mode <jsonrpcserver.config.debug>`.
-
-Response
-========
-
-.. automodule:: jsonrpcserver.response
-    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
-        ErrorResponse, BatchResponse
-
-Asynchronous methods
-====================
-
-.. automodule:: jsonrpcserver.async_methods
-    :exclude-members: AsyncMethods
 
 Configuration
 =============
