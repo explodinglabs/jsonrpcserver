@@ -1,5 +1,4 @@
-"""The return value from :func:`~jsonrpcserver.methods.Methods.dispatch` is a
-JSON-RPC response object::
+"""The return value from ``dispatch`` is a JSON-RPC response object::
 
     >>> response
     {'jsonrpc': '2.0', 'result': 27, 'id': 1}
@@ -9,8 +8,7 @@ Use ``str()`` to get a JSON-encoded string::
     >>> str(response)
     '{"jsonrpc": "2.0", "result": 27, "id": 1}'
 
-If you're processing HTTP requests, a status code is provided for responding to
-the client::
+For HTTP, a status code is provided for responding::
 
     >>> response.http_status
     200

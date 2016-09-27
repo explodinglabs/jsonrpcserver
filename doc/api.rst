@@ -7,6 +7,14 @@ Methods
 =======
 
 .. automodule:: jsonrpcserver.methods
+    :exclude-members: Methods
+
+Response
+========
+
+.. automodule:: jsonrpcserver.response
+    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
+        ErrorResponse, BatchResponse
 
 Validation
 ==========
@@ -30,18 +38,11 @@ The dispatcher catches the exception and gives the appropriate response:
     >>> methods.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {}, 'id': 1})
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 
-To include the *"name is required"* message given when the exception was
-raised, turn on :mod:`debug mode <jsonrpcserver.config.debug>`.
+To include the *"name is required"* given when the exception was raised, turn
+on :mod:`debug mode <jsonrpcserver.config.debug>`.
 
-Response
-========
-
-.. automodule:: jsonrpcserver.response
-    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
-        ErrorResponse, BatchResponse
-
-Asynchronous methods
-====================
+Asynchronous
+============
 
 .. automodule:: jsonrpcserver.async_methods
     :exclude-members: AsyncMethods
