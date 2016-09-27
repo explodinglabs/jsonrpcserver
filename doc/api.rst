@@ -46,7 +46,7 @@ Asynchronous
 
 Python 3.5+ users can dispatch requests to coroutines.
 
-Usage is the same as before, but this time import from ``jsonrpcserver.aio``:
+Usage is the same as before, but import from ``jsonrpcserver.aio``:
 
 .. code-block:: python
 
