@@ -8,11 +8,6 @@ Register functions using the ``add`` decorator:
     @methods.add
     def subtract(minuend, subtrahend):
         return minuend - subtrahend
-
-If you want multiple groups of methods, instantiate your own:
-
-    from jsonrpcserver import Methods
-    methods = Methods()
 """
 import logging
 try:
