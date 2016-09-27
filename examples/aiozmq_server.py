@@ -1,0 +1,19 @@
+import asyncio
+import aiozmq
+import zmq
+from jsonrpcserver.aio import methods
+
+@methods.add
+async def ping():
+    return 'pong'
+
+async def main():
+    rep = await aiozmq.create_zmq_stream(zmq.REP, bind='tcp://*:5000')
+    while True:
+        request = await rep.read()
+        response = await methods.dispatch(request[0].decode())
+        rep.write((str(response).encode('utf-8'),))
+
+if __name__ == '__main__':
+    asyncio.set_event_loop_policy(aiozmq.ZmqEventLoopPolicy())
+    asyncio.get_event_loop().run_until_complete(main())
