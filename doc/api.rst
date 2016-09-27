@@ -60,7 +60,7 @@ Then ``await`` the dispatch:
 
 .. code-block:: python
 
-    await methods.dispatch(request)
+    response = await methods.dispatch(request)
 
 Configuration
 =============

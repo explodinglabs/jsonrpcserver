@@ -10,7 +10,7 @@ Usage is the same as before, but this time import from ``jsonrpcserver.aio``::
 
 Then ``await`` the dispatch::
 
-    await methods.dispatch(request)
+    response = await methods.dispatch(request)
 """
 from .methods import Methods
 from .async_dispatcher import dispatch
