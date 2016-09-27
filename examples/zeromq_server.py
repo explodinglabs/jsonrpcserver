@@ -1,5 +1,5 @@
 import zmq
-from jsonrpcserver import methods, dispatch
+from jsonrpcserver import methods
 
 socket = zmq.Context().socket(zmq.REP)
 
@@ -11,5 +11,5 @@ if __name__ == '__main__':
     socket.bind('tcp://*:5000')
     while True:
         request = socket.recv().decode()
-        response = dispatch(methods, request)
+        response = methods.dispatch(request)
         socket.send_string(str(response))

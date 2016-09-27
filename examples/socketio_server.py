@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_socketio import SocketIO
-from jsonrpcserver import methods, dispatch
+from jsonrpcserver import methods
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -11,7 +11,7 @@ def ping():
 
 @socketio.on('message')
 def handle_message(request):
-    return dispatch(methods, request)
+    return methods.dispatch(request)
 
 if __name__ == '__main__':
     socketio.run(app, port=5000)

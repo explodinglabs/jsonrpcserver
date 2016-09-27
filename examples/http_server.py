@@ -1,5 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from jsonrpcserver import methods, dispatch
+from jsonrpcserver import methods
 
 @methods.add
 def ping():
@@ -9,7 +9,7 @@ class TestHttpServer(BaseHTTPRequestHandler):
     def do_POST(self):
         # Process request
         request = self.rfile.read(int(self.headers['Content-Length'])).decode()
-        r = dispatch(methods, request)
+        r = methods.dispatch(request)
         # Return response
         self.send_response(r.http_status)
         self.send_header('Content-type', 'application/json')
