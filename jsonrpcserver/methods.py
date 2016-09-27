@@ -1,14 +1,18 @@
-"""The methods passed to :func:`~dispatcher.dispatch` can be list of functions
-like ``[eat, drink]``, a dictionary, or a ``Methods`` object::
+"""At the core of the library are the "methods", which handle JSON-RPC requests.
+With a methods object, you can register functions and dispatch requests to them.
+
+    from jsonrpcserver import methods
+
+Register functions using the ``add`` decorator:
+
+    @methods.add
+    def subtract(minuend, subtrahend):
+        return minuend - subtrahend
+
+If you want multiple groups of methods, instantiate your own:
 
     from jsonrpcserver import Methods
     methods = Methods()
-
-    @methods.add
-    def multiply(a, b):
-        return a * b
-
-    dispatch(methods, ...)
 """
 import logging
 try:
@@ -32,9 +36,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class Methods(MutableMapping):
-    """Holds a list of methods
+    """Holds a list of methods.
     ... versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
+    ... versionchanged:: 3.4
+        Added dispatch(), and moved serve_forever() into here (previously was in
+        a parent class).
     """
 
     def __init__(self, *args, **kwargs):

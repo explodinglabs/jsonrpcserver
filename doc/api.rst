@@ -3,21 +3,16 @@
 jsonrpcserver API
 *****************
 
-Dispatcher
-==========
-
-.. automodule:: dispatcher
-
 Methods
 -------
 
-.. automodule:: methods
+.. automodule:: jsonrpcserver.methods
     :exclude-members: Methods
 
 Response
 --------
 
-.. automodule:: response
+.. automodule:: jsonrpcserver.response
     :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
         ErrorResponse, BatchResponse
 
@@ -43,12 +38,12 @@ The dispatcher catches the exception and gives the appropriate response:
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 
 To include the *"name is required"* message given when the exception was
-raised, turn on :mod:`debug mode <config.debug>`.
+raised, turn on :mod:`debug mode <jsonrpcserver.config.debug>`.
 
 Configuration
 =============
 
-.. automodule:: config
+.. automodule:: jsonrpcserver.config
 
 Exceptions
 ==========

@@ -1,5 +1,5 @@
-"""The return value from :func:`~dispatcher.dispatch` is a JSON-RPC response
-object.
+"""The return value from :func:`~jsonrpcserver.dispatcher.dispatch` is a
+JSON-RPC response object.
 
 .. code-block:: python
 
