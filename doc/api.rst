@@ -16,6 +16,19 @@ Response
     :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
         ErrorResponse, BatchResponse
 
+Response
+========
+
+.. automodule:: jsonrpcserver.response
+    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
+        ErrorResponse, BatchResponse
+
+Asynchronous methods
+====================
+
+.. automodule:: jsonrpcserver.async_methods
+    :exclude-members: AsyncMethods
+
 Validation
 ==========
 
@@ -38,6 +51,7 @@ The dispatcher catches the exception and gives the appropriate response:
     >>> methods.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {}, 'id': 1})
     {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 
+<<<<<<< HEAD
 To include the *"name is required"* given when the exception was raised, turn
 on :mod:`debug mode <jsonrpcserver.config.debug>`.
 
@@ -47,6 +61,28 @@ Asynchronous
 .. automodule:: jsonrpcserver.async_methods
     :exclude-members: AsyncMethods
 
+||||||| merged common ancestors
+To include the *"name is required"* message given when the exception was
+raised, turn on :mod:`debug mode <jsonrpcserver.config.debug>`.
+
+Response
+========
+
+.. automodule:: jsonrpcserver.response
+    :exclude-members: ExceptionResponse, NotificationResponse, RequestResponse,
+        ErrorResponse, BatchResponse
+
+Asynchronous methods
+====================
+
+.. automodule:: jsonrpcserver.async_methods
+    :exclude-members: AsyncMethods
+
+=======
+To include the *"name is required"* message given when the exception was
+raised, turn on :mod:`debug mode <jsonrpcserver.config.debug>`.
+
+>>>>>>> document-3.4
 Configuration
 =============
 
