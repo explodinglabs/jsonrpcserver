@@ -85,6 +85,17 @@ Tornado
 
 See `blog post <https://bcb.github.io/jsonrpc/tornado>`__.
 
+Websockets
+==========
+
+::
+
+    $ pip install jsonrpcserver websockets
+
+.. literalinclude:: ../examples/websockets_server.py
+
+See `blog post <https://bcb.github.io/jsonrpc/websockets>`__.
+
 Werkzeug
 ========
 
