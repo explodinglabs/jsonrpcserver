@@ -8,7 +8,7 @@ Use ``str()`` to get a JSON-encoded string::
     >>> str(response)
     '{"jsonrpc": "2.0", "result": 27, "id": 1}'
 
-For HTTP, a status code is provided for responding::
+There's also a HTTP status code, if you need it::
 
     >>> response.http_status
     200
