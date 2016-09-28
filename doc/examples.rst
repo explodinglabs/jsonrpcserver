@@ -115,3 +115,5 @@ ZeroMQ (async)
     $ pip install jsonrpcserver aiozmq
 
 .. literalinclude:: ../examples/aiozmq_server.py
+
+See `blog post <https://bcb.github.io/jsonrpc/zeromq-async>`__.
