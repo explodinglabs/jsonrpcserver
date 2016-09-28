@@ -26,11 +26,13 @@ setup(
         'tox': ['tox','pylint'],
         'examples': [
             'aiohttp',
+            'aiozmq',
             'flask',
             'flask-socketio',
+            'pyzmq',
             'tornado',
+            'websockets',
             'werkzeug',
-            'pyzmq'
         ]
     },
     classifiers=[
