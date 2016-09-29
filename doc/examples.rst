@@ -41,7 +41,7 @@ Python's built-in `http.server
 
     $ pip install jsonrpcserver
 
-.. literalinclude:: ../examples/flask_server.py
+.. literalinclude:: ../examples/http_server.py
 
 See `blog post <https://bcb.github.io/jsonrpc/httpserver>`__.
 
