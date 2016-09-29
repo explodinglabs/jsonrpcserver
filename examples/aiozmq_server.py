@@ -12,7 +12,7 @@ async def main():
     while True:
         request = await rep.read()
         response = await methods.dispatch(request[0].decode())
-        rep.write((str(response).encode('utf-8'),))
+        rep.write((str(response).encode(),))
 
 if __name__ == '__main__':
     asyncio.set_event_loop_policy(aiozmq.ZmqEventLoopPolicy())
