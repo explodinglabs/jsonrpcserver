@@ -3,6 +3,9 @@
 jsonrpcserver API
 *****************
 
+.. contents::
+    :local:
+
 Methods
 =======
 
