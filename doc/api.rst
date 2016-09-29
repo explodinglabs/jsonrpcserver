@@ -26,11 +26,11 @@ If arguments are unsatisfactory, raise :class:`InvalidParams
 <jsonrpcserver.exceptions.InvalidParams>`:
 
 .. code-block:: python
-    :emphasize-lines: 4-5
 
     from jsonrpcserver.exceptions import InvalidParams
 
-    def get(**kwargs):
+    @methods.add
+    def get_customer(**kwargs):
         if 'name' not in kwargs:
             raise InvalidParams('name is required')
 
@@ -47,9 +47,8 @@ on :mod:`debug mode <jsonrpcserver.config.debug>`.
 Asynchronous
 ============
 
-Dispatch to coroutines. (in Python 3.5+)
-
-Usage is the same as before, but import from ``jsonrpcserver.aio``:
+Starting from v3.4 you can dispatch to coroutines (in Python 3.5+). Usage is
+the same as before, but import from ``jsonrpcserver.aio``:
 
 .. code-block:: python
 

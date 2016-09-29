@@ -1,5 +1,6 @@
-"""Build a list of functions that can be called from a JSON-RPC request. Use
-the ``add`` decorator to register a function to the list::
+"""Build a list of functions (or methods, or coroutines), that can be called
+with a JSON-RPC request. Use the ``add`` decorator to register a method to the
+list::
 
     from jsonrpcserver import methods
 
@@ -7,12 +8,11 @@ the ``add`` decorator to register a function to the list::
     def ping():
         return 'pong'
 
-Then dispatch JSON-RPC requests to them::
+Then dispatch a JSON-RPC request::
 
-    >>> methods.dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+    >>> response = methods.dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
     --> {"jsonrpc": "2.0", "method": "ping", "id": 1}
     <-- {"jsonrpc": "2.0", "result": "pong", "id": 1}
-    {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
 
 Or simply serve the methods::
 

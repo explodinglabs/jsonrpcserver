@@ -1,14 +1,14 @@
 """The return value from ``dispatch`` is a JSON-RPC response object::
 
     >>> response
-    {'jsonrpc': '2.0', 'result': 27, 'id': 1}
+    {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
 
 Use ``str()`` to get a JSON-encoded string::
 
     >>> str(response)
-    '{"jsonrpc": "2.0", "result": 27, "id": 1}'
+    '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 
-There's also a HTTP status code, if you need it::
+There's also an HTTP status code if you need it::
 
     >>> response.http_status
     200

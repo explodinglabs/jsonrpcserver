@@ -48,7 +48,7 @@ See `blog post <https://bcb.github.io/jsonrpc/httpserver>`__.
 Plain jsonrpcserver
 ===================
 
-Using jsonrpcserver's built-in `serve_forever` method.
+Using jsonrpcserver's built-in ``serve_forever`` method.
 
 ::
 
@@ -59,7 +59,7 @@ The quickest way to serve a method::
     from jsonrpcserver import Methods
     Methods(ping=lambda:'pong').serve_forever()
 
-Using the `@methods` decorator:
+Using the ``@add`` decorator:
 
 .. literalinclude:: ../examples/jsonrpcserver_server.py
 
