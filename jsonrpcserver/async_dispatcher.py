@@ -1,5 +1,6 @@
 """Asynchronous dispatch"""
 
+import asyncio
 from .dispatcher import Requests
 from .async_request import AsyncRequest
 from .response import BatchResponse, NotificationResponse
@@ -19,9 +20,9 @@ class AsyncRequests(Requests): #pylint:disable=too-few-public-methods
             if isinstance(self.requests, list):
                 # Batch requests - call each request, and exclude Notifications
                 # from the list of responses
-                self.response = BatchResponse([r.call(methods)
-                                               for r in self.requests
-                                               if not r.is_notification])
+                self.response = BatchResponse(await asyncio.gather(
+                    *[r.call(methods) for r in self.requests if not
+                      r.is_notification]))
                 # If the response list is empty, it should return nothing
                 if not self.response:
                     self.response = NotificationResponse() #pylint:disable=redefined-variable-type
