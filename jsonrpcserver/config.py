@@ -22,3 +22,7 @@ notification_errors = False
 #: Convert any camelCase keys in a request to under_score before processing.
 #: Saves time by cleaning up key names for you. *Recommended*
 convert_camel_case = False
+
+#: Log requests and responses
+log_requests = True
+log_responses = True
