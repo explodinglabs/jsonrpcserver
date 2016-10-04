@@ -15,6 +15,7 @@ from .response import NotificationResponse, ExceptionResponse, BatchResponse
 from .request import Request
 from .exceptions import JsonRpcServerError, ParseError, InvalidRequest
 from .status import HTTP_STATUS_CODES
+from . import config
 
 _REQUEST_LOG = logging.getLogger(__name__+'.request')
 _RESPONSE_LOG = logging.getLogger(__name__+'.response')
@@ -48,7 +49,8 @@ class Requests(object): #pylint:disable=too-few-public-methods
         respnose attribute if there's an problem with the request."""
         self.response = None
         # Log the request
-        log_(_REQUEST_LOG, 'info', requests, fmt='--> %(message)s')
+        if config.log_requests:
+            log_(_REQUEST_LOG, 'info', requests, fmt='--> %(message)s')
         try:
             # If the request is a string, convert it to a dict
             if isinstance(requests, string_types):
@@ -103,7 +105,8 @@ class Requests(object): #pylint:disable=too-few-public-methods
                 self.response = self.requests.call(methods)
         assert self.response, 'Response must be set'
         assert self.response.http_status, 'Must have http_status set'
-        self._log_response(self.response)
+        if config.log_responses:
+            self._log_response(self.response)
         return self.response
 
 

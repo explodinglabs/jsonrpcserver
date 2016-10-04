@@ -4,6 +4,7 @@ import asyncio
 from .dispatcher import Requests
 from .async_request import AsyncRequest
 from .response import BatchResponse, NotificationResponse
+from . import config
 
 class AsyncRequests(Requests): #pylint:disable=too-few-public-methods
     """Asynchronous requests"""
@@ -31,7 +32,8 @@ class AsyncRequests(Requests): #pylint:disable=too-few-public-methods
                 self.response = await self.requests.call(methods)
         assert self.response, 'Response must be set'
         assert self.response.http_status, 'Must have http_status set'
-        self._log_response(self.response)
+        if config.log_responses:
+            self._log_response(self.response)
         return self.response
 
 async def dispatch(methods, requests):
