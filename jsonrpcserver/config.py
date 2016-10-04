@@ -23,6 +23,8 @@ notification_errors = False
 #: Saves time by cleaning up key names for you. *Recommended*
 convert_camel_case = False
 
-#: Log requests and responses
+#: Log requests
 log_requests = True
+
+#: Log responses
 log_responses = True

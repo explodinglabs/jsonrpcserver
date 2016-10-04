@@ -1,3 +1,9 @@
+3.4.1 (Oct 4, 2016)
+~~~~~~~~~~~~~~~~~~~
+- Disable logging in config
+- Performance improved
+- Fix async batch requests
+
 3.4.0 (Sep 27, 2016)
 ~~~~~~~~~~~~~~~~~~~~
 
