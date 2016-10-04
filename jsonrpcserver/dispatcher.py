@@ -46,22 +46,19 @@ class Requests(object): #pylint:disable=too-few-public-methods
     def __init__(self, requests, request_type=Request):
         """Logs the request, and builds a list of Requests. Will set the
         respnose attribute if there's an problem with the request."""
+        self.requests = requests
         self.response = None
+        self.request_type = request_type
         # Log the request
         log_(_REQUEST_LOG, 'info', requests, fmt='--> %(message)s')
         try:
             # If the request is a string, convert it to a dict
             if isinstance(requests, string_types):
-                requests = self._string_to_dict(requests)
-            # Batch requests
-            if isinstance(requests, list):
-                # An empty list is invalid
-                if not requests:
-                    raise InvalidRequest()
-                self.requests = [request_type(r) for r in requests]
-            # Single request
-            else:
-                self.requests = request_type(requests)
+                self.requests = self._string_to_dict(self.requests)
+            # Empty batch requests are invalid
+            # http://www.jsonrpc.org/specification#examples
+            if isinstance(requests, list) and not requests:
+                raise InvalidRequest()
         # Set the response attribute if there's a problem with the request
         except JsonRpcServerError as exc:
             self.response = ExceptionResponse(exc, None)
@@ -92,15 +89,15 @@ class Requests(object): #pylint:disable=too-few-public-methods
             if isinstance(self.requests, list):
                 # Batch requests - call each request, and exclude Notifications
                 # from the list of responses
-                self.response = BatchResponse([r.call(methods)
-                                               for r in self.requests
-                                               if not r.is_notification])
-                # If the response list is empty, it should return nothing
+                self.response = BatchResponse(
+                    [r.call(methods) for r in map(self.request_type,
+                     self.requests) if not r.is_notification])
+                # If the response list is empty, return nothing
                 if not self.response:
                     self.response = NotificationResponse() #pylint:disable=redefined-variable-type
             # Single request
             else:
-                self.response = self.requests.call(methods)
+                self.response = self.request_type(self.requests).call(methods)
         assert self.response, 'Response must be set'
         assert self.response.http_status, 'Must have http_status set'
         self._log_response(self.response)
