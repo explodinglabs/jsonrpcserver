@@ -64,24 +64,28 @@ ul {
     margin: 0px 0 10px 1.5em;
 }
 
-/* Code formatting */
 pre, code {
-  font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
-  font-size: 0.85em;
-  line-height: 140%;
-  border-radius: 3px; }
+    background-color: inherit;
+    font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+    line-height: 140%;
+    font-size: 0.9em;
+}
 
 pre {
-  background-color: #eee;
-  overflow-x: auto;
-  padding: 10px 20px; }
-  @media screen and (max-width: 600px) {
-    pre {
-      padding-left: 0.7em; } }
-  pre > code {
+    border-radius: 3px;
+    background-color: #eee;
+    overflow-x: auto;
+    padding: 10px 20px;
     border: 0;
-    padding-right: 0;
-    padding-left: 0; }
+    font-size: 0.8em;
+    line-height: 140%;
+}
+
+@media screen and (max-width: 600px) {
+    pre {
+        font-size: 1em;
+    }
+}
 
 .documentwrapper {
   max-width: -webkit-calc(800px);
@@ -89,8 +93,10 @@ pre {
   margin-right: auto;
   margin-left: auto;
 }
+
 @media screen and (max-width: 600px) {
     .documentwrapper {
+        width: 100%;
         padding-right: 15px;
         padding-left: 15px;
     }
