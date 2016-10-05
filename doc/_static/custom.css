@@ -81,12 +81,6 @@ pre {
     line-height: 140%;
 }
 
-@media screen and (max-width: 600px) {
-    pre {
-        font-size: 1em;
-    }
-}
-
 .documentwrapper {
   max-width: -webkit-calc(800px);
   max-width: calc(800px);
