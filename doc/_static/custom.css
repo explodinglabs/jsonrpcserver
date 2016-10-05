@@ -81,19 +81,19 @@ pre {
     line-height: 140%;
 }
 
-.documentwrapper {
-  max-width: -webkit-calc(800px);
-  max-width: calc(800px);
-  margin-right: auto;
-  margin-left: auto;
+div.body {
+    padding: 0;
+    margin: 0;
+}
+
+div.document {
+    width: 750px;
 }
 
 @media screen and (max-width: 600px) {
-    .document {
+    div.document {
         width: 100%;
-    }
-    .documentwrapper {
-        padding-right: 15px;
-        padding-left: 15px;
+        padding-right: 20px;
+        padding-left: 20px;
     }
 }
