@@ -95,8 +95,10 @@ pre {
 }
 
 @media screen and (max-width: 600px) {
-    .documentwrapper {
+    .document {
         width: 100%;
+    }
+    .documentwrapper {
         padding-right: 15px;
         padding-left: 15px;
     }
