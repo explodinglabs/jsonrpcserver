@@ -86,16 +86,16 @@ div.body {
     margin: 0;
 }
 
-div.document {
+div.document, div.footer {
     width: 750px;
 }
 
 @media screen and (max-width: 600px) {
-    div.document {
-        width: 100%;
-    }
     div.body {
         padding-right: 20px;
         padding-left: 20px;
+    }
+    div.document, div.footer {
+        width: 100%;
     }
 }
