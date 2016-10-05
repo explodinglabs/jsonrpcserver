@@ -64,17 +64,34 @@ ul {
     margin: 0px 0 10px 1.5em;
 }
 
+/* Code formatting */
 pre, code {
-    background-color: inherit;
-    font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
-    line-height: 140%;
-}
+  font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+  font-size: 0.85em;
+  line-height: 140%;
+  border-radius: 3px; }
 
 pre {
-    border-radius: 3px;
-    background-color: #eee;
-    overflow-x: auto;
-    padding: 10px 20px;
+  background-color: #eee;
+  overflow-x: auto;
+  padding: 10px 20px; }
+  @media screen and (max-width: 600px) {
+    pre {
+      padding-left: 0.7em; } }
+  pre > code {
     border: 0;
-    font-size: 0.8em;
+    padding-right: 0;
+    padding-left: 0; }
+
+.documentwrapper {
+  max-width: -webkit-calc(800px);
+  max-width: calc(800px);
+  margin-right: auto;
+  margin-left: auto;
+}
+@media screen and (max-width: 600px) {
+    .documentwrapper {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
 }
