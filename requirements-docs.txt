@@ -1,1 +1,1 @@
---force-reinstall git+https://github.com/bcb/alabaster
+-I git+https://github.com/bcb/alabaster
