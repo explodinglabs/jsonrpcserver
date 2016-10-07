@@ -118,7 +118,7 @@ ZeroMQ
 
 See `blog post <https://bcb.github.io/jsonrpc/zeromq>`__.
 
-ZeroMQ (async)
+ZeroMQ (asynchronous)
 ==============
 
 ::
