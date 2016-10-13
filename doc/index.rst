@@ -23,9 +23,8 @@ Start the server:
      * Listening on port 5000
 
 This example uses the built-in server, but you can process requests in any
-application with ``dispatch()``. See :doc:`examples <examples>` showing usage
-in various frameworks. The :doc:`api` has details, including
-:mod:`configuration <jsonrpcserver.config>` of the package.
+application with ``dispatch()``. See :doc:`examples <examples>` using various
+frameworks. There's also a :doc:`guide <api>` to usage and configuration.
 
 Contribute on `Github <https://github.com/bcb/jsonrpcserver>`_.
 
