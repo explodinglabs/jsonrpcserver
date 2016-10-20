@@ -1,7 +1,7 @@
 .. rubric:: :doc:`index`
 
-jsonrpcserver API
-*****************
+jsonrpcserver Guide
+*******************
 
 .. contents::
     :local:
