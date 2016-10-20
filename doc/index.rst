@@ -1,3 +1,5 @@
+.. rubric:: `Beau Barker <https://bcb.github.io/>`__
+
 jsonrpcserver
 *************
 
