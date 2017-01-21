@@ -20,6 +20,15 @@ aiohttp
 
 See `blog post <https://bcb.github.io/jsonrpc/aiohttp>`__.
 
+Django
+======
+
+Create a ``views.py``:
+
+.. literalinclude:: ../examples/django_server.py
+
+See `blog post <https://bcb.github.io/jsonrpc/django>`__.
+
 Flask
 =====
 
@@ -118,8 +127,8 @@ ZeroMQ
 
 See `blog post <https://bcb.github.io/jsonrpc/zeromq>`__.
 
-ZeroMQ (async)
-==============
+ZeroMQ (asynchronous)
+=====================
 
 ::
 

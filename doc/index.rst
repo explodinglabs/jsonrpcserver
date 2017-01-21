@@ -1,3 +1,5 @@
+.. rubric:: `Beau Barker <https://bcb.github.io/>`__
+
 jsonrpcserver
 *************
 
@@ -23,9 +25,8 @@ Start the server:
      * Listening on port 5000
 
 This example uses the built-in server, but you can process requests in any
-application with ``dispatch()``. See :doc:`examples <examples>` showing usage
-in various frameworks. The :doc:`api` has details, including
-:mod:`configuration <jsonrpcserver.config>` of the package.
+application with ``dispatch()``. See :doc:`examples in various frameworks
+<examples>`, or read the :doc:`guide to usage and configuration <api>`.
 
 Contribute on `Github <https://github.com/bcb/jsonrpcserver>`_.
 
