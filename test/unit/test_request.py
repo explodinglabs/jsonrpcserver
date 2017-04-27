@@ -242,6 +242,11 @@ class TestRequestInit(TestCase):
         self.assertEqual('foo_method', req.method_name)
         self.assertEqual({'foo_param': 1, 'a_dict': {'bar_param': 1}}, req.kwargs)
 
+    def test_positional_args_convert_case_skip(self):
+        config.convert_camel_case = True
+        req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': ['Camel', 'Case']})
+        self.assertEqual(['Camel', 'Case'], req.args)
+
 
 class TestRequestIsNotification(TestCase):
 
