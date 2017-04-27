@@ -186,7 +186,8 @@ class Request(object):
             # Convert camelCase to underscore
             if config.convert_camel_case:
                 self.method_name = _convert_camel_case(self.method_name)
-                self.kwargs = _convert_camel_case_keys(self.kwargs)
+                if self.kwargs:
+                    self.kwargs = _convert_camel_case_keys(self.kwargs)
             self.response = None
 
     def call(self, methods):
