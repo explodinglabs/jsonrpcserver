@@ -1,3 +1,7 @@
+3.4.2 (Jun 9, 2017)
+~~~~~~~~~~~~~~~~~~~
+- Fix `convert_camel_case` with array params
+
 3.4.1 (Oct 4, 2016)
 ~~~~~~~~~~~~~~~~~~~
 - Disable logging in config
