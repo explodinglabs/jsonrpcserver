@@ -1,12 +1,16 @@
-"""The return value from ``dispatch`` is a JSON-RPC response object::
+"""
+Response module.
 
+The return value from ``dispatch`` is a JSON-RPC response object::
+
+    >>> response = RequestResponse(1, 'foo')
     >>> response
-    {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
+    {'jsonrpc': '2.0', 'result': 'foo', 'id': 1}
 
 Use ``str()`` to get a JSON-encoded string::
 
     >>> str(response)
-    '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
+    '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
 
 There's also an HTTP status code if you need it::
 
@@ -22,7 +26,8 @@ from .exceptions import JsonRpcServerError, ServerError
 
 
 def _sort_response(response):
-    """Sort the keys in a JSON-RPC response object.
+    """
+    Sort the keys in a JSON-RPC response object.
 
     This has no effect other than making it nicer to read.
 
@@ -34,7 +39,6 @@ def _sort_response(response):
     :param response: JSON-RPC response, in dictionary form.
     :return: The same response, sorted in an ``OrderedDict``.
     """
-
     root_order = ['jsonrpc', 'result', 'error', 'id']
     error_order = ['code', 'message', 'data']
     req = OrderedDict(sorted(
@@ -45,12 +49,14 @@ def _sort_response(response):
     return req
 
 
-class NotificationResponse(object): #pylint:disable=too-few-public-methods
-    """Returned from processing a successful `notification
+class NotificationResponse(object):
+    """
+    Notification response.
+
+    Returned from processing a successful `notification
     <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
     no ``id`` member).
     """
-
     #: The HTTP status to send in response to notifications.
     http_status = status.HTTP_NO_CONTENT
 
@@ -60,16 +66,17 @@ class NotificationResponse(object): #pylint:disable=too-few-public-methods
 
 class _Response(dict):
     """Parent of the other responses."""
-
     def __str__(self):
         raise NotImplementedError()
 
 
 class RequestResponse(_Response):
-    """Returned from processing a successful request with an ``id`` member,
+    """
+    Response returned from a Request.
+
+    Returned from processing a successful request with an ``id`` member,
     (indicating that a payload is expected back).
     """
-
     #: The recommended HTTP status code.
     http_status = status.HTTP_OK
 
@@ -96,9 +103,11 @@ class RequestResponse(_Response):
 
 
 class ErrorResponse(_Response):
-    """Returned if there was an error while processing the request.
     """
+    Error response.
 
+    Returned if there was an error while processing the request.
+    """
     def __init__(self, http_status, request_id, code, message, data=None):
         """
         :param http_status:
@@ -133,7 +142,8 @@ class ErrorResponse(_Response):
 
 
 class ExceptionResponse(ErrorResponse):
-    """Returns an ErrorResponse built from an exception"""
+    """Returns an ErrorResponse built from an exception."""
+
     def __init__(self, ex, request_id):
         if not isinstance(ex, JsonRpcServerError):
             ex = ServerError(str(ex))
@@ -142,10 +152,11 @@ class ExceptionResponse(ErrorResponse):
 
 
 class BatchResponse(list):
-    """Returned to batch requests. Basically a list of the other response
-    objects.
     """
+    Returned from batch requests.
 
+    Basically a collection of responses.
+    """
     http_status = status.HTTP_OK
 
     def __str__(self):

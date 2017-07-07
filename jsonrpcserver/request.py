@@ -1,5 +1,9 @@
-"""A JSON-RPC request object. Used internally by the library, but class
-attributes can be modified to configure various options for handling requests.
+"""
+Request module.
+
+The Request class represents a JSON-RPC request object. Used internally by the
+library, but class attributes can be modified to configure various options for
+handling requests.
 """
 
 import json
@@ -49,7 +53,8 @@ def _convert_camel_case_keys(original_dict):
 
 
 class Request(object):
-    """JSON-RPC Request object.
+    """
+    Represents a JSON-RPC Request object.
 
     Encapsulates a JSON-RPC request, providing details such as the method name,
     arguments, and whether it's a request or a notification, and provides a
@@ -58,7 +63,8 @@ class Request(object):
 
     @staticmethod
     def _validate_against_schema(request):
-        """Validate against the JSON-RPC schema.
+        """
+        Validate the request against the JSON-RPC schema.
 
         :param request: JSON-RPC request dict.
         :raises InvalidRequest: If the request is invalid.
@@ -70,8 +76,11 @@ class Request(object):
             raise InvalidRequest(exc.message)
 
     def _validate_arguments_against_signature(self, func):
-        """Check if arguments match a function signature and can therefore be
-        passed to it.
+        """
+        Check if the request's arguments match a function's signature.
+
+        Raises InvalidParams exception if arguments cannot be passed to a
+        function.
 
         :param func: The function object.
         :param args: List of positional arguments (or None).
@@ -86,7 +95,8 @@ class Request(object):
 
     @staticmethod
     def _get_method(methods, name):
-        """Finds a method in a list (or dictionary).
+        """
+        Find a method in a list (or dictionary).
 
         :param methods: List or dictionary of named functions.
         :param name: Name of the method to find.
@@ -109,19 +119,22 @@ class Request(object):
 
     @staticmethod
     def _get_arguments(request):
-        """Takes the 'params' part of a JSON-RPC request and converts it to
-        either positional or keyword arguments usable in Python. The value can
-        be a JSON array (python list), object (python dict), or omitted. There
-        are no other acceptable options. Note that a JSON-RPC request can have
+        """
+        Get the positional and keyword arguments as a tuple.
+
+        Takes the 'params' part of a JSON-RPC request and converts it to either
+        positional or keyword arguments usable in Python. The value can be a
+        JSON array (python list), object (python dict), or omitted. There are no
+        other acceptable options. Note that a JSON-RPC request can have
         positional or keyword arguments, but not both! See
         http://www.jsonrpc.org/specification#parameter_structures
 
         :param request: JSON-RPC request in dict form.
         :raises InvalidParams: If 'params' was present but was not a list or
             dict.
-        :returns: A tuple containing the positionals (in a list, or None) and
-        keywords (in a dict, or None) extracted from the 'params' part of the
-        request.
+        :returns: A two-tuple containing the positionals (in a list, or None)
+        and keywords (in a dict, or None) extracted from the 'params' part of
+        the request.
         """
         positionals = keywords = None
         params = request.get('params')
@@ -155,7 +168,7 @@ class Request(object):
         """Sets the response value"""
         try:
             yield
-        except Exception as exc: #pylint:disable=broad-except
+        except Exception as exc:
             # Log the exception if it wasn't explicitly raised by the method
             if not isinstance(exc, JsonRpcServerError):
                 log_(_LOGGER, 'error', traceback.format_exc())
@@ -164,7 +177,7 @@ class Request(object):
             if self.is_notification and not config.notification_errors:
                 self.response = NotificationResponse()
             else:
-                self.response = ExceptionResponse( #pylint:disable=redefined-variable-type
+                self.response = ExceptionResponse(
                     exc, getattr(self, 'request_id', None))
 
     def __init__(self, request):
@@ -208,7 +221,7 @@ class Request(object):
                 if self.is_notification:
                     self.response = NotificationResponse()
                 else:
-                    self.response = RequestResponse(self.request_id, result) #pylint:disable=redefined-variable-type
+                    self.response = RequestResponse(self.request_id, result)
         # Ensure the response has been set
         assert self.response, 'Call must set response'
         assert isinstance(self.response, (ExceptionResponse, \

@@ -1,6 +1,8 @@
-"""Build a list of functions (or methods, or coroutines), that can be called
-with a JSON-RPC request. Use the ``add`` decorator to register a method to the
-list::
+"""
+Methods.
+
+A collection of functions (or methods, or coroutines), that can be called with a
+JSON-RPC request. Use the ``add`` decorator to register a method to the list::
 
     from jsonrpcserver import methods
 
@@ -123,7 +125,7 @@ class Methods(MutableMapping):
 
         class RequestHandler(BaseHTTPRequestHandler):
             """Request handler"""
-            def do_POST(self): #pylint:disable=invalid-name
+            def do_POST(self):
                 """HTTP POST"""
                 # Process request
                 request = self.rfile.read(

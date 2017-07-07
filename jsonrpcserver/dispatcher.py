@@ -1,9 +1,8 @@
-"""At the core of jsonrpcserver is the dispatcher, which processes JSON-RPC
-requests.
+"""
+Dispatcher.
 
-::
-
-    from jsonrpcserver import dispatch
+At the core of the jsonrpcserver package is the dispatcher, which processes
+JSON-RPC requests to the appropriate method, returning the response.
 """
 import logging
 import json
@@ -21,7 +20,7 @@ _REQUEST_LOG = logging.getLogger(__name__+'.request')
 _RESPONSE_LOG = logging.getLogger(__name__+'.response')
 
 
-class Requests(object): #pylint:disable=too-few-public-methods
+class Requests(object):
     """Requests"""
 
     @staticmethod
@@ -96,7 +95,7 @@ class Requests(object): #pylint:disable=too-few-public-methods
                      self.requests) if not r.is_notification])
                 # If the response list is empty, return nothing
                 if not self.response:
-                    self.response = NotificationResponse() #pylint:disable=redefined-variable-type
+                    self.response = NotificationResponse()
             # Single request
             else:
                 self.response = self.request_type(self.requests).call(methods)

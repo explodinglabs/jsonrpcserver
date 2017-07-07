@@ -1,6 +1,8 @@
-"""Python 3.5+ users can dispatch requests to coroutines.
+"""
+Asynchronous methods.
 
-Usage is the same as before, but this time import from ``jsonrpcserver.aio``::
+Python 3.5+ users can dispatch requests to coroutines. Usage is the same as
+synchronous methods, but this time import from ``jsonrpcserver.aio``::
 
     from jsonrpcserver.aio import methods
 

@@ -1,9 +1,9 @@
 """Exceptions raised by jsonrpcserver."""
-
 from . import status
 
 class JsonRpcServerError(Exception):
-    """Base class for the other exceptions.
+    """
+    Base class for the other exceptions.
 
     :param data: Extra info (optional).
     """
@@ -26,7 +26,8 @@ class ParseError(JsonRpcServerError):
 
 
 class InvalidRequest(JsonRpcServerError):
-    """Raised when the request is not a valid JSON-RPC object.
+    """
+    Raised when the request is not a valid JSON-RPC object.
 
     :param data: Extra information about the error that occurred (optional).
     """
@@ -39,7 +40,8 @@ class InvalidRequest(JsonRpcServerError):
 
 
 class MethodNotFound(JsonRpcServerError):
-    """Raised when the method does not exist/is not available.
+    """
+    Raised when the method does not exist/is not available.
 
     :param data: Extra information about the error that occurred (optional).
     """
@@ -52,8 +54,10 @@ class MethodNotFound(JsonRpcServerError):
 
 
 class InvalidParams(JsonRpcServerError):
-    """Raised when invalid arguments are passed to a method, e.g. if a required
-    keyword argument is missing.
+    """
+    Raised when invalid arguments are passed to a method.
+
+    e.g. If a required keyword argument is missing.
 
     :param data: Extra information about the error that occurred (optional).
     """
@@ -66,7 +70,8 @@ class InvalidParams(JsonRpcServerError):
 
 
 class ServerError(JsonRpcServerError):
-    """Raised when there's an application-specific error on the server side.
+    """
+    Raised when there's an application-specific error on the server side.
 
     :param data: Extra information about the error that occurred (optional).
     """
