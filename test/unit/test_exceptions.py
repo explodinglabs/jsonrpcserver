@@ -1,6 +1,4 @@
 """test_exceptions.py"""
-# pylint: disable=missing-docstring
-
 from unittest import TestCase, main
 
 from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \

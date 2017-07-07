@@ -1,5 +1,4 @@
 """setup.py"""
-
 from codecs import open as codecs_open
 from setuptools import setup
 
@@ -23,7 +22,7 @@ setup(
     include_package_data=True,
     install_requires=['jsonschema', 'six', 'funcsigs'],
     extras_require={
-        'tox': ['tox','pylint'],
+        'tox': ['tox'],
         'examples': [
             'aiohttp',
             'aiozmq',

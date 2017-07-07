@@ -1,6 +1,4 @@
 """test_response.py"""
-# pylint: disable=missing-docstring,line-too-long
-
 from unittest import TestCase, main
 import json
 
@@ -137,7 +135,7 @@ class TestExceptionResponse(TestCase):
 
 class TestBatchResponse(TestCase):
 
-    def test(self): # pylint: disable=no-self-use
+    def test(self):
         str(BatchResponse())
 
 

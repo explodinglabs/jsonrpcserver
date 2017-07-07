@@ -1,6 +1,4 @@
 """test_status.py"""
-# pylint: disable=missing-docstring,line-too-long
-
 from unittest import TestCase, main
 
 from jsonrpcserver import status

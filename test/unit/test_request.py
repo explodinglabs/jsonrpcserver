@@ -1,6 +1,4 @@
 """test_request.py"""
-# pylint: disable=missing-docstring,line-too-long,protected-access
-
 from unittest import TestCase, main
 import logging
 
@@ -15,10 +13,10 @@ from jsonrpcserver.methods import Methods
 from jsonrpcserver import status
 from jsonrpcserver import config
 
-def setUpModule(): #pylint:disable=invalid-name
+def setUpModule():
     config.debug = True
 
-def tearDownModule(): #pylint:disable=invalid-name
+def tearDownModule():
     config.debug = False
 
 
@@ -73,31 +71,31 @@ class TestValidateArgumentsAgainstSignature(TestCase):
 class TestGetMethod(TestCase):
 
     def test_list(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        def dog(): pass # pylint: disable=multiple-statements
+        def cat(): pass
+        def dog(): pass
         self.assertIs(cat, Request._get_method([cat, dog], 'cat'))
         self.assertIs(dog, Request._get_method([cat, dog], 'dog'))
 
     def test_list_non_existant(self):
-        def cat(): pass # pylint: disable=multiple-statements
+        def cat(): pass
         with self.assertRaises(MethodNotFound):
             Request._get_method([cat], 'cat_says')
 
     def test_dict(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        def dog(): pass # pylint: disable=multiple-statements
+        def cat(): pass
+        def dog(): pass
         dictionary = {'cat_says': cat, 'dog_says': dog}
         self.assertIs(cat, Request._get_method(dictionary, 'cat_says'))
         self.assertIs(dog, Request._get_method(dictionary, 'dog_says'))
 
     def test_dict_non_existant(self):
-        def cat(): pass # pylint: disable=multiple-statements
+        def cat(): pass
         with self.assertRaises(MethodNotFound):
             Request._get_method({'cat_says': cat}, 'cat')
 
     def test_methods_object(self):
-        def cat(): pass # pylint: disable=multiple-statements
-        def dog(): pass # pylint: disable=multiple-statements
+        def cat(): pass
+        def dog(): pass
         methods = Methods()
         methods.add(cat)
         methods.add(dog)
@@ -112,7 +110,7 @@ class TestCall(TestCase):
         self.assertEqual('bar', req.call([foo])['result'])
 
     def test_list_lambdas(self):
-        foo = lambda: 'bar' # pylint: disable=redefined-outer-name
+        foo = lambda: 'bar'
         foo.__name__ = 'foo'
         req = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         self.assertEqual('bar', req.call([foo])['result'])
@@ -146,7 +144,7 @@ class TestCall(TestCase):
     def test_methods_functions_with_decorator(self):
         methods = Methods()
         @methods.add
-        def foo(): # pylint: disable=redefined-outer-name,unused-variable
+        def foo():
             return 'bar'
         req = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         self.assertEqual('bar', req.call(methods)['result'])
@@ -278,19 +276,19 @@ class TestRequestProcessNotifications(TestCase):
         self.assertIsInstance(req, NotificationResponse)
 
     def test_invalid_params(self):
-        def foo(bar): # pylint: disable=redefined-outer-name,unused-argument
+        def foo(bar):
             return 'bar'
         req = Request({'jsonrpc': '2.0', 'method': 'foo'}).call([foo])
         self.assertIsInstance(req, NotificationResponse)
 
     def test_explicitly_raised_exception(self):
-        def foo(): # pylint: disable=redefined-outer-name
+        def foo():
             raise InvalidParams()
         req = Request({'jsonrpc': '2.0', 'method': 'foo'}).call([foo])
         self.assertIsInstance(req, NotificationResponse)
 
     def test_uncaught_exception(self):
-        def foo(): # pylint: disable=redefined-outer-name
+        def foo():
             return 1/0
         req = Request({'jsonrpc': '2.0', 'method': 'foo'}).call([foo])
         self.assertIsInstance(req, NotificationResponse)

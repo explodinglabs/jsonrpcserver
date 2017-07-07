@@ -1,6 +1,4 @@
 """test_methods.py"""
-# pylint: disable=missing-docstring
-
 from unittest import TestCase, main
 from functools import partial
 
@@ -48,13 +46,13 @@ class TestAdd(TestCase):
             methods.add(None)
 
     def test_function(self):
-        def foo(): pass #pylint:disable=multiple-statements
+        def foo(): pass
         methods = Methods()
         methods.add(foo)
         self.assertIs(foo, methods['foo'])
 
     def test_function_custom_name(self):
-        def foo(): pass #pylint:disable=multiple-statements
+        def foo(): pass
         methods = Methods()
         methods.add(foo, 'foobar')
         self.assertIs(foo, methods['foobar'])
@@ -98,7 +96,7 @@ class TestAdd(TestCase):
         self.assertIs(six, methods['six'])
 
     def test_static_method(self):
-        class FooClass(object): #pylint:disable=too-few-public-methods
+        class FooClass(object):
             @staticmethod
             def foo():
                 return 'bar'
@@ -107,7 +105,7 @@ class TestAdd(TestCase):
         self.assertIs(FooClass.foo, methods['foo'])
 
     def test_static_method_custom_name(self):
-        class FooClass(object): #pylint:disable=too-few-public-methods
+        class FooClass(object):
             @staticmethod
             def foo():
                 return 'bar'
@@ -116,15 +114,15 @@ class TestAdd(TestCase):
         self.assertIs(FooClass.foo, methods['custom'])
 
     def test_instance_method(self):
-        class FooClass(object): #pylint:disable=too-few-public-methods
-            def foo(self): # pylint: disable=no-self-use
+        class FooClass(object):
+            def foo(self):
                 return 'bar'
         methods = Methods()
         methods.add(FooClass().foo)
         self.assertEqual('bar', methods['foo'].__call__())
 
     def test_instance_method_custom_name(self):
-        class Foo(object): #pylint:disable=too-few-public-methods
+        class Foo(object):
             def __init__(self, name):
                 self.name = name
             def get_name(self):
@@ -142,7 +140,7 @@ class TestAdd(TestCase):
 class TestAddMethod(TestCase):
     """add_method is the old way to add, still need to support it"""
     def test(self):
-        def foo(): pass # pylint: disable=multiple-statements
+        def foo(): pass
         methods = Methods()
         methods.add_method(foo)
         self.assertIs(foo, methods['foo'])
@@ -173,12 +171,12 @@ class TestDecorator(TestCase):
     def test_function(self):
         methods = Methods()
         @methods.add
-        def foo(): pass # pylint:disable=multiple-statements
+        def foo(): pass
         self.assertIs(foo, methods['foo'])
 
     def test_static_method(self):
         methods = Methods()
-        class FooClass(object): #pylint:disable=too-few-public-methods
+        class FooClass(object):
             @staticmethod
             @methods.add
             def foo():
