@@ -29,6 +29,6 @@ class AsyncRequest(Request):
         # Ensure the response has been set
         assert self.response, 'Call must set response'
         assert isinstance(self.response, (
-            ExceptionResponse, NotificationResponse, RequestResponse)),
+            ExceptionResponse, NotificationResponse, RequestResponse)), \
             'Invalid response type'
         return self.response
