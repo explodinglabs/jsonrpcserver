@@ -1,9 +1,9 @@
 """
-Response module.
+The return value from ``dispatch`` is a response object.
 
-The return value from ``dispatch`` is a JSON-RPC response object::
+::
 
-    >>> response = RequestResponse(1, 'foo')
+    >>> response = methods.dispatch(request)
     >>> response
     {'jsonrpc': '2.0', 'result': 'foo', 'id': 1}
 

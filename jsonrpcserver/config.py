@@ -1,7 +1,7 @@
 """
-Configuration
+Import this module to configure the package.
 
-Import this module to configure the package. For example::
+For example::
 
     from jsonrpcserver import config
     config.debug = True
