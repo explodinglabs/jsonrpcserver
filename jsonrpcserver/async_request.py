@@ -1,5 +1,6 @@
 """Asynchronous request."""
 from .request import Request
+from .request_utils import *
 from .response import ExceptionResponse, NotificationResponse, RequestResponse
 
 
@@ -15,12 +16,12 @@ class AsyncRequest(Request):
             # call_context handles setting the result/exception of the call
             with self.handle_exceptions():
                 # Get the method object from a list (raises MethodNotFound)
-                callable_ = self._get_method(methods, self.method_name)
+                callable_ = get_method(methods, self.method_name)
+                args, kwargs = (self.args, self.kwargs)
                 # Ensure the arguments match the method's signature
-                self._validate_arguments_against_signature(callable_)
+                validate_arguments_against_signature(callable_, args, kwargs)
                 # Call the method
-                result = await callable_(*(self.args or []),
-                                         **(self.kwargs or {}))
+                result = await callable_(*(self.args or []), **(self.kwargs or {}))
                 # Set the response
                 if self.is_notification:
                     self.response = NotificationResponse()
