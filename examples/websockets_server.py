@@ -10,7 +10,7 @@ async def ping():
 async def main(websocket, path):
     request = await websocket.recv()
     response = await methods.dispatch(request)
-    if not isinstance(response, NotificationResponse):
+    if not response.is_notification:
         await websocket.send(str(response))
 
 start_server = websockets.serve(main, 'localhost', 5000)

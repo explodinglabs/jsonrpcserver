@@ -29,6 +29,10 @@ class TestNotificationResponse(TestCase):
         self.assertEqual('', str(response))
         self.assertEqual(204, response.http_status)
 
+    def test_str(self):
+        response = NotificationResponse()
+        self.assertEqual('', str(response))
+
 
 class TestResponse(TestCase):
 
@@ -55,8 +59,7 @@ class TestRequestResponse(TestCase):
 
     def test_str(self):
         response = RequestResponse(1, 'foo')
-        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}',
-                         str(response))
+        self.assertEqual('{"jsonrpc": "2.0", "result": "foo", "id": 1}', str(response))
 
 
 class TestErrorResponse(TestCase):

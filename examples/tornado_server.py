@@ -10,7 +10,7 @@ class MainHandler(web.RequestHandler):
     async def post(self):
         request = self.request.body.decode()
         response = await methods.dispatch(request)
-        if not isinstance(response, NotificationResponse):
+        if not response.is_notification:
             self.write(response)
 
 app = web.Application([(r"/", MainHandler)])

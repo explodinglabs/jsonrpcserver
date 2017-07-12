@@ -13,5 +13,5 @@ if __name__ == '__main__':
     while True:
         request = socket.recv().decode()
         response = methods.dispatch(request)
-        if not isinstance(response, NotificationResponse):
+        if not response.is_notification:
             socket.send_string(str(response))

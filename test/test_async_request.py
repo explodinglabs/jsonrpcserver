@@ -24,11 +24,10 @@ methods.add(MyMethods().foo)
 
 class TestCall(TestCase):
     @async_test
-    async def test(self):
+    async def test_request(self):
         req = AsyncRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         response = await req.call(methods)
         self.assertEqual('bar', response['result'])
-
 
 if __name__ == '__main__':
     main()

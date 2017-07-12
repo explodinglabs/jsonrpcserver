@@ -13,7 +13,7 @@ async def main():
     while True:
         request = await rep.read()
         response = await methods.dispatch(request[0].decode())
-        if not isinstance(response, NotificationResponse):
+        if not response.is_notification:
             rep.write((str(response).encode(),))
 
 if __name__ == '__main__':

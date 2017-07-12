@@ -50,6 +50,8 @@ def _sort_response(response):
 
 
 class Response(dict):
+    is_notification = False
+
     """Parent of the other responses."""
     def __str__(self):
         raise NotImplementedError()
@@ -144,6 +146,8 @@ class NotificationResponse(object):
     <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
     no ``id`` member).
     """
+    is_notification = True
+
     #: The HTTP status to send in response to notifications.
     http_status = status.HTTP_NO_CONTENT
 
