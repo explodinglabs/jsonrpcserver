@@ -1,8 +1,6 @@
 from aiohttp import web
 from jsonrpcserver.aio import methods
 
-app = web.Application()
-
 @methods.add
 async def ping():
     return 'pong'
@@ -10,8 +8,12 @@ async def ping():
 async def handle(request):
     request = await request.text()
     response = await methods.dispatch(request)
-    return web.json_response(response)
+    if response.is_notification:
+        return web.Response()
+    else:
+        return web.json_response(response)
 
+app = web.Application()
 app.router.add_post('/', handle)
 
 if __name__ == '__main__':
