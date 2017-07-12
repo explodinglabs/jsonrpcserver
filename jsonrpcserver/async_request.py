@@ -1,15 +1,14 @@
 """Asynchronous request."""
 from .request import Request
 from .request_utils import *
-from .response import ExceptionResponse, NotificationResponse, RequestResponse
+from .response import (
+    Response, RequestResponse, NotificationResponse, BatchResponse)
 
 
 class AsyncRequest(Request):
     """Asynchronous request"""
 
     async def call(self, methods):
-        """Find the method from the passed list, and call it, returning a
-        Response"""
         # Validation or parsing may have failed in __init__, in which case
         # there's no point calling. It would've already set the response.
         if not self.response:
@@ -17,9 +16,8 @@ class AsyncRequest(Request):
             with self.handle_exceptions():
                 # Get the method object from a list (raises MethodNotFound)
                 callable_ = get_method(methods, self.method_name)
-                args, kwargs = (self.args, self.kwargs)
                 # Ensure the arguments match the method's signature
-                validate_arguments_against_signature(callable_, args, kwargs)
+                validate_arguments_against_signature(callable_, self.args, self.kwargs)
                 # Call the method
                 result = await callable_(*(self.args or []), **(self.kwargs or {}))
                 # Set the response
@@ -28,8 +26,6 @@ class AsyncRequest(Request):
                 else:
                     self.response = RequestResponse(self.request_id, result)
         # Ensure the response has been set
-        assert self.response, 'Call must set response'
-        assert isinstance(self.response, (
-            ExceptionResponse, NotificationResponse, RequestResponse)), \
-            'Invalid response type'
+        acceptable_responses = (Response, NotificationResponse, BatchResponse)
+        assert isinstance(self.response, acceptable_responses), 'Invalid response type'
         return self.response

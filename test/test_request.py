@@ -7,7 +7,7 @@ from functools import partial
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import (
     ErrorResponse, RequestResponse, NotificationResponse)
-from jsonrpcserver.exceptions import InvalidParams, MethodNotFound
+from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver.methods import Methods
 from jsonrpcserver import status
 from jsonrpcserver import config

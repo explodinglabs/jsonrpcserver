@@ -4,7 +4,7 @@ import json
 
 from jsonrpcserver.response import _sort_response, RequestResponse, \
     NotificationResponse, ErrorResponse, ExceptionResponse, BatchResponse, \
-    _Response
+    Response
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
 from jsonrpcserver import config
@@ -34,7 +34,7 @@ class TestResponse(TestCase):
 
     def test(self):
         with self.assertRaises(NotImplementedError):
-            str(_Response())
+            str(Response())
 
 
 class TestRequestResponse(TestCase):

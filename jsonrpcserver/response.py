@@ -49,28 +49,13 @@ def _sort_response(response):
     return req
 
 
-class NotificationResponse(object):
-    """
-    Notification response.
-
-    Returned from processing a successful `notification
-    <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
-    no ``id`` member).
-    """
-    #: The HTTP status to send in response to notifications.
-    http_status = status.HTTP_NO_CONTENT
-
-    def __str__(self):
-        return ''
-
-
-class _Response(dict):
+class Response(dict):
     """Parent of the other responses."""
     def __str__(self):
         raise NotImplementedError()
 
 
-class RequestResponse(_Response):
+class RequestResponse(Response):
     """
     Response returned from a Request.
 
@@ -102,7 +87,7 @@ class RequestResponse(_Response):
         return json.dumps(_sort_response(self))
 
 
-class ErrorResponse(_Response):
+class ErrorResponse(Response):
     """
     Error response.
 
@@ -149,6 +134,21 @@ class ExceptionResponse(ErrorResponse):
             ex = ServerError(str(ex))
         super(ExceptionResponse, self).__init__(
             ex.http_status, request_id, ex.code, ex.message, ex.data)
+
+
+class NotificationResponse(object):
+    """
+    Notification response.
+
+    Returned from processing a successful `notification
+    <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
+    no ``id`` member).
+    """
+    #: The HTTP status to send in response to notifications.
+    http_status = status.HTTP_NO_CONTENT
+
+    def __str__(self):
+        return ''
 
 
 class BatchResponse(list):
