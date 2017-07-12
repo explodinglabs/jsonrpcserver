@@ -1,5 +1,5 @@
 """
-Jsonrpcserver configuration.
+Configuration
 
 Import this module to configure the package. For example::
 
@@ -18,7 +18,7 @@ debug = False
 #: But I prefer to know if there was an error.
 notification_errors = False
 
-#: Convert any camelCase keys in a request to under_score before processing.
+#: Convert any camelCase keys in a request to snake_case before processing.
 #: Saves time by cleaning up key names for you. *Recommended*
 convert_camel_case = False
 
