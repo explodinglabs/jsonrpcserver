@@ -2,10 +2,10 @@
 from codecs import open as codecs_open
 from setuptools import setup
 
-with codecs_open('README.rst', 'r', 'utf-8') as f:
+with codecs_open('README.md', 'r', 'utf-8') as f:
     README = f.read()
 
-with codecs_open('HISTORY.rst', 'r', 'utf-8') as f:
+with codecs_open('HISTORY.md', 'r', 'utf-8') as f:
     HISTORY = f.read()
 
 setup(
