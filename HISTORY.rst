@@ -1,3 +1,7 @@
+3.4.3 (Jul 12, 2017)
+~~~~~~~~~~~~~~~~~~~
+- Add `Response.is_notification` attribute
+
 3.4.2 (Jun 9, 2017)
 ~~~~~~~~~~~~~~~~~~~
 - Fix `convert_camel_case` with array params
