@@ -1,8 +1,7 @@
 """
-Methods.
+A collection of Python functions that can be called via JSON-RPC.
 
-A collection of functions (or methods, or coroutines), that can be called with a
-JSON-RPC request. Use the ``add`` decorator to register a method to the list::
+Use the ``add`` decorator to register a method to the list::
 
     from jsonrpcserver import methods
 
