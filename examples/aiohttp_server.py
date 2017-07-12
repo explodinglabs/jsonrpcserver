@@ -11,7 +11,7 @@ async def handle(request):
     if response.is_notification:
         return web.Response()
     else:
-        return web.json_response(response)
+        return web.json_response(response, status=response.http_status)
 
 app = web.Application()
 app.router.add_post('/', handle)
