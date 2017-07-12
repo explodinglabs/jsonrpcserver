@@ -13,20 +13,20 @@ from jsonrpcserver import status
 from jsonrpcserver import config
 
 
-def setUpModule():
-    config.debug = True
-
-def tearDownModule():
-    config.debug = False
-
-
 # Some dummy functions to use for testing
 def foo():
     return 'bar'
 
 class FooClass():
-    def foo(self):
+    def foo(self, one, two):
         return 'bar'
+
+
+def setUpModule():
+    config.debug = True
+
+def tearDownModule():
+    config.debug = False
 
 
 class TestRequestInit(TestCase):
@@ -151,9 +151,16 @@ class TestCall(TestCase):
     def test_keywords(self):
         def get_name(**kwargs):
             return kwargs['name']
-        req = Request({'jsonrpc': '2.0', 'method': 'get_name', 'params':
-                       {'name': 'foo'}, 'id': 1})
+        req = Request({'jsonrpc': '2.0', 'method': 'get_name', 'params': {'name': 'foo'}, 'id': 1})
         self.assertEqual('foo', req.call([get_name])['result'])
+
+    def test_object_method(self):
+        methods = Methods()
+        methods.add(FooClass().foo, 'foo')
+        req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': [1, 2], 'id': 1})
+        response = req.call(methods)
+        self.assertIsInstance(response, RequestResponse)
+        self.assertEqual('bar', response['result'])
 
 
 class TestRequestProcessNotifications(TestCase):
@@ -205,16 +212,6 @@ class TestRequestProcessNotifications(TestCase):
         req = Request({'jsonrpc': '2.0', 'method': 'foo'}).call([foo])
         self.assertEqual(status.HTTP_OK, req.http_status)
         NotificationResponse.http_status = status.HTTP_NO_CONTENT
-
-
-class TestRequestProcessRequests(TestCase):
-    """Go easy here, no need to test the call function"""
-
-    # Success
-    def test(self):
-        req = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 1}).call([foo])
-        self.assertIsInstance(req, RequestResponse)
-        self.assertEqual('bar', req['result'])
 
 
 if __name__ == '__main__':

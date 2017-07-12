@@ -5,14 +5,21 @@ from jsonrpcserver.exceptions import InvalidParams, MethodNotFound
 from jsonrpcserver.methods import Methods
 
 
-class TestConvertCamelCase(TestCase):
+# Some dummy functions to use for testing
+def foo():
+    return 'bar'
 
+class FooClass():
+    def foo(self, one, two):
+        return 'bar'
+
+
+class TestConvertCamelCase(TestCase):
     def test(self):
         self.assertEqual('foo_bar', convert_camel_case('fooBar'))
 
 
 class TestConvertCamelCaseKeys(TestCase):
-
     def test(self):
         dictionary = {'fooKey': 1, 'aDict': {'fooKey': 1, 'barKey': 2}}
         self.assertEqual({'foo_key': 1, 'a_dict': {'foo_key': 1, 'bar_key': 2}}, \
@@ -42,10 +49,9 @@ class TestValidateArgumentsAgainstSignature(TestCase):
     def test_keywords():
         validate_arguments_against_signature(lambda **kwargs: None, None, {'foo': 'bar'})
 
-#    @staticmethod
-#    def test_object_method():
-#        req = Request({'jsonrpc': '2.0', 'method': 'foo'})
-#        req.validate_arguments_against_signature(FooClass.foo, req.args, req.kwargs)
+    @staticmethod
+    def test_object_method():
+        validate_arguments_against_signature(FooClass().foo, ['one', 'two'], None)
 
 
 class TestGetMethod(TestCase):
@@ -81,7 +87,6 @@ class TestGetMethod(TestCase):
         methods.add(dog)
         self.assertIs(cat, get_method(methods, 'cat'))
         self.assertIs(dog, get_method(methods, 'dog'))
-
 
 
 class TestGetArguments(TestCase):
