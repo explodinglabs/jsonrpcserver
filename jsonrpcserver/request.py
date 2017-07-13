@@ -7,14 +7,12 @@ handling requests.
 """
 import logging
 import traceback
-import inspect
 from contextlib import contextmanager
 
 from . import config
 from .log import log_
 from .response import (
-    Response, RequestResponse, NotificationResponse, ExceptionResponse,
-    BatchResponse)
+    Response, RequestResponse, NotificationResponse, ExceptionResponse)
 from .exceptions import JsonRpcServerError
 from .request_utils import *
 
@@ -100,7 +98,6 @@ class Request(object):
                     self.response = NotificationResponse()
                 else:
                     self.response = RequestResponse(self.request_id, result)
-        # Ensure the response has been set
-        acceptable_responses = (Response, NotificationResponse, BatchResponse)
-        assert isinstance(self.response, acceptable_responses), 'Invalid response type'
+        # Ensure the response has been set before returning it
+        assert isinstance(self.response, Response), 'Invalid response type'
         return self.response

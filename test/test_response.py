@@ -9,6 +9,7 @@ from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver import status
 from jsonrpcserver import config
 
+
 class TestSortResponse(TestCase):
 
     def test_sort_response_success(self):

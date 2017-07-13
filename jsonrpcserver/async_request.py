@@ -1,8 +1,7 @@
 """Asynchronous request."""
 from .request import Request
 from .request_utils import *
-from .response import (
-    Response, RequestResponse, NotificationResponse, BatchResponse)
+from .response import Response, RequestResponse, NotificationResponse
 
 
 class AsyncRequest(Request):
@@ -25,7 +24,6 @@ class AsyncRequest(Request):
                     self.response = NotificationResponse()
                 else:
                     self.response = RequestResponse(self.request_id, result)
-        # Ensure the response has been set
-        acceptable_responses = (Response, NotificationResponse, BatchResponse)
-        assert isinstance(self.response, acceptable_responses), 'Invalid response type'
+        # Ensure the response has been set before returning it
+        assert isinstance(self.response, Response), 'Invalid response type'
         return self.response
