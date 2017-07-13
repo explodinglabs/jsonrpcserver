@@ -1,3 +1,6 @@
+## 3.4.3 (Jul 13, 2017)
+- Fix AttributeError on batch responses
+
 ## 3.4.3 (Jul 12, 2017)
 - Add `Response.is_notification` attribute
 
