@@ -1,8 +1,9 @@
 """
-Dispatcher.
+Dispatch requests to methods.
 
-At the core of the jsonrpcserver package is the dispatcher, which processes
-JSON-RPC requests to the appropriate method, returning the response.
+At the core of the package is the dispatcher, which takes JSON-RPC requests,
+validates and logs them, calls the appropriate method, then logs and returns the
+response.
 """
 import logging
 import json
@@ -44,8 +45,15 @@ class Requests(object):
                     'http_reason': HTTP_STATUS_CODES[response.http_status]})
 
     def __init__(self, requests, request_type=Request):
-        """Logs the request, and builds a list of Requests. Will set the
-        respnose attribute if there's an problem with the request."""
+        """
+        Logs the request, and builds a list of Request objects.
+
+        Will set the response attribute if there's an problem with the request.
+
+        TODO: Move most of this functionality into dispatch(). It shouldn't be
+        logging on instantiation of this class for example. It should log when
+        dispatching.
+        """
         self.requests = requests
         self.response = None
         self.request_type = request_type
