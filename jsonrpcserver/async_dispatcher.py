@@ -1,10 +1,11 @@
 """Asynchronous dispatch"""
 import asyncio
 
-from .dispatcher import Requests
-from .async_request import AsyncRequest
-from .response import BatchResponse, NotificationResponse
 from . import config
+from .async_request import AsyncRequest
+from .dispatcher import Requests
+from .response import BatchResponse, NotificationResponse
+
 
 class AsyncRequests(Requests):
     """Asynchronous requests."""

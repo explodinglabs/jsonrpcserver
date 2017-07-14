@@ -7,11 +7,11 @@ try:
 except ImportError:
     # Python 3
     from collections.abc import Mapping, Sequence
-from .exceptions import InvalidParams, InvalidRequest, MethodNotFound
-
 
 import jsonschema
 from funcsigs import signature
+
+from .exceptions import InvalidParams, InvalidRequest, MethodNotFound
 
 
 _JSON_VALIDATOR = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(

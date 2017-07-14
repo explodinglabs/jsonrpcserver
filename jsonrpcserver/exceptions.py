@@ -1,6 +1,7 @@
 """Exceptions raised by jsonrpcserver."""
 from . import status
 
+
 class JsonRpcServerError(Exception):
     """
     Base class for the other exceptions.

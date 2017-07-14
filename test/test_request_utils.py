@@ -1,8 +1,8 @@
 from unittest import TestCase, main
 
-from jsonrpcserver.request_utils import *
 from jsonrpcserver.exceptions import InvalidParams, MethodNotFound
 from jsonrpcserver.methods import Methods
+from jsonrpcserver.request_utils import *
 
 
 # Some dummy functions to use for testing
@@ -28,7 +28,6 @@ class TestConvertCamelCaseKeys(TestCase):
 
 class TestValidateArgumentsAgainstSignature(TestCase):
     """Keep it simple here. No need to test signature.bind."""
-
     @staticmethod
     def test_no_arguments():
         validate_arguments_against_signature(lambda: None, None, None)
@@ -55,7 +54,6 @@ class TestValidateArgumentsAgainstSignature(TestCase):
 
 
 class TestGetMethod(TestCase):
-
     def test_list(self):
         def cat(): pass
         def dog(): pass
@@ -90,7 +88,6 @@ class TestGetMethod(TestCase):
 
 
 class TestGetArguments(TestCase):
-
     def test_none(self):
         self.assertEqual((None, None), get_arguments(None))
 

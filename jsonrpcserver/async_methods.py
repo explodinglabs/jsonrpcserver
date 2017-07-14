@@ -14,8 +14,9 @@ Then ``await`` the dispatch::
 
     response = await methods.dispatch(request)
 """
-from .methods import Methods
 from .async_dispatcher import dispatch
+from .methods import Methods
+
 
 class AsyncMethods(Methods):
 

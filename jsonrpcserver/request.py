@@ -5,16 +5,16 @@ The Request class represents a JSON-RPC request object. Used internally by the
 library, but class attributes can be modified to configure various options for
 handling requests.
 """
+from contextlib import contextmanager
 import logging
 import traceback
-from contextlib import contextmanager
 
 from . import config
+from .exceptions import JsonRpcServerError
 from .log import log_
+from .request_utils import *
 from .response import (
     Response, RequestResponse, NotificationResponse, ExceptionResponse)
-from .exceptions import JsonRpcServerError
-from .request_utils import *
 
 
 _LOGGER = logging.getLogger(__name__)

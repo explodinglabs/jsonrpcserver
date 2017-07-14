@@ -6,14 +6,12 @@ from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
 
 
 class TestJsonRpcServerError(TestCase):
-
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise JsonRpcServerError()
 
 
 class TestParseError(TestCase):
-
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise ParseError()
@@ -28,28 +26,24 @@ class TestParseError(TestCase):
 
 
 class TestInvalidRequest(TestCase):
-
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise InvalidRequest('foo')
 
 
 class TestMethodNotFound(TestCase):
-
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise MethodNotFound('Test')
 
 
 class TestInvalidParams(TestCase):
-
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise InvalidParams('Test')
 
 
 class TestServerError(TestCase):
-
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise ServerError()

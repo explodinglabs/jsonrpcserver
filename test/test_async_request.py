@@ -1,8 +1,8 @@
 import inspect, asyncio
 from unittest import TestCase, main
 
-from jsonrpcserver.async_request import AsyncRequest
 from jsonrpcserver.aio import methods
+from jsonrpcserver.async_request import AsyncRequest
 
 
 def async_test(f):

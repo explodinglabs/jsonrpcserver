@@ -4,13 +4,12 @@ import logging
 
 from functools import partial
 
+from jsonrpcserver import config, status
+from jsonrpcserver.exceptions import InvalidParams
+from jsonrpcserver.methods import Methods
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import (
     ErrorResponse, RequestResponse, NotificationResponse)
-from jsonrpcserver.exceptions import InvalidParams
-from jsonrpcserver.methods import Methods
-from jsonrpcserver import status
-from jsonrpcserver import config
 
 
 # Some dummy functions to use for testing
@@ -30,7 +29,6 @@ def tearDownModule():
 
 
 class TestRequestInit(TestCase):
-
     def tearDown(self):
         config.convert_camel_case = False
 
@@ -72,7 +70,6 @@ class TestRequestInit(TestCase):
 
 
 class TestRequestIsNotification(TestCase):
-
     def test_true(self):
         req = Request({'jsonrpc': '2.0', 'method': 'foo'})
         self.assertTrue(req.is_notification)
@@ -83,7 +80,6 @@ class TestRequestIsNotification(TestCase):
 
 
 class TestCall(TestCase):
-
     def test_list_functions(self):
         req = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         self.assertEqual('bar', req.call([foo])['result'])
@@ -165,7 +161,6 @@ class TestCall(TestCase):
 
 class TestRequestProcessNotifications(TestCase):
     """Go easy here, no need to test the call function"""
-
     def setUp(self):
         logging.disable(logging.CRITICAL)
 

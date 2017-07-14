@@ -2,16 +2,14 @@
 from unittest import TestCase, main
 import json
 
-from jsonrpcserver.response import _sort_response, RequestResponse, \
-    NotificationResponse, ErrorResponse, ExceptionResponse, BatchResponse, \
-    Response
+from jsonrpcserver import config, status
 from jsonrpcserver.exceptions import InvalidParams
-from jsonrpcserver import status
-from jsonrpcserver import config
+from jsonrpcserver.response import (
+    _sort_response, Response, RequestResponse, NotificationResponse,
+    ErrorResponse, ExceptionResponse, BatchResponse)
 
 
 class TestSortResponse(TestCase):
-
     def test_sort_response_success(self):
         self.assertEqual(
             '{"jsonrpc": "2.0", "result": 5, "id": 1}',
@@ -24,7 +22,6 @@ class TestSortResponse(TestCase):
 
 
 class TestNotificationResponse(TestCase):
-
     def test(self):
         response = NotificationResponse()
         self.assertEqual('', str(response))
@@ -36,14 +33,12 @@ class TestNotificationResponse(TestCase):
 
 
 class TestResponse(TestCase):
-
     def test(self):
         with self.assertRaises(NotImplementedError):
             str(Response())
 
 
 class TestRequestResponse(TestCase):
-
     def test_no_id(self):
         # Not OK - requests must have an id.
         with self.assertRaises(ValueError):
@@ -64,7 +59,6 @@ class TestRequestResponse(TestCase):
 
 
 class TestErrorResponse(TestCase):
-
     def setUp(self):
         config.debug = False
 
@@ -104,7 +98,6 @@ class TestErrorResponse(TestCase):
 
 
 class TestExceptionResponse(TestCase):
-
     def setUp(self):
         config.debug = False
 
@@ -138,7 +131,6 @@ class TestExceptionResponse(TestCase):
 
 
 class TestBatchResponse(TestCase):
-
     def test(self):
         str(BatchResponse())
 

@@ -1,11 +1,11 @@
 """test_dispatcher.py"""
 from unittest import TestCase, main
 
+from jsonrpcserver import config
 from jsonrpcserver.dispatcher import dispatch, Requests
 from jsonrpcserver.exceptions import ParseError
-from jsonrpcserver.response import ErrorResponse, NotificationResponse, \
-    RequestResponse, BatchResponse
-from jsonrpcserver import config
+from jsonrpcserver.response import ErrorResponse, NotificationResponse, RequestResponse, BatchResponse
+
 
 def setUpModule():
     config.debug = True
@@ -16,8 +16,8 @@ def tearDownModule():
 def foo():
     return 'bar'
 
-class TestStringToDict(TestCase):
 
+class TestStringToDict(TestCase):
     def test_invalid(self):
         with self.assertRaises(ParseError):
             Requests._string_to_dict('{"jsonrpc": "2.0}')
@@ -35,7 +35,6 @@ class TestStringToDict(TestCase):
 
 class TestDispatchNotifications(TestCase):
     """Go easy here, no need to test the call function"""
-
     def tearDown(self):
         config.notification_errors = False
 
@@ -72,7 +71,6 @@ class TestDispatchNotifications(TestCase):
 class TestDispatchRequests(TestCase):
     """Go easy here, no need to test the call function. Also don't duplicate
     the Notification tests"""
-
     # Success
     def test(self):
         req = dispatch([foo], {'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
@@ -83,7 +81,6 @@ class TestDispatchRequests(TestCase):
 
 class TestDispatchSpecificationExamples(TestCase):
     """These are direct from the examples in the specification"""
-
     def test_positional_parameters(self):
         def subtract(minuend, subtrahend):
             return minuend - subtrahend

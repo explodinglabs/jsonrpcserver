@@ -5,17 +5,18 @@ At the core of the package is the dispatcher, which takes JSON-RPC requests,
 validates and logs them, calls the appropriate method, then logs and returns the
 response.
 """
-import logging
 import json
+import logging
 
 from six import string_types
 
-from .log import log_
-from .response import NotificationResponse, ExceptionResponse, BatchResponse
-from .request import Request
-from .exceptions import JsonRpcServerError, ParseError, InvalidRequest
-from .status import HTTP_STATUS_CODES
 from . import config
+from .exceptions import JsonRpcServerError, ParseError, InvalidRequest
+from .log import log_
+from .request import Request
+from .response import NotificationResponse, ExceptionResponse, BatchResponse
+from .status import HTTP_STATUS_CODES
+
 
 _REQUEST_LOG = logging.getLogger(__name__+'.request')
 _RESPONSE_LOG = logging.getLogger(__name__+'.response')
@@ -72,8 +73,9 @@ class Requests(object):
         except JsonRpcServerError as exc:
             self.response = ExceptionResponse(exc, None)
 
-    def dispatch(self, methods):
-        """Process a JSON-RPC request, calling the requested method(s).
+    def dispatch(self):
+        """
+        Process a JSON-RPC request, calling the requested method(s).
 
         :param methods:
             Collection of methods to dispatch to. Can be a ``list`` of
@@ -111,8 +113,14 @@ def dispatch(methods, requests):
     .. code-block:: python
 
         >>> request = {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
-        >>> response = dispatch(methods, {'ping': lambda: 'pong'})
+        >>> response = dispatch([ping], request)
         --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
         <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
+
+    :param methods:
+        Collection of methods to dispatch to. Can be a ``list`` of functions, a
+        ``dict`` of name:method pairs, or a ``Methods`` object.
+    :returns:
+        A :mod:`response` object.
     """
     return Requests(requests).dispatch(methods)

@@ -1,12 +1,11 @@
 """test_methods.py"""
-from unittest import TestCase, main
 from functools import partial
+from unittest import TestCase, main
 
 from jsonrpcserver.methods import Methods
 
 
 class TestInit(TestCase):
-
     def test_dict(self):
         methods = Methods({'ping': lambda: 'pong'})
         self.assertIn('ping', methods)
@@ -17,7 +16,6 @@ class TestInit(TestCase):
 
 
 class TestMutableMapping(TestCase):
-
     @staticmethod
     def test_iter():
         methods = Methods(ping=lambda: 'pong')
@@ -34,7 +32,6 @@ class TestMutableMapping(TestCase):
 
 
 class TestAdd(TestCase):
-
     def test_non_callable(self):
         methods = Methods()
         with self.assertRaises(TypeError):
@@ -147,7 +144,6 @@ class TestAddMethod(TestCase):
 
 
 class TestAddDictLike(TestCase):
-
     def test_function(self):
         methods = Methods()
         def ping():
@@ -167,7 +163,6 @@ class TestAddDictLike(TestCase):
 
 
 class TestDecorator(TestCase):
-
     def test_function(self):
         methods = Methods()
         @methods.add
