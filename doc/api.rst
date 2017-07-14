@@ -47,8 +47,8 @@ on :mod:`debug mode <jsonrpcserver.config.debug>`.
 Asynchronous
 ============
 
-Starting from v3.4 you can dispatch to coroutines (in Python 3.5+). Usage is
-the same as before, but import from ``jsonrpcserver.aio``:
+Starting from jsonrpcserver v3.4 you can dispatch to coroutines (in Python
+3.5+). Usage is the same as before, but import from ``jsonrpcserver.aio``:
 
 .. code-block:: python
 

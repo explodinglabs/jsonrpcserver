@@ -58,8 +58,6 @@ class InvalidParams(JsonRpcServerError):
     """
     Raised when invalid arguments are passed to a method.
 
-    e.g. If a required keyword argument is missing.
-
     :param data: Extra information about the error that occurred (optional).
     """
     code = -32602

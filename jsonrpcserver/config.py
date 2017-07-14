@@ -1,8 +1,6 @@
 """
 Import this module to configure the package.
 
-For example::
-
     from jsonrpcserver import config
     config.debug = True
 """
