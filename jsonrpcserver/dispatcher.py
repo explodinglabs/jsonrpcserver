@@ -75,19 +75,9 @@ class Requests(object):
     def dispatch(self, methods):
         """Process a JSON-RPC request, calling the requested method(s).
 
-        .. code-block:: python
-
-            >>> request = {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
-            >>> response = dispatch({'ping': lambda: 'pong'}, request)
-            --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
-            <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
-
         :param methods:
             Collection of methods to dispatch to. Can be a ``list`` of
             functions, a ``dict`` of name:method pairs, or a ``Methods`` object.
-        :param request:
-            A JSON-RPC request. Can be a JSON-serializable object, or a string.
-            (Strings must be valid JSON - use double quotes!)
         :returns:
             A :mod:`response` object.
         """
@@ -115,5 +105,14 @@ class Requests(object):
 
 
 def dispatch(methods, requests):
-    """Main public dispatch method"""
+    """
+    The main public dispatch method.
+
+    .. code-block:: python
+
+        >>> request = {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
+        >>> response = dispatch(methods, {'ping': lambda: 'pong'})
+        --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
+        <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
+    """
     return Requests(requests).dispatch(methods)
