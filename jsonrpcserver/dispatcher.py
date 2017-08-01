@@ -73,7 +73,7 @@ class Requests(object):
         except JsonRpcServerError as exc:
             self.response = ExceptionResponse(exc, None)
 
-    def dispatch(self):
+    def dispatch(self, methods):
         """
         Process a JSON-RPC request, calling the requested method(s).
 
