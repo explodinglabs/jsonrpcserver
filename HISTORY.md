@@ -1,4 +1,7 @@
 ## 3.5.0 (Aug 12, 2017)
+- Include context data in regular (synchronous) methods.dispatch
+
+## 3.5.0 (Aug 12, 2017)
 - Pass some context data through dispatch to the methods.
 - Fix not calling notifications in batch requests.
 

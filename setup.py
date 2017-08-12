@@ -10,7 +10,7 @@ with codecs_open('HISTORY.md', 'r', 'utf-8') as f:
 
 setup(
     name='jsonrpcserver',
-    version='3.5.0',
+    version='3.5.1',
     description='Process JSON-RPC requests',
     long_description=README + '\n\n' + HISTORY,
     author='Beau Barker',
