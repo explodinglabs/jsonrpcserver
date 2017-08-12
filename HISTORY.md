@@ -1,3 +1,7 @@
+## 3.5.0 (Aug 12, 2017)
+- Pass some context data through dispatch to the methods.
+- Fix not calling notifications in batch requests.
+
 ## 3.4.3 (Jul 13, 2017)
 - Fix AttributeError on batch responses
 
