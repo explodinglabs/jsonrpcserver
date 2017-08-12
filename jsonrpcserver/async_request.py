@@ -11,7 +11,7 @@ class AsyncRequest(Request):
         # Validation or parsing may have failed in __init__, in which case
         # there's no point calling. It would've already set the response.
         if not self.response:
-            # call_context handles setting the result/exception of the call
+            # Handles setting the result/exception of the call
             with self.handle_exceptions():
                 # Get the method object from a list (raises MethodNotFound)
                 callable_ = get_method(methods, self.method_name)

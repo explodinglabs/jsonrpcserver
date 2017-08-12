@@ -12,7 +12,7 @@ import traceback
 from . import config
 from .exceptions import JsonRpcServerError
 from .log import log_
-from .request_utils import *
+from .request_utils import * # Bad
 from .response import (
     Response, RequestResponse, NotificationResponse, ExceptionResponse)
 
@@ -52,11 +52,11 @@ class Request(object):
                 self.response = ExceptionResponse(
                     exc, getattr(self, 'request_id', None))
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         """
         :param request: JSON-RPC request, in dict form
         """
-        # Handle validation/parse exceptions
+        # Handle parsing & validation errors
         with self.handle_exceptions():
             # Validate against the JSON-RPC schema
             if config.schema_validation:
@@ -65,7 +65,7 @@ class Request(object):
             # because the request passed the schema.
             self.method_name = request['method']
             # Get arguments from the request, if any
-            self.args, self.kwargs = get_arguments(request.get('params'))
+            self.args, self.kwargs = get_arguments(request.get('params'), context=context)
             # Get request id, if any
             self.request_id = request.get('id')
             # Convert camelCase to underscore
@@ -79,13 +79,12 @@ class Request(object):
         """
         Call the appropriate method from a list.
 
-        Find the method from the passed list, and call it, returning a
-        Response
+        Find the method from the passed list, and call it, returning a Response
         """
         # Validation or parsing may have failed in __init__, in which case
         # there's no point calling. It would've already set the response.
         if not self.response:
-            # call_context handles setting the result/exception of the call
+            # Handle setting the result/exception of the call
             with self.handle_exceptions():
                 # Get the method object from a list (raises MethodNotFound)
                 callable_ = get_method(methods, self.method_name)

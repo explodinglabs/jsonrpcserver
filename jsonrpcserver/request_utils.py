@@ -92,23 +92,25 @@ def get_method(methods, name):
             raise MethodNotFound(name)
 
 
-def get_arguments(params):
+def get_arguments(params, context=None):
     """
     Get the positional and keyword arguments of a request.
 
     Takes the 'params' part of a JSON-RPC request and converts it to either
-    positional or keyword arguments usable in Python. The value can be a JSON
-    array (python list), object (python dict), or None. Note that a JSON-RPC
-    request can have positional or keyword arguments, but not both! See
-    http://www.jsonrpc.org/specification#parameter_structures
+    positional or keyword arguments usable in a Python function call. Note that
+    a JSON-RPC request can have positional or keyword arguments, but not both.
+    See http://www.jsonrpc.org/specification#parameter_structures
 
     :param params: The 'params' part of the JSON-RPC request (should be a
-        list or dict).
+        list or dict). The 'params' value can be a JSON array (Python list),
+        object (Python dict), or None.
+    :param context: Optionally include some context data, which will be included
+        in the keyword arguments passed to the method.
     :raises InvalidParams: If 'params' was present but was not a list or
         dict.
-    :returns: A two-tuple containing the positionals (in a list, or None)
-    and keywords (in a dict, or None) extracted from the 'params' part of
-    the request.
+    :returns: A two-tuple containing the positionals (in a list, or None) and
+        keywords (in a dict, or None) extracted from the 'params' part of the
+        request.
     """
     positionals = keywords = None
     if params:
@@ -123,6 +125,12 @@ def get_arguments(params):
         else:
             raise InvalidParams('Params of type %s is not allowed' % \
                 type(params).__name__)
+    # Can't have both positional and keyword arguments. It's impossible in json
+    # anyway; the params arg can only be a json array (list) or object (dict)
     assert not (positionals and keywords), \
         'Cannot have both positional and keyword arguments in JSON-RPC.'
+    # If context data was passed, include it as a keyword argument.
+    if context is not None:
+        keywords = {} if not keywords else keywords
+        keywords['context'] = context
     return (positionals, keywords)

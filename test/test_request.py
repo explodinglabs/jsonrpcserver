@@ -16,10 +16,11 @@ from jsonrpcserver.response import (
 def foo():
     return 'bar'
 
-class FooClass():
+class Foo():
     def foo(self, one, two):
         return 'bar'
 
+FOO, BAR = (object(), object())
 
 def setUpModule():
     config.debug = True
@@ -28,7 +29,7 @@ def tearDownModule():
     config.debug = False
 
 
-class TestRequestInit(TestCase):
+class TestInit(TestCase):
     def tearDown(self):
         config.convert_camel_case = False
 
@@ -43,9 +44,11 @@ class TestRequestInit(TestCase):
     def test_positional_args(self):
         req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': [2, 3]})
         self.assertEqual([2, 3], req.args)
+        self.assertEqual(None, req.kwargs)
 
     def test_keyword_args(self):
         req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': {'foo': 'bar'}})
+        self.assertEqual(None, req.args)
         self.assertEqual({'foo': 'bar'}, req.kwargs)
 
     def test_request_id(self):
@@ -63,13 +66,13 @@ class TestRequestInit(TestCase):
         self.assertEqual('foo_method', req.method_name)
         self.assertEqual({'foo_param': 1, 'a_dict': {'bar_param': 1}}, req.kwargs)
 
-    def test_positional_args_convert_case_skip(self):
+    def test_convert_camel_case_positional_args(self):
         config.convert_camel_case = True
         req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': ['Camel', 'Case']})
         self.assertEqual(['Camel', 'Case'], req.args)
 
 
-class TestRequestIsNotification(TestCase):
+class TestIsNotification(TestCase):
     def test_true(self):
         req = Request({'jsonrpc': '2.0', 'method': 'foo'})
         self.assertTrue(req.is_notification)
@@ -99,7 +102,8 @@ class TestCall(TestCase):
 
     def test_dict_functions(self):
         req = Request({'jsonrpc': '2.0', 'method': 'baz', 'id': 1})
-        self.assertEqual('bar', req.call({'baz': foo})['result'])
+        result = req.call({'baz': foo})
+        self.assertEqual('bar', result['result'])
 
     def test_dict_lambdas(self):
         req = Request({'jsonrpc': '2.0', 'method': 'baz', 'id': 1})
@@ -132,31 +136,48 @@ class TestCall(TestCase):
 
     def test_methods_partials(self):
         multiply = lambda x, y: x * y
-        double = partial(multiply, 2)
-        methods = Methods()
-        methods.add(double, 'double')
+        methods = {'double': partial(multiply, 2)}
         req = Request({'jsonrpc': '2.0', 'method': 'double', 'params': [3], 'id': 1})
         self.assertEqual(6, req.call(methods)['result'])
 
     def test_positionals(self):
-        methods = Methods()
-        methods.add(lambda x: x * x, 'square')
+        methods = {'square': lambda x: x * x}
         req = Request({'jsonrpc': '2.0', 'method': 'square', 'params': [3], 'id': 1})
         self.assertEqual(9, req.call(methods)['result'])
 
     def test_keywords(self):
-        def get_name(**kwargs):
-            return kwargs['name']
+        methods = {'get_name': lambda **kwargs: kwargs['name']}
         req = Request({'jsonrpc': '2.0', 'method': 'get_name', 'params': {'name': 'foo'}, 'id': 1})
-        self.assertEqual('foo', req.call([get_name])['result'])
+        self.assertEqual('foo', req.call(methods)['result'])
 
     def test_object_method(self):
-        methods = Methods()
-        methods.add(FooClass().foo, 'foo')
+        methods = {'foo': Foo().foo}
         req = Request({'jsonrpc': '2.0', 'method': 'foo', 'params': [1, 2], 'id': 1})
         response = req.call(methods)
         self.assertIsInstance(response, RequestResponse)
         self.assertEqual('bar', response['result'])
+
+    # With "context" argument
+    def test_noargs_with_context(self):
+        methods = {'foo': lambda context=None: context}
+        req = Request({'jsonrpc': '2.0', 'method': 'foo', 'id': 1}, context=FOO)
+        self.assertEqual(FOO, req.call(methods)['result'])
+
+    def test_positionals_with_context(self):
+        methods = {'square': lambda foo, context=None: context}
+        req = Request({'jsonrpc': '2.0', 'method': 'square', 'params': [FOO], 'id': 1}, context=BAR)
+        self.assertEqual(BAR, req.call(methods)['result'])
+
+    def test_positionals_with_context(self):
+        methods = {'square': lambda x, context=None: context}
+        req = Request({'jsonrpc': '2.0', 'method': 'square', 'params': [FOO], 'id': 1}, context=BAR)
+        self.assertEqual(BAR, req.call(methods)['result'])
+
+    def test_keywords_with_context(self):
+        methods = {'square': lambda foo=None, context=None: {'foo': foo, 'context': context}}
+        req = Request({'jsonrpc': '2.0', 'method': 'square', 'params': {'foo': FOO}, 'id': 1}, context=BAR)
+        self.assertEqual(FOO, req.call(methods)['result']['foo'])
+        self.assertEqual(BAR, req.call(methods)['result']['context'])
 
 
 class TestRequestProcessNotifications(TestCase):

@@ -12,7 +12,7 @@ class AsyncRequests(Requests):
     def __init__(self, requests):
         super(AsyncRequests, self).__init__(requests, request_type=AsyncRequest)
 
-    async def dispatch(self, methods):
+    async def dispatch(self, methods, context=None):
         """
         Process a JSON-RPC request.
 
@@ -23,24 +23,27 @@ class AsyncRequests(Requests):
         if not self.response:
             # Batch request
             if isinstance(self.requests, list):
-                # Batch requests - call each request, and exclude Notifications
-                # from the list of responses
-                self.response = BatchResponse(await asyncio.gather(
-                    *[r.call(methods) for r in map(self.request_type,
-                      self.requests) if not r.is_notification]))
-                # If the response list is empty, it should return nothing
-                if not self.response:
-                    self.response = NotificationResponse()
+                # First convert each to a Request object
+                requests = [self.request_type(r, context=context) for r in self.requests]
+                # Call each request
+                response = await asyncio.gather(*[r.call(methods) for r in requests])
+                # Remove notification responses (as per spec)
+                response = [r for r in response if not r.is_notification]
+                # If the response list is empty, return nothing
+                self.response = BatchResponse(response) if response else NotificationResponse()
             # Single request
             else:
-                self.response = await self.request_type(self.requests) \
-                    .call(methods)
+                # Convert to a Request object
+                request = self.request_type(self.requests, context=context)
+                # Call the request
+                self.response = await request.call(methods)
         assert self.response, 'Response must be set'
         assert self.response.http_status, 'Must have http_status set'
         if config.log_responses:
             self._log_response(self.response)
         return self.response
 
-async def dispatch(methods, requests):
+
+async def dispatch(methods, requests, context=None):
     """Main public dispatch method."""
-    return await AsyncRequests(requests).dispatch(methods)
+    return await AsyncRequests(requests).dispatch(methods, context=context)

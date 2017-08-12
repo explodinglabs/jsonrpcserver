@@ -23,11 +23,12 @@ _RESPONSE_LOG = logging.getLogger(__name__+'.response')
 
 
 class Requests(object):
-    """Requests"""
+    """A collection of Request objects."""
 
     @staticmethod
     def _string_to_dict(request):
-        """Convert a JSON-RPC request string, to a dictionary.
+        """
+        Convert a JSON-RPC request string, to a dictionary.
 
         :param request: The JSON-RPC request string.
         :raises ValueError: If the string cannot be parsed to JSON.
@@ -50,10 +51,6 @@ class Requests(object):
         Logs the request, and builds a list of Request objects.
 
         Will set the response attribute if there's an problem with the request.
-
-        TODO: Move most of this functionality into dispatch(). It shouldn't be
-        logging on instantiation of this class for example. It should log when
-        dispatching.
         """
         self.requests = requests
         self.response = None
@@ -73,7 +70,7 @@ class Requests(object):
         except JsonRpcServerError as exc:
             self.response = ExceptionResponse(exc, None)
 
-    def dispatch(self, methods):
+    def dispatch(self, methods, context=None):
         """
         Process a JSON-RPC request, calling the requested method(s).
 
@@ -88,17 +85,20 @@ class Requests(object):
         if not self.response:
             # Batch request
             if isinstance(self.requests, list):
-                # Batch requests - call each request, and exclude Notifications
-                # from the list of responses
-                self.response = BatchResponse(
-                    [r.call(methods) for r in map(self.request_type,
-                     self.requests) if not r.is_notification])
+                # First convert each to a Request object
+                requests = [self.request_type(r, context=context) for r in self.requests]
+                # Call each request
+                response = [r.call(methods) for r in requests]
+                # Remove notification responses (as per spec)
+                response = [r for r in response if not r.is_notification]
                 # If the response list is empty, return nothing
-                if not self.response:
-                    self.response = NotificationResponse()
+                self.response = BatchResponse(response) if response else NotificationResponse()
             # Single request
             else:
-                self.response = self.request_type(self.requests).call(methods)
+                # Convert to a Request object
+                request = self.request_type(self.requests, context=context)
+                # Call the request
+                self.response = request.call(methods)
         assert self.response, 'Response must be set'
         assert self.response.http_status, 'Must have http_status set'
         if config.log_responses:
@@ -106,7 +106,7 @@ class Requests(object):
         return self.response
 
 
-def dispatch(methods, requests):
+def dispatch(methods, requests, context=None):
     """
     The main public dispatch method.
 
@@ -120,7 +120,9 @@ def dispatch(methods, requests):
     :param methods:
         Collection of methods to dispatch to. Can be a ``list`` of functions, a
         ``dict`` of name:method pairs, or a ``Methods`` object.
+    :param requests:
+        Client request(s) to process.
     :returns:
         A :mod:`response` object.
     """
-    return Requests(requests).dispatch(methods)
+    return Requests(requests).dispatch(methods, context=context)

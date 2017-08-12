@@ -109,6 +109,19 @@ class TestGetArguments(TestCase):
         with self.assertRaises(InvalidParams):
             get_arguments('str')
 
+    # With the "context" argument
+    def test_no_arguments_with_context(self):
+        args = get_arguments(None, context='foo')
+        self.assertEqual((None, {'context': 'foo'}), args)
+
+    def test_positional_with_context(self):
+        args = get_arguments(['foo'], context='bar')
+        self.assertEqual((['foo'], {'context': 'bar'}), args)
+
+    def test_keyword_with_context(self):
+        args = get_arguments({'foo': 'bar'}, context='baz')
+        self.assertEqual((None, {'foo': 'bar', 'context': 'baz'}), args)
+
 
 if __name__ == '__main__':
     main()
