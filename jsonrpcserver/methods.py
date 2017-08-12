@@ -51,7 +51,6 @@ class Methods(MutableMapping):
     .. versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
     """
-
     def __init__(self, *args, **kwargs):
         self._items = {}
         self.update(*args, **kwargs)
@@ -106,15 +105,16 @@ class Methods(MutableMapping):
         """
         return self.add(*args, **kwargs)
 
-    def dispatch(self, request):
-        """Dispatch a request to the list of methods.
+    def dispatch(self, request, context=None):
+        """
+        Dispatch a request to the list of methods.
 
         :param request: The JSON-RPC request to dispatch
         :type request: A JSON-encoded string, or JSON-serializable object
         :returns: A JSON-RPC response
         :rtype: :mod:`Response <jsonrpcserver.response>`
         """
-        return dispatch(self, request)
+        return dispatch(self, request, context=context)
 
     def serve_forever(self, name='', port=5000):
         """A basic way to serve the methods.
