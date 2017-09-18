@@ -87,7 +87,7 @@ class Request(object):
             # Handle setting the result/exception of the call
             with self.handle_exceptions():
                 # Get the method object from a list (raises MethodNotFound)
-                callable_ = get_method(methods, self.method_name)
+                callable_ = self._get_method(methods)
                 # Ensure the arguments match the method's signature
                 validate_arguments_against_signature(callable_, self.args, self.kwargs)
                 # Call the method
@@ -100,3 +100,13 @@ class Request(object):
         # Ensure the response has been set before returning it
         assert isinstance(self.response, Response), 'Invalid response type'
         return self.response
+
+    def _get_method(self, methods):
+        """
+        Find and return a callable representing the method for this request.
+
+        :param methods: List or dictionary of named functions
+        :raises MethodNotFound: If no method is found
+        :returns: Callable representing the method
+        """
+        return get_method(methods, self.method_name)

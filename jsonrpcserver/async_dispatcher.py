@@ -9,8 +9,8 @@ from .response import BatchResponse, NotificationResponse
 
 class AsyncRequests(Requests):
     """Asynchronous requests."""
-    def __init__(self, requests):
-        super(AsyncRequests, self).__init__(requests, request_type=AsyncRequest)
+    def __init__(self, requests, request_type=AsyncRequest):
+        super(AsyncRequests, self).__init__(requests, request_type=request_type)
 
     async def dispatch(self, methods, context=None):
         """

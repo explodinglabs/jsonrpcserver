@@ -14,7 +14,7 @@ class AsyncRequest(Request):
             # Handles setting the result/exception of the call
             with self.handle_exceptions():
                 # Get the method object from a list (raises MethodNotFound)
-                callable_ = get_method(methods, self.method_name)
+                callable_ = self._get_method(methods)
                 # Ensure the arguments match the method's signature
                 validate_arguments_against_signature(callable_, self.args, self.kwargs)
                 # Call the method
