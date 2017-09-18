@@ -1,4 +1,7 @@
-## 3.5.0 (Aug 12, 2017)
+## 3.5.2 (Sep 19, 2017)
+- Refactor for Request subclassing
+
+## 3.5.1 (Aug 12, 2017)
 - Include context data in regular (synchronous) methods.dispatch
 
 ## 3.5.0 (Aug 12, 2017)
