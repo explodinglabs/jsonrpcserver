@@ -1,5 +1,7 @@
 # jsonrpcserver
 
+[![Join the chat at https://gitter.im/bcb/jsonrpcserver](https://badges.gitter.im/bcb/jsonrpcserver.svg)](https://gitter.im/bcb/jsonrpcserver?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python 2.7 and 3.3+.
 
 ```python
