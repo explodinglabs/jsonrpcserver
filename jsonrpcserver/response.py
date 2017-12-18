@@ -77,7 +77,7 @@ class RequestResponse(Response, dict):
             returned.
         """
         # Ensure we're not responding to a notification with data
-        if not request_id:
+        if request_id is None:
             raise ValueError(
                 'Requests must have an id, use NotificationResponse instead')
         super(RequestResponse, self).__init__(
