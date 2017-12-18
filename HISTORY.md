@@ -1,3 +1,6 @@
+## 3.5.3 (Dec 19, 2017)
+- Allow requests to have any non-None id
+
 ## 3.5.2 (Sep 19, 2017)
 - Refactor for Request subclassing
 
