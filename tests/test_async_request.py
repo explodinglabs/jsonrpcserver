@@ -1,5 +1,6 @@
-import inspect, asyncio
-from unittest import TestCase, main
+import asyncio
+import inspect
+from unittest import TestCase
 
 from jsonrpcserver.aio import methods
 from jsonrpcserver.async_request import AsyncRequest
@@ -28,6 +29,3 @@ class TestCall(TestCase):
         req = AsyncRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
         response = await req.call(methods)
         self.assertEqual('bar', response['result'])
-
-if __name__ == '__main__':
-    main()

@@ -1,4 +1,4 @@
-from unittest import TestCase, main
+from unittest import TestCase
 
 from jsonrpcserver.exceptions import InvalidParams, MethodNotFound
 from jsonrpcserver.methods import Methods
@@ -121,7 +121,3 @@ class TestGetArguments(TestCase):
     def test_keyword_with_context(self):
         args = get_arguments({'foo': 'bar'}, context='baz')
         self.assertEqual((None, {'foo': 'bar', 'context': 'baz'}), args)
-
-
-if __name__ == '__main__':
-    main()

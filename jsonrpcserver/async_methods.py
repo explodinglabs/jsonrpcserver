@@ -1,6 +1,9 @@
 """
 Asynchronous methods.
 
+Asynchronous version of the :mod:`Methods <jsonrpcserver.methods>` class. Holds
+the list of functions that can be called by RPC calls.
+
 Python 3.5+ users can dispatch requests to coroutines. Usage is the same as
 synchronous methods, but this time import from ``jsonrpcserver.aio``::
 

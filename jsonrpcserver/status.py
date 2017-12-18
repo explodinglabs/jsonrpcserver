@@ -1,4 +1,4 @@
-"""status.py"""
+"""Statuses"""
 
 # Taken from werkzeug/http.py
 HTTP_STATUS_CODES = {

@@ -1,4 +1,3 @@
-"""__init__.py"""
 from .dispatcher import dispatch
 from .methods import Methods
 

@@ -1,7 +1,7 @@
 """
-Dispatch requests to methods.
+Dispatcher.
 
-At the core of the package is the dispatcher, which takes JSON-RPC requests,
+At the core of the library is the dispatcher, which takes JSON-RPC requests,
 validates and logs them, calls the appropriate method, then logs and returns the
 response.
 """
@@ -74,11 +74,12 @@ class Requests(object):
         """
         Process a JSON-RPC request, calling the requested method(s).
 
-        :param methods:
-            Collection of methods to dispatch to. Can be a ``list`` of
-            functions, a ``dict`` of name:method pairs, or a ``Methods`` object.
-        :returns:
-            A :mod:`response` object.
+        :param methods: Collection of methods to dispatch to. Can be a ``list``
+            of functions, a ``dict`` of name:method pairs, or a ``Methods``
+            object.
+        :param context: Optional context object which will be passed through to
+            the RPC methods.
+        :returns: A :mod:`response` object.
         """
         # Init may have failed to parse the request, in which case the response
         # would already be set
@@ -117,12 +118,11 @@ def dispatch(methods, requests, context=None):
         --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
         <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
 
-    :param methods:
-        Collection of methods to dispatch to. Can be a ``list`` of functions, a
-        ``dict`` of name:method pairs, or a ``Methods`` object.
-    :param requests:
-        Client request(s) to process.
-    :returns:
-        A :mod:`response` object.
+    :param methods: Collection of methods to dispatch to. Can be a ``list`` of
+        functions, a ``dict`` of name:method pairs, or a ``Methods`` object.
+    :param requests: Client request(s) to process.
+    :param context: Optional context object which will be passed through to the
+        RPC methods.
+    :returns: A :mod:`response` object.
     """
     return Requests(requests).dispatch(methods, context=context)

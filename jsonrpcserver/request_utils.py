@@ -1,3 +1,8 @@
+"""
+Helper functions to support the :mod:`request <jsonrpcserver.request> module.
+
+Moved here because the request module was getting too big.
+"""
 import json
 import pkgutil
 import re

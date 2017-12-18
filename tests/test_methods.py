@@ -1,6 +1,5 @@
-"""test_methods.py"""
 from functools import partial
-from unittest import TestCase, main
+from unittest import TestCase
 
 from jsonrpcserver.methods import Methods
 
@@ -177,7 +176,3 @@ class TestDecorator(TestCase):
             def foo():
                 return 'bar'
         self.assertIs(FooClass.foo, methods['foo'])
-
-
-if __name__ == '__main__':
-    main()

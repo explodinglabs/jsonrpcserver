@@ -1,5 +1,4 @@
-"""test_request.py"""
-from unittest import TestCase, main
+from unittest import TestCase
 import logging
 
 from functools import partial
@@ -228,7 +227,3 @@ class TestRequestProcessNotifications(TestCase):
         req = Request({'jsonrpc': '2.0', 'method': 'foo'}).call([foo])
         self.assertEqual(status.HTTP_OK, req.http_status)
         NotificationResponse.http_status = status.HTTP_NO_CONTENT
-
-
-if __name__ == '__main__':
-    main()

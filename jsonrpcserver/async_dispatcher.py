@@ -17,6 +17,12 @@ class AsyncRequests(Requests):
         Process a JSON-RPC request.
 
         Calls the requested method(s), and returns the result.
+
+        :param methods: Collection of methods to dispatch to. Can be a ``list``
+            of functions, a ``dict`` of name:method pairs, or a ``Methods``
+            object.
+        :param context: Optional context object which will be passed through to
+            the RPC methods.
         """
         # Init may have failed to parse the request, in which case the response
         # would already be set

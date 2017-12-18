@@ -1,5 +1,7 @@
 """
-Import this module to configure the package::
+Configuration.
+
+Import this module to configure jsonrpcserver::
 
     from jsonrpcserver import config
     config.debug = True

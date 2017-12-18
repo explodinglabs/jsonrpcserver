@@ -1,10 +1,10 @@
-"""test_dispatcher.py"""
-from unittest import TestCase, main
+from unittest import TestCase
 
 from jsonrpcserver import config
 from jsonrpcserver.dispatcher import dispatch, Requests
 from jsonrpcserver.exceptions import ParseError
-from jsonrpcserver.response import ErrorResponse, NotificationResponse, RequestResponse, BatchResponse
+from jsonrpcserver.response import (
+    ErrorResponse, NotificationResponse, RequestResponse, BatchResponse)
 
 
 def foo():
@@ -199,7 +199,3 @@ class TestDispatchSpecificationExamples(TestCase):
             [{'jsonrpc': '2.0', 'method': 'notify_sum', 'params': [1, 2, 4]},
              {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]}])
         self.assertIsInstance(res, NotificationResponse)
-
-
-if __name__ == '__main__':
-    main()

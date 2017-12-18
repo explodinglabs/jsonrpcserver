@@ -1,8 +1,8 @@
-"""test_exceptions.py"""
-from unittest import TestCase, main
+from unittest import TestCase
 
-from jsonrpcserver.exceptions import JsonRpcServerError, ParseError, \
-    InvalidRequest, MethodNotFound, InvalidParams, ServerError
+from jsonrpcserver.exceptions import (
+    JsonRpcServerError, ParseError, InvalidRequest, MethodNotFound,
+    InvalidParams, ServerError)
 
 
 class TestJsonRpcServerError(TestCase):
@@ -47,7 +47,3 @@ class TestServerError(TestCase):
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
             raise ServerError()
-
-
-if __name__ == '__main__':
-    main()

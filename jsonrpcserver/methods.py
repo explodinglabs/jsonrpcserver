@@ -1,5 +1,10 @@
 """
-A collection of Python functions that can be called via JSON-RPC.
+Methods class.
+
+Holds the list of functions that can be called by RPC calls. It's not required
+to use this class, (a standard python list also works), but it's here for
+convenience.  An instance of this class is automatically instantiated for the
+user in jsonrpcserver/__init__.py if they choose to use it.
 
 Use the ``add`` decorator to register a method to the list::
 
@@ -39,11 +44,12 @@ from .log import log_
 from .dispatcher import dispatch
 
 
-_LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class Methods(MutableMapping):
-    """Holds a list of methods.
+    """
+    Holds a list of methods.
 
     .. versionchanged:: 3.4
         Added ``dispatch``, and moved serve_forever into here (was previously in
@@ -74,7 +80,10 @@ class Methods(MutableMapping):
         return len(self._items)
 
     def add(self, method, name=None):
-        """Register a function to the list::
+        """
+        Register a function to the list.
+
+        ::
 
             methods.add(subtract)
 
@@ -84,9 +93,9 @@ class Methods(MutableMapping):
             def subtract(minuend, subtrahend):
                 return minuend - subtrahend
 
-        :param method: Function to register to the list
-        :type method: Function or class method
-        :param str name: Rename the original function
+        :param method: Function to register to the list.
+        :type method: Function or class method.
+        :param name: Optionally rename the original function.
         :raise AttributeError:
             Raised if the method being added has no name. (i.e. it has no
             ``__name__`` property, and no ``name`` argument was given.)
@@ -109,15 +118,18 @@ class Methods(MutableMapping):
         """
         Dispatch a request to the list of methods.
 
-        :param request: The JSON-RPC request to dispatch
-        :type request: A JSON-encoded string, or JSON-serializable object
-        :returns: A JSON-RPC response
-        :rtype: :mod:`Response <jsonrpcserver.response>`
+        :param request: The JSON-RPC request to dispatch.
+        :type request: A JSON-encoded string, or JSON-serializable object.
+        :param context: Optional context object which will be passed through to
+            the RPC methods.
+        :returns: A JSON-RPC response.
+        :rtype: :mod:`Response <jsonrpcserver.response>`.
         """
         return dispatch(self, request, context=context)
 
     def serve_forever(self, name='', port=5000):
-        """A basic way to serve the methods.
+        """
+        A basic way to serve the methods.
 
         :param str name: Server address
         :param int port: Server port
@@ -140,5 +152,5 @@ class Methods(MutableMapping):
         httpd = HTTPServer((name, port), RequestHandler)
         # Let the request handler know which methods to dispatch to
         httpd.methods = self
-        log_(_LOGGER, 'info', ' * Listening on port %s', port)
+        log_(LOGGER, 'info', ' * Listening on port %s', port)
         httpd.serve_forever()

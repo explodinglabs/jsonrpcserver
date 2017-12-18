@@ -1,4 +1,6 @@
 """
+Response classes.
+
 The return value from ``dispatch`` is a response object.
 
 ::

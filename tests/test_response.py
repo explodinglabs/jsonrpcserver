@@ -1,5 +1,4 @@
-"""test_response.py"""
-from unittest import TestCase, main
+from unittest import TestCase
 import json
 
 from jsonrpcserver import config, status
@@ -133,7 +132,3 @@ class TestExceptionResponse(TestCase):
 class TestBatchResponse(TestCase):
     def test(self):
         str(BatchResponse())
-
-
-if __name__ == '__main__':
-    main()

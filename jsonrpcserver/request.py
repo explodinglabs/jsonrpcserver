@@ -1,9 +1,7 @@
 """
-Request module.
+Request class.
 
-The Request class represents a JSON-RPC request object. Used internally by the
-library, but class attributes can be modified to configure various options for
-handling requests.
+Represents a JSON-RPC request object.
 """
 from contextlib import contextmanager
 import logging
@@ -12,7 +10,9 @@ import traceback
 from . import config
 from .exceptions import JsonRpcServerError
 from .log import log_
-from .request_utils import * # Bad
+from .request_utils import (
+    convert_camel_case, convert_camel_case_keys, validate_against_schema,
+    validate_arguments_against_signature, get_method, get_arguments)
 from .response import (
     Response, RequestResponse, NotificationResponse, ExceptionResponse)
 
@@ -30,7 +30,8 @@ class Request(object):
     """
     @property
     def is_notification(self):
-        """Returns True if the request is a JSON-RPC Notification (ie. No id
+        """
+        Returns True if the request is a JSON-RPC Notification (ie. No id
         attribute is included). False if it's a request.
         """
         return hasattr(self, 'request_id') and self.request_id is None
@@ -54,7 +55,9 @@ class Request(object):
 
     def __init__(self, request, context=None):
         """
-        :param request: JSON-RPC request, in dict form
+        :param request: JSON-RPC request, in dict form.
+        :param context: Optional context object that will be passed to the RPC
+            method.
         """
         # Handle parsing & validation errors
         with self.handle_exceptions():
