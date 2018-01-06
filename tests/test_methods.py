@@ -161,14 +161,14 @@ class TestAddDictLike(TestCase):
             methods['ping'] = 1
 
 
-class TestDecorator(TestCase):
-    def test_function(self):
+class TestAddDecorator(TestCase):
+    def test_add_function(self):
         methods = Methods()
         @methods.add
         def foo(): pass
         self.assertIs(foo, methods['foo'])
 
-    def test_static_method(self):
+    def test_add_static_method(self):
         methods = Methods()
         class FooClass(object):
             @staticmethod
@@ -176,3 +176,13 @@ class TestDecorator(TestCase):
             def foo():
                 return 'bar'
         self.assertIs(FooClass.foo, methods['foo'])
+
+
+class TestDispatch(TestCase):
+    def test_dispatch(self):
+        def foo(): return 'bar'
+        methods = Methods()
+        methods.add(foo)
+        request = {'jsonrpc': '2.0', 'method': 'foo', 'id': 1}
+        response = methods.dispatch(request)
+        self.assertEqual(response['result'], 'bar')

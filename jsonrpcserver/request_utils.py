@@ -6,12 +6,7 @@ Moved here because the request module was getting too big.
 import json
 import pkgutil
 import re
-try:
-    # Python 2
-    from collections import Mapping, Sequence
-except ImportError:
-    # Python 3
-    from collections.abc import Mapping, Sequence
+from collections import Mapping, Sequence
 
 import jsonschema
 from funcsigs import signature

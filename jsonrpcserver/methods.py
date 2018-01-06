@@ -26,16 +26,10 @@ Or simply serve the methods::
      * Listening on port 5000
 """
 import logging
+from collections import MutableMapping
 try:
     # Python 2
-    from collections import MutableMapping
-except ImportError:
-    # Python 3
-    from collections.abc import MutableMapping
-try:
-    # Python 2
-    from BaseHTTPServer import HTTPServer
-    from BaseHTTPServer import BaseHTTPRequestHandler
+    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 except ImportError:
     # Python 3
     from http.server import BaseHTTPRequestHandler, HTTPServer
