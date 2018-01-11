@@ -34,11 +34,11 @@ except ImportError:
     # Python 3
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from .log import log_
+from .log import log
 from .dispatcher import dispatch
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Methods(MutableMapping):
@@ -146,5 +146,5 @@ class Methods(MutableMapping):
         httpd = HTTPServer((name, port), RequestHandler)
         # Let the request handler know which methods to dispatch to
         httpd.methods = self
-        log_(LOGGER, 'info', ' * Listening on port %s', port)
+        log(logger, 'info', ' * Listening on port %s', port)
         httpd.serve_forever()

@@ -12,7 +12,7 @@ from six import string_types
 
 from . import config
 from .exceptions import JsonRpcServerError, ParseError, InvalidRequest
-from .log import log_
+from .log import log
 from .request import Request
 from .response import NotificationResponse, ExceptionResponse, BatchResponse
 from .status import HTTP_STATUS_CODES
@@ -26,7 +26,7 @@ class Requests(object):
     """A collection of Request objects."""
 
     @staticmethod
-    def _string_to_dict(request):
+    def string_to_dict(request):
         """
         Convert a JSON-RPC request string, to a dictionary.
 
@@ -40,9 +40,9 @@ class Requests(object):
             raise ParseError()
 
     @staticmethod
-    def _log_response(response):
+    def log_response(response):
         """Log a response"""
-        log_(_RESPONSE_LOG, 'info', str(response), fmt='<-- %(message)s',
+        log(_RESPONSE_LOG, 'info', str(response), fmt='<-- %(message)s',
              extra={'http_code': response.http_status,
                     'http_reason': HTTP_STATUS_CODES[response.http_status]})
 
@@ -57,11 +57,11 @@ class Requests(object):
         self.request_type = request_type
         # Log the request
         if config.log_requests:
-            log_(_REQUEST_LOG, 'info', requests, fmt='--> %(message)s')
+            log(_REQUEST_LOG, 'info', requests, fmt='--> %(message)s')
         try:
             # If the request is a string, convert it to a dict
             if isinstance(requests, string_types):
-                self.requests = self._string_to_dict(self.requests)
+                self.requests = self.string_to_dict(self.requests)
             # Empty batch requests are invalid
             # http://www.jsonrpc.org/specification#examples
             if isinstance(requests, list) and not requests:
@@ -103,7 +103,7 @@ class Requests(object):
         assert self.response, 'Response must be set'
         assert self.response.http_status, 'Must have http_status set'
         if config.log_responses:
-            self._log_response(self.response)
+            self.log_response(self.response)
         return self.response
 
 

@@ -24,17 +24,17 @@ def tearDownModule():
 class TestStringToDict(TestCase):
     def test_invalid(self):
         with self.assertRaises(ParseError):
-            Requests._string_to_dict('{"jsonrpc": "2.0}')
+            Requests.string_to_dict('{"jsonrpc": "2.0}')
 
     def test(self):
         self.assertEqual(
             {'jsonrpc': '2.0', 'method': 'foo'},
-            Requests._string_to_dict('{"jsonrpc": "2.0", "method": "foo"}'))
+            Requests.string_to_dict('{"jsonrpc": "2.0", "method": "foo"}'))
 
     def test_list(self):
         self.assertEqual(
             [{'jsonrpc': '2.0', 'method': 'foo'}],
-            Requests._string_to_dict('[{"jsonrpc": "2.0", "method": "foo"}]'))
+            Requests.string_to_dict('[{"jsonrpc": "2.0", "method": "foo"}]'))
 
 
 class TestDispatchNotifications(TestCase):

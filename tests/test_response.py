@@ -4,7 +4,7 @@ import json
 from jsonrpcserver import config, status
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver.response import (
-    _sort_response, Response, RequestResponse, NotificationResponse,
+    sort_response, Response, RequestResponse, NotificationResponse,
     ErrorResponse, ExceptionResponse, BatchResponse)
 
 
@@ -12,12 +12,12 @@ class TestSortResponse(TestCase):
     def test_sort_response_success(self):
         self.assertEqual(
             '{"jsonrpc": "2.0", "result": 5, "id": 1}',
-            json.dumps(_sort_response({'id': 1, 'result': 5, 'jsonrpc': '2.0'})))
+            json.dumps(sort_response({'id': 1, 'result': 5, 'jsonrpc': '2.0'})))
 
     def test_sort_response_error(self):
         self.assertEqual(
             '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}',
-            json.dumps(_sort_response({'id': 1, 'error': {'data': 'bar', 'message': 'foo', 'code': status.JSONRPC_INVALID_REQUEST_CODE}, 'jsonrpc': '2.0'})))
+            json.dumps(sort_response({'id': 1, 'error': {'data': 'bar', 'message': 'foo', 'code': status.JSONRPC_INVALID_REQUEST_CODE}, 'jsonrpc': '2.0'})))
 
 
 class TestNotificationResponse(TestCase):

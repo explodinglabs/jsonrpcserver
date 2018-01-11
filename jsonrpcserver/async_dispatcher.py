@@ -46,7 +46,7 @@ class AsyncRequests(Requests):
         assert self.response, 'Response must be set'
         assert self.response.http_status, 'Must have http_status set'
         if config.log_responses:
-            self._log_response(self.response)
+            self.log_response(self.response)
         return self.response
 
 

@@ -2,11 +2,11 @@
 import logging
 
 
-def _configure_logger(logger, fmt):
+def configure_logger(logger, fmt):
     """
     Set up a logger, if no handler has been configured for it.
 
-    Used by log_ below.
+    Used by the log function below.
     """
     if logger.level == logging.NOTSET:
         logger.setLevel(logging.INFO)
@@ -16,7 +16,7 @@ def _configure_logger(logger, fmt):
         logger.addHandler(handler)
 
 
-def log_(logger, level, message, *args, **kwargs):
+def log(logger, level, message, *args, **kwargs):
     """
     Log a message.
 
@@ -24,5 +24,5 @@ def log_(logger, level, message, *args, **kwargs):
     function
     """
     fmt = kwargs.pop('fmt', '%(message)s')
-    _configure_logger(logger, fmt)
+    configure_logger(logger, fmt)
     getattr(logger, level)(message, *args, **kwargs)

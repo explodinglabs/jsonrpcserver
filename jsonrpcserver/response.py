@@ -26,7 +26,7 @@ from . import status, config
 from .exceptions import JsonRpcServerError, ServerError
 
 
-def _sort_response(response):
+def sort_response(response):
     """
     Sort the keys in a JSON-RPC response object.
 
@@ -34,7 +34,7 @@ def _sort_response(response):
 
     Example::
 
-        >>> json.dumps(_sort_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
+        >>> json.dumps(sort_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
         {"jsonrpc": "2.0", "result": 5, "id": 1}
 
     :param response: JSON-RPC response, in dictionary form.
@@ -87,7 +87,7 @@ class RequestResponse(Response, dict):
 
     def __str__(self):
         """JSON-RPC response string."""
-        return json.dumps(_sort_response(self))
+        return json.dumps(sort_response(self))
 
 
 class ErrorResponse(Response, dict):
@@ -126,7 +126,7 @@ class ErrorResponse(Response, dict):
 
     def __str__(self):
         """JSON-RPC response string."""
-        return json.dumps(_sort_response(self))
+        return json.dumps(sort_response(self))
 
 
 class ExceptionResponse(ErrorResponse):

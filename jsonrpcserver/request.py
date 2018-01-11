@@ -9,7 +9,7 @@ import traceback
 
 from . import config
 from .exceptions import JsonRpcServerError
-from .log import log_
+from .log import log
 from .request_utils import (
     convert_camel_case, convert_camel_case_keys, validate_against_schema,
     validate_arguments_against_signature, get_method, get_arguments)
@@ -17,7 +17,7 @@ from .response import (
     Response, RequestResponse, NotificationResponse, ExceptionResponse)
 
 
-_LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Request(object):
@@ -28,14 +28,6 @@ class Request(object):
     arguments, and whether it's a request or a notification, and provides a
     ``process`` method to execute the request.
     """
-    @property
-    def is_notification(self):
-        """
-        Returns True if the request is a JSON-RPC Notification (ie. No id
-        attribute is included). False if it's a request.
-        """
-        return hasattr(self, 'request_id') and self.request_id is None
-
     @contextmanager
     def handle_exceptions(self):
         """Sets the response value"""
@@ -44,7 +36,7 @@ class Request(object):
         except Exception as exc:
             # Log the exception if it wasn't explicitly raised by the method
             if not isinstance(exc, JsonRpcServerError):
-                log_(_LOGGER, 'error', traceback.format_exc())
+                log(logger, 'error', traceback.format_exc())
             # Notifications should not be responded to, even for errors (unless
             # overridden in configuration)
             if self.is_notification and not config.notification_errors:
@@ -78,6 +70,14 @@ class Request(object):
                     self.kwargs = convert_camel_case_keys(self.kwargs)
             self.response = None
 
+    @property
+    def is_notification(self):
+        """
+        Returns True if the request is a JSON-RPC Notification (ie. No id
+        attribute is included). False if it's a request.
+        """
+        return hasattr(self, 'request_id') and self.request_id is None
+
     def call(self, methods):
         """
         Call the appropriate method from a list.
@@ -90,7 +90,7 @@ class Request(object):
             # Handle setting the result/exception of the call
             with self.handle_exceptions():
                 # Get the method object from a list (raises MethodNotFound)
-                callable_ = self._get_method(methods)
+                callable_ = self.get_method(methods)
                 # Ensure the arguments match the method's signature
                 validate_arguments_against_signature(callable_, self.args, self.kwargs)
                 # Call the method
@@ -104,7 +104,7 @@ class Request(object):
         assert isinstance(self.response, Response), 'Invalid response type'
         return self.response
 
-    def _get_method(self, methods):
+    def get_method(self, methods):
         """
         Find and return a callable representing the method for this request.
 
