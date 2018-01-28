@@ -19,8 +19,8 @@ from .response import NotificationResponse, ExceptionResponse, BatchResponse
 from .status import HTTP_STATUS_CODES
 
 
-_REQUEST_LOG = logging.getLogger(__name__+'.request')
-_RESPONSE_LOG = logging.getLogger(__name__+'.response')
+request_logger = logging.getLogger(__name__+'.request')
+response_logger = logging.getLogger(__name__+'.response')
 
 
 class Requests(object):
@@ -43,7 +43,7 @@ class Requests(object):
     @staticmethod
     def log_response(response):
         """Log a response"""
-        log(_RESPONSE_LOG, 'info', str(response), fmt='<-- %(message)s',
+        log(response_logger, 'info', str(response), fmt='<-- %(message)s',
              extra={'http_code': response.http_status,
                     'http_reason': HTTP_STATUS_CODES[response.http_status]})
 
@@ -58,7 +58,7 @@ class Requests(object):
         self.request_type = request_type
         # Log the request
         if config.log_requests:
-            log(_REQUEST_LOG, 'info', requests, fmt='--> %(message)s')
+            log(request_logger, 'info', requests, fmt='--> %(message)s')
         try:
             # If the request is a string, convert it to a dict
             if isinstance(requests, string_types):
