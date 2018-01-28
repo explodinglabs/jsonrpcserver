@@ -7,7 +7,6 @@ response.
 """
 import json
 import logging
-from collections import Iterable
 
 from six import string_types
 
@@ -65,7 +64,7 @@ class Requests(object):
                 self.requests = self.string_to_dict(self.requests)
             # Empty batch requests are invalid
             # http://www.jsonrpc.org/specification#examples
-            if isinstance(requests, Iterable) and not requests:
+            if isinstance(requests, list) and not requests:
                 raise InvalidRequest()
         # Set the response attribute if there's a problem with the request
         except JsonRpcServerError as exc:
