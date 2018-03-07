@@ -13,8 +13,7 @@ async def main():
     while True:
         request = await rep.read()
         response = await methods.dispatch(request[0].decode())
-        if not response.is_notification:
-            rep.write((str(response).encode(),))
+        rep.write((str(response).encode(),))
 
 if __name__ == '__main__':
     asyncio.set_event_loop_policy(aiozmq.ZmqEventLoopPolicy())
