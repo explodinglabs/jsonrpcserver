@@ -1,3 +1,6 @@
+## 3.5.4 (Apr 30, 2018)
+- Refactoring
+
 ## 3.5.3 (Dec 19, 2017)
 - Allow requests to have any non-None id
 
