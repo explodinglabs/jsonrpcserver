@@ -1,8 +1,13 @@
 from unittest import TestCase
 
 from jsonrpcserver.exceptions import (
-    JsonRpcServerError, ParseError, InvalidRequest, MethodNotFound,
-    InvalidParams, ServerError)
+    JsonRpcServerError,
+    ParseError,
+    InvalidRequest,
+    MethodNotFound,
+    InvalidParams,
+    ServerError,
+)
 
 
 class TestJsonRpcServerError(TestCase):
@@ -17,30 +22,30 @@ class TestParseError(TestCase):
             raise ParseError()
 
     def test_str(self):
-        self.assertEqual('Parse error', str(ParseError()))
+        self.assertEqual("Parse error", str(ParseError()))
 
     def test_configuration(self):
-        ParseError.message = 'Error parsing'
-        self.assertEqual('Error parsing', str(ParseError()))
-        ParseError.message = 'Parse error'
+        ParseError.message = "Error parsing"
+        self.assertEqual("Error parsing", str(ParseError()))
+        ParseError.message = "Parse error"
 
 
 class TestInvalidRequest(TestCase):
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
-            raise InvalidRequest('foo')
+            raise InvalidRequest("foo")
 
 
 class TestMethodNotFound(TestCase):
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
-            raise MethodNotFound('Test')
+            raise MethodNotFound("Test")
 
 
 class TestInvalidParams(TestCase):
     def test_raise(self):
         with self.assertRaises(JsonRpcServerError):
-            raise InvalidParams('Test')
+            raise InvalidParams("Test")
 
 
 class TestServerError(TestCase):

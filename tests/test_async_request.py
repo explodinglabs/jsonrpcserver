@@ -14,18 +14,21 @@ def async_test(f):
             coroutine = asyncio.coroutine(f)
             future = coroutine(*args, **kwargs)
         asyncio.get_event_loop().run_until_complete(future)
+
     return wrapper
 
 
-class MyMethods():
+class MyMethods:
     async def foo(self):
-        return 'bar'
+        return "bar"
+
 
 methods.add(MyMethods().foo)
+
 
 class TestCall(TestCase):
     @async_test
     async def test_request(self):
-        req = AsyncRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1})
+        req = AsyncRequest({"jsonrpc": "2.0", "method": "foo", "id": 1})
         response = await req.call(methods)
-        self.assertEqual('bar', response['result'])
+        self.assertEqual("bar", response["result"])
