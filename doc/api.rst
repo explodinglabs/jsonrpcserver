@@ -57,7 +57,7 @@ For this, use ``context``:
     request = {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
     methods.dispatch(request, context={'feature_on': True})
 
-Receiving methods should take the ``context`` value::
+Receiving methods should take the ``context`` value:
 
 .. code-block:: python
 
