@@ -1,6 +1,4 @@
 """
-Configuration.
-
 Import this module to configure jsonrpcserver::
 
     from jsonrpcserver import config

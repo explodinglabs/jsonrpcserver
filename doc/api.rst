@@ -17,7 +17,7 @@ Response
 
 .. automodule:: jsonrpcserver.response
     :exclude-members: Response, ExceptionResponse, NotificationResponse,
-        RequestResponse, ErrorResponse, BatchResponse
+        RequestResponse, ErrorResponse, BatchResponse, sort_response
 
 Validation
 ==========
@@ -68,10 +68,10 @@ Receiving methods should take the ``context`` value::
 Asynchrony
 ==========
 
-Asyncio is supported for Python 3.5+ users, allowing requests to dispatched to
+Asyncio is supported Python 3.5+, allowing requests to dispatched to
 coroutines.
 
-Usage is the same as before, however import methods from ``jsonrpcserver.aio``:
+Usage is the same as before, however import from ``jsonrpcserver.aio``:
 
 .. code-block:: python
 

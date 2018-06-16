@@ -1,10 +1,8 @@
 """
-Methods class.
-
-Holds the list of functions that can be called by RPC calls. It's not required
-to use this class, (a standard python list also works), but it's here for
-convenience.  An instance of this class is automatically instantiated for the
-user in jsonrpcserver/__init__.py if they choose to use it.
+Holds the collection of functions that can be called by RPC calls. It's not required to
+use this class, (a standard python list also works), but it's here for convenience.  An
+instance of this class is automatically instantiated for the user in
+jsonrpcserver/__init__.py if they choose to use it.
 
 Use the ``add`` decorator to register a method to the list::
 
