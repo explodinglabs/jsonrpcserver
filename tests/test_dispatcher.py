@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from jsonrpcserver import config
-from jsonrpcserver.dispatcher import dispatch, Requests
+from jsonrpcserver.dispatcher import load_from_json, dispatch
 from jsonrpcserver.exceptions import ParseError
 from jsonrpcserver.response import (
     ErrorResponse,
@@ -29,18 +29,18 @@ def tearDownModule():
 class TestStringToDict(TestCase):
     def test_invalid(self):
         with self.assertRaises(ParseError):
-            Requests.string_to_dict('{"jsonrpc": "2.0}')
+            load_from_json('{"jsonrpc": "2.0}')
 
     def test(self):
         self.assertEqual(
             {"jsonrpc": "2.0", "method": "foo"},
-            Requests.string_to_dict('{"jsonrpc": "2.0", "method": "foo"}'),
+            load_from_json('{"jsonrpc": "2.0", "method": "foo"}'),
         )
 
     def test_list(self):
         self.assertEqual(
             [{"jsonrpc": "2.0", "method": "foo"}],
-            Requests.string_to_dict('[{"jsonrpc": "2.0", "method": "foo"}]'),
+            load_from_json('[{"jsonrpc": "2.0", "method": "foo"}]'),
         )
 
 

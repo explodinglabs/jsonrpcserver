@@ -1,9 +1,8 @@
 """
-Dispatcher.
+Dispatcher
 
-At the core of the library is the dispatcher, which takes JSON-RPC requests,
-validates and logs them, calls the appropriate method, then logs and returns the
-response.
+Takes JSON-RPC requests, logs them, calls the appropriate method, then logs and returns
+the response.
 """
 import json
 import logging
@@ -22,105 +21,46 @@ request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
 
 
-class Requests(object):
-    """A collection of Request objects."""
+def log_response(response):
+    """Log a response"""
+    log(
+        response_logger,
+        "info",
+        str(response),
+        fmt="<-- %(message)s",
+        extra={
+            "http_code": response.http_status,
+            "http_reason": HTTP_STATUS_CODES[response.http_status],
+        },
+    )
 
-    @staticmethod
-    def string_to_dict(request):
-        """
-        Convert a JSON-RPC request string, to a dictionary.
 
-        :param request: The JSON-RPC request string.
-        :raises ValueError: If the string cannot be parsed to JSON.
-        :returns: The same request in dict form.
-        """
+def load_from_json(requests):
+    """
+    Load from string to a Python dictionary, or list in the case of a batch request.
+
+    :param request: The JSON-RPC request string.
+    :raises ValueError: If the string cannot be parsed to JSON.
+    :returns: The same request in dict form.
+    """
+    if isinstance(requests, string_types):
         try:
-            return json.loads(request)
+            requests = json.loads(requests)
         except ValueError:
             raise ParseError()
-
-    @staticmethod
-    def log_response(response):
-        """Log a response"""
-        log(
-            response_logger,
-            "info",
-            str(response),
-            fmt="<-- %(message)s",
-            extra={
-                "http_code": response.http_status,
-                "http_reason": HTTP_STATUS_CODES[response.http_status],
-            },
-        )
-
-    def __init__(self, requests, request_type=Request):
-        """
-        Logs the request, and builds a list of Request objects.
-
-        Will set the response attribute if there's an problem with the request.
-        """
-        self.requests = requests
-        self.response = None
-        self.request_type = request_type
-        # Log the request
-        if config.log_requests:
-            log(request_logger, "info", requests, fmt="--> %(message)s")
-        try:
-            # If the request is a string, convert it to a dict
-            if isinstance(requests, string_types):
-                self.requests = self.string_to_dict(self.requests)
-            # Empty batch requests are invalid
-            # http://www.jsonrpc.org/specification#examples
-            if isinstance(requests, list) and not requests:
-                raise InvalidRequest()
-        # Set the response attribute if there's a problem with the request
-        except JsonRpcServerError as exc:
-            self.response = ExceptionResponse(exc, None)
-
-    def dispatch(self, methods, context=None):
-        """
-        Process a JSON-RPC request, calling the requested method(s).
-
-        :param methods: Collection of methods to dispatch to. Can be a ``list``
-            of functions, a ``dict`` of name:method pairs, or a ``Methods``
-            object.
-        :param context: Optional context object which will be passed through to
-            the RPC methods.
-        :returns: A :mod:`response` object.
-        """
-        # Init may have failed to parse the request, in which case the response
-        # would already be set
-        if not self.response:
-            # Batch request
-            if isinstance(self.requests, list):
-                # First convert each to a Request object
-                requests = [
-                    self.request_type(r, context=context) for r in self.requests
-                ]
-                # Call each request
-                response = [r.call(methods) for r in requests]
-                # Remove notification responses (as per spec)
-                response = [r for r in response if not r.is_notification]
-                # If the response list is empty, return nothing
-                self.response = (
-                    BatchResponse(response) if response else NotificationResponse()
-                )
-            # Single request
-            else:
-                # Convert to a Request object
-                request = self.request_type(self.requests, context=context)
-                # Call the request
-                self.response = request.call(methods)
-        assert self.response, "Response must be set"
-        assert self.response.http_status, "Must have http_status set"
-        if config.log_responses:
-            self.log_response(self.response)
-        return self.response
+    return requests
 
 
-def dispatch(methods, requests, context=None):
+def validate(requests):
+    # Empty batch requests are invalid http://www.jsonrpc.org/specification#examples
+    if isinstance(requests, list) and not requests:
+        raise InvalidRequest()
+    return requests
+
+
+def dispatch(methods, requests, context=None, request_type=Request):
     """
-    The main public dispatch method.
+    Process a request.
 
     .. code-block:: python
 
@@ -129,11 +69,28 @@ def dispatch(methods, requests, context=None):
         --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
         <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
 
-    :param methods: Collection of methods to dispatch to. Can be a ``list`` of
-        functions, a ``dict`` of name:method pairs, or a ``Methods`` object.
-    :param requests: Client request(s) to process.
-    :param context: Optional context object which will be passed through to the
-        RPC methods.
+    :param methods: Collection of methods to dispatch to.
+    :param requests: Requests to process.
+    :param context: Optional context object which will be passed through to the methods.
     :returns: A :mod:`response` object.
     """
-    return Requests(requests).dispatch(methods, context=context)
+    if config.log_requests:
+        log(request_logger, "info", requests, fmt="--> %(message)s")
+    try:
+        requests = validate(load_from_json(requests))
+    except JsonRpcServerError as exc:
+        response = ExceptionResponse(exc, None)
+    else:
+        # Batch requests
+        if isinstance(requests, list):
+            response = [Request(r, context=context).call(methods) for r in requests]
+            # Responses to batch requests should not contain notifications, as per spec
+            response = [r for r in response if not r.is_notification]
+            # If the response list is empty, return nothing
+            response = BatchResponse(response) if response else NotificationResponse()
+        # Single request
+        else:
+            response = Request(requests, context=context).call(methods)
+    if config.log_responses:
+        log_response(response)
+    return response

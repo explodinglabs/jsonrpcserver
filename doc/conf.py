@@ -16,7 +16,10 @@
 import sys
 import os
 
+from recommonmark.parser import CommonMarkParser
+
 import cygnus
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -41,7 +44,8 @@ extensions = ['sphinx.ext.autodoc']
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_parsers = {'.md': CommonMarkParser}
+source_suffix = ['.rst', '.md']
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'

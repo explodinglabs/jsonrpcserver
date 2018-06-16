@@ -1,6 +1,5 @@
 """
-The collection of functions that can be called by RPC calls. It is not required to use
-this object, (a standard Python list also works), but it's here for convenience.
+The "methods" object holds the list of functions that can be called by RPC calls.
 
 Use the ``add`` decorator to register a method to the list::
 
@@ -10,13 +9,12 @@ Use the ``add`` decorator to register a method to the list::
     def ping():
         return 'pong'
 
-Then dispatch a JSON-RPC request::
+Add as many methods as needed.
 
-    >>> response = methods.dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-    --> {"jsonrpc": "2.0", "method": "ping", "id": 1}
-    <-- {"jsonrpc": "2.0", "result": "pong", "id": 1}
+Methods can take either positional or named arguments (but not both, this is a
+limitation of JSON-RPC).
 
-Or simply serve the methods::
+Serve the methods::
 
     >>> methods.serve_forever()
      * Listening on port 5000
@@ -76,10 +74,6 @@ class Methods(MutableMapping):
         Register a function to the list.
 
         ::
-
-            methods.add(subtract)
-
-        Alternatively, use as a decorator::
 
             @methods.add
             def subtract(minuend, subtrahend):
