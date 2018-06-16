@@ -14,18 +14,19 @@ from funcsigs import signature
 from .exceptions import InvalidParams, InvalidRequest, MethodNotFound
 
 
-_JSON_VALIDATOR = jsonschema.Draft4Validator(json.loads(pkgutil.get_data(
-    __name__, 'request-schema.json').decode()))
+_JSON_VALIDATOR = jsonschema.Draft4Validator(
+    json.loads(pkgutil.get_data(__name__, "request-schema.json").decode())
+)
 
 
 def convert_camel_case(name):
-    """Convert a camelCase string to under_score"""
-    string = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', string).lower()
+    """Convert camel case string to snake case"""
+    string = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", string).lower()
 
 
 def convert_camel_case_keys(original_dict):
-    """Converts all keys of a dict from camelCase to under_score, recursively"""
+    """Converts all keys of a dict from camel case to snake case, recursively"""
     new_dict = dict()
     for key, val in original_dict.items():
         if isinstance(val, dict):
@@ -123,14 +124,17 @@ def get_arguments(params, context=None):
         # Any other type is invalid. (This should never happen if the request
         # has passed the schema validation.)
         else:
-            raise InvalidParams('Params of type %s is not allowed' % \
-                type(params).__name__)
+            raise InvalidParams(
+                "Params of type %s is not allowed" % type(params).__name__
+            )
     # Can't have both positional and keyword arguments. It's impossible in json
     # anyway; the params arg can only be a json array (list) or object (dict)
-    assert not (positionals and keywords), \
-        'Cannot have both positional and keyword arguments in JSON-RPC.'
+    assert not (
+        positionals and keywords
+    ), "Cannot have both positional and keyword arguments in JSON-RPC."
     # If context data was passed, include it as a keyword argument.
+    # TODO: Remove this predicate; None is a valid argument.
     if context is not None:
         keywords = {} if not keywords else keywords
-        keywords['context'] = context
+        keywords["context"] = context
     return (positionals, keywords)

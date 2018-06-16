@@ -27,6 +27,7 @@ Or simply serve the methods::
 """
 import logging
 from collections import MutableMapping
+
 try:
     # Python 2
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -51,6 +52,7 @@ class Methods(MutableMapping):
     .. versionchanged:: 3.3
         Subclass MutableMapping instead of dict.
     """
+
     def __init__(self, *args, **kwargs):
         self._items = {}
         self.update(*args, **kwargs)
@@ -61,7 +63,7 @@ class Methods(MutableMapping):
     def __setitem__(self, key, value):
         # Method must be callable
         if not callable(value):
-            raise TypeError('%s is not callable' % type(value))
+            raise TypeError("%s is not callable" % type(value))
         self._items[key] = value
 
     def __delitem__(self, key):
@@ -121,7 +123,7 @@ class Methods(MutableMapping):
         """
         return dispatch(self, request, context=context)
 
-    def serve_forever(self, name='', port=5000):
+    def serve_forever(self, name="", port=5000):
         """
         A basic way to serve the methods.
 
@@ -131,20 +133,20 @@ class Methods(MutableMapping):
 
         class RequestHandler(BaseHTTPRequestHandler):
             """Request handler"""
+
             def do_POST(self):
                 """HTTP POST"""
                 # Process request
-                request = self.rfile.read(
-                    int(self.headers['Content-Length'])).decode()
+                request = self.rfile.read(int(self.headers["Content-Length"])).decode()
                 response = dispatch(self.server.methods, request)
                 # Return response
                 self.send_response(response.http_status)
-                self.send_header('Content-type', 'application/json')
+                self.send_header("Content-type", "application/json")
                 self.end_headers()
                 self.wfile.write(str(response).encode())
 
         httpd = HTTPServer((name, port), RequestHandler)
         # Let the request handler know which methods to dispatch to
         httpd.methods = self
-        log(logger, 'info', ' * Listening on port %s', port)
+        log(logger, "info", " * Listening on port %s", port)
         httpd.serve_forever()

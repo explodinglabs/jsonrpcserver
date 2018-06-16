@@ -11,10 +11,14 @@ from . import config
 from .exceptions import JsonRpcServerError
 from .log import log
 from .request_utils import (
-    convert_camel_case, convert_camel_case_keys, validate_against_schema,
-    validate_arguments_against_signature, get_method, get_arguments)
-from .response import (
-    Response, RequestResponse, NotificationResponse, ExceptionResponse)
+    convert_camel_case,
+    convert_camel_case_keys,
+    validate_against_schema,
+    validate_arguments_against_signature,
+    get_method,
+    get_arguments,
+)
+from .response import Response, RequestResponse, NotificationResponse, ExceptionResponse
 
 
 logger = logging.getLogger(__name__)
@@ -28,6 +32,7 @@ class Request(object):
     arguments, and whether it's a request or a notification, and provides a
     ``process`` method to execute the request.
     """
+
     @contextmanager
     def handle_exceptions(self):
         """Sets the response value"""
@@ -36,14 +41,15 @@ class Request(object):
         except Exception as exc:
             # Log the exception if it wasn't explicitly raised by the method
             if not isinstance(exc, JsonRpcServerError):
-                log(logger, 'error', traceback.format_exc())
+                log(logger, "error", traceback.format_exc())
             # Notifications should not be responded to, even for errors (unless
             # overridden in configuration)
             if self.is_notification and not config.notification_errors:
                 self.response = NotificationResponse()
             else:
                 self.response = ExceptionResponse(
-                    exc, getattr(self, 'request_id', None))
+                    exc, getattr(self, "request_id", None)
+                )
 
     def __init__(self, request, context=None):
         """
@@ -58,11 +64,13 @@ class Request(object):
                 validate_against_schema(request)
             # Get method name from the request. We can assume the key exists
             # because the request passed the schema.
-            self.method_name = request['method']
+            self.method_name = request["method"]
             # Get arguments from the request, if any
-            self.args, self.kwargs = get_arguments(request.get('params'), context=context)
+            self.args, self.kwargs = get_arguments(
+                request.get("params"), context=context
+            )
             # Get request id, if any
-            self.request_id = request.get('id')
+            self.request_id = request.get("id")
             # Convert camelCase to underscore
             if config.convert_camel_case:
                 self.method_name = convert_camel_case(self.method_name)
@@ -76,7 +84,7 @@ class Request(object):
         Returns True if the request is a JSON-RPC Notification (ie. No id
         attribute is included). False if it's a request.
         """
-        return hasattr(self, 'request_id') and self.request_id is None
+        return hasattr(self, "request_id") and self.request_id is None
 
     def call(self, methods):
         """
@@ -101,7 +109,7 @@ class Request(object):
                 else:
                     self.response = RequestResponse(self.request_id, result)
         # Ensure the response has been set before returning it
-        assert isinstance(self.response, Response), 'Invalid response type'
+        assert isinstance(self.response, Response), "Invalid response type"
         return self.response
 
     def get_method(self, methods):

@@ -25,5 +25,5 @@ class AsyncRequest(Request):
                 else:
                     self.response = RequestResponse(self.request_id, result)
         # Ensure the response has been set before returning it
-        assert isinstance(self.response, Response), 'Invalid response type'
+        assert isinstance(self.response, Response), "Invalid response type"
         return self.response

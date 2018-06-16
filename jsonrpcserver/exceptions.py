@@ -8,6 +8,7 @@ class JsonRpcServerError(Exception):
 
     :param data: Extra info (optional).
     """
+
     message = None
 
     def __init__(self, data=None):
@@ -18,8 +19,9 @@ class JsonRpcServerError(Exception):
 
 class ParseError(JsonRpcServerError):
     """Raised when the request is not a valid JSON object."""
+
     code = -32700
-    message = 'Parse error'
+    message = "Parse error"
     http_status = status.HTTP_BAD_REQUEST
 
     def __init__(self):
@@ -32,8 +34,9 @@ class InvalidRequest(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
+
     code = -32600
-    message = 'Invalid Request'
+    message = "Invalid Request"
     http_status = status.HTTP_BAD_REQUEST
 
     def __init__(self, data=None):
@@ -46,8 +49,9 @@ class MethodNotFound(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
+
     code = -32601
-    message = 'Method not found'
+    message = "Method not found"
     http_status = status.HTTP_NOT_FOUND
 
     def __init__(self, data=None):
@@ -60,8 +64,9 @@ class InvalidParams(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
+
     code = -32602
-    message = 'Invalid params'
+    message = "Invalid params"
     http_status = status.HTTP_BAD_REQUEST
 
     def __init__(self, data=None):
@@ -74,8 +79,9 @@ class ServerError(JsonRpcServerError):
 
     :param data: Extra information about the error that occurred (optional).
     """
+
     code = -32000
-    message = 'Server error'
+    message = "Server error"
     http_status = status.HTTP_INTERNAL_ERROR
 
     def __init__(self, data=None):

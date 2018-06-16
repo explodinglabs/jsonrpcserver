@@ -18,8 +18,8 @@ from .response import NotificationResponse, ExceptionResponse, BatchResponse
 from .status import HTTP_STATUS_CODES
 
 
-request_logger = logging.getLogger(__name__+'.request')
-response_logger = logging.getLogger(__name__+'.response')
+request_logger = logging.getLogger(__name__ + ".request")
+response_logger = logging.getLogger(__name__ + ".response")
 
 
 class Requests(object):
@@ -42,9 +42,16 @@ class Requests(object):
     @staticmethod
     def log_response(response):
         """Log a response"""
-        log(response_logger, 'info', str(response), fmt='<-- %(message)s',
-             extra={'http_code': response.http_status,
-                    'http_reason': HTTP_STATUS_CODES[response.http_status]})
+        log(
+            response_logger,
+            "info",
+            str(response),
+            fmt="<-- %(message)s",
+            extra={
+                "http_code": response.http_status,
+                "http_reason": HTTP_STATUS_CODES[response.http_status],
+            },
+        )
 
     def __init__(self, requests, request_type=Request):
         """
@@ -57,7 +64,7 @@ class Requests(object):
         self.request_type = request_type
         # Log the request
         if config.log_requests:
-            log(request_logger, 'info', requests, fmt='--> %(message)s')
+            log(request_logger, "info", requests, fmt="--> %(message)s")
         try:
             # If the request is a string, convert it to a dict
             if isinstance(requests, string_types):
@@ -87,21 +94,25 @@ class Requests(object):
             # Batch request
             if isinstance(self.requests, list):
                 # First convert each to a Request object
-                requests = [self.request_type(r, context=context) for r in self.requests]
+                requests = [
+                    self.request_type(r, context=context) for r in self.requests
+                ]
                 # Call each request
                 response = [r.call(methods) for r in requests]
                 # Remove notification responses (as per spec)
                 response = [r for r in response if not r.is_notification]
                 # If the response list is empty, return nothing
-                self.response = BatchResponse(response) if response else NotificationResponse()
+                self.response = (
+                    BatchResponse(response) if response else NotificationResponse()
+                )
             # Single request
             else:
                 # Convert to a Request object
                 request = self.request_type(self.requests, context=context)
                 # Call the request
                 self.response = request.call(methods)
-        assert self.response, 'Response must be set'
-        assert self.response.http_status, 'Must have http_status set'
+        assert self.response, "Response must be set"
+        assert self.response.http_status, "Must have http_status set"
         if config.log_responses:
             self.log_response(self.response)
         return self.response

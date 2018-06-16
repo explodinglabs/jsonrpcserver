@@ -9,6 +9,7 @@ from .response import BatchResponse, NotificationResponse
 
 class AsyncRequests(Requests):
     """Asynchronous requests."""
+
     def __init__(self, requests, request_type=AsyncRequest):
         super(AsyncRequests, self).__init__(requests, request_type=request_type)
 
@@ -30,21 +31,25 @@ class AsyncRequests(Requests):
             # Batch request
             if isinstance(self.requests, list):
                 # First convert each to a Request object
-                requests = [self.request_type(r, context=context) for r in self.requests]
+                requests = [
+                    self.request_type(r, context=context) for r in self.requests
+                ]
                 # Call each request
                 response = await asyncio.gather(*[r.call(methods) for r in requests])
                 # Remove notification responses (as per spec)
                 response = [r for r in response if not r.is_notification]
                 # If the response list is empty, return nothing
-                self.response = BatchResponse(response) if response else NotificationResponse()
+                self.response = (
+                    BatchResponse(response) if response else NotificationResponse()
+                )
             # Single request
             else:
                 # Convert to a Request object
                 request = self.request_type(self.requests, context=context)
                 # Call the request
                 self.response = await request.call(methods)
-        assert self.response, 'Response must be set'
-        assert self.response.http_status, 'Must have http_status set'
+        assert self.response, "Response must be set"
+        assert self.response.http_status, "Must have http_status set"
         if config.log_responses:
             self.log_response(self.response)
         return self.response

@@ -23,6 +23,6 @@ def log(logger, level, message, *args, **kwargs):
     The trailing underscore is to avoid clashing with python's builtin log
     function
     """
-    fmt = kwargs.pop('fmt', '%(message)s')
+    fmt = kwargs.pop("fmt", "%(message)s")
     configure_logger(logger, fmt)
     getattr(logger, level)(message, *args, **kwargs)

@@ -22,7 +22,6 @@ from .methods import Methods
 
 
 class AsyncMethods(Methods):
-
     async def dispatch(self, request, context=None):
         return await dispatch(self, request, context=context)
 
