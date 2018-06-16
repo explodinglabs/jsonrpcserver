@@ -44,11 +44,34 @@ The dispatcher catches the exception and gives the appropriate response:
 To include the *"name is required"* given when the exception was raised, turn
 on :mod:`debug mode <jsonrpcserver.config.debug>`.
 
-Asynchronous
-============
+Dispatching with context
+========================
 
-Starting from jsonrpcserver v3.4 you can dispatch to coroutines (in Python
-3.5+). Usage is the same as before, but import from ``jsonrpcserver.aio``:
+When dispatching, you may want to include some context, such as configuration
+or some stateful data from the web server framework.
+
+For this, use ``context``:
+
+.. code-block:: python
+
+    request = {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
+    methods.dispatch(request, context={'feature_on': True})
+
+Receiving methods should take the ``context`` value::
+
+.. code-block:: python
+
+    @methods.add
+    def ping(context):
+        ...
+
+Asynchrony
+==========
+
+Asyncio is supported for Python 3.5+ users, allowing requests to dispatched to
+coroutines.
+
+Usage is the same as before, however import methods from ``jsonrpcserver.aio``:
 
 .. code-block:: python
 
