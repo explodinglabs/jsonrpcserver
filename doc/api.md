@@ -1,114 +1,132 @@
-.. rubric:: :doc:`index`
+<p class="rubric"><a class="reference internal" href="index.html"><span class="doc">jsonrpcserver</span></a></p>
 
-jsonrpcserver Guide
-*******************
+# jsonrpcserver Guide
 
-.. contents::
-    :local:
+Showing how to use the [jsonrpcserver](https://github.com/bcb/jsonrpcserver) library.
 
-Methods
-=======
+## Methods
 
-.. automodule:: jsonrpcserver.methods
-    :exclude-members: Methods
+Build a list of methods that can be called remotely.
 
-Dispatching
-===========
+Use the `add` decorator to register a method to the list:
 
-Dispatch a JSON-RPC request::
+```python
+from jsonrpcserver import methods
 
-    >>> response = methods.dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-    --> {"jsonrpc": "2.0", "method": "ping", "id": 1}
-    <-- {"jsonrpc": "2.0", "result": "pong", "id": 1}
+@methods.add
+def ping():
+    return 'pong'
+```
 
-You may want to include some configuration or data from a web server framework;
-for this, use ``context``:
+Add as many methods as needed.
 
-.. code-block:: python
+Serve the methods:
 
-    methods.dispatch(request, context={'feature_enabled': True})
+```python
+>>> methods.serve_forever()
+ * Listening on port 5000
+```
 
-The receiving methods should take the ``context`` value:
+## Dispatching
 
-.. code-block:: python
+Dispatch a JSON-RPC request:
 
-    @methods.add
-    def ping(context):
-        ...
+```python
+>>> response = methods.dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+--> {"jsonrpc": "2.0", "method": "ping", "id": 1}
+<-- {"jsonrpc": "2.0", "result": "pong", "id": 1}
+```
 
-Response
-========
+The return value is a `Response` object.
 
-The return value from ``dispatch`` is a response object.
+```python
+>>> response
+{'jsonrpc': '2.0', 'result': 'foo', 'id': 1}
+```
 
-::
+Use `str()` to get a JSON-encoded string:
 
-    >>> response = methods.dispatch(request)
-    >>> response
-    {'jsonrpc': '2.0', 'result': 'foo', 'id': 1}
+```python
+>>> str(response)
+'{"jsonrpc": "2.0", "result": "foo", "id": 1}'
+```
 
-Use ``str()`` to get a JSON-encoded string::
+There's also an HTTP status code if you need to respond to an HTTP request:
 
-    >>> str(response)
-    '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
+```python
+>>> response.http_status
+200
+```
 
-There's also an HTTP status code if you need it::
+## Validation
 
-    >>> response.http_status
-    200
+If an argument is unsatisfactory, raise `InvalidParams`:
 
-Validation
-==========
+```python
+from jsonrpcserver.exceptions import InvalidParams
 
-If arguments are unsatisfactory, raise :class:`InvalidParams
-<jsonrpcserver.exceptions.InvalidParams>`:
-
-.. code-block:: python
-
-    from jsonrpcserver.exceptions import InvalidParams
-
-    @methods.add
-    def get_customer(**kwargs):
-        if 'name' not in kwargs:
-            raise InvalidParams('name is required')
+@methods.add
+def get_customer(**kwargs):
+    if 'name' not in kwargs:
+        raise InvalidParams('name is required')
+```
 
 The dispatcher catches the exception and gives the appropriate response:
 
-.. code-block:: python
+```python
+>>> methods.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {}, 'id': 1})
+{'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
+```
 
-    >>> methods.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {}, 'id': 1})
-    {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
+*To include the "name is required" message given when the exception was raised,
+enable debug mode (see Configuration).*
 
-To include the *"name is required"* given when the exception was raised, turn on
-:mod:`debug mode <jsonrpcserver.config.debug>`.
+## Context
 
-Asynchrony
-==========
+You may want the methods to receive some extra context data, such as
+configuration or something from the web framework; for this use `context`:
 
-Asyncio is supported Python 3.5+, allowing requests to be dispatched to coroutines.
+```python
+@methods.add
+def ping(context):
+    ...
 
-Usage is the same as before, however import methods from ``jsonrpcserver.aio``:
+methods.dispatch(request, context={'feature_enabled': True})
+```
 
-.. code-block:: python
+## Async
 
-    from jsonrpcserver.aio import methods
+Asyncio is supported Python 3.5+, allowing requests to be dispatched to
+coroutines.
 
-    @methods.add
-    async def ping():
-        return await some_long_running_task()
+Import methods from `jsonrpcserver.aio`:
 
-Then ``await`` the dispatch:
+```python
+from jsonrpcserver.aio import methods
 
-.. code-block:: python
+@methods.add
+async def ping():
+    return await some_long_running_task()
+```
 
-    response = await methods.dispatch(request)
+Then `await` the dispatch:
 
-Configuration
-=============
+```python
+response = await methods.dispatch(request)
+```
 
-.. automodule:: jsonrpcserver.config
+## Configuration
 
-Exceptions
-==========
+Import this module to configure the library:
 
-See the :doc:`list of exceptions <exceptions>` raised by jsonrpcserver.
+```python
+from jsonrpcserver import config
+config.debug = True
+```
+
+Other feature toggles include convert_camel_case, log_requests, log_responses,
+notification_errors and schema_validation.
+
+## Exceptions
+
+See the [list of exceptions](exceptions.html) raised by jsonrpcserver.
