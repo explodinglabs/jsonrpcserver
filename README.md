@@ -4,6 +4,10 @@
 
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python 2.7 and 3.3+.
 
+```sh
+pip install jsonrpcserver
+```
+
 ```python
 from jsonrpcserver import methods
 
