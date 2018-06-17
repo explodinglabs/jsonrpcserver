@@ -58,7 +58,7 @@ def validate(requests):
     return requests
 
 
-def dispatch(methods, requests, context=None, request_type=Request):
+def dispatch(methods, requests, context=None):
     """
     Process a request.
 
