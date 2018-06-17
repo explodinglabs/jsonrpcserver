@@ -11,7 +11,7 @@ class MainHandler(web.RequestHandler):
         request = self.request.body.decode()
         response = await methods.dispatch(request)
         if not response.is_notification:
-            self.write(response)
+            self.write(str(response))
 
 app = web.Application([(r"/", MainHandler)])
 
