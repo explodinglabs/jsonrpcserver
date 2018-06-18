@@ -22,8 +22,8 @@ from .methods import Methods
 
 
 class AsyncMethods(Methods):
-    async def dispatch(self, request, context=None):
-        return await dispatch(self, request, context=context)
+    async def dispatch(self, *args, **kwargs):
+        return await dispatch(self, *args, **kwargs)
 
     def serve_forever(self):
         raise NotImplementedError()

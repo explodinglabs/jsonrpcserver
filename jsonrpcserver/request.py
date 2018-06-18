@@ -7,12 +7,11 @@ from contextlib import contextmanager
 import logging
 import traceback
 
-from . import config
 from .exceptions import JsonRpcServerError
 from .log import log
 from .request_utils import (
-    convert_camel_case,
-    convert_camel_case_keys,
+    convert_camel_case as ccc,
+    convert_camel_case_keys as ccc_keys,
     validate_against_schema,
     validate_arguments_against_signature,
     get_method,
@@ -44,23 +43,37 @@ class Request(object):
                 log(logger, "error", traceback.format_exc())
             # Notifications should not be responded to, even for errors (unless
             # overridden in configuration)
-            if self.is_notification and not config.notification_errors:
+            if self.is_notification and not self.notification_errors:
                 self.response = NotificationResponse()
             else:
                 self.response = ExceptionResponse(
-                    exc, getattr(self, "request_id", None)
+                    exc, getattr(self, "request_id", None), debug=self.debug
                 )
 
-    def __init__(self, request, context=None):
+    def __init__(
+        self,
+        request,
+        context=None,
+        convert_camel_case=False,
+        debug=False,
+        schema_validation=True,
+        notification_errors=False,
+    ):
         """
         :param request: JSON-RPC request, in dict form.
         :param context: Optional context object that will be passed to the RPC
             method.
+        :param convert_camel_case:
+        :param debug:
+        :param notification_errors:
+        :param schema_validation:
         """
+        self.debug = debug
+        self.notification_errors = notification_errors
         # Handle parsing & validation errors
         with self.handle_exceptions():
             # Validate against the JSON-RPC schema
-            if config.schema_validation:
+            if schema_validation:
                 validate_against_schema(request)
             # Get method name from the request. We can assume the key exists
             # because the request passed the schema.
@@ -71,11 +84,11 @@ class Request(object):
             )
             # Get request id, if any
             self.request_id = request.get("id")
-            # Convert camelCase to underscore
-            if config.convert_camel_case:
-                self.method_name = convert_camel_case(self.method_name)
+            # Convert camelcase to snake case
+            if convert_camel_case:
+                self.method_name = ccc(self.method_name)
                 if self.kwargs:
-                    self.kwargs = convert_camel_case_keys(self.kwargs)
+                    self.kwargs = ccc_keys(self.kwargs)
             self.response = None
 
     @property

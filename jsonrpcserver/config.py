@@ -1,8 +1,7 @@
 """
-Import this module to configure jsonrpcserver::
+DO NOT USE - This will be replaced in version 4.
 
-    from jsonrpcserver import config
-    config.debug = True
+Instead pass these options to dispatch().
 """
 #: Convert any camelCase keys in a request to snake_case before processing.
 #: Saves time by cleaning up key names for you. *Recommended*

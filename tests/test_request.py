@@ -62,13 +62,13 @@ class TestInit(TestCase):
         self.assertEqual(None, req.request_id)
 
     def test_convert_camel_case(self):
-        config.convert_camel_case = True
         req = Request(
             {
                 "jsonrpc": "2.0",
                 "method": "fooMethod",
                 "params": {"fooParam": 1, "aDict": {"barParam": 1}},
-            }
+            },
+            convert_camel_case=True
         )
         self.assertEqual("foo_method", req.method_name)
         self.assertEqual({"foo_param": 1, "a_dict": {"bar_param": 1}}, req.kwargs)
@@ -244,8 +244,7 @@ class TestRequestProcessNotifications(TestCase):
     # Configuration
     def test_config_notification_errors_on(self):
         # Should return "method not found" error
-        request = Request({"jsonrpc": "2.0", "method": "baz"})
-        config.notification_errors = True
+        request = Request({"jsonrpc": "2.0", "method": "baz"}, notification_errors=True)
         req = request.call([foo])
         self.assertIsInstance(req, ErrorResponse)
 

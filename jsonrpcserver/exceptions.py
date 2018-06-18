@@ -24,9 +24,6 @@ class ParseError(JsonRpcServerError):
     message = "Parse error"
     http_status = status.HTTP_BAD_REQUEST
 
-    def __init__(self):
-        super(ParseError, self).__init__()
-
 
 class InvalidRequest(JsonRpcServerError):
     """
@@ -38,9 +35,6 @@ class InvalidRequest(JsonRpcServerError):
     code = -32600
     message = "Invalid Request"
     http_status = status.HTTP_BAD_REQUEST
-
-    def __init__(self, data=None):
-        super(InvalidRequest, self).__init__(data)
 
 
 class MethodNotFound(JsonRpcServerError):
@@ -54,9 +48,6 @@ class MethodNotFound(JsonRpcServerError):
     message = "Method not found"
     http_status = status.HTTP_NOT_FOUND
 
-    def __init__(self, data=None):
-        super(MethodNotFound, self).__init__(data)
-
 
 class InvalidParams(JsonRpcServerError):
     """
@@ -69,9 +60,6 @@ class InvalidParams(JsonRpcServerError):
     message = "Invalid params"
     http_status = status.HTTP_BAD_REQUEST
 
-    def __init__(self, data=None):
-        super(InvalidParams, self).__init__(data)
-
 
 class ServerError(JsonRpcServerError):
     """
@@ -83,6 +71,3 @@ class ServerError(JsonRpcServerError):
     code = -32000
     message = "Server error"
     http_status = status.HTTP_INTERNAL_ERROR
-
-    def __init__(self, data=None):
-        super(ServerError, self).__init__(data)

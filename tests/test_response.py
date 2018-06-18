@@ -119,13 +119,13 @@ class TestErrorResponse(TestCase):
         self.assertEqual(None, response["id"])
 
     def test_debug(self):
-        config.debug = True
         response = ErrorResponse(
             status.HTTP_BAD_REQUEST,
             1,
             status.JSONRPC_INVALID_REQUEST_CODE,
             "foo",
             "bar",
+            debug=True,
         )
         self.assertEqual("bar", response["error"]["data"])
 
@@ -171,8 +171,7 @@ class TestExceptionResponse(TestCase):
         )
 
     def test_with_data(self):
-        config.debug = True
-        response = ExceptionResponse(InvalidParams("Password missing"), 1)
+        response = ExceptionResponse(InvalidParams("Password missing"), 1, debug=True)
         self.assertEqual(
             {
                 "jsonrpc": "2.0",

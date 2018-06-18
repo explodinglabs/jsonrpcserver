@@ -20,7 +20,7 @@ There's also an HTTP status code if you need it::
 from collections import OrderedDict
 import json
 
-from . import status, config
+from . import status
 from .exceptions import JsonRpcServerError, ServerError
 
 
@@ -99,7 +99,7 @@ class ErrorResponse(Response, dict):
     Returned if there was an error while processing the request.
     """
 
-    def __init__(self, http_status, request_id, code, message, data=None):
+    def __init__(self, http_status, request_id, code, message, data=None, debug=False):
         """
         :param http_status:
             The recommended HTTP status code.
@@ -125,7 +125,7 @@ class ErrorResponse(Response, dict):
             }
         )
         #: Holds extra information about the error.
-        if config.debug and data:
+        if debug and data:
             self["error"]["data"] = data
         #: The recommended HTTP status code. (the status code depends on the
         #: error)
@@ -139,11 +139,11 @@ class ErrorResponse(Response, dict):
 class ExceptionResponse(ErrorResponse):
     """Returns an ErrorResponse built from an exception."""
 
-    def __init__(self, ex, request_id):
+    def __init__(self, ex, request_id, debug=False):
         if not isinstance(ex, JsonRpcServerError):
             ex = ServerError(str(ex))
         super(ExceptionResponse, self).__init__(
-            ex.http_status, request_id, ex.code, ex.message, ex.data
+            ex.http_status, request_id, ex.code, ex.message, ex.data, debug=debug
         )
 
 

@@ -1,8 +1,6 @@
 """
-Dispatcher
-
-Takes JSON-RPC requests, logs them, calls the appropriate method, then logs and returns
-the response.
+The dispatch function takes a JSON-RPC request, logs it, calls the appropriate method,
+then logs and returns the response.
 """
 import json
 import logging
@@ -33,6 +31,7 @@ def log_response(response):
             "http_reason": HTTP_STATUS_CODES[response.http_status],
         },
     )
+    return None
 
 
 def load_from_json(requests):
@@ -58,39 +57,82 @@ def validate(requests):
     return requests
 
 
-def dispatch(methods, requests, context=None):
+def dispatch(
+    methods,
+    requests,
+    context=None,
+    convert_camel_case=None,
+    debug=None,
+    notification_errors=None,
+    schema_validation=None,
+):
     """
-    Process a request.
+    Dispatch a request to a method.
 
-    .. code-block:: python
-
-        >>> request = {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
-        >>> response = dispatch([ping], request)
-        --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
-        <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
+    >>> dispatch([ping], {'jsonrpc': '2.0', 'method': 'ping', 'id': 1})
+    --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
+    <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
+    'pong'
 
     :param methods: Collection of methods to dispatch to.
     :param requests: Requests to process.
     :param context: Optional context object which will be passed through to the methods.
+    :param convert_camel_case: Convert keys in params dictionary from camel case to
+        snake case.
+    :param debug: Include more information in error responses.
+    :param notification_errors: Respond with errors to notification requests (breaks
+        the JSON-RPC specification, but I prefer to know about errors).
+    :param schema_validation: Validate requests against the JSON-RPC schema.
     :returns: A :mod:`response` object.
     """
+    # Some ugly code here to support the old config module which will be removed in 4.0,
+    # and replaced with default arguments in the params of this function.
+    convert_camel_case = (
+        config.convert_camel_case if convert_camel_case is None else convert_camel_case
+    )
+    debug = config.debug if debug is None else debug
+    notification_errors = (
+        config.notification_errors
+        if notification_errors is None
+        else notification_errors
+    )
+    schema_validation = (
+        config.schema_validation if schema_validation is None else schema_validation
+    )
+    kwargs = dict(
+        context=context,
+        convert_camel_case=convert_camel_case,
+        debug=debug,
+        notification_errors=notification_errors,
+        schema_validation=schema_validation,
+    )
+
+    # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_requests:
         log(request_logger, "info", requests, fmt="--> %(message)s")
+
     try:
         requests = validate(load_from_json(requests))
     except JsonRpcServerError as exc:
-        response = ExceptionResponse(exc, None)
+        response = ExceptionResponse(exc, None, debug=debug)
     else:
-        # Batch requests
         if isinstance(requests, list):
-            response = [Request(r, context=context).call(methods) for r in requests]
-            # Responses to batch requests should not contain notifications, as per spec
-            response = [r for r in response if not r.is_notification]
+            # Batch request
+            response = [
+                response
+                for response in (
+                    Request(request, **kwargs).call(methods) for request in requests
+                )
+                # Batch request responses should not contain notifications, as per spec
+                if not response.is_notification
+            ]
             # If the response list is empty, return nothing
             response = BatchResponse(response) if response else NotificationResponse()
         # Single request
         else:
-            response = Request(requests, context=context).call(methods)
+            response = Request(requests, **kwargs).call(methods)
+
+    # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_responses:
         log_response(response)
     return response

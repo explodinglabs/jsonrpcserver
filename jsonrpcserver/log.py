@@ -19,9 +19,6 @@ def configure_logger(logger, fmt):
 def log(logger, level, message, *args, **kwargs):
     """
     Log a message.
-
-    The trailing underscore is to avoid clashing with python's builtin log
-    function
     """
     fmt = kwargs.pop("fmt", "%(message)s")
     configure_logger(logger, fmt)

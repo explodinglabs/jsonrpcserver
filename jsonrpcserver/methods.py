@@ -100,18 +100,15 @@ class Methods(MutableMapping):
         """
         return self.add(*args, **kwargs)
 
-    def dispatch(self, request, context=None):
+    def dispatch(self, *args, **kwargs):
         """
         Dispatch a request to the list of methods.
 
-        :param request: The JSON-RPC request to dispatch.
-        :type request: A JSON-encoded string, or JSON-serializable object.
-        :param context: Optional context object which will be passed through to
-            the RPC methods.
+        :param *args and **kwargs: Passed through to dispatch().
         :returns: A JSON-RPC response.
         :rtype: :mod:`Response <jsonrpcserver.response>`.
         """
-        return dispatch(self, request, context=context)
+        return dispatch(self, *args, **kwargs)
 
     def serve_forever(self, name="", port=5000):
         """
