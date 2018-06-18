@@ -2,7 +2,7 @@
 
 # jsonrpcserver
 
-Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python 2.7 and 3.3+.
+Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 
 ```sh
 pip install jsonrpcserver
