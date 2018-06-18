@@ -54,20 +54,13 @@ async def dispatch(
         )
         if isinstance(requests, list):
             # Batch request
-            response = [
-                response
-                for response in await asyncio.gather(
-                    *(
-                        AsyncRequest(request, **kwargs).call(methods)
-                        for request in requests
-                    )
-                )
-                # Batch request responses should not contain notifications, as per
-                # spec
-                if not response.is_notification
-            ]
+            responses = (AsyncRequest(r, **kwargs).call(methods) for r in requests)
+            # Group async tasks
+            responses = await asyncio.gather(*responses)
+            # Remove notifications; batch request do not include them, as per spec
+            responses = [r for r in responses if not r.is_notification]
             # If the response list is empty, return nothing
-            response = BatchResponse(response) if response else NotificationResponse()
+            response = BatchResponse(responses) if responses else NotificationResponse()
         # Single request
         else:
             response = await AsyncRequest(requests, **kwargs).call(methods)

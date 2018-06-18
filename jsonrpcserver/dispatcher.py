@@ -99,13 +99,6 @@ def dispatch(
     schema_validation = (
         config.schema_validation if schema_validation is None else schema_validation
     )
-    kwargs = dict(
-        context=context,
-        convert_camel_case=convert_camel_case,
-        debug=debug,
-        notification_errors=notification_errors,
-        schema_validation=schema_validation,
-    )
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_requests:
@@ -116,18 +109,20 @@ def dispatch(
     except JsonRpcServerError as exc:
         response = ExceptionResponse(exc, None, debug=debug)
     else:
+        kwargs = dict(
+            context=context,
+            convert_camel_case=convert_camel_case,
+            debug=debug,
+            notification_errors=notification_errors,
+            schema_validation=schema_validation,
+        )
         if isinstance(requests, list):
             # Batch request
-            response = [
-                response
-                for response in (
-                    Request(request, **kwargs).call(methods) for request in requests
-                )
-                # Batch request responses should not contain notifications, as per spec
-                if not response.is_notification
-            ]
+            responses = (Request(r, **kwargs).call(methods) for r in requests)
+            # Remove notifications; batch request do not include them, as per spec
+            responses = [r for r in responses if not r.is_notification]
             # If the response list is empty, return nothing
-            response = BatchResponse(response) if response else NotificationResponse()
+            response = BatchResponse(responses) if responses else NotificationResponse()
         # Single request
         else:
             response = Request(requests, **kwargs).call(methods)
