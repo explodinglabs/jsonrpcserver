@@ -1,3 +1,10 @@
+# jsonrpcserver Change Log
+
+## 3.5.5 (Jun 19, 2018)
+- Rewrite of dispatch(), adding parameters to configure the dispatch that were
+  previously configured by modifying the `config` module. That module is now
+  deprecated and will be removed in 4.0.
+
 ## 3.5.4 (Apr 30, 2018)
 - Refactoring
 
