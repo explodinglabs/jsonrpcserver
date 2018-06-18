@@ -29,7 +29,7 @@ The built-in `serve_forever()` method is a cheap-and-nasty way of taking
 requests; ultimately you should use a more sophisticated server library (see
 [examples in various frameworks](examples.html)).
 
-For these, there's a `dispatch()` method.
+For those, there's a `dispatch()` method.
 
 ## Dispatch
 
