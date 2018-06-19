@@ -22,4 +22,11 @@ if __name__ == '__main__':
 
 Full documentation is at [jsonrpcserver.readthedocs.io](https://jsonrpcserver.readthedocs.io/).
 
+## Testing
+
+```sh
+pip install pytest
+pytest
+```
+
 See also: [jsonrpcclient](https://github.com/bcb/jsonrpcclient)

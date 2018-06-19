@@ -205,9 +205,6 @@ class TestCall(TestCase):
 class TestRequestProcessNotifications(TestCase):
     """Go easy here, no need to test the call function"""
 
-    def setUp(self):
-        logging.disable(logging.CRITICAL)
-
     def tearDown(self):
         config.notification_errors = False
 

@@ -1,5 +1,6 @@
 from functools import partial
 from unittest import TestCase
+from unittest.mock import patch
 
 from jsonrpcserver.methods import Methods
 
@@ -207,3 +208,9 @@ class TestDispatch(TestCase):
         request = {"jsonrpc": "2.0", "method": "foo", "id": 1}
         response = methods.dispatch(request)
         self.assertEqual(response["result"], "bar")
+
+
+@patch('http.server.HTTPServer.serve_forever')
+def test_serve_forever(*_):
+    methods = Methods()
+    methods.serve_forever()
