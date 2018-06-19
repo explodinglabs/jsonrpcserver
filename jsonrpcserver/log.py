@@ -22,4 +22,4 @@ def log(logger, level, message, *args, **kwargs):
     """
     fmt = kwargs.pop("fmt", "%(message)s")
     configure_logger(logger, fmt)
-    getattr(logger, level)(message, *args, **kwargs)
+    logger.log(level, message, *args, **kwargs)

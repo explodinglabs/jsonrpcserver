@@ -135,5 +135,5 @@ class Methods(MutableMapping):
         httpd = HTTPServer((name, port), RequestHandler)
         # Let the request handler know which methods to dispatch to
         httpd.methods = self
-        log(logger, "info", " * Listening on port %s", port)
+        log(logger, logging.INFO, " * Listening on port %s", port)
         httpd.serve_forever()

@@ -23,7 +23,7 @@ def log_response(response):
     """Log a response"""
     log(
         response_logger,
-        "info",
+        logging.INFO,
         str(response),
         fmt="<-- %(message)s",
         extra={
@@ -102,7 +102,7 @@ def dispatch(
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_requests:
-        log(request_logger, "info", requests, fmt="--> %(message)s")
+        log(request_logger, logging.INFO, requests, fmt="--> %(message)s")
 
     try:
         requests = validate(load_from_json(requests))

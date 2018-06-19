@@ -40,7 +40,7 @@ class Request(object):
         except Exception as exc:
             # Log the exception if it wasn't explicitly raised by the method
             if not isinstance(exc, JsonRpcServerError):
-                log(logger, "error", traceback.format_exc())
+                log(logger, logging.ERROR, traceback.format_exc())
             # Notifications should not be responded to, even for errors (unless
             # overridden in configuration)
             if self.is_notification and not self.notification_errors:
