@@ -102,8 +102,8 @@ notifications can receive error responses. Default is *False*.
 
 **schema_validation**
 
-Allows you to disable the normally validation of requests against the JSON-RPC
-schema. Default is *True*.
+Allows you to disable the validation of requests against the JSON-RPC schema.
+Default is *True*.
 
 ## Validation
 
@@ -164,4 +164,4 @@ logging.getLogger("jsonrpcserver.dispatcher.response").setLevel(logging.WARNING)
 
 ## Exceptions
 
-See the [list of exceptions](exceptions.html) raised by jsonrpcserver.
+See the list of exceptions raised by jsonrpcserver [here](exceptions.html).
