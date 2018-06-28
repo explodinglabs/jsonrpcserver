@@ -19,7 +19,7 @@ request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
 
 
-def log_response(response):
+def log_response(response, trim=None):
     """Log a response"""
     log(
         response_logger,
@@ -30,6 +30,7 @@ def log_response(response):
             "http_code": response.http_status,
             "http_reason": HTTP_STATUS_CODES[response.http_status],
         },
+        trim=trim,
     )
     return None
 
@@ -65,6 +66,7 @@ def dispatch(
     debug=None,
     notification_errors=None,
     schema_validation=None,
+    trim_log_values=None
 ):
     """
     Dispatch a request to a method.
@@ -83,6 +85,7 @@ def dispatch(
     :param notification_errors: Respond with errors to notification requests (breaks
         the JSON-RPC specification, but I prefer to know about errors).
     :param schema_validation: Validate requests against the JSON-RPC schema.
+    :param trim_log_values: Show abbreviated requests and responses in log.
     :returns: A :mod:`response` object.
     """
     # Some ugly code here to support the old config module which will be removed in 4.0,
@@ -99,10 +102,11 @@ def dispatch(
     schema_validation = (
         config.schema_validation if schema_validation is None else schema_validation
     )
+    trim_log_values = config.trim_log_values if trim_log_values is None else trim_log_values
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_requests:
-        log(request_logger, logging.INFO, requests, fmt="--> %(message)s")
+        log(request_logger, logging.INFO, requests, fmt="--> %(message)s", trim=trim_log_values)
 
     try:
         requests = validate(load_from_json(requests))
@@ -129,5 +133,5 @@ def dispatch(
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_responses:
-        log_response(response)
+        log_response(response, trim=trim_log_values)
     return response

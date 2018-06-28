@@ -16,6 +16,9 @@ log_requests = True
 #: Log responses
 log_responses = True
 
+#: Log abbreviated versions of requests and responses
+trim_log_values = False
+
 #: Respond to notifications with errors. The JSON-RPC specification says
 #: notifications should not be responded to, so enabling this breaks the spec.
 #: But I prefer to know if there was an error.
