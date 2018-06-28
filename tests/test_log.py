@@ -1,7 +1,7 @@
 import logging
 from unittest.mock import patch
 
-from jsonrpcserver.log import configure_logger, log
+from jsonrpcserver.log import configure_logger, log, trim_message
 
 
 @patch('logging.root.handlers', [])
@@ -19,3 +19,11 @@ def test_log(caplog):
     logger = logging.getLogger('foo')
     log(logger, logging.INFO, 'foo')
     assert 'foo' in caplog.text
+
+
+def test_trim_message():
+    import json
+    message = trim_message("blahblah" * 30)
+    assert '...' in message
+    message = trim_message(json.dumps({"list": [0]*100}))
+    assert '...' in message
