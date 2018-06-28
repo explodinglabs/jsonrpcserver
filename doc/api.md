@@ -105,6 +105,10 @@ notifications can receive error responses. Default is *False*.
 Allows you to disable the validation of requests against the JSON-RPC schema.
 Default is *True*.
 
+**trim_log_values**
+
+Show abbreviated requests and responses in log.
+
 ## Validation
 
 Methods can take arguments, positional or named (but not both, this is a
