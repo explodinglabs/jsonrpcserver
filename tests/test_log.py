@@ -23,7 +23,20 @@ def test_log(caplog):
 
 def test_trim_message():
     import json
-    message = trim_message("blahblah" * 30)
+    # test string abbreviation
+    message = trim_message("blah" * 100)
     assert '...' in message
+    # test list abbreviation
     message = trim_message(json.dumps({"list": [0]*100}))
     assert '...' in message
+    # test nested abbreviation
+    message = trim_message(json.dumps({
+        "obj": {
+            "list": [0] * 100,
+            "string": "blah" * 100,
+            "obj2": {
+                "string2": "blah" * 100,
+            }
+        }
+    }))
+    assert '...' in json.loads(message)['obj']['obj2']['string2']

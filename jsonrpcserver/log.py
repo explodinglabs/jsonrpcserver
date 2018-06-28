@@ -36,6 +36,8 @@ def _trim_values(message_obj):
             prefix_len = int(longest_list / 3)
             suffix_len = prefix_len
             result[k] = val[:prefix_len] + ["..."] + val[-suffix_len:]
+        elif isinstance(val, dict):
+            result[k] = _trim_values(val)
         else:
             result[k] = val
     return result
@@ -44,7 +46,7 @@ def _trim_values(message_obj):
 def trim_message(message):
     try:
         message_obj = json.loads(message)
-        return str(_trim_values(message_obj))
+        return json.dumps(_trim_values(message_obj))
     except ValueError:
         return _trim_string(str(message))
 
