@@ -1,5 +1,6 @@
 """Asynchronous dispatch"""
 import asyncio
+import logging
 
 from . import config
 from .async_request import AsyncRequest
@@ -17,6 +18,7 @@ async def dispatch(
     debug=None,
     notification_errors=None,
     schema_validation=None,
+    trim_log_values=None,
 ):
     """
     Dispatch a request to a method.
@@ -35,10 +37,11 @@ async def dispatch(
     schema_validation = (
         config.schema_validation if schema_validation is None else schema_validation
     )
+    trim_log_values = config.trim_log_values if trim_log_values is None else trim_log_values
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_requests:
-        log(request_logger, logging.INFO, requests, fmt="--> %(message)s")
+        log(request_logger, logging.INFO, requests, fmt="--> %(message)s", trim=trim_log_values)
 
     try:
         requests = validate(load_from_json(requests))
@@ -67,5 +70,5 @@ async def dispatch(
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_responses:
-        log_response(response)
+        log_response(response, trim=trim_log_values)
     return response

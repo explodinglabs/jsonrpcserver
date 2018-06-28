@@ -25,6 +25,8 @@ def _trim_string(message):
         suffix_len = prefix_len
         return message[:prefix_len] + "..." + message[-suffix_len:]
 
+    return message
+
 
 def _trim_values(message_obj):
     result = {}
