@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 3.5.6 (Jun 28, 2018)
+- Add trim_log_values dispatch param. (#65)
+- Fix a missing import
+
 ## 3.5.5 (Jun 19, 2018)
 - Rewrite of dispatch(), adding parameters to configure the dispatch that were
   previously configured by modifying the `config` module. That module is now
