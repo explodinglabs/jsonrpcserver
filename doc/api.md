@@ -107,7 +107,7 @@ Default is *True*.
 
 **trim_log_values**
 
-Show abbreviated requests and responses in log.
+Show abbreviated requests and responses in logs. Default is *False*.
 
 ## Validation
 
