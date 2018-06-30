@@ -94,6 +94,17 @@ Tornado
 
 See `blog post <https://bcb.github.io/jsonrpc/tornado>`__.
 
+Vibora
+======
+
+::
+
+    $ pip install jsonrpcserver vibora
+
+.. literalinclude:: ../examples/vibora_server.py
+
+See `blog post <https://bcb.github.io/jsonrpc/vibora>`__.
+
 Websockets
 ==========
 
