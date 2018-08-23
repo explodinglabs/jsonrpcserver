@@ -1,6 +1,6 @@
 """Logging"""
-import logging
 import json
+import logging
 
 
 def configure_logger(logger, fmt):

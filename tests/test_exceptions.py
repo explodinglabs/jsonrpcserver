@@ -1,11 +1,11 @@
 from unittest import TestCase
 
 from jsonrpcserver.exceptions import (
-    JsonRpcServerError,
-    ParseError,
-    InvalidRequest,
-    MethodNotFound,
     InvalidParams,
+    InvalidRequest,
+    JsonRpcServerError,
+    MethodNotFound,
+    ParseError,
     ServerError,
 )
 

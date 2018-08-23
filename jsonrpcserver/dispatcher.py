@@ -8,12 +8,11 @@ import logging
 from six import string_types
 
 from . import config
-from .exceptions import JsonRpcServerError, ParseError, InvalidRequest
+from .exceptions import InvalidRequest, JsonRpcServerError, ParseError
 from .log import log
 from .request import Request
-from .response import NotificationResponse, ExceptionResponse, BatchResponse
+from .response import BatchResponse, ExceptionResponse, NotificationResponse
 from .status import HTTP_STATUS_CODES
-
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
@@ -66,7 +65,7 @@ def dispatch(
     debug=None,
     notification_errors=None,
     schema_validation=None,
-    trim_log_values=None
+    trim_log_values=None,
 ):
     """
     Dispatch a request to a method.
@@ -102,11 +101,19 @@ def dispatch(
     schema_validation = (
         config.schema_validation if schema_validation is None else schema_validation
     )
-    trim_log_values = config.trim_log_values if trim_log_values is None else trim_log_values
+    trim_log_values = (
+        config.trim_log_values if trim_log_values is None else trim_log_values
+    )
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_requests:
-        log(request_logger, logging.INFO, requests, fmt="--> %(message)s", trim=trim_log_values)
+        log(
+            request_logger,
+            logging.INFO,
+            requests,
+            fmt="--> %(message)s",
+            trim=trim_log_values,
+        )
 
     try:
         requests = validate(load_from_json(requests))

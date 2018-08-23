@@ -4,10 +4,10 @@ import logging
 
 from . import config
 from .async_request import AsyncRequest
-from .dispatcher import load_from_json, validate, request_logger, log_response
+from .dispatcher import load_from_json, log_response, request_logger, validate
 from .exceptions import JsonRpcServerError
 from .log import log
-from .response import BatchResponse, NotificationResponse, ExceptionResponse
+from .response import BatchResponse, ExceptionResponse, NotificationResponse
 
 
 async def dispatch(
@@ -37,11 +37,19 @@ async def dispatch(
     schema_validation = (
         config.schema_validation if schema_validation is None else schema_validation
     )
-    trim_log_values = config.trim_log_values if trim_log_values is None else trim_log_values
+    trim_log_values = (
+        config.trim_log_values if trim_log_values is None else trim_log_values
+    )
 
     # TODO: Remove this predicate in version 4; configure logging Pythonically
     if config.log_requests:
-        log(request_logger, logging.INFO, requests, fmt="--> %(message)s", trim=trim_log_values)
+        log(
+            request_logger,
+            logging.INFO,
+            requests,
+            fmt="--> %(message)s",
+            trim=trim_log_values,
+        )
 
     try:
         requests = validate(load_from_json(requests))

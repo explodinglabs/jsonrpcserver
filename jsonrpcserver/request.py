@@ -3,22 +3,21 @@ Request class.
 
 Represents a JSON-RPC request object.
 """
-from contextlib import contextmanager
 import logging
 import traceback
+from contextlib import contextmanager
 
 from .exceptions import JsonRpcServerError
 from .log import log
+from .request_utils import convert_camel_case as ccc
+from .request_utils import convert_camel_case_keys as ccc_keys
 from .request_utils import (
-    convert_camel_case as ccc,
-    convert_camel_case_keys as ccc_keys,
+    get_arguments,
+    get_method,
     validate_against_schema,
     validate_arguments_against_signature,
-    get_method,
-    get_arguments,
 )
-from .response import Response, RequestResponse, NotificationResponse, ExceptionResponse
-
+from .response import ExceptionResponse, NotificationResponse, RequestResponse, Response
 
 logger = logging.getLogger(__name__)
 

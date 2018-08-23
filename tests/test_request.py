@@ -1,13 +1,12 @@
-from unittest import TestCase
 import logging
-
 from functools import partial
+from unittest import TestCase
 
 from jsonrpcserver import config, status
 from jsonrpcserver.exceptions import InvalidParams
 from jsonrpcserver.methods import Methods
 from jsonrpcserver.request import Request
-from jsonrpcserver.response import ErrorResponse, RequestResponse, NotificationResponse
+from jsonrpcserver.response import ErrorResponse, NotificationResponse, RequestResponse
 
 
 # Some dummy functions to use for testing
@@ -68,7 +67,7 @@ class TestInit(TestCase):
                 "method": "fooMethod",
                 "params": {"fooParam": 1, "aDict": {"barParam": 1}},
             },
-            convert_camel_case=True
+            convert_camel_case=True,
         )
         self.assertEqual("foo_method", req.method_name)
         self.assertEqual({"foo_param": 1, "a_dict": {"bar_param": 1}}, req.kwargs)

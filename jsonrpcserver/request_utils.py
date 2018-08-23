@@ -13,7 +13,6 @@ from funcsigs import signature
 
 from .exceptions import InvalidParams, InvalidRequest, MethodNotFound
 
-
 _JSON_VALIDATOR = jsonschema.Draft4Validator(
     json.loads(pkgutil.get_data(__name__, "request-schema.json").decode())
 )

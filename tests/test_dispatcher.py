@@ -1,13 +1,13 @@
 from unittest import TestCase
 
 from jsonrpcserver import config
-from jsonrpcserver.dispatcher import load_from_json, dispatch
+from jsonrpcserver.dispatcher import dispatch, load_from_json
 from jsonrpcserver.exceptions import ParseError
 from jsonrpcserver.response import (
+    BatchResponse,
     ErrorResponse,
     NotificationResponse,
     RequestResponse,
-    BatchResponse,
 )
 
 

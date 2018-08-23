@@ -17,8 +17,8 @@ There's also an HTTP status code if you need it::
     >>> response.http_status
     200
 """
-from collections import OrderedDict
 import json
+from collections import OrderedDict
 
 from . import status
 from .exceptions import JsonRpcServerError, ServerError

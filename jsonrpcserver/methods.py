@@ -22,15 +22,15 @@ Serve the methods::
 import logging
 from collections import MutableMapping
 
+from .dispatcher import dispatch
+from .log import log
+
 try:
     # Python 2
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 except ImportError:
     # Python 3
     from http.server import BaseHTTPRequestHandler, HTTPServer
-
-from .log import log
-from .dispatcher import dispatch
 
 
 logger = logging.getLogger(__name__)

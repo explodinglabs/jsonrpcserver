@@ -210,7 +210,7 @@ class TestDispatch(TestCase):
         self.assertEqual(response["result"], "bar")
 
 
-@patch('http.server.HTTPServer.serve_forever')
+@patch("http.server.HTTPServer.serve_forever")
 def test_serve_forever(*_):
     methods = Methods()
     methods.serve_forever()
