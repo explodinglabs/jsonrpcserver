@@ -1,0 +1,7 @@
+*egg-info
+.coverage
+.coveralls.yml
+.mypy_cache
+.pytest_cache
+.tox
+.travis.yml
