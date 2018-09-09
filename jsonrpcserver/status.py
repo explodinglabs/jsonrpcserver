@@ -74,7 +74,7 @@ JSONRPC_INVALID_PARAMS_CODE = -32602
 JSONRPC_SERVER_ERROR_CODE = -32000
 
 
-def is_http_client_error(code):
+def is_http_client_error(code: int) -> bool:
     """
     Returns true if a status code is a 4xx Client Error.
 

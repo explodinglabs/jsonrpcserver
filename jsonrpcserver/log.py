@@ -2,22 +2,10 @@
 import json
 import logging
 
-
-def configure_logger(logger, fmt):
-    """
-    Set up a logger, if no handler has been configured for it.
-
-    Used by the log function below.
-    """
-    if logger.level == logging.NOTSET:
-        logger.setLevel(logging.INFO)
-    if not logging.root.handlers and not logger.handlers:
-        handler = logging.StreamHandler()
-        handler.setFormatter(logging.Formatter(fmt=fmt))
-        logger.addHandler(handler)
+from .types import Request
 
 
-def _trim_string(message):
+def _trim_string(message: str):
     longest_string = 30
 
     if len(message) > longest_string:
@@ -28,7 +16,7 @@ def _trim_string(message):
     return message
 
 
-def _trim_values(message_obj):
+def _trim_values(message_obj: Request):
     result = {}
     longest_list = 30
     for k, val in message_obj.items():
@@ -61,5 +49,4 @@ def log(logger, level, message, *args, **kwargs):
     trim = kwargs.pop("trim", False)
     if trim:
         message = trim_message(message)
-    configure_logger(logger, fmt)
     logger.log(level, message, *args, **kwargs)

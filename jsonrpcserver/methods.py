@@ -22,15 +22,9 @@ Serve the methods::
 import logging
 from collections import MutableMapping
 
-from .dispatcher import dispatch
 from .log import log
 
-try:
-    # Python 2
-    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-except ImportError:
-    # Python 3
-    from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
 logger = logging.getLogger(__name__)
@@ -99,16 +93,6 @@ class Methods(MutableMapping):
             Use ``add`` instead.
         """
         return self.add(*args, **kwargs)
-
-    def dispatch(self, *args, **kwargs):
-        """
-        Dispatch a request to the list of methods.
-
-        :param *args and **kwargs: Passed through to dispatch().
-        :returns: A JSON-RPC response.
-        :rtype: :mod:`Response <jsonrpcserver.response>`.
-        """
-        return dispatch(self, *args, **kwargs)
 
     def serve_forever(self, name="", port=5000):
         """

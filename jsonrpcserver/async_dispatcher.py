@@ -11,8 +11,8 @@ from .response import BatchResponse, ExceptionResponse, NotificationResponse
 
 
 async def dispatch(
-    methods,
     requests,
+    methods,
     context=None,
     convert_camel_case=None,
     debug=None,

@@ -1,144 +1,135 @@
 """
+Dispatcher.
+
 The dispatch function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
-import json
+from json import loads as deserialize, dumps as serialize, JSONDecodeError
 import logging
+from typing import Any, Dict, List, Optional, Union
 
 from six import string_types
 
 from . import config
 from .exceptions import InvalidRequest, JsonRpcServerError, ParseError
 from .log import log
+from .methods import Methods
 from .request import Request
-from .response import BatchResponse, ExceptionResponse, NotificationResponse
+from .response import (
+    SafeResponse,
+    Response,
+    BatchResponse,
+    ExceptionResponse,
+    NotificationResponse,
+    ParseErrorResponse,
+)
 from .status import HTTP_STATUS_CODES
+from .types import Requests, Responses
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
 
+schema_bytes = pkgutil.get_data(__name__, "request-schema.json")
+if schema_bytes:
+    schema = deserialize(schema_bytes.decode())
 
-def log_response(response, trim=None):
+
+def log_request(response: Response, trim: bool = False) -> None:
     """Log a response"""
-    log(
-        response_logger,
-        logging.INFO,
-        str(response),
-        fmt="<-- %(message)s",
-        extra={
-            "http_code": response.http_status,
-            "http_reason": HTTP_STATUS_CODES[response.http_status],
-        },
-        trim=trim,
-    )
-    return None
+    log(request_logger, logging.INFO, str(response), fmt="<-- %(message)s", trim=trim)
+    return request
 
 
-def load_from_json(requests):
-    """
-    Load from string to a Python dictionary, or list in the case of a batch request.
-
-    :param request: The JSON-RPC request string.
-    :raises ValueError: If the string cannot be parsed to JSON.
-    :returns: The same request in dict form.
-    """
-    if isinstance(requests, string_types):
-        try:
-            requests = json.loads(requests)
-        except ValueError:
-            raise ParseError()
-    return requests
+def log_response(response: Response, trim: bool = False) -> None:
+    """Log a response"""
+    log(response_logger, logging.INFO, str(response), fmt="<-- %(message)s", trim=trim)
+    return response
 
 
-def validate(requests):
-    # Empty batch requests are invalid http://www.jsonrpc.org/specification#examples
-    if isinstance(requests, list) and not requests:
-        raise InvalidRequest()
-    return requests
+def is_batch_request(requests_deserialized):
+    return isinstance(requests_deserialized, list)
 
 
-def dispatch(
-    methods,
-    requests,
-    context=None,
-    convert_camel_case=None,
-    debug=None,
-    notification_errors=None,
-    schema_validation=None,
-    trim_log_values=None,
-):
-    """
-    Dispatch a request to a method.
-
-    >>> dispatch([ping], {'jsonrpc': '2.0', 'method': 'ping', 'id': 1})
-    --> {'jsonrpc': '2.0', 'method': 'ping', 'id': 1}
-    <-- {'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
-    'pong'
-
-    :param methods: Collection of methods to dispatch to.
-    :param requests: Requests to process.
-    :param context: Optional context object which will be passed through to the methods.
-    :param convert_camel_case: Convert keys in params dictionary from camel case to
-        snake case.
-    :param debug: Include more information in error responses.
-    :param notification_errors: Respond with errors to notification requests (breaks
-        the JSON-RPC specification, but I prefer to know about errors).
-    :param schema_validation: Validate requests against the JSON-RPC schema.
-    :param trim_log_values: Show abbreviated requests and responses in log.
-    :returns: A :mod:`response` object.
-    """
-    # Some ugly code here to support the old config module which will be removed in 4.0,
-    # and replaced with default arguments in the params of this function.
-    convert_camel_case = (
-        config.convert_camel_case if convert_camel_case is None else convert_camel_case
-    )
-    debug = config.debug if debug is None else debug
-    notification_errors = (
-        config.notification_errors
-        if notification_errors is None
-        else notification_errors
-    )
-    schema_validation = (
-        config.schema_validation if schema_validation is None else schema_validation
-    )
-    trim_log_values = (
-        config.trim_log_values if trim_log_values is None else trim_log_values
-    )
-
-    # TODO: Remove this predicate in version 4; configure logging Pythonically
-    if config.log_requests:
-        log(
-            request_logger,
-            logging.INFO,
-            requests,
-            fmt="--> %(message)s",
-            trim=trim_log_values,
-        )
-
+def safe_call(request: Request, callable: Callable[Any], debug=False) -> Response:
+    # Handle the call safely. We must return a Response object.
     try:
-        requests = validate(load_from_json(requests))
-    except JsonRpcServerError as exc:
-        response = ExceptionResponse(exc, None, debug=debug)
-    else:
-        kwargs = dict(
-            context=context,
-            convert_camel_case=convert_camel_case,
-            debug=debug,
-            notification_errors=notification_errors,
-            schema_validation=schema_validation,
-        )
-        if isinstance(requests, list):
-            # Batch request
-            responses = (Request(r, **kwargs).call(methods) for r in requests)
-            # Remove notifications; batch request do not include them, as per spec
-            responses = [r for r in responses if not r.is_notification]
-            # If the response list is empty, return nothing
-            response = BatchResponse(responses) if responses else NotificationResponse()
-        # Single request
-        else:
-            response = Request(requests, **kwargs).call(methods)
+        validate_arguments_against_signature(callable_, request.args, request.kwargs)
+        result = callable_(*(request.args or []), **(request.kwargs or {}))
+    except Exception as exc: # Validate failed
+        return ExceptionResponse(exc, request_id=request.request_id, debug=debug)
+    except Exception as exc: # Call failed
+        return InvalidParamsResponse(request.method_name, data=exc.message, debug=debug)
+    return RequestResponse(request.request_id, result)
 
-    # TODO: Remove this predicate in version 4; configure logging Pythonically
-    if config.log_responses:
-        log_response(response, trim=trim_log_values)
+
+def call(request: Request, methods: Methods, debug: bool = False) -> Response:
+    """
+    Call the appropriate method from a list.
+
+    Find the method from the passed list, and call it, returning a Response object.
+    """
+    response = safe_call(request, get_method(methods, request.method_name), debug=debug)
+    # Notifications should not be responded to, even for errors.
+    if request.is_notification:
+        return NotificationResponse()
+    return response
+
+
+def dispatch_deserialized(requests: Requests) -> Responses:
+    if is_batch_request(requests):
+        responses = (call(Request(r), methods) for r in requests)
+        # Remove notifications in batch responses
+        responses = filter(lambda x: not x.is_notification, responses)
+        # If the response list is empty, return nothing; as per spec.
+        return BatchResponse(responses) if len(responses) > 0 else NotificationResponse()
+    return call(Request(requests), methods)
+
+
+def safe_dispatch(requests: str) -> Responses:
+    try:
+        deserialized = deserialize(requests)
+    except JSONDecodeError as exc:
+        return InvalidJSONErrorResponse(exc.message, debug=debug)
+    try:
+        validate(deserialized)
+    except jsonschema.ValidationError as exc:
+        return InvalidJSONRPCErrorResponse(exc.message, debug=debug)
+    return dispatch_deserialized(deserialized)
+
+
+# @apply_config(config)
+def dispatch(
+    request: str,
+    methods: Optional[Methods] = None,
+    context: Optional[Dict[str, Any]] = None,
+    convert_camel_case: bool = False,
+    debug: bool = False,
+    notification_errors: bool = False,
+    schema_validation: bool = True,
+    trim_log_values: bool = False,
+) -> Responses:
+    """
+    Dispatch a request (or requests) to methods.
+
+    Args:
+        request: The JSON-RPC request to process.
+        methods: Collection of methods to dispatch to.
+        context: Optional context object which will be passed through to the methods.
+        convert_camel_case: Convert keys in params dictionary from camel case to
+            snake case.
+        debug: Include more information in error responses.
+        notification_errors: Respond with errors to notification requests (breaks
+            the JSON-RPC specification, but I prefer to know about errors).
+        schema_validation: Validate requests against the JSON-RPC schema.
+        trim_log_values: Show abbreviated requests and responses in log.
+
+    Returns:
+        A Response object, or a list of them in the case of a batch request.
+
+    Examples:
+        >>> dispatch(methods, '{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+    """
+    log_request(request)
+    response = safe_dispatch(request)
+    log_response(str(response))
     return response

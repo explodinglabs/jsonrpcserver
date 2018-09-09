@@ -1,7 +1,6 @@
 from unittest import TestCase
 
-from jsonrpcserver import config
-from jsonrpcserver.dispatcher import dispatch, load_from_json
+from jsonrpcserver.dispatcher import dispatch
 from jsonrpcserver.exceptions import ParseError
 from jsonrpcserver.response import (
     BatchResponse,
@@ -18,37 +17,8 @@ def foo():
 FOO = object()
 
 
-def setUpModule():
-    config.debug = True
-
-
-def tearDownModule():
-    config.debug = False
-
-
-class TestStringToDict(TestCase):
-    def test_invalid(self):
-        with self.assertRaises(ParseError):
-            load_from_json('{"jsonrpc": "2.0}')
-
-    def test(self):
-        self.assertEqual(
-            {"jsonrpc": "2.0", "method": "foo"},
-            load_from_json('{"jsonrpc": "2.0", "method": "foo"}'),
-        )
-
-    def test_list(self):
-        self.assertEqual(
-            [{"jsonrpc": "2.0", "method": "foo"}],
-            load_from_json('[{"jsonrpc": "2.0", "method": "foo"}]'),
-        )
-
-
 class TestDispatchNotifications(TestCase):
     """Go easy here, no need to test the call function"""
-
-    def tearDown(self):
-        config.notification_errors = False
 
     # Success
     def test(self):
@@ -75,8 +45,11 @@ class TestDispatchNotifications(TestCase):
         self.assertIsInstance(res, NotificationResponse)
 
     def test_errors_enabled(self):
-        config.notification_errors = True
-        res = dispatch([foo], {"jsonrpc": "2.0", "method": "non_existant"})
+        res = dispatch(
+            [foo],
+            {"jsonrpc": "2.0", "method": "non_existant"},
+            notification_errors=True,
+        )
         self.assertIsInstance(res, ErrorResponse)
 
     # With context

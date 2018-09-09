@@ -83,7 +83,7 @@ def ping(context):
 
 ### Configuration
 
-The following other options can be passed to `dispatch`
+The following other options can be passed to `dispatch`:
 
 **convert_camel_case**
 
