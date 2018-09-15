@@ -1,7 +1,7 @@
 """
 The "methods" object holds the list of functions that can be called by RPC calls.
 
-Use the ``add`` decorator to register a method to the list::
+Use the `add` decorator to register a method to the list::
 
     from jsonrpcserver import methods
 
@@ -20,86 +20,68 @@ Serve the methods::
      * Listening on port 5000
 """
 import logging
-from collections import MutableMapping
-
-from .log import log
-
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Callable
 
 
 logger = logging.getLogger(__name__)
 
 
-class Methods(MutableMapping):
-    """
-    Holds a list of methods.
+class Methods:
+    """Holds a list of methods that can be called with a JSON-RPC request."""
 
-    .. versionchanged:: 3.4
-        Added ``dispatch``, and moved serve_forever into here (was previously in
-        a parent class).
-    .. versionchanged:: 3.3
-        Subclass MutableMapping instead of dict.
-    """
-
-    def __init__(self, *args, **kwargs):
-        self._items = {}
-        self.update(*args, **kwargs)
-
-    def __getitem__(self, key):
-        return self._items[key]
-
-    def __setitem__(self, key, value):
-        # Method must be callable
-        if not callable(value):
-            raise TypeError("%s is not callable" % type(value))
-        self._items[key] = value
-
-    def __delitem__(self, key):
-        del self._items[key]
-
-    def __iter__(self):
-        return iter(self._items)
-
-    def __len__(self):
-        return len(self._items)
+    def __init__(self):
+        self.items = {}
 
     def add(self, method, name=None):
         """
         Register a function to the list.
 
-        ::
+        Args:
+            method: Function to register to the list.
+            name: Optionally give a name (or rename) the original function.
 
+        Returns:
+            None
+
+        Raises:
+            AttributeError: Raised if the method being added has no name. (i.e. it has
+                no ``__name__`` property, and no ``name`` argument was given.)
+
+        Examples:
             @methods.add
             def subtract(minuend, subtrahend):
                 return minuend - subtrahend
-
-        :param method: Function to register to the list.
-        :type method: Function or class method.
-        :param name: Optionally rename the original function.
-        :raise AttributeError:
-            Raised if the method being added has no name. (i.e. it has no
-            ``__name__`` property, and no ``name`` argument was given.)
         """
+        assert callable(method)
         # If no custom name was given, use the method's __name__ attribute
         # Raises AttributeError otherwise
-        if not name:
-            name = method.__name__
-        self.update({name: method})
-        return method
+        name = method.__name__ if not name else name
+        self.items[name] = method
+        return method  # for the decorator to work
 
-    def add_method(self, *args, **kwargs):
+    def get(self, name: str) -> Callable:
         """
-        .. deprecated:: 3.2.3
-            Use ``add`` instead.
+        Get a method in the list.
+
+        Args:
+            name: Name of the method to find.
+
+        Returns:
+            The method from the list.
+
+        Raises:
+            KeyError: If the method wasn't in the list.
         """
-        return self.add(*args, **kwargs)
+        return self.items[name]
 
     def serve_forever(self, name="", port=5000):
         """
         A basic way to serve the methods.
 
-        :param str name: Server address
-        :param int port: Server port
+        Args:
+            name: Server address.
+            port: Server port.
         """
 
         class RequestHandler(BaseHTTPRequestHandler):
@@ -119,5 +101,5 @@ class Methods(MutableMapping):
         httpd = HTTPServer((name, port), RequestHandler)
         # Let the request handler know which methods to dispatch to
         httpd.methods = self
-        log(logger, logging.INFO, " * Listening on port %s", port)
+        logging.info(" * Listening on port %s", port)
         httpd.serve_forever()

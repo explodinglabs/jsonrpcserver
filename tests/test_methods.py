@@ -1,213 +1,148 @@
 from functools import partial
-from unittest import TestCase
 from unittest.mock import patch
+
+import pytest
 
 from jsonrpcserver.methods import Methods
 
 
-class TestInit(TestCase):
-    def test_dict(self):
-        methods = Methods({"ping": lambda: "pong"})
-        self.assertIn("ping", methods)
+def test_add_function():
+    def foo():
+        pass
+    methods = Methods()
+    methods.add(foo)
+    assert methods.items["foo"] is foo
 
-    def test_named_args(self):
-        methods = Methods(ping=lambda: "pong")
-        self.assertIn("ping", methods)
+def test_add_non_callable():
+    methods = Methods()
+    with pytest.raises(AssertionError):
+        methods.add(None, "ping")
 
+def test_add_function_custom_name():
+    def foo():
+        pass
 
-class TestMutableMapping(TestCase):
-    @staticmethod
-    def test_iter():
-        methods = Methods(ping=lambda: "pong")
-        iter(methods)
+    methods = Methods()
+    methods.add(foo, "foobar")
+    assert methods.items["foobar"] is foo
 
-    def test_len(self):
-        methods = Methods(ping=lambda: "pong")
-        self.assertEqual(1, len(methods))
+def test_add_lambda_no_name():
+    add = lambda x, y: x + y
+    methods = Methods()
+    methods.add(add)  # Lambda's __name__ will be '<lambda>'!
+    assert "add" not in methods.items
 
-    @staticmethod
-    def test_del():
-        methods = Methods(ping=lambda: "pong")
-        del methods["ping"]
+def test_add_lambda_renamed():
+    add = lambda x, y: x + y
+    add.__name__ = "add"
+    methods = Methods()
+    methods.add(add)
+    methods.items["add"] is add
 
+def test_add_lambda_custom_name():
+    add = lambda x, y: x + y
+    methods = Methods()
+    methods.add(add, "add")
+    assert methods.items["add"] is add
 
-class TestAdd(TestCase):
-    def test_non_callable(self):
-        methods = Methods()
-        with self.assertRaises(TypeError):
-            methods.add(None, "ping")
+def test_add_partial_no_name():
+    six = partial(lambda x: x + 1, 5)
+    methods = Methods()
+    with pytest.raises(AttributeError):
+        methods.add(six)  # Partial has no __name__ !
 
-    def test_no_name(self):
-        methods = Methods()
-        with self.assertRaises(AttributeError):
-            methods.add(None)
+def test_add_partial_renamed():
+    six = partial(lambda x: x + 1, 5)
+    six.__name__ = "six"
+    methods = Methods()
+    methods.add(six)
+    assert methods.items["six"] is six
 
-    def test_function(self):
-        def foo():
-            pass
+def test_add_partial_custom_name():
+    six = partial(lambda x: x + 1, 5)
+    methods = Methods()
+    methods.add(six, "six")
+    assert methods.items["six"] is six
 
-        methods = Methods()
-        methods.add(foo)
-        self.assertIs(foo, methods["foo"])
-
-    def test_function_custom_name(self):
-        def foo():
-            pass
-
-        methods = Methods()
-        methods.add(foo, "foobar")
-        self.assertIs(foo, methods["foobar"])
-
-    def test_lambda_no_name(self):
-        add = lambda x, y: x + y
-        methods = Methods()
-        methods.add(add)  # Lambda's __name__ will be '<lambda>'!
-        self.assertNotIn("add", methods)
-
-    def test_lambda_renamed(self):
-        add = lambda x, y: x + y
-        add.__name__ = "add"
-        methods = Methods()
-        methods.add(add)
-        self.assertIs(add, methods["add"])
-
-    def test_lambda_custom_name(self):
-        add = lambda x, y: x + y
-        methods = Methods()
-        methods.add(add, "add")
-        self.assertIs(add, methods["add"])
-
-    def test_partial_no_name(self):
-        six = partial(lambda x: x + 1, 5)
-        methods = Methods()
-        with self.assertRaises(AttributeError):
-            methods.add(six)  # Partial has no __name__ !
-
-    def test_partial_renamed(self):
-        six = partial(lambda x: x + 1, 5)
-        six.__name__ = "six"
-        methods = Methods()
-        methods.add(six)
-        self.assertIs(six, methods["six"])
-
-    def test_partial_custom_name(self):
-        six = partial(lambda x: x + 1, 5)
-        methods = Methods()
-        methods.add(six, "six")
-        self.assertIs(six, methods["six"])
-
-    def test_static_method(self):
-        class FooClass(object):
-            @staticmethod
-            def foo():
-                return "bar"
-
-        methods = Methods()
-        methods.add(FooClass.foo)
-        self.assertIs(FooClass.foo, methods["foo"])
-
-    def test_static_method_custom_name(self):
-        class FooClass(object):
-            @staticmethod
-            def foo():
-                return "bar"
-
-        methods = Methods()
-        methods.add(FooClass.foo, "custom")
-        self.assertIs(FooClass.foo, methods["custom"])
-
-    def test_instance_method(self):
-        class FooClass(object):
-            def foo(self):
-                return "bar"
-
-        methods = Methods()
-        methods.add(FooClass().foo)
-        self.assertEqual("bar", methods["foo"].__call__())
-
-    def test_instance_method_custom_name(self):
-        class Foo(object):
-            def __init__(self, name):
-                self.name = name
-
-            def get_name(self):
-                return self.name
-
-        obj1 = Foo("a")
-        obj2 = Foo("b")
-        methods = Methods()
-        methods.add(obj1.get_name, "custom1")
-        methods.add(obj2.get_name, "custom2")
-        # Can't use assertIs, so check the outcome is as expected
-        self.assertEqual("a", methods["custom1"].__call__())
-        self.assertEqual("b", methods["custom2"].__call__())
-
-
-class TestAddMethod(TestCase):
-    """add_method is the old way to add, still need to support it"""
-
-    def test(self):
-        def foo():
-            pass
-
-        methods = Methods()
-        methods.add_method(foo)
-        self.assertIs(foo, methods["foo"])
-
-
-class TestAddDictLike(TestCase):
-    def test_function(self):
-        methods = Methods()
-
-        def ping():
-            return "pong"
-
-        methods["ping"] = ping
-        self.assertTrue(callable(methods["ping"]))
-
-    def test_lambda(self):
-        methods = Methods()
-        methods["ping"] = lambda: "pong"
-        self.assertTrue(callable(methods["ping"]))
-
-    def test_non_callable(self):
-        methods = Methods()
-        with self.assertRaises(TypeError):
-            methods["ping"] = 1
-
-
-class TestAddDecorator(TestCase):
-    def test_add_function(self):
-        methods = Methods()
-
-        @methods.add
-        def foo():
-            pass
-
-        self.assertIs(foo, methods["foo"])
-
-    def test_add_static_method(self):
-        methods = Methods()
-
-        class FooClass(object):
-            @staticmethod
-            @methods.add
-            def foo():
-                return "bar"
-
-        self.assertIs(FooClass.foo, methods["foo"])
-
-
-class TestDispatch(TestCase):
-    def test_dispatch(self):
+def test_add_static_method():
+    class FooClass(object):
+        @staticmethod
         def foo():
             return "bar"
 
-        methods = Methods()
-        methods.add(foo)
-        request = {"jsonrpc": "2.0", "method": "foo", "id": 1}
-        response = methods.dispatch(request)
-        self.assertEqual(response["result"], "bar")
+    methods = Methods()
+    methods.add(FooClass.foo)
+    assert methods.items["foo"] is FooClass.foo
+
+def test_add_static_method_custom_name():
+    class FooClass(object):
+        @staticmethod
+        def foo():
+            return "bar"
+
+    methods = Methods()
+    methods.add(FooClass.foo, "custom")
+    assert methods.items["custom"] == FooClass.foo
+
+def test_add_instance_method():
+    class FooClass(object):
+        def foo(self):
+            return "bar"
+
+    methods = Methods()
+    methods.add(FooClass().foo)
+    assert methods.items["foo"].__call__() is "bar"
+
+def test_add_instance_method_custom_name():
+    class Foo(object):
+        def __init__(self, name):
+            self.name = name
+
+        def get_name(self):
+            return self.name
+
+    obj1 = Foo("a")
+    obj2 = Foo("b")
+    methods = Methods()
+    methods.add(obj1.get_name, "custom1")
+    methods.add(obj2.get_name, "custom2")
+    # Can't use assertIs, so check the outcome is as expected
+    assert methods.items["custom1"].__call__() == "a"
+    assert methods.items["custom2"].__call__() == "b"
+
+
+def test_add_function_via_decorator():
+    methods = Methods()
+    @methods.add
+    def foo():
+        pass
+    assert methods.items["foo"] is foo
+
+
+def test_add_static_method_via_decorator():
+    methods = Methods()
+
+    class FooClass(object):
+        @staticmethod
+        @methods.add
+        def foo():
+            return "bar"
+
+    assert methods.items["foo"] is FooClass.foo
+
+
+def test_get():
+    def cat():
+        pass
+
+    def dog():
+        pass
+
+    methods = Methods()
+    methods.add(cat)
+    methods.add(dog)
+    assert methods.get("cat") == cat
+    assert methods.get("dog") == dog
 
 
 @patch("http.server.HTTPServer.serve_forever")
