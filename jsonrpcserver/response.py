@@ -37,8 +37,7 @@ from . import status
 
 # Sentinel to indicate nothing passed. We can't use the conventional None default value,
 # because None (null) is valid JSON.
-NOID = object()
-NODATA = object()
+UNSPECIFIED = object()
 
 
 class Response:
@@ -101,7 +100,7 @@ def sort_dict_response(response: Dict[str, Any]) -> OrderedDict:
         The same response, sorted as an OrderedDict.
 
     Examples:
-        >>> json.dumps(sort_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
+        >>> json.dumps(sort_dict_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
         {"jsonrpc": "2.0", "result": 5, "id": 1}
     """
     root_order = ["jsonrpc", "result", "error", "id"]
@@ -117,7 +116,9 @@ def sort_dict_response(response: Dict[str, Any]) -> OrderedDict:
 class DictResponse(Response):
     """Abstract..."""
 
-    def __init__(self, *args, request_id: Optional[Any] = NOID, **kwargs: Any) -> None:
+    def __init__(
+        self, *args, request_id: Optional[Any] = UNSPECIFIED, **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.request_id = request_id
 
@@ -154,7 +155,7 @@ class SuccessResponse(DictResponse):
     def __str__(self) -> str:
         """Use str() to get the JSON-RPC response string."""
         response = {"jsonrpc": "2.0", "result": self.result, "id": self.request_id}
-        return json.dumps(sort_response(response))
+        return json.dumps(sort_dict_response(response))
 
 
 class ErrorResponse(DictResponse):
@@ -169,7 +170,7 @@ class ErrorResponse(DictResponse):
         code: int,
         message: str,
         *args: Any,
-        data: Any = NODATA,
+        data: Any = UNSPECIFIED,
         debug: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -198,12 +199,12 @@ class ErrorResponse(DictResponse):
         response = {
             "jsonrpc": "2.0",
             "error": {"code": self.code, "message": self.message},
-        }
-        if self.request_id is not NOID:
+        }  # type: Dict[str, Any]
+        if self.request_id is not UNSPECIFIED:
             response["id"] = self.request_id
-        if self.data is not NODATA and self.debug:
+        if self.data is not UNSPECIFIED and self.debug:
             response["error"]["data"] = self.data
-        return json.dumps(sort_response(response))
+        return json.dumps(sort_dict_response(response))
 
 
 class InvalidJSONResponse(ErrorResponse):
@@ -211,7 +212,11 @@ class InvalidJSONResponse(ErrorResponse):
         self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
     ) -> None:
         super().__init__(
-            -32700, "Invalid JSON", *args, http_status=http_status, **kwargs
+            status.JSONRPC_PARSE_ERROR_CODE,
+            "Invalid JSON",
+            *args,
+            http_status=http_status,
+            **kwargs,
         )
 
 
@@ -220,7 +225,11 @@ class InvalidJSONRPCResponse(ErrorResponse):
         self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
     ) -> None:
         super().__init__(
-            -32600, "Invalid JSON-RPC", *args, http_status=http_status, **kwargs
+            status.JSONRPC_INVALID_REQUEST_CODE,
+            "Invalid JSON-RPC",
+            *args,
+            http_status=http_status,
+            **kwargs,
         )
 
 
@@ -229,7 +238,11 @@ class MethodNotFoundResponse(ErrorResponse):
         self, *args: Any, http_status: int = status.HTTP_NOT_FOUND, **kwargs: Any
     ) -> None:
         super().__init__(
-            -32601, "Method not found", *args, http_status=http_status, **kwargs
+            status.JSONRPC_METHOD_NOT_FOUND_CODE,
+            "Method not found",
+            *args,
+            http_status=http_status,
+            **kwargs,
         )
 
 
@@ -242,7 +255,7 @@ class InvalidParamsResponse(ErrorResponse):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            -32602,
+            status.JSONRPC_INVALID_PARAMS_CODE,
             "Invalid params to {}".format(method),
             *args,
             http_status=http_status,
@@ -262,7 +275,7 @@ class ExceptionResponse(ErrorResponse):
             -32000,
             "Server error",
             *args,
-            data="{} {str(exc)}",
+            data=f"{exc.__class__.__name__}: {str(exc)}",
             http_status=http_status,
             **kwargs,
         )

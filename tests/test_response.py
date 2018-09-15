@@ -10,7 +10,7 @@ from jsonrpcserver.response import (
     NotificationResponse,
     SuccessResponse,
     Response,
-    sort_response,
+    sort_dict_response,
 )
 
 
@@ -39,13 +39,13 @@ def test_batch_response():
     str(BatchResponse())
 
 
-def test_sort_response_success():
-    response = sort_response({"id": 1, "result": 5, "jsonrpc": "2.0"})
+def test_sort_dict_response_success():
+    response = sort_dict_response({"id": 1, "result": 5, "jsonrpc": "2.0"})
     assert json.dumps(response) == '{"jsonrpc": "2.0", "result": 5, "id": 1}'
 
 
-def test_sort_response_error():
-    response = sort_response(
+def test_sort_dict_response_error():
+    response = sort_dict_response(
         {
             "id": 1,
             "error": {
@@ -132,7 +132,7 @@ def test_exception_response_with_request_id():
 
 def test_exception_response_debug_enabled():
     response = ExceptionResponse(ValueError("There was an error"), debug=True)
-    assert str(response) == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "There was an error"}, "id": 1}'
+    assert str(response) == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: There was an error"}}'
 
 
 def test_error_response_http_status():
