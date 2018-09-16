@@ -4,23 +4,18 @@ Request class.
 Represents a JSON-RPC request object.
 """
 import logging
+import re
 import traceback
-from typing import Any, Callable, Dict, Generator, Optional
+from typing import Any, Callable, Dict, List, Generator, Optional, Tuple, Union
+from funcsigs import signature  # type: ignore
 
 import jsonschema  # type: ignore
 
-from .exceptions import JsonRpcServerError
 from .log import log
 from .methods import Methods
-from .response import (
-    SafeResponse,
-    ExceptionResponse,
-    NotificationResponse,
-    RequestResponse,
-    Response,
-)
 
 UNSPECIFIED = object()
+NOID = object()
 
 
 def convert_camel_case_string(name: str) -> str:
@@ -29,7 +24,7 @@ def convert_camel_case_string(name: str) -> str:
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", string).lower()
 
 
-def convert_camel_case_keys(original_dict: Request) -> Request:
+def convert_camel_case_keys(original_dict: 'Request') -> 'Request':
     """Converts all keys of a dict from camel case to snake case, recursively"""
     new_dict = dict()
     for key, val in original_dict.items():
@@ -47,7 +42,7 @@ def validate_arguments_against_signature(
     """
     Check if the request's arguments match a function's signature.
 
-    Raises InvalidParams exception if arguments cannot be passed to a function.
+    Raises TypeError exception if arguments cannot be passed to a function.
 
     Args:
         func: The function to check.
@@ -61,14 +56,14 @@ def validate_arguments_against_signature(
 
 
 def get_arguments(
-    params: Union[List, Dict], context: Union[Dict, object] = NOTSPECIFIED
+    params: Union[List, Dict], context: Union[Dict, object] = UNSPECIFIED
 ) -> Tuple[Optional[List], Optional[Dict]]:
     """
     Get the positional and keyword arguments from a request.
 
     Takes the 'params' part of a JSON-RPC request and converts it to either positional
-    or keyword arguments usable in a Python function call. Note that a JSON-RPC request
-    can have positional or named arguments, but not both. See
+    or named arguments usable in a Python function call. Note that a JSON-RPC request
+    can only have positional _or_ named arguments, but not both. See
     http://www.jsonrpc.org/specification#parameter_structures
 
     Args:
@@ -83,7 +78,7 @@ def get_arguments(
         or None) arguments, extracted from the 'params' part of the request.
 
     Raises:
-        InvalidParams: If 'params' was present but was not a list or dict.
+        TypeError: If 'params' was present but was not a list or dict.
         AssertionError: If both positional and names arguments specified, which is not
             allowed in JSON-RPC.
     """
@@ -98,7 +93,7 @@ def get_arguments(
         # Any other type is invalid. (This should never happen if the request
         # has passed the schema validation.)
         else:
-            raise InvalidParams(
+            raise TypeError(
                 "Params of type %s is not allowed" % type(params).__name__
             )
     # Can't have both positional and keyword arguments. It's impossible in json
@@ -125,7 +120,7 @@ class Request:
     def __init__(
         self,
         request: Dict[str, Any],
-        context: Optional[Any] = None,
+        context: Union[Dict, object] = UNSPECIFIED,
         convert_camel_case: bool = False,
     ) -> None:
         """
@@ -138,7 +133,8 @@ class Request:
         # Get method name and arguments
         self.method_name = request["method"]
         self.args, self.kwargs = get_arguments(request.get("params"), context=context)
-        self.request_id = request.get("id")
+        # We use NOID because None (null) is a valid request id
+        self.request_id = request["id"] if "id" in request else NOID
 
         if convert_camel_case:
             self.method_name = convert_camel_case_string(self.method_name)
@@ -152,4 +148,4 @@ class Request:
             True if the request is a JSON-RPC Notification (ie. No id attribute is
             included). False if it doesn't, meaning it's a JSON-RPC "Request".
         """
-        return request.get("id") is None
+        return self.request_id is NOID
