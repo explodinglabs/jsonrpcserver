@@ -158,5 +158,3 @@ def test_request_convert_camel_case_positional_args():
         convert_camel_case=True,
     )
     assert req.args == ["Camel", "Case"]
-
-
