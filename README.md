@@ -3,6 +3,9 @@
 
 # jsonrpcserver
 
+*Sep 17, 2018: Work on version 4 is underway, will be ready within a few
+weeks.*
+
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 
 ```python
