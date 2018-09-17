@@ -1,8 +1,8 @@
 # jsonrpcserver Change Log
 
 ## 4.0.0 (Aug 27, 2018)
-- dispatch now only takes a `Methods` object. No longer accepts dictionary or
-  list.
+- The dispatch function now only takes a `Methods` object. No longer accepts a
+  dictionary or list.
 - No more exceptions. Calling code will _always_ get a valid JSON-RPC
   response from `dispatch`. The old `InvalidParamsException` is gone - instead
   return an `InvalidParamsResponse` if params are invalid.
@@ -11,7 +11,8 @@
   notification)
 - response.is_notification is now is_request
 - Add type hints
-- Change to pytest
+- Move all tests to pytest
+- Removed the config module. Use params/configuration file.
 
 ## 3.5.6 (Jun 28, 2018)
 - Add trim_log_values dispatch param. (#65)
