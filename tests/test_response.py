@@ -1,15 +1,16 @@
 import json
 
 import pytest
-from jsonrpcserver import config, status
+
+from jsonrpcserver import status
 from jsonrpcserver.response import (
     BatchResponse,
     ErrorResponse,
     ExceptionResponse,
     InvalidParamsResponse,
     NotificationResponse,
-    SuccessResponse,
     Response,
+    SuccessResponse,
     sort_dict_response,
 )
 
@@ -31,12 +32,11 @@ def test_notification_response():
 
 
 def test_notification_response_str():
-    response = NotificationResponse()
-    assert str(response) == ""
+    assert str(NotificationResponse()) == ""
 
 
 def test_batch_response():
-    str(BatchResponse())
+    str(BatchResponse([SuccessResponse("foo", id=1)]))
 
 
 def test_sort_dict_response_success():
@@ -86,7 +86,7 @@ def test_success_response_null_result():
 
 
 def test_error_response():
-    response = ErrorResponse(-1, "foo", request_id=1)
+    response = ErrorResponse(-1, "foo", id=1, debug=True)
     assert response.code == -1
     assert response.message == "foo"
     assert (
@@ -99,42 +99,49 @@ def test_error_response_no_id():
     # Responding with an error to a Notification - this is OK; we do respond to
     # notifications under certain circumstances, such as "invalid json" and "invalid
     # json-rpc".
-    response = ErrorResponse(-1, "foo")
     assert (
-        str(response) == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
+        str(ErrorResponse(-1, "foo", debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
     )
 
 
 def test_error_response_data_with_debug_disabled():
-    response = ErrorResponse(-1, "foo", data="bar")
     # The data is not included, because debug=True is not passed
     assert (
-        str(response) == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
+        str(ErrorResponse(-1, "foo", data="bar", debug=False))
+        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
     )
 
 
 def test_error_response_data_with_debug_enabled():
-    response = ErrorResponse(-1, "foo", data="bar", debug=True)
     assert (
-        str(response) == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo", "data": "bar"}}'
+        str(ErrorResponse(-1, "foo", data="bar", debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo", "data": "bar"}}'
     )
 
 
 def test_exception_response():
-    response = ExceptionResponse(ValueError())
-    assert str(response) == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}}'
+    assert (
+        str(ExceptionResponse(ValueError("foo"), debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: foo"}}'
+    )
 
 
-def test_exception_response_with_request_id():
-    response = ExceptionResponse(ValueError(), request_id=1)
-    assert str(response) == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error"}, "id": 1}'
+def test_exception_response_with_id():
+    assert (
+        str(ExceptionResponse(ValueError("foo"), id=1, debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: foo"}, "id": 1}'
+    )
 
 
 def test_exception_response_debug_enabled():
     response = ExceptionResponse(ValueError("There was an error"), debug=True)
-    assert str(response) == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: There was an error"}}'
+    assert (
+        str(response)
+        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: There was an error"}}'
+    )
 
 
 def test_error_response_http_status():
-    response = ErrorResponse(-1, "foo", http_status=status.HTTP_BAD_REQUEST)
+    response = ErrorResponse(-1, "foo", http_status=status.HTTP_BAD_REQUEST, debug=False)
     assert response.http_status == status.HTTP_BAD_REQUEST

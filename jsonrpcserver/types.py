@@ -1,8 +1,11 @@
 """Types"""
-from typing import Any, Dict, List, Union
+from typing import Any, Callable, Dict, Iterator, Union
+
+from .request import Request
 from .response import Response
 
-
-Request = Dict[str, Any]
-Requests = Union[Request, List[Request]]
-Responses = Union[Response, List[Response]]
+DeserializedRequest = Dict[str, Any]
+DeserializedRequests = Union[DeserializedRequest, Iterator[DeserializedRequest]]
+Requests = Union[Request, Iterator[Request]]
+# Responses = Union[Response, Iterator[Response]]
+Method = Callable[..., Any]

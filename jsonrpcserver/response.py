@@ -17,7 +17,6 @@ There's also an HTTP status code if you need it::
 
 Response
     NotificationResponse
-    BatchResponse - a list
     DictResponse - a dict
         SuccessResponse
         ErrorResponse
@@ -26,14 +25,14 @@ Response
             MethodNotFoundResponse
             InvalidParamsResponse
             ExceptionResponse
+    BatchResponse - a list of DictResponses
 """
 import json
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
 
 from . import status
-
 
 # Sentinel to indicate nothing passed. We can't use the conventional None default value,
 # because None (null) is valid JSON.
@@ -43,10 +42,7 @@ UNSPECIFIED = object()
 class Response:
     """Base class of all responses."""
 
-    # This basically means you don't need to do isinstance(NotificationResponse). All
-    # responses are responding to a "request" (with an id attribute), except for
-    # NotificationResponse
-    is_request = True
+    is_notification = False
 
     def __init__(self, http_status: Optional[int] = None) -> None:
         self.http_status = http_status
@@ -61,29 +57,13 @@ class NotificationResponse(Response):
     no ``id`` member).
     """
 
-    # This is the only notification response
-    is_request = False
+    is_notification = True
 
     def __init__(self, http_status: int = status.HTTP_NO_CONTENT) -> None:
         super().__init__(http_status=http_status)
 
     def __str__(self) -> str:
         return ""
-
-
-class BatchResponse(Response, list):
-    """
-    Returned from batch requests.
-
-    Basically a collection of responses.
-    """
-
-    def __init__(self, http_status: int = status.HTTP_OK) -> None:
-        super().__init__(http_status=http_status)
-
-    def __str__(self) -> str:
-        """JSON-RPC response string."""
-        return json.dumps(self)
 
 
 def sort_dict_response(response: Dict[str, Any]) -> OrderedDict:
@@ -117,10 +97,10 @@ class DictResponse(Response):
     """Abstract..."""
 
     def __init__(
-        self, *args, request_id: Optional[Any] = UNSPECIFIED, **kwargs: Any
+        self, *args, id: Optional[Any] = UNSPECIFIED, **kwargs: Any
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.request_id = request_id
+        self.id = id
 
     def __str__(self):
         # Abstract.
@@ -136,25 +116,25 @@ class SuccessResponse(DictResponse):
     """
 
     def __init__(
-        self, result: Any, request_id: Any, http_status: int = status.HTTP_OK
+        self, *, result: Any, id: Any, http_status: int = status.HTTP_OK
     ) -> None:
         """
         Args:
-            request_id: Matches the original request's id value.
             result:
                 The payload from processing the request. If the request was a
                 JSON-RPC notification (i.e. the request id is ``None``), the result
                 must also be ``None`` because notifications don't require any data
                 returned.
+            id: Matches the original request's id value. (could be the NOID sentinel.)
             http_status: 
         """
         super().__init__(http_status=http_status)
         self.result = result
-        self.request_id = request_id
+        self.id = id
 
     def __str__(self) -> str:
         """Use str() to get the JSON-RPC response string."""
-        response = {"jsonrpc": "2.0", "result": self.result, "id": self.request_id}
+        response = {"jsonrpc": "2.0", "result": self.result, "id": self.id}
         return json.dumps(sort_dict_response(response))
 
 
@@ -170,8 +150,8 @@ class ErrorResponse(DictResponse):
         code: int,
         message: str,
         *args: Any,
-        data: Any = UNSPECIFIED,
-        debug: bool = False,
+        debug: bool,  # required, named
+        data: Optional[Any] = UNSPECIFIED,
         **kwargs: Any,
     ) -> None:
         """
@@ -182,9 +162,9 @@ class ErrorResponse(DictResponse):
                 params".
             data: A Primitive or Structured value that contains additional information
                 about the error. This may be omitted.
-            debug: 
+            debug: Include more (possibly sensitive) information in the response.
             http_status: The recommended HTTP status code.
-            request_id: Must be the same as the value as the id member in the Request
+            id: Must be the same as the value as the id member in the Request
                 Object. If there was an error in detecting the id in the Request object
                 (e.g. Parse error/Invalid Request), it MUST be Null.
         """
@@ -200,8 +180,8 @@ class ErrorResponse(DictResponse):
             "jsonrpc": "2.0",
             "error": {"code": self.code, "message": self.message},
         }  # type: Dict[str, Any]
-        if self.request_id is not UNSPECIFIED:
-            response["id"] = self.request_id
+        if self.id is not UNSPECIFIED:
+            response["id"] = self.id
         if self.data is not UNSPECIFIED and self.debug:
             response["error"]["data"] = self.data
         return json.dumps(sort_dict_response(response))
@@ -279,3 +259,22 @@ class ExceptionResponse(ErrorResponse):
             http_status=http_status,
             **kwargs,
         )
+
+
+class BatchResponse(Response, list):
+    """
+    Returned from batch requests.
+
+    Basically a collection of responses.
+    """
+
+    def __init__(
+        self, responses: Iterator[Response], http_status: int = status.HTTP_OK
+    ) -> None:
+        super().__init__(http_status=http_status)
+        # Remove notifications; these are not allowed in batch responses
+        self.responses = filter(lambda r: not r.is_notification, responses)
+
+    def __str__(self) -> str:
+        """JSON-RPC response string."""
+        return json.dumps([str(r) for r in self.responses])

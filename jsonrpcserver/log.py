@@ -1,11 +1,10 @@
 """Logging"""
 import json
 import logging
+from typing import Any, Dict, List, Optional, Union, cast
 
-from .types import Request
 
-
-def _trim_string(message: str):
+def _trim_string(message: str) -> str:
     longest_string = 30
 
     if len(message) > longest_string:
@@ -16,7 +15,7 @@ def _trim_string(message: str):
     return message
 
 
-def _trim_values(message_obj: Request):
+def _trim_dict(message_obj: Dict[str, Any]) -> Dict[str, Any]:
     result = {}
     longest_list = 30
     for k, val in message_obj.items():
@@ -25,28 +24,55 @@ def _trim_values(message_obj: Request):
         elif isinstance(val, list) and len(val) > longest_list:
             prefix_len = int(longest_list / 3)
             suffix_len = prefix_len
-            result[k] = val[:prefix_len] + ["..."] + val[-suffix_len:]
+            result[k] = cast(str, val[:prefix_len] + ["..."] + val[-suffix_len:])
         elif isinstance(val, dict):
-            result[k] = _trim_values(val)
+            result[k] = cast(str, _trim_values(val))
         else:
             result[k] = val
     return result
 
 
-def trim_message(message):
+def _trim_values(message_obj: Union[Dict, List]) -> Union[Dict, List]:
+    # Batch?
+    if isinstance(message_obj, list):
+        return [_trim_dict(i) for i in message_obj]
+    else:
+        return _trim_dict(message_obj)
+
+
+def _trim_message(message: str) -> str:
+    # Attempt to deserialize
     try:
         message_obj = json.loads(message)
-        return json.dumps(_trim_values(message_obj))
     except ValueError:
+        # Could not be deserialized, trim the string anyway.
         return _trim_string(str(message))
+    else:
+        return json.dumps(_trim_values(message_obj))
 
 
-def log(logger, level, message, *args, **kwargs):
+def log_(
+    message: str,
+    logger: logging.Logger,
+    level: str = "info",
+    extra: Optional[Dict] = None,
+    trim: bool = False,
+) -> None:
     """
-    Log a message.
+    Log a request or response
+
+    Args:
+        message: JSON-RPC request or response string.
+        level: Log level.
+        extra: More details to include in the log entry.
+        trim: Abbreviate log messages.
     """
-    fmt = kwargs.pop("fmt", "%(message)s")
-    trim = kwargs.pop("trim", False)
+    if extra is None:
+        extra = {}
+    # Clean up the message for logging
+    if message:
+        message = message.replace("\n", "").replace("  ", " ").replace("{ ", "{")
     if trim:
-        message = trim_message(message)
-    logger.log(level, message, *args, **kwargs)
+        message = _trim_message(message)
+    # Log.
+    getattr(logger, level)(message, extra=extra)

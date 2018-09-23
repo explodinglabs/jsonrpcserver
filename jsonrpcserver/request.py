@@ -3,16 +3,9 @@ Request class.
 
 Represents a JSON-RPC request object.
 """
-import logging
 import re
 import traceback
-from typing import Any, Callable, Dict, List, Generator, Optional, Tuple, Union
-from funcsigs import signature  # type: ignore
-
-import jsonschema  # type: ignore
-
-from .log import log
-from .methods import Methods
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union, cast
 
 UNSPECIFIED = object()
 NOID = object()
@@ -24,7 +17,7 @@ def convert_camel_case_string(name: str) -> str:
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", string).lower()
 
 
-def convert_camel_case_keys(original_dict: 'Request') -> 'Request':
+def convert_camel_case_keys(original_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Converts all keys of a dict from camel case to snake case, recursively"""
     new_dict = dict()
     for key, val in original_dict.items():
@@ -36,27 +29,8 @@ def convert_camel_case_keys(original_dict: 'Request') -> 'Request':
     return new_dict
 
 
-def validate_arguments_against_signature(
-    func: Callable, args: Optional[Dict], kwargs: Optional[List]
-) -> None:
-    """
-    Check if the request's arguments match a function's signature.
-
-    Raises TypeError exception if arguments cannot be passed to a function.
-
-    Args:
-        func: The function to check.
-        args: Positional arguments.
-        kwargs: Keyword arguments.
-
-    Raises:
-        TypeError: If the arguments cannot be passed to the function.
-    """
-    signature(func).bind(*(args or []), **(kwargs or {}))
-
-
 def get_arguments(
-    params: Union[List, Dict], context: Union[Dict, object] = UNSPECIFIED
+    params: Union[List, Dict], context: Any = UNSPECIFIED
 ) -> Tuple[Optional[List], Optional[Dict]]:
     """
     Get the positional and keyword arguments from a request.
@@ -82,29 +56,22 @@ def get_arguments(
         AssertionError: If both positional and names arguments specified, which is not
             allowed in JSON-RPC.
     """
-    positionals = nameds = None
-    if params:
-        # Params is a list. Taken as positional arguments.
-        if isinstance(params, list):
-            positionals = params
-        # Params is a dict. Taken as keyword arguments.
-        elif isinstance(params, dict):
-            nameds = params
-        # Any other type is invalid. (This should never happen if the request
-        # has passed the schema validation.)
-        else:
-            raise TypeError(
-                "Params of type %s is not allowed" % type(params).__name__
-            )
-    # Can't have both positional and keyword arguments. It's impossible in json
-    # anyway; the params arg can only be a json array (list) or object (dict)
+    positionals, nameds = [], {}
+
+    if isinstance(params, list):
+        positionals = params
+    elif isinstance(params, dict):
+        nameds = params
+
+    # Both positional and keyword arguments is not allowed in JSON-RPC.
     assert not (
         positionals and nameds
     ), "Cannot have both positional and keyword arguments in JSON-RPC."
+
     # If context data was passed, include it as a keyword argument.
     if context is not UNSPECIFIED:
-        nameds = {} if not nameds else nameds
         nameds["context"] = context
+
     return (positionals, nameds)
 
 
@@ -115,29 +82,39 @@ class Request:
     Encapsulates a JSON-RPC request, providing details such as the method name,
     arguments, and whether it's a request or a notification, and provides a `process`
     method to execute the request.
+
+    We use NOID because None (null) is a valid id.
+
+    Note: There's no need to validate here, because the schema should have validated the
+    data already.
     """
 
     def __init__(
         self,
-        request: Dict[str, Any],
-        context: Union[Dict, object] = UNSPECIFIED,
+        method: str,
+        jsonrpc: Optional[str] = None,  # ignored
+        params: Optional[Any] = UNSPECIFIED,
+        id: Optional[Any] = NOID,
         convert_camel_case: bool = False,
+        context: Any = UNSPECIFIED,
     ) -> None:
         """
         Args:
             request: JSON-RPC request, deserialized into a dict.
             context: Optional context object that will be passed to the RPC method.
             convert_camel_case:
-            schema_validation:
         """
-        # Get method name and arguments
-        self.method_name = request["method"]
-        self.args, self.kwargs = get_arguments(request.get("params"), context=context)
-        # We use NOID because None (null) is a valid request id
-        self.request_id = request["id"] if "id" in request else NOID
+        self.jsonrpc = jsonrpc
+        self.method = method
+        self.args, self.kwargs = (
+            get_arguments(params, context=context)
+            if isinstance(params, (list, dict))
+            else ([], {})
+        )
+        self.id = id
 
         if convert_camel_case:
-            self.method_name = convert_camel_case_string(self.method_name)
+            self.method = convert_camel_case_string(self.method)
             if self.kwargs:
                 self.kwargs = convert_camel_case_keys(self.kwargs)
 
@@ -148,4 +125,4 @@ class Request:
             True if the request is a JSON-RPC Notification (ie. No id attribute is
             included). False if it doesn't, meaning it's a JSON-RPC "Request".
         """
-        return self.request_id is NOID
+        return self.id is NOID

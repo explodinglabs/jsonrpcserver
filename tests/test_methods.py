@@ -3,20 +3,53 @@ from unittest.mock import patch
 
 import pytest
 
-from jsonrpcserver.methods import Methods
+from jsonrpcserver.methods import Methods, validate_args
+
+
+def test_validate_no_arguments():
+    validate_args(lambda: None)
+
+
+def test_validate_no_arguments_too_many_positionals():
+    with pytest.raises(TypeError):
+        validate_args(lambda: None, "foo")
+
+
+def test_validate_positionals():
+    validate_args(lambda x: None, 1)
+
+
+def test_validate_positionals_not_passed():
+    with pytest.raises(TypeError):
+        validate_args(lambda x: None, foo="bar")
+
+
+def test_validate_keywords():
+    validate_args(lambda **kwargs: None, foo="bar")
+
+
+def test_validate_object_method():
+    class FooClass:
+        def foo(self, one, two):
+            return "bar"
+
+    validate_args(FooClass().foo, "one", "two")
 
 
 def test_add_function():
     def foo():
         pass
+
     methods = Methods()
     methods.add(foo)
     assert methods.items["foo"] is foo
+
 
 def test_add_non_callable():
     methods = Methods()
     with pytest.raises(AssertionError):
         methods.add(None, "ping")
+
 
 def test_add_function_custom_name():
     def foo():
@@ -26,11 +59,13 @@ def test_add_function_custom_name():
     methods.add(foo, "foobar")
     assert methods.items["foobar"] is foo
 
+
 def test_add_lambda_no_name():
     add = lambda x, y: x + y
     methods = Methods()
     methods.add(add)  # Lambda's __name__ will be '<lambda>'!
     assert "add" not in methods.items
+
 
 def test_add_lambda_renamed():
     add = lambda x, y: x + y
@@ -39,17 +74,20 @@ def test_add_lambda_renamed():
     methods.add(add)
     methods.items["add"] is add
 
+
 def test_add_lambda_custom_name():
     add = lambda x, y: x + y
     methods = Methods()
     methods.add(add, "add")
     assert methods.items["add"] is add
 
+
 def test_add_partial_no_name():
     six = partial(lambda x: x + 1, 5)
     methods = Methods()
     with pytest.raises(AttributeError):
         methods.add(six)  # Partial has no __name__ !
+
 
 def test_add_partial_renamed():
     six = partial(lambda x: x + 1, 5)
@@ -58,11 +96,13 @@ def test_add_partial_renamed():
     methods.add(six)
     assert methods.items["six"] is six
 
+
 def test_add_partial_custom_name():
     six = partial(lambda x: x + 1, 5)
     methods = Methods()
     methods.add(six, "six")
     assert methods.items["six"] is six
+
 
 def test_add_static_method():
     class FooClass(object):
@@ -74,6 +114,7 @@ def test_add_static_method():
     methods.add(FooClass.foo)
     assert methods.items["foo"] is FooClass.foo
 
+
 def test_add_static_method_custom_name():
     class FooClass(object):
         @staticmethod
@@ -84,6 +125,7 @@ def test_add_static_method_custom_name():
     methods.add(FooClass.foo, "custom")
     assert methods.items["custom"] == FooClass.foo
 
+
 def test_add_instance_method():
     class FooClass(object):
         def foo(self):
@@ -92,6 +134,7 @@ def test_add_instance_method():
     methods = Methods()
     methods.add(FooClass().foo)
     assert methods.items["foo"].__call__() is "bar"
+
 
 def test_add_instance_method_custom_name():
     class Foo(object):
@@ -113,9 +156,11 @@ def test_add_instance_method_custom_name():
 
 def test_add_function_via_decorator():
     methods = Methods()
+
     @methods.add
     def foo():
         pass
+
     assert methods.items["foo"] is foo
 
 
@@ -141,8 +186,8 @@ def test_get():
     methods = Methods()
     methods.add(cat)
     methods.add(dog)
-    assert methods.get("cat") == cat
-    assert methods.get("dog") == dog
+    assert methods.items["cat"] == cat
+    assert methods.items["dog"] == dog
 
 
 @patch("http.server.HTTPServer.serve_forever")

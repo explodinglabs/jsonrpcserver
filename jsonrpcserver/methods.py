@@ -21,19 +21,39 @@ Serve the methods::
 """
 import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Callable
+from typing import Any, Callable, Dict, Iterable, Optional
+
+from funcsigs import signature  # type: ignore
+
+from .types import Method
 
 
-logger = logging.getLogger(__name__)
+def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
+    """
+    Check if the request's arguments match a function's signature.
+
+    Raises TypeError exception if arguments cannot be passed to a function.
+
+    Args:
+        func: The function to check.
+        args: Positional arguments.
+        kwargs: Keyword arguments.
+
+    Raises:
+        TypeError: If the arguments cannot be passed to the function.
+    """
+    signature(func).bind(*args, **kwargs)
+    return func
 
 
 class Methods:
     """Holds a list of methods that can be called with a JSON-RPC request."""
 
-    def __init__(self):
+    def __init__(self, *args):
         self.items = {}
+        [self.add(m) for m in args]
 
-    def add(self, method, name=None):
+    def add(self, method: Method, name: str = None):
         """
         Register a function to the list.
 
@@ -49,6 +69,7 @@ class Methods:
                 no ``__name__`` property, and no ``name`` argument was given.)
 
         Examples:
+            methods = Methods()
             @methods.add
             def subtract(minuend, subtrahend):
                 return minuend - subtrahend
@@ -59,21 +80,6 @@ class Methods:
         name = method.__name__ if not name else name
         self.items[name] = method
         return method  # for the decorator to work
-
-    def get(self, name: str) -> Callable:
-        """
-        Get a method in the list.
-
-        Args:
-            name: Name of the method to find.
-
-        Returns:
-            The method from the list.
-
-        Raises:
-            KeyError: If the method wasn't in the list.
-        """
-        return self.items[name]
 
     def serve_forever(self, name="", port=5000):
         """
