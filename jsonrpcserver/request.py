@@ -56,17 +56,10 @@ def get_arguments(
         AssertionError: If both positional and names arguments specified, which is not
             allowed in JSON-RPC.
     """
-    positionals, nameds = [], {}
+    # Should never happen if schema validation passed.
+    assert isinstance(params, (list, dict))
 
-    if isinstance(params, list):
-        positionals = params
-    elif isinstance(params, dict):
-        nameds = params
-
-    # Both positional and keyword arguments is not allowed in JSON-RPC.
-    assert not (
-        positionals and nameds
-    ), "Cannot have both positional and keyword arguments in JSON-RPC."
+    positionals, nameds = (params, {}) if isinstance(params, list) else ([], params)
 
     # If context data was passed, include it as a keyword argument.
     if context is not UNSPECIFIED:
