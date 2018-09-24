@@ -3,83 +3,37 @@ from unittest.mock import patch
 
 import pytest
 
-from jsonrpcserver.methods import Methods, validate_args
-
-
-def test_validate_no_arguments():
-    validate_args(lambda: None)
-
-
-def test_validate_no_arguments_too_many_positionals():
-    with pytest.raises(TypeError):
-        validate_args(lambda: None, "foo")
-
-
-def test_validate_positionals():
-    validate_args(lambda x: None, 1)
-
-
-def test_validate_positionals_not_passed():
-    with pytest.raises(TypeError):
-        validate_args(lambda x: None, foo="bar")
-
-
-def test_validate_keywords():
-    validate_args(lambda **kwargs: None, foo="bar")
-
-
-def test_validate_object_method():
-    class FooClass:
-        def foo(self, one, two):
-            return "bar"
-
-    validate_args(FooClass().foo, "one", "two")
+from jsonrpcserver.methods import Methods
 
 
 def test_add_function():
     def foo():
         pass
 
-    methods = Methods()
-    methods.add(foo)
+    methods = Methods(foo)
     assert methods.items["foo"] is foo
 
 
 def test_add_non_callable():
-    methods = Methods()
     with pytest.raises(AssertionError):
-        methods.add(None, "ping")
+        Methods(None)
 
 
-def test_add_function_custom_name():
+def test_add_func_named():
     def foo():
         pass
+    assert "bar" in Methods(bar=foo).items
 
-    methods = Methods()
-    methods.add(foo, "foobar")
-    assert methods.items["foobar"] is foo
+
+def test_add_lambda_named():
+    assert "foo" in Methods(foo=lambda: None).items
 
 
 def test_add_lambda_no_name():
-    add = lambda x, y: x + y
-    methods = Methods()
-    methods.add(add)  # Lambda's __name__ will be '<lambda>'!
-    assert "add" not in methods.items
-
-
-def test_add_lambda_renamed():
-    add = lambda x, y: x + y
-    add.__name__ = "add"
-    methods = Methods()
-    methods.add(add)
-    methods.items["add"] is add
-
-
-def test_add_lambda_custom_name():
-    add = lambda x, y: x + y
-    methods = Methods()
-    methods.add(add, "add")
-    assert methods.items["add"] is add
+    lmb = lambda x, y: x + y
+    methods = Methods(lmb)
+    # The lambda's __name__ will be '<lambda>'!
+    assert "<lambda>" in methods.items
 
 
 def test_add_partial_no_name():
@@ -92,16 +46,12 @@ def test_add_partial_no_name():
 def test_add_partial_renamed():
     six = partial(lambda x: x + 1, 5)
     six.__name__ = "six"
-    methods = Methods()
-    methods.add(six)
-    assert methods.items["six"] is six
+    assert Methods(six).items["six"] is six
 
 
 def test_add_partial_custom_name():
     six = partial(lambda x: x + 1, 5)
-    methods = Methods()
-    methods.add(six, "six")
-    assert methods.items["six"] is six
+    assert Methods(six=six).items["six"] is six
 
 
 def test_add_static_method():
@@ -110,9 +60,7 @@ def test_add_static_method():
         def foo():
             return "bar"
 
-    methods = Methods()
-    methods.add(FooClass.foo)
-    assert methods.items["foo"] is FooClass.foo
+    assert Methods(FooClass.foo).items["foo"] is FooClass.foo
 
 
 def test_add_static_method_custom_name():
@@ -121,9 +69,7 @@ def test_add_static_method_custom_name():
         def foo():
             return "bar"
 
-    methods = Methods()
-    methods.add(FooClass.foo, "custom")
-    assert methods.items["custom"] == FooClass.foo
+    assert Methods(custom=FooClass.foo).items["custom"] == FooClass.foo
 
 
 def test_add_instance_method():
@@ -131,9 +77,7 @@ def test_add_instance_method():
         def foo(self):
             return "bar"
 
-    methods = Methods()
-    methods.add(FooClass().foo)
-    assert methods.items["foo"].__call__() is "bar"
+    assert Methods(FooClass().foo).items["foo"].__call__() is "bar"
 
 
 def test_add_instance_method_custom_name():
@@ -146,9 +90,7 @@ def test_add_instance_method_custom_name():
 
     obj1 = Foo("a")
     obj2 = Foo("b")
-    methods = Methods()
-    methods.add(obj1.get_name, "custom1")
-    methods.add(obj2.get_name, "custom2")
+    methods = Methods(custom1=obj1.get_name, custom2=obj2.get_name)
     # Can't use assertIs, so check the outcome is as expected
     assert methods.items["custom1"].__call__() == "a"
     assert methods.items["custom2"].__call__() == "b"
@@ -183,9 +125,7 @@ def test_get():
     def dog():
         pass
 
-    methods = Methods()
-    methods.add(cat)
-    methods.add(dog)
+    methods = Methods(cat, dog)
     assert methods.items["cat"] == cat
     assert methods.items["dog"] == dog
 

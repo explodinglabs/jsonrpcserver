@@ -46,25 +46,28 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
     return func
 
 
+def validate(method):
+    assert callable(method)
+    return method
+
+
 class Methods:
     """Holds a list of methods that can be called with a JSON-RPC request."""
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         self.items = {}
-        [self.add(m) for m in args]
+        self.add(*args, **kwargs)
 
-    def add(self, method: Method, name: str = None):
+    def add(self, *args, **kwargs):
         """
         Register a function to the list.
 
         Args:
-            method: Function to register to the list.
-            name: Optionally give a name (or rename) the original function.
-
-        Returns:
-            None
+            *args: 
+            **kwargs: 
 
         Raises:
+            AssertionError: If the method is not callable.
             AttributeError: Raised if the method being added has no name. (i.e. it has
                 no ``__name__`` property, and no ``name`` argument was given.)
 
@@ -74,12 +77,15 @@ class Methods:
             def subtract(minuend, subtrahend):
                 return minuend - subtrahend
         """
-        assert callable(method)
-        # If no custom name was given, use the method's __name__ attribute
-        # Raises AttributeError otherwise
-        name = method.__name__ if not name else name
-        self.items[name] = method
-        return method  # for the decorator to work
+        self.items = {
+            **self.items,
+            # Methods passed as positional args need a __name__ attribute, raises
+            # AttributeError otherwise.
+            **{m.__name__: validate(m) for m in args},
+            **{k: validate(v) for k, v in kwargs.items()},
+        }
+        if len(args):
+            return args[0]  # for the decorator to work
 
     def serve_forever(self, name="", port=5000):
         """
