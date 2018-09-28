@@ -199,7 +199,7 @@ class ErrorResponse(DictResponse):
         dct = {
             "jsonrpc": "2.0",
             "error": {"code": self.code, "message": self.message},
-            "id": self.id
+            "id": self.id,
         }  # type: Dict[str, Any]
         if self.data is not UNSPECIFIED and self.debug:
             dct["error"]["data"] = self.data
@@ -254,14 +254,13 @@ class MethodNotFoundResponse(ErrorResponse):
 class InvalidParamsResponse(ErrorResponse):
     def __init__(
         self,
-        method,
         *args: Any,
         http_status: int = status.HTTP_BAD_REQUEST,
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            status.JSONRPC_INVALID_PARAMS_CODE,
-            "Invalid params to {}".format(method),
+            "Invalid parameters",
+            code=status.JSONRPC_INVALID_PARAMS_CODE,
             http_status=http_status,
             *args,
             **kwargs,

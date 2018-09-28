@@ -52,6 +52,7 @@ def test_add_non_callable():
 def test_add_func_named():
     def foo():
         pass
+
     assert "bar" in Methods(bar=foo).items
 
 

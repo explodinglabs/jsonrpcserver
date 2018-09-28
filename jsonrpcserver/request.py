@@ -9,7 +9,6 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union,
 
 from .sentinels import UNSPECIFIED
 
-
 # NOID is used as a request's id attribute to signify request is a Notification. We
 # can't use None which is a valid ID.
 NOID = object()

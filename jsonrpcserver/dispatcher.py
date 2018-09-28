@@ -5,16 +5,19 @@ The dispatch function takes a JSON-RPC request, logs it, calls the appropriate m
 then logs and returns the response.
 """
 import logging
-from json import dumps as serialize, loads as deserialize, JSONDecodeError
-from typing import Any, Dict, Optional, List, Union, cast
-from pkg_resources import resource_string
+from json import JSONDecodeError
+from json import dumps as serialize
+from json import loads as deserialize
+from typing import Any, Dict, List, Optional, Union, cast
 
-from jsonschema import validate as validate_jsonrpc, ValidationError  # type: ignore
+from jsonschema import ValidationError
+from jsonschema import validate as validate_jsonrpc  # type: ignore
+from pkg_resources import resource_string
 
 from . import methods as global_methods
 from .log import log_
 from .methods import Methods, validate_args
-from .request import Request, UNSPECIFIED
+from .request import UNSPECIFIED, Request
 from .response import (
     BatchResponse,
     ExceptionResponse,

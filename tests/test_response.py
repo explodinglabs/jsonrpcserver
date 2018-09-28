@@ -4,13 +4,16 @@ import pytest
 
 from jsonrpcserver import status
 from jsonrpcserver.response import (
-    BatchResponse,
-    ErrorResponse,
-    ExceptionResponse,
-    InvalidParamsResponse,
-    NotificationResponse,
     Response,
+    NotificationResponse,
     SuccessResponse,
+    ErrorResponse,
+    InvalidJSONResponse,
+    InvalidJSONRPCResponse,
+    MethodNotFoundResponse,
+    InvalidParamsResponse,
+    ExceptionResponse,
+    BatchResponse,
     sort_dict_response,
 )
 
@@ -22,7 +25,9 @@ def test_response():
 
 def test_response_http_status():
     class Subclass(Response):
-        def wanted(): return True
+        def wanted():
+            return True
+
     response = Subclass(http_status=1)
     assert response.http_status == 1
 
@@ -39,7 +44,9 @@ def test_notification_response_str():
 
 
 def test_batch_response():
-    response = BatchResponse([SuccessResponse("foo", id=1), SuccessResponse("bar", id=2)])
+    response = BatchResponse(
+        [SuccessResponse("foo", id=1), SuccessResponse("bar", id=2)]
+    )
     expected = '[{"jsonrpc": "2.0", "result": "foo", "id": 1}, {"jsonrpc": "2.0", "result": "bar", "id": 2}]'
     assert response.wanted == True
     assert str(response) == expected
@@ -109,7 +116,7 @@ def test_error_response_no_id():
     # json-rpc".
     assert (
         str(ErrorResponse("foo", id=None, code=-1, debug=True))
-        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
+        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}, "id": null}'
     )
 
 
@@ -117,20 +124,50 @@ def test_error_response_data_with_debug_disabled():
     # The data is not included, because debug is False
     assert (
         str(ErrorResponse("foo", id=None, code=-1, data="bar", debug=False))
-        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
+        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}, "id": null}'
     )
 
 
 def test_error_response_data_with_debug_enabled():
     assert (
         str(ErrorResponse("foo", id=None, code=-1, data="bar", debug=True))
-        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo", "data": "bar"}}'
+        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo", "data": "bar"}, "id": null}'
     )
 
 
 def test_error_response_http_status():
-    response = ErrorResponse("foo", id=NOID, code=-1, http_status=status.HTTP_BAD_REQUEST, debug=False)
+    response = ErrorResponse(
+        "foo", id=1, code=-1, http_status=status.HTTP_BAD_REQUEST, debug=False
+    )
     assert response.http_status == status.HTTP_BAD_REQUEST
+
+
+def test_invalid_json_response():
+    assert (
+        str(InvalidJSONResponse(data="foo", debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Invalid JSON", "data": "foo"}, "id": null}'
+    )
+
+
+def test_invalid_jsonrpc_response():
+    assert (
+        str(InvalidJSONRPCResponse(data="foo", debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": "foo"}, "id": null}'
+    )
+
+
+def test_method_not_found_response():
+    assert (
+        str(MethodNotFoundResponse(id=1, data="foo", debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found", "data": "foo"}, "id": 1}'
+    )
+
+
+def test_invalid_params_response():
+    assert (
+        str(InvalidParamsResponse(id=1, data="bar", debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid parameters", "data": "bar"}, "id": 1}'
+    )
 
 
 def test_exception_response():

@@ -1,21 +1,21 @@
-from unittest import TestCase
 from json import loads as deserialize
+from unittest import TestCase
 
 from jsonrpcserver.dispatcher import (
-    dispatch_request,
     dispatch_deserialized,
     dispatch_pure,
+    dispatch_request,
 )
 from jsonrpcserver.methods import Methods
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import (
     BatchResponse,
     ErrorResponse,
-    NotificationResponse,
-    SuccessResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
     MethodNotFoundResponse,
+    NotificationResponse,
+    SuccessResponse,
 )
 
 
@@ -243,7 +243,7 @@ def test_examples_empty_array():
 
 
 def test_examples_invalid_jsonrpc_batch():
-    response = dispatch_pure('[1]', Methods(foo), debug=True)
+    response = dispatch_pure("[1]", Methods(foo), debug=True)
     assert isinstance(response, InvalidJSONRPCResponse)
     assert (
         str(response)
@@ -270,12 +270,14 @@ def test_examples_mixed_requests_and_notifications():
     but it's removed to test the rest, because we're not validating each request
     individually. Any invalid jsonrpc will respond with a single error message.
     """
-    methods = Methods(**{
-        "sum": lambda *args: sum(args),
-        "notify_hello": lambda *args: 19,
-        "subtract": lambda *args: args[0] - sum(args[1:]),
-        "get_data": lambda: ["hello", 5],
-    })
+    methods = Methods(
+        **{
+            "sum": lambda *args: sum(args),
+            "notify_hello": lambda *args: 19,
+            "subtract": lambda *args: args[0] - sum(args[1:]),
+            "get_data": lambda: ["hello", 5],
+        }
+    )
     requests = [
         {"jsonrpc": "2.0", "method": "sum", "params": [1, 2, 4], "id": "1"},
         {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
