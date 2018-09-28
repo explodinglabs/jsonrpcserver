@@ -7,7 +7,11 @@ import re
 import traceback
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union, cast
 
-UNSPECIFIED = object()
+from .sentinels import UNSPECIFIED
+
+
+# NOID is used as a request's id attribute to signify request is a Notification. We
+# can't use None which is a valid ID.
 NOID = object()
 
 
@@ -76,8 +80,6 @@ class Request:
     arguments, and whether it's a request or a notification, and provides a `process`
     method to execute the request.
 
-    We use NOID because None (null) is a valid id.
-
     Note: There's no need to validate here, because the schema should have validated the
     data already.
     """
@@ -85,9 +87,10 @@ class Request:
     def __init__(
         self,
         method: str,
+        *,
+        params: Any = UNSPECIFIED,
+        id: Any = NOID,
         jsonrpc: Optional[str] = None,  # ignored
-        params: Optional[Any] = UNSPECIFIED,
-        id: Optional[Any] = NOID,
         convert_camel_case: bool = False,
         context: Any = UNSPECIFIED,
     ) -> None:

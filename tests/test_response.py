@@ -16,19 +16,22 @@ from jsonrpcserver.response import (
 
 
 def test_response():
-    Response()
-    assert True
+    with pytest.raises(TypeError):
+        Response()  # Abstract
 
 
 def test_response_http_status():
-    response = Response(http_status=1)
+    class Subclass(Response):
+        def wanted(): return True
+    response = Subclass(http_status=1)
     assert response.http_status == 1
 
 
 def test_notification_response():
     response = NotificationResponse()
-    assert str(response) == ""
     assert response.http_status == 204
+    assert response.wanted == False
+    assert str(response) == ""
 
 
 def test_notification_response_str():
@@ -36,7 +39,10 @@ def test_notification_response_str():
 
 
 def test_batch_response():
-    str(BatchResponse([SuccessResponse("foo", id=1)]))
+    response = BatchResponse([SuccessResponse("foo", id=1), SuccessResponse("bar", id=2)])
+    expected = '[{"jsonrpc": "2.0", "result": "foo", "id": 1}, {"jsonrpc": "2.0", "result": "bar", "id": 2}]'
+    assert response.wanted == True
+    assert str(response) == expected
 
 
 def test_sort_dict_response_success():
@@ -63,32 +69,34 @@ def test_sort_dict_response_error():
 
 
 def test_success_response():
-    response = SuccessResponse("foo", 1)
+    response = SuccessResponse("foo", id=1)
+    assert response.wanted == True
     assert response.result == "foo"
     assert str(response) == '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
 
 
 def test_success_response_str():
-    response = SuccessResponse("foo", 1)
+    response = SuccessResponse("foo", id=1)
     assert str(response) == '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
 
 
 def test_success_response_null_id():
-    # OK - any id is acceptable
-    response = SuccessResponse("foo", None)
+    # OK - any type of id is acceptable
+    response = SuccessResponse("foo", id=None)
     assert str(response) == '{"jsonrpc": "2.0", "result": "foo", "id": null}'
 
 
 def test_success_response_null_result():
     # Perfectly fine.
-    response = SuccessResponse(None, 1)
+    response = SuccessResponse(None, id=1)
     assert str(response) == '{"jsonrpc": "2.0", "result": null, "id": 1}'
 
 
 def test_error_response():
-    response = ErrorResponse(-1, "foo", id=1, debug=True)
+    response = ErrorResponse("foo", id=1, code=-1, debug=True)
     assert response.code == -1
     assert response.message == "foo"
+    assert response.wanted == True
     assert (
         str(response)
         == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}, "id": 1}'
@@ -100,30 +108,35 @@ def test_error_response_no_id():
     # notifications under certain circumstances, such as "invalid json" and "invalid
     # json-rpc".
     assert (
-        str(ErrorResponse(-1, "foo", debug=True))
+        str(ErrorResponse("foo", id=None, code=-1, debug=True))
         == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
     )
 
 
 def test_error_response_data_with_debug_disabled():
-    # The data is not included, because debug=True is not passed
+    # The data is not included, because debug is False
     assert (
-        str(ErrorResponse(-1, "foo", data="bar", debug=False))
+        str(ErrorResponse("foo", id=None, code=-1, data="bar", debug=False))
         == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}}'
     )
 
 
 def test_error_response_data_with_debug_enabled():
     assert (
-        str(ErrorResponse(-1, "foo", data="bar", debug=True))
+        str(ErrorResponse("foo", id=None, code=-1, data="bar", debug=True))
         == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo", "data": "bar"}}'
     )
 
 
+def test_error_response_http_status():
+    response = ErrorResponse("foo", id=NOID, code=-1, http_status=status.HTTP_BAD_REQUEST, debug=False)
+    assert response.http_status == status.HTTP_BAD_REQUEST
+
+
 def test_exception_response():
     assert (
-        str(ExceptionResponse(ValueError("foo"), debug=True))
-        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: foo"}}'
+        str(ExceptionResponse(ValueError("foo"), id=1, debug=True))
+        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: foo"}, "id": 1}'
     )
 
 
@@ -135,13 +148,8 @@ def test_exception_response_with_id():
 
 
 def test_exception_response_debug_enabled():
-    response = ExceptionResponse(ValueError("There was an error"), debug=True)
+    response = ExceptionResponse(ValueError("There was an error"), id=1, debug=True)
     assert (
         str(response)
-        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: There was an error"}}'
+        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: There was an error"}, "id": 1}'
     )
-
-
-def test_error_response_http_status():
-    response = ErrorResponse(-1, "foo", http_status=status.HTTP_BAD_REQUEST, debug=False)
-    assert response.http_status == status.HTTP_BAD_REQUEST

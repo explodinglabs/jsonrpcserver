@@ -8,11 +8,11 @@ import pytest
 from jsonrpcserver import status
 from jsonrpcserver.methods import Methods
 from jsonrpcserver.request import (
-    NOID,
     Request,
     convert_camel_case_keys,
     convert_camel_case_string,
     get_arguments,
+    NOID,
 )
 from jsonrpcserver.response import ErrorResponse, NotificationResponse
 

@@ -3,7 +3,37 @@ from unittest.mock import patch
 
 import pytest
 
-from jsonrpcserver.methods import Methods
+from jsonrpcserver.methods import Methods, validate_args
+
+
+def test_validate_no_arguments():
+    validate_args(lambda: None)
+
+
+def test_validate_no_arguments_too_many_positionals():
+    with pytest.raises(TypeError):
+        validate_args(lambda: None, "foo")
+
+
+def test_validate_positionals():
+    validate_args(lambda x: None, 1)
+
+
+def test_validate_positionals_not_passed():
+    with pytest.raises(TypeError):
+        validate_args(lambda x: None, foo="bar")
+
+
+def test_validate_keywords():
+    validate_args(lambda **kwargs: None, foo="bar")
+
+
+def test_validate_object_method():
+    class FooClass:
+        def foo(self, one, two):
+            return "bar"
+
+    validate_args(FooClass().foo, "one", "two")
 
 
 def test_add_function():

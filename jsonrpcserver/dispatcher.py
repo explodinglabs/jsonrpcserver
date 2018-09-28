@@ -83,18 +83,18 @@ def dispatch_request(request: Request, methods: Methods, *, debug: bool) -> Resp
     """
     try:
         result = call(methods.items[request.method], *request.args, **request.kwargs)
-        # Return the result in a SuccessResponse (or NotificationResponse)
-        return (
-            NotificationResponse()
-            if request.is_notification
-            else SuccessResponse(result=result, id=request.id)
-        )
+        return SuccessResponse(result=result, id=request.id)
     except KeyError:  # Method not found
-        return MethodNotFoundResponse(id=request.id, debug=debug)
+        return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
     except TypeError as exc:  # Validate args failed
-        return InvalidParamsResponse(request.method, data=str(exc), debug=debug)
+        return InvalidParamsResponse(
+            request.method, id=request.id, data=str(exc), debug=debug
+        )
     except Exception as exc:  # Other error inside method - server error
         return ExceptionResponse(exc, id=request.id, debug=debug)
+    finally:
+        if request.is_notification:
+            return NotificationResponse()
 
 
 def dispatch_deserialized(
@@ -104,24 +104,27 @@ def dispatch_deserialized(
     debug: bool,
     context: Any = UNSPECIFIED,
     convert_camel_case: Optional[bool] = False,
-):
+) -> Response:
     """
-    Takes deserialized object (dict or list of dicts), which is valid jsonrpc.
+    Takes a deserialized Python object.
     """
+    try:
+        validate(requests)
+    except ValidationError as exc:
+        return InvalidJSONRPCResponse(data=None, debug=debug)
+
     if isinstance(requests, list):
         return BatchResponse(
             dispatch_request(Request(**request, context=context), methods, debug=debug)
             for request in requests
         )
     # Single request
-    return dispatch_request(
-        Request(**requests, context=context), methods, debug=debug
-    )
+    return dispatch_request(Request(**requests, context=context), methods, debug=debug)
 
 
 # @apply_config(config)
 def dispatch_pure(
-    requests: str, methods: Methods, *, debug: bool, **kwargs: Any
+    requests: str, methods: Optional[Methods] = None, *, debug: bool, **kwargs: Any
 ) -> Response:
     """
     Pure version of dispatch (no logging).
@@ -137,14 +140,13 @@ def dispatch_pure(
     Returns:
         A Response.
     """
+    methods = global_methods if methods is None else methods
     try:
         return dispatch_deserialized(
-            validate(deserialize(requests)), methods, debug=debug, **kwargs
+            deserialize(requests), methods, debug=debug, **kwargs
         )
     except JSONDecodeError as exc:
         return InvalidJSONResponse(data=str(exc), debug=debug)
-    except ValidationError as exc:
-        return InvalidJSONRPCResponse(data=str(exc), debug=debug)
 
 
 def dispatch(
@@ -167,7 +169,6 @@ def dispatch(
     Examples:
         >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', methods)
     """
-    methods = global_methods if methods is None else methods
     log_request(request, trim_log_values=trim_log_values)
     response = dispatch_pure(request, methods, **kwargs)
     log_response(response, trim_log_values=trim_log_values)

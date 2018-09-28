@@ -13,6 +13,8 @@
 - Add type hints
 - Move all tests to pytest
 - Removed the config module. Use params/configuration file.
+- Methods class takes args & kwargs
+- `response.is_notification` changed to `response.wanted`.
 
 ## 3.5.6 (Jun 28, 2018)
 - Add trim_log_values dispatch param. (#65)
