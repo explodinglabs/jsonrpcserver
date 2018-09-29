@@ -1,5 +1,1 @@
-from .methods import Methods
-
-
-# A default Methods object which can be used, or user can create their own.
-methods = Methods()
+from .dispatcher import dispatch

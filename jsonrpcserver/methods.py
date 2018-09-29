@@ -115,3 +115,11 @@ class Methods:
         httpd.methods = self
         logging.info(" * Listening on port %s", port)
         httpd.serve_forever()
+
+
+
+# A default Methods object which can be used, or user can create their own.
+global_methods = Methods()
+
+def add(*args, **kwargs):
+    return global_methods.add(*args, **kwargs)

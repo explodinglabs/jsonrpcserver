@@ -1,7 +1,6 @@
 import json
 import logging
 from functools import partial
-from unittest import TestCase
 
 import pytest
 

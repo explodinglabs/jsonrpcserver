@@ -1,20 +1,26 @@
 # jsonrpcserver Change Log
 
 ## 4.0.0 (Aug 27, 2018)
-- The dispatch function now only takes a `Methods` object. No longer accepts a
+- Now working only with `Methods` object. No longer accepts a
   dictionary or list.
+- `dispatch` no longer requires methods passed to it. It's now an optional
+  second parameter to dispatch. If not passed, uses the global methods object.
+- Methods initialiser has a simpler api - Methods(func1, func2) or
+  Methods(name=func).
 - No more exceptions. Calling code will _always_ get a valid JSON-RPC
   response from `dispatch`. The old `InvalidParamsException` is gone - instead
   return an `InvalidParamsResponse` if params are invalid.
-- No more responding to notifications, even for errors. (except invalid
-  json/json-rpc, in which case it's not possible to know if the request is a
-  notification)
-- response.is_notification is now is_request
+- `response.is_notification` renamed to `response.wanted`, which is the
+  opposite of is_notification. This means the original request was not a
+  notification, it had an id, and does expect a response.
+- Removed "respond to notification errors", which broke the
+  specification. We still respond to invalid json/json-rpc requests, in which
+  case it's not possible to know if the request is a notification.
+- Removed the "config" module. Configure with dispatch arguments,
+  config file or environment variables.
+- Configure logging pythonically.
 - Add type hints
-- Move all tests to pytest
-- Removed the config module. Use params/configuration file.
-- Methods class takes args & kwargs
-- `response.is_notification` changed to `response.wanted`.
+- Move tests to pytest
 
 ## 3.5.6 (Jun 28, 2018)
 - Add trim_log_values dispatch param. (#65)
