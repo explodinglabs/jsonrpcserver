@@ -19,13 +19,11 @@ Serve the methods::
     >>> methods.serve_forever()
      * Listening on port 5000
 """
-import logging
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Callable, Dict, Iterable, Optional
+from typing import Any, Callable
 
 from funcsigs import signature  # type: ignore
 
-from .types import Method
+Method = Callable[..., Any]
 
 
 def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
@@ -87,34 +85,6 @@ class Methods:
         if len(args):
             return args[0]  # for the decorator to work
 
-    def serve_forever(self, name="", port=5000):
-        """
-        A basic way to serve the methods.
-
-        Args:
-            name: Server address.
-            port: Server port.
-        """
-
-        class RequestHandler(BaseHTTPRequestHandler):
-            """Request handler"""
-
-            def do_POST(self):
-                """HTTP POST"""
-                # Process request
-                request = self.rfile.read(int(self.headers["Content-Length"])).decode()
-                response = dispatch(self.server.methods, request)
-                # Return response
-                self.send_response(response.http_status)
-                self.send_header("Content-type", "application/json")
-                self.end_headers()
-                self.wfile.write(str(response).encode())
-
-        httpd = HTTPServer((name, port), RequestHandler)
-        # Let the request handler know which methods to dispatch to
-        httpd.methods = self
-        logging.info(" * Listening on port %s", port)
-        httpd.serve_forever()
 
 
 
@@ -123,3 +93,6 @@ global_methods = Methods()
 
 def add(*args, **kwargs):
     return global_methods.add(*args, **kwargs)
+
+def serve(*args, **kwargs):
+    return global_methods.serve(*args, **kwargs)

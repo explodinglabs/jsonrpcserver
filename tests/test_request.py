@@ -1,11 +1,7 @@
 import json
-import logging
-from functools import partial
 
 import pytest
 
-from jsonrpcserver import status
-from jsonrpcserver.methods import Methods
 from jsonrpcserver.request import (
     NOID,
     Request,
@@ -13,7 +9,6 @@ from jsonrpcserver.request import (
     convert_camel_case_string,
     get_arguments,
 )
-from jsonrpcserver.response import ErrorResponse, NotificationResponse
 
 
 def test_convert_camel_case_string():

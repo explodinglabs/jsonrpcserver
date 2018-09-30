@@ -1,16 +1,15 @@
 import asyncio
 import websockets
-from jsonrpcserver.aio import methods
-from jsonrpcserver.response import NotificationResponse
+from jsonrpcserver.aio import method, dispatch
 
-@methods.add
+@method
 async def ping():
     return 'pong'
 
 async def main(websocket, path):
     request = await websocket.recv()
-    response = await methods.dispatch(request)
-    if not response.is_notification:
+    response = await dispatch(request)
+    if response.wanted:
         await websocket.send(str(response))
 
 start_server = websockets.serve(main, 'localhost', 5000)

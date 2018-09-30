@@ -4,8 +4,7 @@ Request class.
 Represents a JSON-RPC request object.
 """
 import re
-import traceback
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .sentinels import UNSPECIFIED
 

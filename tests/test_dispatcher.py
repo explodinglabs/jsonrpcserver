@@ -157,13 +157,13 @@ def test_dispatch_pure_request():
 def test_dispatch_pure_invalid_json():
     """Unable to parse, must return an error"""
     response = dispatch_pure("{", Methods(ping), convert_camel_case=False, debug=True)
-    assert isinstance(response, ErrorResponse)
+    assert isinstance(response, InvalidJSONResponse)
 
 
 def test_dispatch_pure_invalid_jsonrpc():
     """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
     response = dispatch_pure("{}", Methods(ping), convert_camel_case=False, debug=True)
-    assert isinstance(response, ErrorResponse)
+    assert isinstance(response, InvalidJSONRPCResponse)
 
 
 # dispatch

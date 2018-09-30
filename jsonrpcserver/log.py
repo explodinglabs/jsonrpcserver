@@ -75,4 +75,4 @@ def log_(
     if trim:
         message = _trim_message(message)
     # Log.
-    getattr(logger, level)(message, extra=extra)
+    logger.log(level, message, extra=extra)

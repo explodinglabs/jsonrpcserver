@@ -4,18 +4,20 @@ Dispatcher.
 The dispatch function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
+from apply_defaults import apply_config
+from configparser import ConfigParser
 import logging
+import os
 from json import JSONDecodeError
-from json import dumps as serialize
 from json import loads as deserialize
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union
 
 from jsonschema import ValidationError  # type: ignore
 from jsonschema import validate as validate_jsonrpc  # type: ignore
 from pkg_resources import resource_string
 
 from .log import log_
-from .methods import Methods, global_methods, validate_args
+from .methods import Method, Methods, global_methods, validate_args
 from .request import UNSPECIFIED, Request
 from .response import (
     BatchResponse,
@@ -28,8 +30,6 @@ from .response import (
     Response,
     SuccessResponse,
 )
-from .status import HTTP_STATUS_CODES
-from .types import DeserializedRequest, DeserializedRequests, Method, Requests
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
@@ -39,17 +39,19 @@ schema = deserialize(resource_string(__name__, "request-schema.json"))
 DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
 DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
 
+defaults = {"convert_camel_case": "False", "debug": "False", "trim_log_values": "False"}
+config = ConfigParser(defaults=defaults, default_section="dispatch")
+config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
+
 
 def log_request(request: str, trim_log_values: bool = False, **kwargs: Any) -> None:
     """Log a request"""
-    return log_(request, request_logger, "info", trim=trim_log_values, **kwargs)
+    return log_(request, request_logger, logging.INFO, trim=trim_log_values, **kwargs)
 
 
-def log_response(
-    response: Response, trim_log_values: bool = False, **kwargs: Any
-) -> None:
+def log_response(response: str, trim_log_values: bool = False, **kwargs: Any) -> None:
     """Log a response"""
-    return log_(str(response), response_logger, "info", trim=trim_log_values, **kwargs)
+    return log_(response, response_logger, logging.INFO, trim=trim_log_values, **kwargs)
 
 
 def is_batch_request(requests_deserialized):
@@ -163,7 +165,7 @@ def dispatch_pure(
         return InvalidJSONResponse(data=str(exc), debug=debug)
 
 
-# @apply_config(config)
+@apply_config(config)
 def dispatch(
     request: str,
     methods: Optional[Methods] = None,
@@ -212,7 +214,7 @@ def dispatch(
     response = dispatch_pure(
         request, methods, convert_camel_case=convert_camel_case, debug=debug, **kwargs
     )
-    log_response(response, trim_log_values=trim_log_values)
+    log_response(str(response), trim_log_values=trim_log_values)
     # Remove the temporary stream handlers
     if basic_logging:
         request_logger.handlers = [

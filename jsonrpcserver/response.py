@@ -297,7 +297,7 @@ class BatchResponse(Response, list):
     ) -> None:
         super().__init__(http_status=http_status)
         # Remove notifications; these are not allowed in batch responses
-        self.responses = filter(lambda r: r.wanted, responses)
+        self.responses = [r for r in responses if r.wanted]
 
     @property
     def wanted(self) -> bool:
@@ -305,6 +305,6 @@ class BatchResponse(Response, list):
 
     def __str__(self) -> str:
         """JSON-RPC response string."""
-        all_dicts = list(r.as_dict() for r in self.responses)
+        all_dicts = [r.as_dict() for r in self.responses]
         # For all-notifications, an empty string should be returned, as per spec
         return json.dumps(all_dicts) if len(all_dicts) else ""
