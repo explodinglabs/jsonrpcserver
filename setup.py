@@ -30,7 +30,11 @@ setup(
         ],
     },
     include_package_data=True,
-    install_requires=["jsonschema>=2,<3", "six>=1,<2", "funcsigs>=1,<2"],
+    install_requires=[
+        "apply_defaults<1",
+        "jsonschema>=2,<3",
+        "funcsigs>=1,<2",
+    ],
     license="MIT",
     long_description=README,
     long_description_content_type="text/markdown",
