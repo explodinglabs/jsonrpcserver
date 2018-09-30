@@ -6,14 +6,14 @@
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 
 ```python
-from jsonrpcserver import methods
+from jsonrpcserver import method, serve
 
-@methods.add
+@method
 def ping():
-    return 'pong'
+    return "pong"
 
-if __name__ == '__main__':
-    methods.serve_forever()
+if __name__ == "__main__":
+    serve()
 ```
 
 Full documentation is at [jsonrpcserver.readthedocs.io](https://jsonrpcserver.readthedocs.io/).
