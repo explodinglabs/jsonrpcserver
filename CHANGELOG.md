@@ -1,6 +1,9 @@
 # jsonrpcserver Change Log
 
-## 4.0.0 (Aug 27, 2018)
+## 4.0.0 (Sep 27, 2018)
+
+_The 4.x releases will support Python 3.5+ only._
+
 - Now working only with `Methods` object. No longer accepts a
   dictionary or list.
 - `dispatch` no longer requires methods passed to it. It's now an optional
@@ -18,6 +21,7 @@
   case it's not possible to know if the request is a notification.
 - Removed the "config" module. Configure with dispatch arguments,
   config file or environment variables.
+- Removed the "six" dependency
 - Configure logging pythonically.
 - Add type hints
 - Move tests to pytest
