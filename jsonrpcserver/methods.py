@@ -19,7 +19,7 @@ Serve the methods::
     >>> methods.serve_forever()
      * Listening on port 5000
 """
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from funcsigs import signature  # type: ignore
 
@@ -44,7 +44,7 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
     return func
 
 
-def validate(method):
+def validate(method: Callable) -> Callable:
     assert callable(method)
     return method
 
@@ -52,11 +52,11 @@ def validate(method):
 class Methods:
     """Holds a list of methods that can be called with a JSON-RPC request."""
 
-    def __init__(self, *args, **kwargs):
-        self.items = {}
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.items = {}  # type: dict
         self.add(*args, **kwargs)
 
-    def add(self, *args, **kwargs):
+    def add(self, *args: Any, **kwargs: Any) -> Optional[Callable]:
         """
         Register a function to the list.
 
@@ -84,6 +84,7 @@ class Methods:
         }
         if len(args):
             return args[0]  # for the decorator to work
+        return None
 
 
 
@@ -91,8 +92,5 @@ class Methods:
 # A default Methods object which can be used, or user can create their own.
 global_methods = Methods()
 
-def add(*args, **kwargs):
+def add(*args: Any, **kwargs: Any) -> Optional[Callable]:
     return global_methods.add(*args, **kwargs)
-
-def serve(*args, **kwargs):
-    return global_methods.serve(*args, **kwargs)

@@ -4,21 +4,22 @@ Dispatcher.
 The dispatch function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
-from apply_defaults import apply_config
 from configparser import ConfigParser
+import collections
 import logging
 import os
 from json import JSONDecodeError
 from json import loads as deserialize
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Iterable, Optional, Tuple, Union
 
 from jsonschema import ValidationError  # type: ignore
-from jsonschema import validate as validate_jsonrpc  # type: ignore
+from jsonschema import validate as jsonschema_validate  # type: ignore
 from pkg_resources import resource_string
+from apply_defaults import apply_config  # type: ignore
 
 from .log import log_
 from .methods import Method, Methods, global_methods, validate_args
-from .request import UNSPECIFIED, Request
+from .request import Request, NOCONTEXT
 from .response import (
     BatchResponse,
     ExceptionResponse,
@@ -44,6 +45,31 @@ config = ConfigParser(defaults=defaults, default_section="dispatch")
 config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
 
 
+def add_handlers() -> Tuple[logging.Handler, logging.Handler]:
+    # Request handler
+    request_handler = logging.StreamHandler()
+    request_handler.setFormatter(logging.Formatter(fmt=DEFAULT_REQUEST_LOG_FORMAT))
+    request_logger.addHandler(request_handler)
+    request_logger.setLevel(logging.INFO)
+    # Response handler
+    response_handler = logging.StreamHandler()
+    response_handler.setFormatter(logging.Formatter(fmt=DEFAULT_RESPONSE_LOG_FORMAT))
+    response_logger.addHandler(response_handler)
+    response_logger.setLevel(logging.INFO)
+    return request_handler, response_handler
+
+
+def remove_handlers(
+    request_handler: logging.Handler, response_handler: logging.Handler
+) -> None:
+    request_logger.handlers = [
+        h for h in request_logger.handlers if h is not request_handler
+    ]
+    response_logger.handlers = [
+        h for h in response_logger.handlers if h is not response_handler
+    ]
+
+
 def log_request(request: str, trim_log_values: bool = False, **kwargs: Any) -> None:
     """Log a request"""
     return log_(request, request_logger, logging.INFO, trim=trim_log_values, **kwargs)
@@ -54,14 +80,21 @@ def log_response(response: str, trim_log_values: bool = False, **kwargs: Any) ->
     return log_(response, response_logger, logging.INFO, trim=trim_log_values, **kwargs)
 
 
-def is_batch_request(requests_deserialized):
-    return isinstance(requests_deserialized, list)
+def validate(request: Union[Dict, List], schema: dict) -> Union[Dict, List]:
+    """
+    Wraps jsonschema.validate, returning the same object passed in.
+
+    Raises:
+        ValidationError
+    """
+    jsonschema_validate(request, schema)
+    return request
 
 
 def call(method: Method, *args: Any, **kwargs: Any) -> Any:
     """
     Returns:
-        The result.
+        The "result" part of the JSON-RPC response (the return value from the method).
 
     Raises:
         TypeError: If arguments don't match function signature.
@@ -69,23 +102,12 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
     return validate_args(method, *args, **kwargs)(*args, **kwargs)
 
 
-def dispatch_request(request: Request, methods: Methods, *, debug: bool) -> Response:
+def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
     """
-    Call the appropriate method for a single request.
-
-    Finds the method from the list of methods, call it, and return a Response.
-
-    Args:
-        request: A single Request object.
-        methods: The Methods object containing all the available methods.
-        debug: Include more information in error responses.
-
-    Returns:
-        A Response object.
+    Call a Request, catching exceptions to always return a Response.
     """
     try:
         result = call(methods.items[request.method], *request.args, **request.kwargs)
-        return SuccessResponse(result=result, id=request.id)
     except KeyError:  # Method not found
         return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
     except TypeError as exc:  # Validate args failed
@@ -95,74 +117,62 @@ def dispatch_request(request: Request, methods: Methods, *, debug: bool) -> Resp
     finally:
         if request.is_notification:
             return NotificationResponse()
+    return SuccessResponse(result=result, id=request.id)
 
 
-def dispatch_deserialized(
-    requests: Union[Dict, List],
-    methods: Methods,
-    *,
-    debug: bool,
-    context: Any = UNSPECIFIED,
-    convert_camel_case: bool,
+def call_requests(
+    requests: Union[Request, Iterable[Request]], methods: Methods, debug: bool
 ) -> Response:
     """
-    Takes a deserialized Python object.
+    Takes a request or list of Requests and calls them.
     """
-    try:
-        validate_jsonrpc(requests, schema)
-    except ValidationError as exc:
-        return InvalidJSONRPCResponse(data=None, debug=debug)
+    if isinstance(requests, collections.Iterable):
+        return BatchResponse(safe_call(r, methods, debug=debug) for r in requests)
+    return safe_call(requests, methods, debug=debug)
+
+
+def create_requests(
+    requests: Union[Dict, List], *, context: Any = NOCONTEXT, convert_camel_case: bool
+) -> Union[Request, Iterable[Request]]:
     if isinstance(requests, list):
-        return BatchResponse(
-            dispatch_request(
-                Request(
-                    **request, context=context, convert_camel_case=convert_camel_case
-                ),
-                methods,
-                debug=debug,
-            )
+        return (
+            Request(context=context, convert_camel_case=convert_camel_case, **request)
             for request in requests
         )
-    # Single request
-    return dispatch_request(
-        Request(**requests, context=context, convert_camel_case=convert_camel_case),
-        methods,
-        debug=debug,
-    )
+    return Request(context=context, convert_camel_case=convert_camel_case, **requests)
 
 
 def dispatch_pure(
-    requests: str,
+    request: str,
     methods: Methods,
     *,
+    context: Any,
     convert_camel_case: bool,
     debug: bool,
-    **kwargs: Any,
 ) -> Response:
     """
-    Pure version of dispatch (no logging).
+    Pure version of dispatch - no logging, no optional parameters.
 
-    Also "methods" is required here, unlike the public dispatch function.
-
-    Args:
-        request: The JSON-RPC request to process.
-        convert_camel_case: Convert keys in params dictionary from camel case to
-            snake case.
-        debug: Include more information in error responses.
+    Does two things:
+        1. Deserializes and validates the string.
+        2. Calls each request.
 
     Returns:
         A Response.
     """
     try:
-        return dispatch_deserialized(
-            deserialize(requests),
-            methods,
-            convert_camel_case=convert_camel_case,
-            debug=debug,
-            **kwargs,
-        )
+        deserialized = validate(deserialize(request), schema)
     except JSONDecodeError as exc:
         return InvalidJSONResponse(data=str(exc), debug=debug)
+    except ValidationError as exc:
+        return InvalidJSONRPCResponse(data=None, debug=debug)
+    return call_requests(
+        create_requests(
+            deserialized, context=context, convert_camel_case=convert_camel_case
+        ),
+        methods,
+        debug=debug,
+    )
 
 
 @apply_config(config)
@@ -172,6 +182,7 @@ def dispatch(
     *,
     basic_logging: bool = False,
     convert_camel_case: bool = False,
+    context: Any = NOCONTEXT,
     debug: bool = False,
     trim_log_values: bool = False,
     **kwargs: Any,
@@ -198,29 +209,17 @@ def dispatch(
     methods = global_methods if methods is None else methods
     # Add temporary stream handlers for this request, and remove them later
     if basic_logging:
-        # Request handler
-        request_handler = logging.StreamHandler()
-        request_handler.setFormatter(logging.Formatter(fmt=DEFAULT_REQUEST_LOG_FORMAT))
-        request_logger.addHandler(request_handler)
-        request_logger.setLevel(logging.INFO)
-        # Response handler
-        response_handler = logging.StreamHandler()
-        response_handler.setFormatter(
-            logging.Formatter(fmt=DEFAULT_RESPONSE_LOG_FORMAT)
-        )
-        response_logger.addHandler(response_handler)
-        response_logger.setLevel(logging.INFO)
+        request_handler, response_handler = add_handlers()
     log_request(request, trim_log_values=trim_log_values)
     response = dispatch_pure(
-        request, methods, convert_camel_case=convert_camel_case, debug=debug, **kwargs
+        request,
+        methods,
+        debug=debug,
+        context=context,
+        convert_camel_case=convert_camel_case,
     )
     log_response(str(response), trim_log_values=trim_log_values)
     # Remove the temporary stream handlers
     if basic_logging:
-        request_logger.handlers = [
-            h for h in request_logger.handlers if h is not request_handler
-        ]
-        response_logger.handlers = [
-            h for h in response_logger.handlers if h is not response_handler
-        ]
+        remove_handlers(request_handler, response_handler)
     return response

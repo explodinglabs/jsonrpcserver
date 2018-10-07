@@ -110,7 +110,7 @@ def sort_dict_response(response: Dict[str, Any]) -> OrderedDict:
 class DictResponse(Response):
     """Abstract..."""
 
-    def __init__(self, *args, id: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, id: Any, **kwargs: Any) -> None:
         """
         Args:
             id: Matches the request's id.
@@ -123,7 +123,7 @@ class DictResponse(Response):
         return True
 
     @abstractmethod
-    def as_dict(self):
+    def as_dict(self) -> dict:
         """Gets the response as a dictionary. Used by __str__."""
         ...
 
@@ -155,7 +155,7 @@ class SuccessResponse(DictResponse):
         super().__init__(http_status=http_status, **kwargs)
         self.result = result
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         return {"jsonrpc": "2.0", "result": self.result, "id": self.id}
 
 
@@ -195,7 +195,7 @@ class ErrorResponse(DictResponse):
         self.data = data
         self.debug = debug
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         dct = {
             "jsonrpc": "2.0",
             "error": {"code": self.code, "message": self.message},
@@ -305,6 +305,6 @@ class BatchResponse(Response, list):
 
     def __str__(self) -> str:
         """JSON-RPC response string."""
-        all_dicts = [r.as_dict() for r in self.responses]
+        dicts = [r.as_dict() for r in self.responses]
         # For all-notifications, an empty string should be returned, as per spec
-        return json.dumps(all_dicts) if len(all_dicts) else ""
+        return json.dumps(dicts) if len(dicts) else ""

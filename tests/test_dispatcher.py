@@ -1,14 +1,18 @@
-from json import loads as deserialize
+from json import loads as deserialize, dumps as serialize
 from unittest.mock import sentinel
 
 from jsonrpcserver.dispatcher import (
-    dispatch_request,
-    dispatch_deserialized,
+    log_request,
+    log_response,
+    call,
+    safe_call,
+    call_requests,
+    create_requests,
     dispatch_pure,
     dispatch,
 )
-from jsonrpcserver.methods import Methods
-from jsonrpcserver.request import Request
+from jsonrpcserver.methods import Methods, global_methods
+from jsonrpcserver.request import Request, NOCONTEXT
 from jsonrpcserver.response import (
     BatchResponse,
     ErrorResponse,
@@ -41,105 +45,80 @@ def is_batch_request_no():
     assert is_batch_request({}) is False
 
 
-# dispatch_request
+# safe_call
 
 
-def test_dispatch_request_success_response():
-    response = dispatch_request(Request(method="ping", id=1), Methods(ping), debug=True)
+def test_safe_call_success_response():
+    response = safe_call(Request(method="ping", id=1), Methods(ping), debug=True)
     assert isinstance(response, SuccessResponse)
     assert response.result == "pong"
     assert response.id == 1
 
 
-def test_dispatch_request_notification_response():
-    response = dispatch_request(Request(method="ping"), Methods(ping), debug=True)
+def test_safe_call_notification_response():
+    response = safe_call(Request(method="ping"), Methods(ping), debug=True)
     assert isinstance(response, NotificationResponse)
 
 
-def test_dispatch_request_method_not_found():
-    response = dispatch_request(
-        Request(method="nonexistant", id=1), Methods(ping), debug=True
-    )
+def test_safe_call_method_not_found():
+    response = safe_call(Request(method="nonexistant", id=1), Methods(ping), debug=True)
     assert isinstance(response, MethodNotFoundResponse)
 
 
-def test_dispatch_request_invalid_args():
-    response = dispatch_request(
+def test_safe_call_invalid_args():
+    response = safe_call(
         Request(method="ping", params=[1], id=1), Methods(ping), debug=True
     )
     assert isinstance(response, InvalidParamsResponse)
 
 
-# dispatch_deserialized
+# call_requests
 
 
-def test_dispatch_deserialized():
-    response = dispatch_deserialized(
-        {"jsonrpc": "2.0", "method": "ping"},
-        Methods(ping),
-        convert_camel_case=False,
-        debug=True,
-    )
-    assert isinstance(response, NotificationResponse)
-
-
-def test_dispatch_deserialized():
-    response = dispatch_deserialized(
-        {"jsonrpc": "2.0", "method": "ping", "id": 1},
-        Methods(ping),
-        convert_camel_case=False,
-        debug=True,
-    )
-    assert isinstance(response, SuccessResponse)
-
-
-def test_dispatch_deserialized_with_context():
+def test_call_requests_with_context():
     def ping_with_context(context=None):
         assert context is sentinel.context
 
-    dispatch_deserialized(
-        {"jsonrpc": "2.0", "method": "ping_with_context"},
+    call_requests(
+        Request("ping_with_context", convert_camel_case=False),
         Methods(ping_with_context),
-        context=sentinel.context,
-        convert_camel_case=False,
         debug=True,
     )
-    # Assert happens in the method
+    # Assert is in the method
 
 
-def test_dispatch_deserialized_batch_all_notifications():
-    """Should return a Notification response, not batch; as per spec"""
-    response = dispatch_deserialized(
+def test_call_requests_batch_all_notifications():
+    """Should return a BatchResponse response, an empty list"""
+    response = call_requests(
         [
-            {"jsonrpc": "2.0", "method": "notify_sum", "params": [1, 2, 4]},
-            {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
+            Request(**{"jsonrpc": "2.0", "method": "notify_sum", "params": [1, 2, 4]}),
+            Request(**{"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}),
         ],
         Methods(ping),
-        convert_camel_case=False,
         debug=True,
     )
     assert str(response) == ""
 
 
-def test_dispatch_deserialized_invalid_jsonrpc():
-    """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
-    response = dispatch_deserialized(
-        {}, Methods(ping), convert_camel_case=False, debug=True
+# create_requests
+
+
+def test_create_requests():
+    requests = create_requests(
+        {"jsonrpc": "2.0", "method": "ping"}, convert_camel_case=False
     )
-    assert isinstance(response, ErrorResponse)
+    assert isinstance(requests, Request)
+
+
+def test_create_requests_batch():
+    requests = create_requests(
+        [{"jsonrpc": "2.0", "method": "ping"}, {"jsonrpc": "2.0", "method": "ping"}],
+        convert_camel_case=False,
+    )
+    assert iter(requests)
 
 
 # Dispatch pure
-
-
-def test_dispatch_pure_notification():
-    response = dispatch_pure(
-        '{"jsonrpc": "2.0", "method": "ping"}',
-        Methods(ping),
-        convert_camel_case=False,
-        debug=True,
-    )
-    assert isinstance(response, NotificationResponse)
 
 
 def test_dispatch_pure_request():
@@ -147,6 +126,7 @@ def test_dispatch_pure_request():
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
         Methods(ping),
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, SuccessResponse)
@@ -154,15 +134,30 @@ def test_dispatch_pure_request():
     assert response.id == 1
 
 
+def test_dispatch_pure_notification():
+    response = dispatch_pure(
+        '{"jsonrpc": "2.0", "method": "ping"}',
+        Methods(ping),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+    )
+    assert isinstance(response, NotificationResponse)
+
+
 def test_dispatch_pure_invalid_json():
     """Unable to parse, must return an error"""
-    response = dispatch_pure("{", Methods(ping), convert_camel_case=False, debug=True)
+    response = dispatch_pure(
+        "{", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+    )
     assert isinstance(response, InvalidJSONResponse)
 
 
 def test_dispatch_pure_invalid_jsonrpc():
     """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
-    response = dispatch_pure("{}", Methods(ping), convert_camel_case=False, debug=True)
+    response = dispatch_pure(
+        "{}", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+    )
     assert isinstance(response, InvalidJSONRPCResponse)
 
 
@@ -175,8 +170,8 @@ def test_dispatch():
 
 
 def test_dispatch_with_global_methods():
-    methods.items = {}
-    methods.add(ping)
+    global_methods.items = {}
+    global_methods.add(ping)
     response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
     assert response.result == "pong"
 
@@ -192,6 +187,7 @@ def test_examples_positionals():
         '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
         Methods(subtract),
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, SuccessResponse)
@@ -202,6 +198,7 @@ def test_examples_positionals():
         '{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
         Methods(subtract),
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, SuccessResponse)
@@ -216,6 +213,7 @@ def test_examples_nameds():
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
         Methods(subtract),
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, SuccessResponse)
@@ -226,6 +224,7 @@ def test_examples_nameds():
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
         Methods(subtract),
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, SuccessResponse)
@@ -238,6 +237,7 @@ def test_examples_notification():
         '{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
         methods,
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, NotificationResponse)
@@ -247,6 +247,7 @@ def test_examples_notification():
         '{"jsonrpc": "2.0", "method": "foobar"}',
         methods,
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, NotificationResponse)
@@ -257,6 +258,7 @@ def test_examples_invalid_json():
         '[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
         Methods(ping),
         convert_camel_case=False,
+        context=NOCONTEXT,
         debug=True,
     )
     assert isinstance(response, ErrorResponse)
@@ -268,7 +270,9 @@ def test_examples_invalid_json():
 
 def test_examples_empty_array():
     # This is an invalid JSON-RPC request, should return an error.
-    response = dispatch_pure("[]", Methods(ping), convert_camel_case=False, debug=True)
+    response = dispatch_pure(
+        "[]", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+    )
     assert isinstance(response, ErrorResponse)
     assert (
         str(response)
@@ -281,7 +285,9 @@ def test_examples_invalid_jsonrpc_batch():
     We break the spec here, by not validating each request in the batch individually.
     The examples are expecting a batch response full of error responses.
     """
-    response = dispatch_pure("[1]", Methods(ping), convert_camel_case=False, debug=True)
+    response = dispatch_pure(
+        "[1]", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+    )
     assert isinstance(response, InvalidJSONRPCResponse)
     assert (
         str(response)
@@ -295,7 +301,11 @@ def test_examples_multiple_invalid_jsonrpc():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_pure(
-        "[1, 2, 3]", Methods(ping), convert_camel_case=False, debug=True
+        "[1, 2, 3]",
+        Methods(ping),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
     )
     assert isinstance(response, ErrorResponse)
     assert (
@@ -321,7 +331,7 @@ def test_examples_mixed_requests_and_notifications():
             "get_data": lambda: ["hello", 5],
         }
     )
-    requests = [
+    requests = serialize([
         {"jsonrpc": "2.0", "method": "sum", "params": [1, 2, 4], "id": "1"},
         {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
         {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": "2"},
@@ -332,9 +342,9 @@ def test_examples_mixed_requests_and_notifications():
             "id": "5",
         },
         {"jsonrpc": "2.0", "method": "get_data", "id": "9"},
-    ]
-    response = dispatch_deserialized(
-        requests, methods, convert_camel_case=False, debug=True
+    ])
+    response = dispatch_pure(
+        requests, methods, convert_camel_case=False, context=NOCONTEXT, debug=True
     )
     assert isinstance(response, BatchResponse)
     assert deserialize(str(response)) == [

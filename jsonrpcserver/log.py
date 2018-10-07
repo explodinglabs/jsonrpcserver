@@ -54,7 +54,7 @@ def _trim_message(message: str) -> str:
 def log_(
     message: str,
     logger: logging.Logger,
-    level: str = "info",
+    level: int = logging.INFO,
     extra: Optional[Dict] = None,
     trim: bool = False,
 ) -> None:

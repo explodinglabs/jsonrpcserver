@@ -1,11 +1,12 @@
 import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Any
 
-from .methods import add as method, global_methods
+from .methods import add as method, Methods, global_methods
 from .dispatcher import dispatch
 
 
-def serve(name="", port=5000):
+def serve(name: str = "", port: int =5000) -> None:
     """
     A basic way to serve the methods.
 
@@ -15,12 +16,11 @@ def serve(name="", port=5000):
     """
 
     class RequestHandler(BaseHTTPRequestHandler):
-        """Request handler"""
 
-        def do_POST(self):
+        def do_POST(self) -> None:
             """HTTP POST"""
             # Process request
-            request = self.rfile.read(int(self.headers["Content-Length"])).decode()
+            request = self.rfile.read(int(str(self.headers["Content-Length"]))).decode()
             response = dispatch(request)
             # Return response
             if response.wanted:
@@ -30,7 +30,5 @@ def serve(name="", port=5000):
                 self.wfile.write(str(response).encode())
 
     httpd = HTTPServer((name, port), RequestHandler)
-    # Let the request handler know which methods to dispatch to
-    httpd.methods = global_methods
     logging.info(" * Listening on port %s", port)
     httpd.serve_forever()

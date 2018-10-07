@@ -159,9 +159,3 @@ def test_get():
     methods = Methods(cat, dog)
     assert methods.items["cat"] == cat
     assert methods.items["dog"] == dog
-
-
-@patch("http.server.HTTPServer.serve_forever")
-def test_serve_forever(*_):
-    methods = Methods()
-    methods.serve_forever()

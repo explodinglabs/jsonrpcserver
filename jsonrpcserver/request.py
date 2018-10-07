@@ -6,7 +6,9 @@ Represents a JSON-RPC request object.
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from .sentinels import UNSPECIFIED
+NOCONTEXT = object()
+NOPARAMS = object()
+
 
 # NOID is used as a request's id attribute to signify request is a Notification. We
 # can't use None which is a valid ID.
@@ -32,8 +34,8 @@ def convert_camel_case_keys(original_dict: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def get_arguments(
-    params: Union[List, Dict], context: Any = UNSPECIFIED
-) -> Tuple[Optional[List], Optional[Dict]]:
+    params: Union[List, Dict, object] = NOPARAMS, context: Any = NOCONTEXT,
+) -> Tuple[List, Dict]:
     """
     Get the positional and keyword arguments from a request.
 
@@ -58,13 +60,16 @@ def get_arguments(
         AssertionError: If both positional and names arguments specified, which is not
             allowed in JSON-RPC.
     """
-    # Should never happen if schema validation passed.
-    assert isinstance(params, (list, dict))
-
-    positionals, nameds = (params, {}) if isinstance(params, list) else ([], params)
+    positionals, nameds = [], {}  # type: list, dict
+    if params is not NOPARAMS:
+        assert isinstance(params, (list, dict))
+        if isinstance(params, list):
+            positionals, nameds = (params, {})
+        elif isinstance(params, dict):
+            positionals, nameds = ([], params)
 
     # If context data was passed, include it as a keyword argument.
-    if context is not UNSPECIFIED:
+    if context is not NOCONTEXT:
         nameds["context"] = context
 
     return (positionals, nameds)
@@ -86,11 +91,11 @@ class Request:
         self,
         method: str,
         *,
-        params: Any = UNSPECIFIED,
+        params: Any = None,
         id: Any = NOID,
         jsonrpc: Optional[str] = None,  # ignored
+        context: Any = NOCONTEXT,
         convert_camel_case: bool = False,
-        context: Any = UNSPECIFIED,
     ) -> None:
         """
         Args:
