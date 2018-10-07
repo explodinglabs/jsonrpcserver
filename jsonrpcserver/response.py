@@ -123,13 +123,13 @@ class DictResponse(Response):
         return True
 
     @abstractmethod
-    def as_dict(self) -> dict:
+    def deserialized(self) -> dict:
         """Gets the response as a dictionary. Used by __str__."""
         ...
 
     def __str__(self) -> str:
         """Use str() to get the JSON-RPC response string."""
-        return json.dumps(sort_dict_response(self.as_dict()))
+        return json.dumps(sort_dict_response(self.deserialized()))
 
 
 class SuccessResponse(DictResponse):
@@ -155,7 +155,7 @@ class SuccessResponse(DictResponse):
         super().__init__(http_status=http_status, **kwargs)
         self.result = result
 
-    def as_dict(self) -> dict:
+    def deserialized(self) -> dict:
         return {"jsonrpc": "2.0", "result": self.result, "id": self.id}
 
 
@@ -195,7 +195,7 @@ class ErrorResponse(DictResponse):
         self.data = data
         self.debug = debug
 
-    def as_dict(self) -> dict:
+    def deserialized(self) -> dict:
         dct = {
             "jsonrpc": "2.0",
             "error": {"code": self.code, "message": self.message},
@@ -303,8 +303,12 @@ class BatchResponse(Response, list):
     def wanted(self) -> bool:
         return True
 
+    def deserialized(self) -> list:
+        return [r.deserialized() for r in self.responses]
+
     def __str__(self) -> str:
         """JSON-RPC response string."""
-        dicts = [r.as_dict() for r in self.responses]
-        # For all-notifications, an empty string should be returned, as per spec
+        dicts = self.deserialized()
+        # For an all-notifications response, an empty string should be returned, as per
+        # spec
         return json.dumps(dicts) if len(dicts) else ""

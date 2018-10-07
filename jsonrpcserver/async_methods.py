@@ -19,11 +19,3 @@ Then ``await`` the dispatch::
 """
 from .async_dispatcher import dispatch
 from .methods import Methods
-
-
-class AsyncMethods(Methods):
-    async def dispatch(self, *args, **kwargs):
-        return await dispatch(self, *args, **kwargs)
-
-    def serve_forever(self):
-        raise NotImplementedError()

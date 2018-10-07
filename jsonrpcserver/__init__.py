@@ -1,9 +1,6 @@
-import logging
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any
-
-from .methods import add as method, Methods, global_methods
+from .methods import add as method
 from .dispatcher import dispatch
+from .async_dispatcher import dispatch as async_dispatch
 
 
 def serve(name: str = "", port: int =5000) -> None:
@@ -14,6 +11,9 @@ def serve(name: str = "", port: int =5000) -> None:
         name: Server address.
         port: Server port.
     """
+    import logging
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from .methods import global_methods
 
     class RequestHandler(BaseHTTPRequestHandler):
 
