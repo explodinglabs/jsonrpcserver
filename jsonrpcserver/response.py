@@ -33,7 +33,7 @@ Response heirarchy:
 import json
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, cast, Dict, Iterable, Optional
 
 from . import status
 
@@ -256,10 +256,7 @@ class MethodNotFoundResponse(ErrorResponse):
 
 class InvalidParamsResponse(ErrorResponse):
     def __init__(
-        self,
-        *args: Any,
-        http_status: int = status.HTTP_BAD_REQUEST,
-        **kwargs: Any,
+        self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
     ) -> None:
         super().__init__(
             "Invalid parameters",
@@ -300,7 +297,9 @@ class BatchResponse(Response, list):
     ) -> None:
         super().__init__(http_status=http_status)
         # Remove notifications; these are not allowed in batch responses
-        self.responses = [r for r in responses if r.wanted]
+        self.responses = cast(
+            Iterable[DictResponse], [r for r in responses if r.wanted]
+        )
 
     @property
     def wanted(self) -> bool:

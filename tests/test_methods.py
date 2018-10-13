@@ -86,7 +86,7 @@ def test_add_partial_custom_name():
 
 
 def test_add_static_method():
-    class FooClass(object):
+    class FooClass():
         @staticmethod
         def foo():
             return "bar"
@@ -95,7 +95,7 @@ def test_add_static_method():
 
 
 def test_add_static_method_custom_name():
-    class FooClass(object):
+    class FooClass():
         @staticmethod
         def foo():
             return "bar"
@@ -104,7 +104,7 @@ def test_add_static_method_custom_name():
 
 
 def test_add_instance_method():
-    class FooClass(object):
+    class FooClass():
         def foo(self):
             return "bar"
 
@@ -112,7 +112,7 @@ def test_add_instance_method():
 
 
 def test_add_instance_method_custom_name():
-    class Foo(object):
+    class Foo():
         def __init__(self, name):
             self.name = name
 
@@ -140,7 +140,7 @@ def test_add_function_via_decorator():
 def test_add_static_method_via_decorator():
     methods = Methods()
 
-    class FooClass(object):
+    class FooClass():
         @staticmethod
         @methods.add
         def foo():

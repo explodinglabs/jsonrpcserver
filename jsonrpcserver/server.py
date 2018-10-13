@@ -1,6 +1,8 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 
+from .dispatcher import dispatch
+
 
 class RequestHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
