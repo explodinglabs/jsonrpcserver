@@ -1,13 +1,13 @@
 """
 Responses.
 
-The return value from ``dispatch`` is a Response object.
+The return value from `dispatch` is a Response object.
 
     >>> response = dispatch(request)
     >>> response.result
     'foo'
 
-Use ``str()`` to get a JSON-encoded string::
+Use `str()` to get a JSON-encoded string::
 
     >>> str(response)
     '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
@@ -68,9 +68,9 @@ class NotificationResponse(Response):
     """
     Notification response.
 
-    Returned from processing a successful `notification
-    <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
-    no ``id`` member).
+    Returned from processing a successful
+    [notification](http://www.jsonrpc.org/specification#notification) (i.e. a request
+    with no `id` member).
     """
 
     def __init__(self, http_status: int = status.HTTP_NO_CONTENT) -> None:
@@ -139,7 +139,7 @@ class SuccessResponse(DictResponse):
     """
     Success response returned from a request.
 
-    Returned from processing a successful request with an ``id`` member indicating that
+    Returned from processing a successful request with an `id` member indicating that
     a result payload is expected back.
     """
 
@@ -150,8 +150,8 @@ class SuccessResponse(DictResponse):
         Args:
             result:
                 The payload from processing the request. If the request was a JSON-RPC
-                notification (i.e. the request id is ``None``), the result must also be
-                ``None`` because notifications don't require any data returned.
+                notification (i.e. the request id is `None`), the result must also be
+                `None` because notifications don't require any data returned.
             id: Matches the request's id value.
             http_status: 
         """

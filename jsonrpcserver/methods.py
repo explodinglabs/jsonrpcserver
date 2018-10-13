@@ -54,7 +54,7 @@ class Methods:
         Raises:
             AssertionError: If the method is not callable.
             AttributeError: Raised if the method being added has no name. (i.e. it has
-                no ``__name__`` property, and no ``name`` argument was given.)
+                no `__name__` property, and no `name` argument was given.)
 
         Examples:
             methods = Methods()
