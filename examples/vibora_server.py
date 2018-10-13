@@ -1,17 +1,22 @@
 from vibora import Vibora, Request
 from vibora.responses import JsonResponse
-from jsonrpcserver.aio import methods
+from jsonrpcserver import method, async_dispatch as dispatch
 
 app = Vibora()
 
-@methods.add
+
+@method
 async def ping():
-    return 'pong'
+    return "pong"
 
-@app.route('/', methods=['POST'])
+
+@app.route("/", methods=["POST"])
 async def home(request: Request):
-    response = await methods.dispatch(await request.json())
-    return JsonResponse(response)
+    request = await request.stream.read()
+    response = await dispatch(request.decode())
+    return JsonResponse(response.deserialized())
 
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     app.run()
