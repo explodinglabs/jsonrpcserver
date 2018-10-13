@@ -113,7 +113,7 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
         result = call(methods.items[request.method], *request.args, **request.kwargs)
     except KeyError:
         return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
-    except InvalidParamsError as exc:  # Validate args failed
+    except (InvalidParamsError, AssertionError) as exc:  # Validate args failed
         return InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
     except Exception as exc:  # Other error inside method - server error
         return ExceptionResponse(exc, id=request.id, debug=debug)
