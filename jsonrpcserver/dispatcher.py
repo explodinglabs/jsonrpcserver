@@ -25,7 +25,6 @@ from .response import (
     ExceptionResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
-    InvalidParamsError,
     InvalidParamsResponse,
     MethodNotFoundResponse,
     NotificationResponse,
@@ -99,10 +98,7 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
     Raises:
         TypeError: If arguments don't match function signature.
     """
-    try:
-        return validate_args(method, *args, **kwargs)(*args, **kwargs)
-    except TypeError as exc:
-        raise InvalidParamsError() from exc
+    return validate_args(method, *args, **kwargs)(*args, **kwargs)
 
 
 def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
@@ -113,7 +109,9 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
         result = call(methods.items[request.method], *request.args, **request.kwargs)
     except KeyError:
         return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
-    except (InvalidParamsError, AssertionError) as exc:  # Validate args failed
+    except (TypeError, AssertionError) as exc:
+        # Validate args failed - TypeError is raised by jsonschema, AssertionError
+        # raised inside the methods.
         return InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
     except Exception as exc:  # Other error inside method - server error
         return ExceptionResponse(exc, id=request.id, debug=debug)

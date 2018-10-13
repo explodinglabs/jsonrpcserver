@@ -25,7 +25,6 @@ from .response import (
     ExceptionResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
-    InvalidParamsError,
     InvalidParamsResponse,
     MethodNotFoundResponse,
     NotificationResponse,
@@ -43,9 +42,11 @@ async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Respo
         result = await call(
             methods.items[request.method], *request.args, **request.kwargs
         )
-    except KeyError:  # Method not found
+    except KeyError:
         return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
-    except InvalidParamsError as exc:  # Validate args failed
+    except (TypeError, AssertionError) as exc:
+        # Validate args failed - TypeError is raised by jsonschema, AssertionError
+        # raised inside the methods.
         return InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
     except Exception as exc:  # Other error inside method - server error
         return ExceptionResponse(exc, id=request.id, debug=debug)

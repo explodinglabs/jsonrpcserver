@@ -21,7 +21,6 @@ from jsonrpcserver.response import (
     ErrorResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
-    InvalidParamsError,
     InvalidParamsResponse,
     MethodNotFoundResponse,
     NotificationResponse,
@@ -185,12 +184,11 @@ def test_dispatch_pure_invalid_jsonrpc():
 
 
 def test_dispatch_pure_invalid_params():
-    def foo(bar):
-        if bar < 0:
-            raise InvalidParamsError("bar must be greater than zero")
+    def foo(colour):
+        assert colour in ("orange", "red", "yellow"), "Invalid colour"
 
     response = dispatch_pure(
-        '{"jsonrpc": "2.0", "method": "foo", "params": [-1], "id": 1}',
+        '{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
         Methods(foo),
         convert_camel_case=False,
         context=NOCONTEXT,

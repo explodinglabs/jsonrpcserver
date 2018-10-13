@@ -116,12 +116,9 @@ limitation of JSON-RPC).
 If an argument is unsatisfactory, raise `InvalidParams`:
 
 ```python
-from jsonrpcserver.response import InvalidParamsError
-
 @method
-def get_customer(**kwargs):
-    if 'name' not in kwargs:
-        raise InvalidParamsError('Name is required')
+def get_fruit(color):
+    assert color in ("red", "orange", "yellow"), "No fruits of that colour"
 ```
 
 The dispatcher will catch the exception and give the appropriate response:
