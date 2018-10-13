@@ -11,23 +11,22 @@ First build a list of methods that can be called remotely.
 Use the `methods.add` decorator to register a method to the list:
 
 ```python
-from jsonrpcserver import methods
+from jsonrpcserver import method, serve
 
-@methods.add
+@method
 def ping():
     return 'pong'
 ```
 
-Add as many methods as needed, then serve the methods:
+Add as many methods as needed, then start the development server:
 
 ```python
->>> methods.serve_forever()
+>>> serve()
  * Listening on port 5000
 ```
 
-The built-in `serve_forever()` method is a cheap-and-nasty way of taking
-requests; ultimately you should use a more sophisticated server library (see
-[examples in various frameworks](examples.html)).
+For production use a more sophisticated server library (see [examples in
+various frameworks](examples.html)).
 
 For those, there's a `dispatch()` method.
 
@@ -76,7 +75,7 @@ methods.dispatch(request, context={'feature_enabled': True})
 The methods should receive this value (it must be named `context`):
 
 ```python
-@methods.add
+@method
 def ping(context):
     ...
 ```
@@ -117,12 +116,12 @@ limitation of JSON-RPC).
 If an argument is unsatisfactory, raise `InvalidParams`:
 
 ```python
-from jsonrpcserver.exceptions import InvalidParams
+from jsonrpcserver.response import InvalidParamsError
 
-@methods.add
+@method
 def get_customer(**kwargs):
     if 'name' not in kwargs:
-        raise InvalidParams('Name is required')
+        raise InvalidParamsError('Name is required')
 ```
 
 The dispatcher will catch the exception and give the appropriate response:
@@ -140,20 +139,14 @@ dispatch.*
 Asyncio is supported Python 3.5+, allowing requests to be dispatched to
 coroutines.
 
-Import methods from `jsonrpcserver.aio`:
-
 ```python
-from jsonrpcserver.aio import methods
+from jsonrpcserver import method, async_dispatch
 
-@methods.add
+@method
 async def ping():
     return await some_long_running_task()
-```
 
-Then `await` the dispatch:
-
-```python
-response = await methods.dispatch(request)
+response = await async_dispatch(request)
 ```
 
 ## Disable logging

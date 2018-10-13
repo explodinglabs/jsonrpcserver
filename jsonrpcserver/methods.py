@@ -1,23 +1,10 @@
 """
 The "methods" object holds the list of functions that can be called by RPC calls.
 
-Use the `add` decorator to register a method to the list::
-
-    from jsonrpcserver import methods
-
-    @methods.add
-    def ping():
-        return 'pong'
-
 Add as many methods as needed.
 
 Methods can take either positional or named arguments (but not both, this is a
 limitation of JSON-RPC).
-
-Serve the methods::
-
-    >>> methods.serve_forever()
-     * Listening on port 5000
 """
 from typing import Any, Callable, Optional
 

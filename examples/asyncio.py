@@ -1,9 +1,9 @@
 """Demonstrates processing a batch of 100 requests asynchronously"""
 import asyncio
 from json import dumps as serialize
-from jsonrpcserver import methods, async_dispatch as dispatch
+from jsonrpcserver import method, async_dispatch as dispatch
 
-@methods.add
+@method
 async def sleep_():
     await asyncio.sleep(1)
 
