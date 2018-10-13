@@ -33,7 +33,7 @@ Response heirarchy:
 import json
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Any, cast, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, cast
 
 from . import status
 

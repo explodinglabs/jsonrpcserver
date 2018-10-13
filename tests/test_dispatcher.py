@@ -1,5 +1,6 @@
-from json import loads as deserialize, dumps as serialize
 import logging
+from json import dumps as serialize
+from json import loads as deserialize
 from unittest.mock import sentinel
 
 from jsonrpcserver.dispatcher import (
@@ -14,12 +15,12 @@ from jsonrpcserver.dispatcher import (
     safe_call,
 )
 from jsonrpcserver.methods import Methods, global_methods
-from jsonrpcserver.request import Request, NOCONTEXT
+from jsonrpcserver.request import NOCONTEXT, Request
 from jsonrpcserver.response import (
     BatchResponse,
     ErrorResponse,
-    InvalidJSONRPCResponse,
     InvalidJSONResponse,
+    InvalidJSONRPCResponse,
     InvalidParamsError,
     InvalidParamsResponse,
     MethodNotFoundResponse,
@@ -158,7 +159,11 @@ def test_dispatch_pure_notification():
 
 def test_dispatch_pure_notification_invalid_jsonrpc():
     response = dispatch_pure(
-        '{"jsonrpc": "0", "method": "notify"}', Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+        '{"jsonrpc": "0", "method": "notify"}',
+        Methods(ping),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
     )
     assert isinstance(response, ErrorResponse)
 
@@ -217,8 +222,11 @@ def test_dispatch_with_global_methods():
 
 
 def test_dispatch_basic_logging():
-    response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', Methods(ping),
-        basic_logging=True)
+    response = dispatch(
+        '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+        Methods(ping),
+        basic_logging=True,
+    )
 
 
 # The remaining tests are direct from the examples in the specification

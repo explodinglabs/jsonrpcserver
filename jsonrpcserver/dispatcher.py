@@ -4,22 +4,22 @@ Dispatcher.
 The dispatch function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
-from configparser import ConfigParser
 import collections
 import logging
 import os
+from configparser import ConfigParser
 from json import JSONDecodeError
 from json import loads as deserialize
-from typing import Any, Dict, List, Iterable, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
+from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
 from jsonschema import validate as jsonschema_validate  # type: ignore
 from pkg_resources import resource_string
-from apply_defaults import apply_config  # type: ignore
 
 from .log import log_
 from .methods import Method, Methods, global_methods, validate_args
-from .request import Request, NOCONTEXT
+from .request import NOCONTEXT, Request
 from .response import (
     BatchResponse,
     ExceptionResponse,

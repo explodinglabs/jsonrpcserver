@@ -1,5 +1,5 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from .dispatcher import dispatch
 

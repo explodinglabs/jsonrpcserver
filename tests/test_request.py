@@ -112,5 +112,8 @@ def test_request_from_string():
 
 
 def test_request_convert_camel_case():
-    request = Request(**{"jsonrpc": "2.0", "method": "fooBar", "params": {"fooBar": 1}}, convert_camel_case=True)
+    request = Request(
+        **{"jsonrpc": "2.0", "method": "fooBar", "params": {"fooBar": 1}},
+        convert_camel_case=True
+    )
     assert request.method == "foo_bar"

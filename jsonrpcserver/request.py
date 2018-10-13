@@ -34,7 +34,7 @@ def convert_camel_case_keys(original_dict: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def get_arguments(
-    params: Union[List, Dict, object] = NOPARAMS, context: Any = NOCONTEXT,
+    params: Union[List, Dict, object] = NOPARAMS, context: Any = NOCONTEXT
 ) -> Tuple[List, Dict]:
     """
     Get the positional and keyword arguments from a request.

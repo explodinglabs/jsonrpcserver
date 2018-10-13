@@ -1,9 +1,9 @@
 """Asynchronous dispatch"""
 import asyncio
 import collections
-from typing import Any, Iterable, Optional, Union
-from json import loads as deserialize
 from json import JSONDecodeError
+from json import loads as deserialize
+from typing import Any, Iterable, Optional, Union
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
@@ -18,13 +18,13 @@ from .dispatcher import (
     schema,
     validate,
 )
-from .methods import Method, Methods, validate_args, global_methods
-from .request import Request, NOCONTEXT
+from .methods import Method, Methods, global_methods, validate_args
+from .request import NOCONTEXT, Request
 from .response import (
     BatchResponse,
     ExceptionResponse,
-    InvalidJSONRPCResponse,
     InvalidJSONResponse,
+    InvalidJSONRPCResponse,
     InvalidParamsError,
     InvalidParamsResponse,
     MethodNotFoundResponse,
@@ -40,7 +40,9 @@ async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
 async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
     try:
-        result = await call(methods.items[request.method], *request.args, **request.kwargs)
+        result = await call(
+            methods.items[request.method], *request.args, **request.kwargs
+        )
     except KeyError:  # Method not found
         return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
     except InvalidParamsError as exc:  # Validate args failed

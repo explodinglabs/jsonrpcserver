@@ -74,10 +74,9 @@ class Methods:
         return None
 
 
-
-
 # A default Methods object which can be used, or user can create their own.
 global_methods = Methods()
+
 
 def add(*args: Any, **kwargs: Any) -> Optional[Callable]:
     return global_methods.add(*args, **kwargs)

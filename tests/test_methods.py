@@ -2,7 +2,7 @@ from functools import partial
 
 import pytest
 
-from jsonrpcserver.methods import Methods, validate_args, add
+from jsonrpcserver.methods import Methods, add, validate_args
 
 
 def test_validate_no_arguments():
@@ -85,7 +85,7 @@ def test_add_partial_custom_name():
 
 
 def test_add_static_method():
-    class FooClass():
+    class FooClass:
         @staticmethod
         def foo():
             return "bar"
@@ -94,7 +94,7 @@ def test_add_static_method():
 
 
 def test_add_static_method_custom_name():
-    class FooClass():
+    class FooClass:
         @staticmethod
         def foo():
             return "bar"
@@ -103,7 +103,7 @@ def test_add_static_method_custom_name():
 
 
 def test_add_instance_method():
-    class FooClass():
+    class FooClass:
         def foo(self):
             return "bar"
 
@@ -111,7 +111,7 @@ def test_add_instance_method():
 
 
 def test_add_instance_method_custom_name():
-    class Foo():
+    class Foo:
         def __init__(self, name):
             self.name = name
 
@@ -139,14 +139,13 @@ def test_add_function_via_decorator():
 def test_add_static_method_via_decorator():
     methods = Methods()
 
-    class FooClass():
+    class FooClass:
         @staticmethod
         @methods.add
         def foo():
             return "bar"
 
     assert methods.items["foo"] is FooClass.foo
-
 
 
 def test_global_methods_add():
