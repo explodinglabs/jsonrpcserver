@@ -36,7 +36,8 @@ from collections import OrderedDict
 from typing import Any, Dict, Iterable, Optional
 
 from . import status
-from .sentinels import UNSPECIFIED
+
+UNSPECIFIED = object()
 
 
 class Response(ABC):
