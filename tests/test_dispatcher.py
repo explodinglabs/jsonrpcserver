@@ -4,7 +4,6 @@ from unittest.mock import sentinel
 
 from jsonrpcserver.dispatcher import (
     add_handlers,
-    call,
     call_requests,
     create_requests,
     dispatch,
@@ -42,11 +41,11 @@ def test_remove_handlers():
 
 
 def test_log_request():
-    pass
+    log_request()
 
 
 def test_log_response():
-    pass
+    log_response()
 
 
 # safe_call

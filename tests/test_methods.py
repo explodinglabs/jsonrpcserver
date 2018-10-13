@@ -1,5 +1,4 @@
 from functools import partial
-from unittest.mock import patch
 
 import pytest
 
