@@ -49,12 +49,12 @@ def test_get_arguments_invalid_string():
 # With the "context" argument
 def test_get_arguments_positional_with_context():
     args = get_arguments(["foo"], context="bar")
-    assert args == (["foo"], {"context": "bar"})
+    assert args == (["bar", "foo"], {})
 
 
 def test_get_arguments_keyword_with_context():
     args = get_arguments({"foo": "bar"}, context="baz")
-    assert args == ([], {"foo": "bar", "context": "baz"})
+    assert args == (["baz"], {"foo": "bar"})
 
 
 def test_request():

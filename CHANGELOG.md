@@ -25,6 +25,8 @@ _The 4.x releases will support Python 3.5+ only._
 - Configure logging pythonically.
 - Add type hints
 - Move tests to pytest
+- Passing a context object to dispatch now sets it as the first positional
+  argument to the method. `def fruits(context, color):`
 
 ## 3.5.6 (Jun 28, 2018)
 - Add trim_log_values dispatch param. (#65)

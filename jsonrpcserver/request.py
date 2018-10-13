@@ -68,9 +68,9 @@ def get_arguments(
         elif isinstance(params, dict):
             positionals, nameds = ([], params)
 
-    # If context data was passed, include it as a keyword argument.
+    # If context data was passed, include it as the first positional argument.
     if context is not NOCONTEXT:
-        nameds["context"] = context
+        positionals = [context] + positionals
 
     return (positionals, nameds)
 
