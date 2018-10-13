@@ -42,11 +42,11 @@ def test_remove_handlers():
 
 
 def test_log_request():
-    log_request()
+    log_request("foo")
 
 
 def test_log_response():
-    log_response()
+    log_response("foo")
 
 
 # safe_call
