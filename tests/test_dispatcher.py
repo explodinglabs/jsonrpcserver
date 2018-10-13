@@ -2,24 +2,25 @@ from json import loads as deserialize, dumps as serialize
 from unittest.mock import sentinel
 
 from jsonrpcserver.dispatcher import (
-    log_request,
-    log_response,
     call,
-    safe_call,
     call_requests,
     create_requests,
-    dispatch_pure,
     dispatch,
+    dispatch_pure,
+    log_request,
+    log_response,
+    safe_call,
 )
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.request import Request, NOCONTEXT
 from jsonrpcserver.response import (
     BatchResponse,
     ErrorResponse,
-    InvalidJSONResponse,
     InvalidJSONRPCResponse,
-    MethodNotFoundResponse,
+    InvalidJSONResponse,
+    InvalidParamsError,
     InvalidParamsResponse,
+    MethodNotFoundResponse,
     NotificationResponse,
     SuccessResponse,
 )
@@ -159,6 +160,28 @@ def test_dispatch_pure_invalid_jsonrpc():
         "{}", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
     )
     assert isinstance(response, InvalidJSONRPCResponse)
+
+
+def test_dispatch_pure_invalid_params():
+    def foo(bar):
+        if bar < 0:
+            raise InvalidParamsError("bar must be greater than zero")
+
+    response = dispatch_pure(
+        '{"jsonrpc": "2.0", "method": "foo", "params": [-1], "id": 1}',
+        Methods(foo),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+    )
+    assert isinstance(response, InvalidParamsResponse)
+
+
+# def test_dispatch_pure_invalid_params_notification():
+#    def foo(bar):
+#        if bar < 0:
+#            raise InvalidRequestError("bar must be greater than zero")
+#    response = dispatch_pure(str(Notify("foo")), method
 
 
 # dispatch
@@ -331,18 +354,20 @@ def test_examples_mixed_requests_and_notifications():
             "get_data": lambda: ["hello", 5],
         }
     )
-    requests = serialize([
-        {"jsonrpc": "2.0", "method": "sum", "params": [1, 2, 4], "id": "1"},
-        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
-        {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": "2"},
-        {
-            "jsonrpc": "2.0",
-            "method": "foo.get",
-            "params": {"name": "myself"},
-            "id": "5",
-        },
-        {"jsonrpc": "2.0", "method": "get_data", "id": "9"},
-    ])
+    requests = serialize(
+        [
+            {"jsonrpc": "2.0", "method": "sum", "params": [1, 2, 4], "id": "1"},
+            {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
+            {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": "2"},
+            {
+                "jsonrpc": "2.0",
+                "method": "foo.get",
+                "params": {"name": "myself"},
+                "id": "5",
+            },
+            {"jsonrpc": "2.0", "method": "get_data", "id": "9"},
+        ]
+    )
     response = dispatch_pure(
         requests, methods, convert_camel_case=False, context=NOCONTEXT, debug=True
     )

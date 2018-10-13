@@ -25,6 +25,7 @@ from .response import (
     ExceptionResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
+    InvalidParamsError,
     InvalidParamsResponse,
     MethodNotFoundResponse,
     NotificationResponse,
@@ -40,8 +41,7 @@ schema = deserialize(resource_string(__name__, "request-schema.json"))
 DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
 DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
 
-defaults = {"convert_camel_case": "False", "debug": "False", "trim_log_values": "False"}
-config = ConfigParser(defaults=defaults, default_section="dispatch")
+config = ConfigParser(default_section="dispatch")
 config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
 
 
@@ -99,7 +99,10 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
     Raises:
         TypeError: If arguments don't match function signature.
     """
-    return validate_args(method, *args, **kwargs)(*args, **kwargs)
+    try:
+        return validate_args(method, *args, **kwargs)(*args, **kwargs)
+    except TypeError as exc:
+        raise InvalidParamsError() from exc
 
 
 def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
@@ -108,9 +111,9 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
     """
     try:
         result = call(methods.items[request.method], *request.args, **request.kwargs)
-    except KeyError:  # Method not found
+    except KeyError:
         return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
-    except TypeError as exc:  # Validate args failed
+    except InvalidParamsError as exc:  # Validate args failed
         return InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
     except Exception as exc:  # Other error inside method - server error
         return ExceptionResponse(exc, id=request.id, debug=debug)
