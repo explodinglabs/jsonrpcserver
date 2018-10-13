@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from jsonrpcserver.methods import Methods, validate_args
+from jsonrpcserver.methods import Methods, validate_args, add
 
 
 def test_validate_no_arguments():
@@ -147,6 +147,12 @@ def test_add_static_method_via_decorator():
             return "bar"
 
     assert methods.items["foo"] is FooClass.foo
+
+
+
+def test_global_methods_add():
+    # The global "add" function which wraps global_methods.add
+    add(lambda x: y)
 
 
 def test_get():

@@ -43,12 +43,12 @@ def _trim_values(message_obj: Union[Dict, List]) -> Union[Dict, List]:
 def _trim_message(message: str) -> str:
     # Attempt to deserialize
     try:
-        message_obj = json.loads(message)
+        deserialized = json.loads(message)
     except ValueError:
         # Could not be deserialized, trim the string anyway.
         return _trim_string(str(message))
     else:
-        return json.dumps(_trim_values(message_obj))
+        return json.dumps(_trim_values(deserialized))
 
 
 def log_(

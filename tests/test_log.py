@@ -1,9 +1,14 @@
-from jsonrpcserver.log import _trim_message, _trim_string, _trim_values
+import logging
+
+from jsonrpcserver.log import _trim_message, _trim_string, _trim_values, log_
 
 
 def test_trim_string():
-    message = _trim_string("foo" * 100)
-    assert "..." in message
+    assert "..." in _trim_string("foo" * 100)
+
+
+def test_trim_string_already_short():
+    assert _trim_string("foo") == "foo"
 
 
 def test_trim_values():
@@ -21,6 +26,20 @@ def test_trim_values_batch():
     assert "..." in message[0]["list"]
 
 
+def test_trim_values_bool():
+    message = _trim_values({"list": True})
+    assert message["list"] is True
+
+
 def test_trim_message():
+    message = _trim_message('{"val": "%s"}' % ("foo" * 100))
+    assert "..." in message
+
+
+def test_trim_message_invalid_json():
     message = _trim_message("foo" * 100)
     assert "..." in message
+
+
+def test_log():
+    log_("foo", logging.getLogger(), trim=True)

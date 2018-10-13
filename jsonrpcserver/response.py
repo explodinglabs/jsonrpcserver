@@ -62,7 +62,6 @@ class Response(ABC):
         which case this property should be ignored and str(response) returned
         regardless.
         """
-        ...
 
 
 class NotificationResponse(Response):
@@ -130,7 +129,6 @@ class DictResponse(Response):
     @abstractmethod
     def deserialized(self) -> dict:
         """Gets the response as a dictionary. Used by __str__."""
-        ...
 
     def __str__(self) -> str:
         """Use str() to get the JSON-RPC response string."""

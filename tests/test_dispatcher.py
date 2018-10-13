@@ -1,7 +1,9 @@
 from json import loads as deserialize, dumps as serialize
+import logging
 from unittest.mock import sentinel
 
 from jsonrpcserver.dispatcher import (
+    add_handlers,
     call,
     call_requests,
     create_requests,
@@ -9,6 +11,7 @@ from jsonrpcserver.dispatcher import (
     dispatch_pure,
     log_request,
     log_response,
+    remove_handlers,
     safe_call,
 )
 from jsonrpcserver.methods import Methods, global_methods
@@ -30,20 +33,20 @@ def ping():
     return "pong"
 
 
+def test_add_handlers():
+    add_handlers()
+
+
+def test_remove_handlers():
+    remove_handlers(logging.Handler(), logging.Handler())
+
+
 def test_log_request():
     pass
 
 
 def test_log_response():
     pass
-
-
-def is_batch_request_yes():
-    assert is_batch_request([]) is True
-
-
-def is_batch_request_no():
-    assert is_batch_request({}) is False
 
 
 # safe_call
@@ -56,8 +59,16 @@ def test_safe_call_success_response():
     assert response.id == 1
 
 
-def test_safe_call_notification_response():
+def test_safe_call_notification():
     response = safe_call(Request(method="ping"), Methods(ping), debug=True)
+    assert isinstance(response, NotificationResponse)
+
+
+def test_safe_call_notification_failure():
+    def fail():
+        raise ValueError()
+
+    response = safe_call(Request(method="foo"), Methods(fail), debug=True)
     assert isinstance(response, NotificationResponse)
 
 
@@ -146,6 +157,13 @@ def test_dispatch_pure_notification():
     assert isinstance(response, NotificationResponse)
 
 
+def test_dispatch_pure_notification_invalid_jsonrpc():
+    response = dispatch_pure(
+        '{"jsonrpc": "0", "method": "notify"}', Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+    )
+    assert isinstance(response, ErrorResponse)
+
+
 def test_dispatch_pure_invalid_json():
     """Unable to parse, must return an error"""
     response = dispatch_pure(
@@ -197,6 +215,11 @@ def test_dispatch_with_global_methods():
     global_methods.add(ping)
     response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
     assert response.result == "pong"
+
+
+def test_dispatch_basic_logging():
+    response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', Methods(ping),
+        basic_logging=True)
 
 
 # The remaining tests are direct from the examples in the specification
