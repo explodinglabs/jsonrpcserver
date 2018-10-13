@@ -95,11 +95,11 @@ def test_request_keyword_args():
     assert req.kwargs == {"foo": "bar"}
 
 
-def test_id():
+def test_request_id():
     assert Request(method="foo", id=99).id == 99
 
 
-def test_no_id():
+def test_request_no_id():
     request = Request({"jsonrpc": "2.0", "method": "foo"})
     assert request.id is NOID
 
@@ -109,3 +109,8 @@ def test_request_from_string():
     assert request.jsonrpc == "2.0"
     assert request.method == "foo"
     assert request.id == 1
+
+
+def test_request_convert_camel_case():
+    request = Request(**{"jsonrpc": "2.0", "method": "FooBar"}, convert_camel_case=True)
+    assert request.method == "foo_bar"

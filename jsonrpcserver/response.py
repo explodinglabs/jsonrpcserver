@@ -40,6 +40,10 @@ from . import status
 UNSPECIFIED = object()
 
 
+class InvalidParamsError(Exception):
+    pass
+
+
 class Response(ABC):
     """Base class of all responses."""
 
