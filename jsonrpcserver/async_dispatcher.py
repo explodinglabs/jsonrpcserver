@@ -58,7 +58,7 @@ async def dispatch_pure(
     *,
     context: Any,
     convert_camel_case: bool,
-    debug: bool,
+    debug: bool
 ) -> Response:
     try:
         deserialized = validate(deserialize(request), schema)
@@ -85,7 +85,7 @@ async def dispatch(
     context: Any = NOCONTEXT,
     debug: bool = False,
     trim_log_values: bool = False,
-    **kwargs: Any,
+    **kwargs: Any
 ) -> Response:
     # Use the global methods object if no methods object was passed.
     methods = global_methods if methods is None else methods

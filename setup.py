@@ -9,11 +9,8 @@ setup(
     author="Beau Barker",
     author_email="beauinmelbourne@gmail.com",
     classifiers=[
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
     description="Process JSON-RPC requests",
     extras_require={
@@ -38,5 +35,5 @@ setup(
     package_data={"jsonrpcserver": ["request-schema.json"]},
     packages=["jsonrpcserver"],
     url="https://github.com/bcb/jsonrpcserver",
-    version="3.5.6",
+    version="4.0.0-rc",
 )
