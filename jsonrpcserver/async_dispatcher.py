@@ -12,6 +12,7 @@ from .dispatcher import (
     add_handlers,
     config,
     create_requests,
+    handle_exceptions,
     log_request,
     log_response,
     remove_handlers,
@@ -38,22 +39,12 @@ async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
 
 async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
-    try:
+    with handle_exceptions(request, debug) as handler:
         result = await call(
             methods.items[request.method], *request.args, **request.kwargs
         )
-    except KeyError:
-        return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
-    except (TypeError, AssertionError) as exc:
-        # Validate args failed - TypeError is raised by jsonschema, AssertionError
-        # raised inside the methods.
-        return InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
-    except Exception as exc:  # Other error inside method - server error
-        return ExceptionResponse(exc, id=request.id, debug=debug)
-    finally:
-        if request.is_notification:
-            return NotificationResponse()
-    return SuccessResponse(result=result, id=request.id)
+        handler.response = SuccessResponse(result=result, id=request.id)
+    return handler.response
 
 
 async def call_requests(

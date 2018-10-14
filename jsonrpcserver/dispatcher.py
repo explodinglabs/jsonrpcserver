@@ -8,9 +8,11 @@ import collections
 import logging
 import os
 from configparser import ConfigParser
+from contextlib import contextmanager
 from json import JSONDecodeError
 from json import loads as deserialize
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from types import SimpleNamespace
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
@@ -101,24 +103,32 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
     return validate_args(method, *args, **kwargs)(*args, **kwargs)
 
 
+@contextmanager
+def handle_exceptions(request, debug):
+    handler = SimpleNamespace(response=None)
+    try:
+        yield handler
+    except KeyError:
+        handler.response = MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
+    except (TypeError, AssertionError) as exc:
+        # Validate args failed - TypeError is raised by jsonschema, AssertionError
+        # raised inside the methods.
+        handler.response = InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
+    except Exception as exc:  # Other error inside method - server error
+        handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
+    finally:
+        if request.is_notification:
+            handler.response = NotificationResponse()
+
+
 def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
     """
     Call a Request, catching exceptions to always return a Response.
     """
-    try:
+    with handle_exceptions(request, debug) as handler:
         result = call(methods.items[request.method], *request.args, **request.kwargs)
-    except KeyError:
-        return MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
-    except (TypeError, AssertionError) as exc:
-        # Validate args failed - TypeError is raised by jsonschema, AssertionError
-        # raised inside the methods.
-        return InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
-    except Exception as exc:  # Other error inside method - server error
-        return ExceptionResponse(exc, id=request.id, debug=debug)
-    finally:
-        if request.is_notification:
-            return NotificationResponse()
-    return SuccessResponse(result=result, id=request.id)
+        handler.response = SuccessResponse(result=result, id=request.id)
+    return handler.response
 
 
 def call_requests(

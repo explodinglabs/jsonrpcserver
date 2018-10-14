@@ -27,6 +27,7 @@ _The 4.x releases will support Python 3.5+ only._
 - Move tests to pytest
 - Passing a context object to dispatch now sets it as the first positional
   argument to the method. `def fruits(context, color):`
+- Check params with regular asserts.
 
 ## 3.5.6 (Jun 28, 2018)
 - Add trim_log_values dispatch param. (#65)
