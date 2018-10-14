@@ -1,5 +1,5 @@
 """
-The "methods" object holds the list of functions that can be called by RPC calls.
+The "methods" object holds the list of functions that can be called by remote calls.
 
 Add as many methods as needed.
 
@@ -37,7 +37,7 @@ def validate(method: Callable) -> Callable:
 
 
 class Methods:
-    """Holds a list of methods that can be called with a JSON-RPC request."""
+    """Holds a list of methods that can be called by a JSON-RPC request."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.items = {}  # type: dict
@@ -48,11 +48,10 @@ class Methods:
         Register a function to the list.
 
         Args:
-            *args: 
-            **kwargs: 
+            *args: Set/Sequence of positional arguments.
+            **kwargs: Mapping of named arguments.
 
         Raises:
-            AssertionError: If the method is not callable.
             AttributeError: Raised if the method being added has no name. (i.e. it has
                 no `__name__` property, and no `name` argument was given.)
 

@@ -11,7 +11,7 @@ from configparser import ConfigParser
 from contextlib import contextmanager
 from json import JSONDecodeError
 from json import loads as deserialize
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Set, Optional, Tuple, Union
 from types import SimpleNamespace
 
 from apply_defaults import apply_config  # type: ignore
@@ -161,6 +161,8 @@ def call_requests(
 
     Args:
         requests: Request object, or a collection of them.
+        methods: The list of methods that can be called.
+        debug: Include more information in error responses.
     """
     if isinstance(requests, collections.Iterable):
         return BatchResponse(safe_call(r, methods, debug=debug) for r in requests)
@@ -169,7 +171,19 @@ def call_requests(
 
 def create_requests(
     requests: Union[Dict, List], *, context: Any = NOCONTEXT, convert_camel_case: bool
-) -> Union[Request, Iterable[Request]]:
+) -> Union[Request, Set[Request]]:
+    """
+    Create a Request object from a dictionary (or list of them).
+
+    Args:
+        requests: Request object, or a collection of them.
+        methods: The list of methods that can be called.
+        context: If specified, will be the first positional argument in all requests.
+        convert_camel_case: Will convert the method name/any named params to snake case.
+
+    Returns:
+        A Request object, or a collection of them.
+    """
     if isinstance(requests, list):
         return {
             Request(context=context, convert_camel_case=convert_camel_case, **request)
@@ -193,6 +207,12 @@ def dispatch_pure(
         1. Deserializes and validates the string.
         2. Calls each request.
 
+    Args:
+        request: The incoming request string.
+        methods: Collection of methods that can be called.
+        context: If specified, will be the first positional argument in all requests.
+        convert_camel_case: Will convert the method name/any named params to snake case.
+        debug: Include more information in error responses.
     Returns:
         A Response.
     """
@@ -230,8 +250,12 @@ def dispatch(
     one that can be configured with a config file/env vars.
 
     Args:
-        convert_camel_case: Convert keys in params dictionary from camel case to
-            snake case.
+        request: The incoming request string.
+        methods: Collection of methods that can be called. If not passed, uses the
+            internal methods object.
+        context: If specified, will be the first positional argument in all requests.
+        convert_camel_case: Convert keys in params dictionary from camel case to snake
+            case.
         debug: Include more information in error responses.
         trim_log_values: Show abbreviated requests and responses in log.
 

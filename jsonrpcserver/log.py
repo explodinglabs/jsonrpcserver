@@ -63,6 +63,7 @@ def log_(
 
     Args:
         message: JSON-RPC request or response string.
+        logger: 
         level: Log level.
         extra: More details to include in the log entry.
         trim: Abbreviate log messages.

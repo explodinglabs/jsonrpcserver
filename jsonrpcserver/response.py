@@ -54,9 +54,9 @@ class Response(ABC):
         member, and was therefore not a JSON-RPC Notification object. All responses are
         wanted, except NotificationResponse.
 
-        Note that some protocols require a response to every request no matter what, in
-        which case this property should be ignored and str(response) returned
-        regardless.
+        Note that blocking/synchronous transfer protocols require a response to every
+        request no matter what, in which case this property should be ignored and
+        str(response) returned regardless.
         """
 
 
@@ -113,7 +113,9 @@ class DictResponse(Response):
     def __init__(self, *args: Any, id: Any, **kwargs: Any) -> None:
         """
         Args:
-            id: Matches the request's id.
+            id: Must be the same as the value as the id member in the Request Object. If
+                there was an error in detecting the id in the Request object (e.g. Parse
+                error/Invalid Request), it MUST be Null.
         """
         super().__init__(*args, **kwargs)
         self.id = id
@@ -135,8 +137,8 @@ class SuccessResponse(DictResponse):
     """
     Success response returned from a request.
 
-    Returned from processing a successful request with an `id` member indicating that
-    a result payload is expected back.
+    Returned from processing a successful request with an `id` member indicating that a
+    result payload is expected back.
     """
 
     def __init__(
@@ -148,7 +150,6 @@ class SuccessResponse(DictResponse):
                 The payload from processing the request. If the request was a JSON-RPC
                 notification (i.e. the request id is `None`), the result must also be
                 `None` because notifications don't require any data returned.
-            id: Matches the request's id value.
             http_status: 
         """
         super().__init__(http_status=http_status, **kwargs)
@@ -170,23 +171,19 @@ class ErrorResponse(DictResponse):
         message: str,
         *args: Any,
         code: int,
-        debug: bool,  # required, named
         data: Any = UNSPECIFIED,
+        debug: bool,  # required, named
         **kwargs: Any,
     ) -> None:
         """
         Args:
-            code: A Number that indicates the error type that occurred. This MUST be an
-                integer.
             message: A string providing a short description of the error, eg.  "Invalid
                 params".
+            code: A Number that indicates the error type that occurred. This MUST be an
+                integer.
             data: A Primitive or Structured value that contains additional information
                 about the error. This may be omitted.
             debug: Include more (possibly sensitive) information in the response.
-            http_status: The recommended HTTP status code.
-            id: Must be the same as the value as the id member in the Request
-                Object. If there was an error in detecting the id in the Request object
-                (e.g. Parse error/Invalid Request), it MUST be Null.
         """
         super().__init__(*args, **kwargs)
         self.code = code
@@ -285,7 +282,7 @@ class BatchResponse(Response):
     """
     Returned from batch requests.
 
-    Basically a collection of responses.
+    A collection of Responses, either success or error.
     """
 
     def __init__(

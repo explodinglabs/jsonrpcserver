@@ -48,17 +48,12 @@ def get_arguments(
         params: The 'params' part of the JSON-RPC request (should be a list or dict).
             The 'params' value can be a JSON array (Python list), object (Python dict),
             or None.
-        context: Optionally include some context data, which will be included in the
-            keyword arguments passed to the method.
+        context: Optionally include some context data, which will be included as the
+            first positional arguments passed to the method.
 
     Returns:
         A two-tuple containing the positional (in a list, or None) and named (in a dict,
         or None) arguments, extracted from the 'params' part of the request.
-
-    Raises:
-        TypeError: If 'params' was present but was not a list or dict.
-        AssertionError: If both positional and names arguments specified, which is not
-            allowed in JSON-RPC.
     """
     positionals, nameds = [], {}  # type: list, dict
     if params is not NOPARAMS:
@@ -99,9 +94,11 @@ class Request:
     ) -> None:
         """
         Args:
-            request: JSON-RPC request, deserialized into a dict.
-            context: Optional context object that will be passed to the RPC method.
-            convert_camel_case:
+            method, params, id, jsonrpc: Parts of the JSON-RPC request.
+            context: If passed, will be the first positional argument passed to the
+                method.
+            convert_camel_case: Will convert the method name and any keyword parameter
+                names to snake_case.
         """
         self.jsonrpc = jsonrpc
         self.method = method

@@ -72,18 +72,3 @@ JSONRPC_INVALID_REQUEST_CODE = -32600
 JSONRPC_METHOD_NOT_FOUND_CODE = -32601
 JSONRPC_INVALID_PARAMS_CODE = -32602
 JSONRPC_SERVER_ERROR_CODE = -32000
-
-
-def is_http_client_error(code: int) -> bool:
-    """
-    Returns true if a status code is a 4xx Client Error.
-
-    See http://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_Error
-
-    Args:
-        code: HTTP error code.
-
-    Return:
-        True if the code is a client error, else False.
-    """
-    return 400 <= code <= 499
