@@ -43,7 +43,7 @@ DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
 DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
 
 config = ConfigParser(default_section="dispatch")
-config.read(".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc"))
+config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
 
 
 def add_handlers() -> Tuple[logging.Handler, logging.Handler]:
