@@ -11,8 +11,8 @@ from configparser import ConfigParser
 from contextlib import contextmanager
 from json import JSONDecodeError
 from json import loads as deserialize
-from typing import Any, Dict, Iterable, List, Set, Optional, Tuple, Union
 from types import SimpleNamespace
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore

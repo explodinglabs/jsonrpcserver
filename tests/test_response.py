@@ -47,7 +47,10 @@ def test_batch_response():
     response = BatchResponse(
         {SuccessResponse("foo", id=1), SuccessResponse("bar", id=2)}
     )
-    expected = [{"jsonrpc": "2.0", "result": "foo", "id": 1}, {"jsonrpc": "2.0", "result": "bar", "id": 2}]
+    expected = [
+        {"jsonrpc": "2.0", "result": "foo", "id": 1},
+        {"jsonrpc": "2.0", "result": "bar", "id": 2},
+    ]
     assert response.wanted == True
     for r in response.deserialized():
         assert r in expected
