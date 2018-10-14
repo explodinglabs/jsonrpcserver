@@ -17,6 +17,5 @@ async def home(request: Request):
     return JsonResponse(response.deserialized())
 
 
-
 if __name__ == "__main__":
     app.run()
