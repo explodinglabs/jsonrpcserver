@@ -8,7 +8,7 @@ This library allows you to act on remote procedure calls.
 
 First build a list of methods that can be called remotely.
 
-Use the `methods.add` decorator to register a method to the list:
+Use the `@method` decorator to register a method to the list:
 
 ```python
 from jsonrpcserver import method, serve
@@ -25,34 +25,32 @@ Add as many methods as needed, then start the development server:
  * Listening on port 5000
 ```
 
-For production use a more sophisticated server library (see [examples in
-various frameworks](examples.html)).
+For production use a more sophisticated option (see [examples in various
+frameworks](examples.html)).
 
 For those, there's a `dispatch()` method.
 
 ## Dispatch
 
-The dispatch function processes a JSON-RPC request and calls the appropriate
+The `dispatch` function processes a JSON-RPC request and calls the appropriate
 method:
 
 ```python
->>> response = methods.dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
---> {"jsonrpc": "2.0", "method": "ping", "id": 1}
-<-- {"jsonrpc": "2.0", "result": "pong", "id": 1}
+>>> response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 ```
 
 The return value is a `Response` object.
 
 ```python
->>> response
-{'jsonrpc': '2.0', 'result': 'foo', 'id': 1}
+>>> response.result
+'pong'
 ```
 
 Use `str()` to get a JSON-encoded string:
 
 ```python
 >>> str(response)
-'{"jsonrpc": "2.0", "result": "foo", "id": 1}'
+'{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
 There's also an HTTP status code if needed:
@@ -65,14 +63,14 @@ There's also an HTTP status code if needed:
 ### Context
 
 If you need to pass some extra data to the methods, such as configuration
-settings, or the request object from the server framework, there's a `context`
-param:
+settings, or the request object from the server framework, pass a `context`
+object:
 
 ```python
-methods.dispatch(request, context={'feature_enabled': True})
+dispatch(request, context={'feature_enabled': True})
 ```
 
-The methods should receive this value (it must be named `context`):
+The methods will receive this as the first positional param:
 
 ```python
 @method
@@ -82,7 +80,12 @@ def ping(context):
 
 ### Configuration
 
-The following other options can be passed to `dispatch`:
+Any of the following options can be passed to `dispatch`, or put in a config
+file (see below):
+
+**basic_logging**
+
+Adds log handlers to log requests and responses to stderr.
 
 **convert_camel_case**
 
@@ -94,37 +97,38 @@ parameter names to snake case. Default is *False*.
 If True, more information is included in error responses, such as an exception
 message. Default is *False*.
 
-**notification_errors**
-
-Notifications are not responded to in almost all cases, however if you prefer,
-notifications can receive error responses. Default is *False*.
-
-**schema_validation**
-
-Allows you to disable the validation of requests against the JSON-RPC schema.
-Default is *True*.
-
 **trim_log_values**
 
 Show abbreviated requests and responses in logs. Default is *False*.
+
+### Config file
+
+Here's an example of the config file `.jsonrpcclientrc` - this should be
+placed in the current or home directory:
+
+```ini
+[general]
+basic_logging = yes
+```
 
 ## Validation
 
 Methods can take arguments, positional or named (but not both, this is a
 limitation of JSON-RPC).
 
-If an argument is unsatisfactory, raise `InvalidParams`:
+Assert on arguments to validate them.
 
 ```python
 @method
-def get_fruit(color):
+def fruits(color):
     assert color in ("red", "orange", "yellow"), "No fruits of that colour"
 ```
 
-The dispatcher will catch the exception and give the appropriate response:
+The dispatcher will give the appropriate response:
 
 ```python
->>> methods.dispatch({'jsonrpc': '2.0', 'method': 'get', 'params': {}, 'id': 1})
+>>> response = dispatch({'jsonrpc': '2.0', 'method': 'fruits', 'params': ["blue"], 'id': 1})
+>>> response.deserialized()
 {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 ```
 
@@ -145,17 +149,3 @@ async def ping():
 
 response = await async_dispatch(request)
 ```
-
-## Disable logging
-
-To disable the log entries:
-
-```python
-import logging
-logging.getLogger("jsonrpcserver.dispatcher.request").setLevel(logging.WARNING)
-logging.getLogger("jsonrpcserver.dispatcher.response").setLevel(logging.WARNING)
-```
-
-## Exceptions
-
-See the list of exceptions raised by jsonrpcserver [here](exceptions.html).

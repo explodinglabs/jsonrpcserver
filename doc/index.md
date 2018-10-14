@@ -7,9 +7,9 @@ from jsonrpcserver import method, serve
 
 @method
 def ping():
-    return 'pong'
+    return "pong"
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     serve()
 ```
 
