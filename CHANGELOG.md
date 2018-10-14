@@ -1,10 +1,10 @@
 # jsonrpcserver Change Log
 
-## 4.0.0 (Sep 27, 2018)
+## 4.0.0 (Oct 14, 2018)
 
 _The 4.x releases will support Python 3.5+ only._
 
-- Now working only with `Methods` object. No longer accepts a
+- Dispatch now works only with `Methods` object. No longer accepts a
   dictionary or list.
 - `dispatch` no longer requires methods passed to it. It's now an optional
   second parameter to dispatch. If not passed, uses the global methods object.
@@ -12,17 +12,17 @@ _The 4.x releases will support Python 3.5+ only._
   Methods(name=func).
 - No more exceptions. Calling code will _always_ get a valid JSON-RPC
   response from `dispatch`. The old `InvalidParamsException` is gone - instead
-  return an `InvalidParamsResponse` if params are invalid.
+  do a regular `assert` on arguments.
 - `response.is_notification` renamed to `response.wanted`, which is the
   opposite of is_notification. This means the original request was not a
   notification, it had an id, and does expect a response.
-- Removed "respond to notification errors", which broke the
-  specification. We still respond to invalid json/json-rpc requests, in which
-  case it's not possible to know if the request is a notification.
-- Removed the "config" module. Configure with dispatch arguments,
-  config file or environment variables.
+- Removed "respond to notification errors", which broke the specification. We
+  still respond to invalid json/json-rpc requests, in which case it's not
+  possible to know if the request is a notification.
+- Removed the "config" module. Configure with dispatch arguments or config
+  file.
 - Removed the "six" dependency
-- Configure logging pythonically.
+- Configure logging Pythonically.
 - Add type hints
 - Move tests to pytest
 - Passing a context object to dispatch now sets it as the first positional
