@@ -1,7 +1,7 @@
 """
 Dispatcher.
 
-The dispatch function takes a JSON-RPC request, logs it, calls the appropriate method,
+The dispatch() function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
 import collections
@@ -43,7 +43,7 @@ DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
 DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
 
 config = ConfigParser(default_section="dispatch")
-config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
+config.read(".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc"))
 
 
 def add_handlers() -> Tuple[logging.Handler, logging.Handler]:
@@ -85,8 +85,12 @@ def validate(request: Union[Dict, List], schema: dict) -> Union[Dict, List]:
     """
     Wraps jsonschema.validate, returning the same object passed in.
 
+    Args:
+        request: The deserialized-from-json request.
+        schema: The jsonschema schema to validate against.
+
     Raises:
-        ValidationError
+        jsonschema.ValidationError
     """
     jsonschema_validate(request, schema)
     return request
@@ -94,6 +98,12 @@ def validate(request: Union[Dict, List], schema: dict) -> Union[Dict, List]:
 
 def call(method: Method, *args: Any, **kwargs: Any) -> Any:
     """
+    Validates arguments and then calls the method.
+
+    Args:
+        method: The method to call.
+        *args, **kwargs: Arguments to the method.
+
     Returns:
         The "result" part of the JSON-RPC response (the return value from the method).
 
@@ -109,11 +119,15 @@ def handle_exceptions(request, debug):
     try:
         yield handler
     except KeyError:
-        handler.response = MethodNotFoundResponse(id=request.id, data=request.method, debug=debug)
+        handler.response = MethodNotFoundResponse(
+            id=request.id, data=request.method, debug=debug
+        )
     except (TypeError, AssertionError) as exc:
-        # Validate args failed - TypeError is raised by jsonschema, AssertionError
-        # raised inside the methods.
-        handler.response = InvalidParamsResponse(id=request.id, data=str(exc), debug=debug)
+        # Invalid Params - TypeError is raised by jsonschema, AssertionError raised
+        # inside the methods.
+        handler.response = InvalidParamsResponse(
+            id=request.id, data=str(exc), debug=debug
+        )
     except Exception as exc:  # Other error inside method - server error
         handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
     finally:
@@ -123,7 +137,15 @@ def handle_exceptions(request, debug):
 
 def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
     """
-    Call a Request, catching exceptions to always return a Response.
+    Call a Request, catching exceptions to ensure we always return a Response.
+
+    Args:
+        request: The Request object.
+        methods: The list of methods that can be called.
+        debug: Include more information in error responses.
+
+    Returns:
+        A Response object.
     """
     with handle_exceptions(request, debug) as handler:
         result = call(methods.items[request.method], *request.args, **request.kwargs)
@@ -136,6 +158,9 @@ def call_requests(
 ) -> Response:
     """
     Takes a request or list of Requests and calls them.
+
+    Args:
+        requests: Request object, or a collection of them.
     """
     if isinstance(requests, collections.Iterable):
         return BatchResponse(safe_call(r, methods, debug=debug) for r in requests)
@@ -146,10 +171,10 @@ def create_requests(
     requests: Union[Dict, List], *, context: Any = NOCONTEXT, convert_camel_case: bool
 ) -> Union[Request, Iterable[Request]]:
     if isinstance(requests, list):
-        return (
+        return {
             Request(context=context, convert_camel_case=convert_camel_case, **request)
             for request in requests
-        )
+        }
     return Request(context=context, convert_camel_case=convert_camel_case, **requests)
 
 

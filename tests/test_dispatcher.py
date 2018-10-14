@@ -101,10 +101,10 @@ def test_call_requests_with_context():
 def test_call_requests_batch_all_notifications():
     """Should return a BatchResponse response, an empty list"""
     response = call_requests(
-        [
+        {
             Request(**{"jsonrpc": "2.0", "method": "notify_sum", "params": [1, 2, 4]}),
             Request(**{"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}),
-        ],
+        },
         Methods(ping),
         debug=True,
     )
@@ -399,8 +399,7 @@ def test_examples_mixed_requests_and_notifications():
     response = dispatch_pure(
         requests, methods, convert_camel_case=False, context=NOCONTEXT, debug=True
     )
-    assert isinstance(response, BatchResponse)
-    assert deserialize(str(response)) == [
+    expected = [
         {"jsonrpc": "2.0", "result": 7, "id": "1"},
         {"jsonrpc": "2.0", "result": 19, "id": "2"},
         {
@@ -410,3 +409,6 @@ def test_examples_mixed_requests_and_notifications():
         },
         {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"},
     ]
+    assert isinstance(response, BatchResponse)
+    for r in response.deserialized():
+        assert r in expected

@@ -281,7 +281,7 @@ class ExceptionResponse(ErrorResponse):
         )
 
 
-class BatchResponse(Response, list):
+class BatchResponse(Response):
     """
     Returned from batch requests.
 
@@ -294,7 +294,7 @@ class BatchResponse(Response, list):
         super().__init__(http_status=http_status)
         # Remove notifications; these are not allowed in batch responses
         self.responses = cast(
-            Iterable[DictResponse], [r for r in responses if r.wanted]
+            Iterable[DictResponse], {r for r in responses if r.wanted}
         )
 
     @property
