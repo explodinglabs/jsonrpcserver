@@ -1,6 +1,5 @@
 import logging
 from json import dumps as serialize
-from json import loads as deserialize
 from unittest.mock import sentinel
 
 from jsonrpcserver.dispatcher import (
