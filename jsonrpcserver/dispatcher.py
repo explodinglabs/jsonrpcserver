@@ -12,7 +12,7 @@ from contextlib import contextmanager
 from json import JSONDecodeError
 from json import loads as deserialize
 from types import SimpleNamespace
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
@@ -114,7 +114,7 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
 
 @contextmanager
-def handle_exceptions(request, debug):
+def handle_exceptions(request: Request, debug: bool) -> Generator:
     handler = SimpleNamespace(response=None)
     try:
         yield handler
