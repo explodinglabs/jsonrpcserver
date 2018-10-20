@@ -1,7 +1,13 @@
+# jsonrpcserver
+
 ![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
+![Downloads](https://pepy.tech/badge/jsonrpcserver)
 ![Coverage Status](https://coveralls.io/repos/github/bcb/jsonrpcserver/badge.svg?branch=master)
 
-# jsonrpcserver
+*Version 4 is out. It's Python 3.6+ only. See the
+[changelog](https://github.com/bcb/jsonrpcserver/blob/master/CHANGELOG.md),
+[example usage](https://jsonrpcserver.readthedocs.io/en/latest/examples.html),
+and read the [updated documentation](https://jsonrpcserver.readthedocs.io/).*
 
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 

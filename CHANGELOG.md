@@ -6,27 +6,27 @@ _The 4.x releases will support Python 3.5+ only._
 
 - Dispatch now works only with `Methods` object. No longer accepts a
   dictionary or list.
-- `dispatch` no longer requires methods passed to it. It's now an optional
-  second parameter to dispatch. If not passed, uses the global methods object.
-- Methods initialiser has a simpler api - Methods(func1, func2) or
-  Methods(name=func).
-- No more exceptions. Calling code will _always_ get a valid JSON-RPC
-  response from `dispatch`. The old `InvalidParamsException` is gone - instead
-  do a regular `assert` on arguments.
+- `dispatch` no longer requires a "methods" argument. If not passed, uses the
+  global methods object.
+- Methods initialiser has a simpler api - Methods(func1, func2, ...) or
+  Methods(name1=func1, name2=func2, ...).
+- No more jsonrpcserver exceptions. Calling code will _always_ get a valid
+  JSON-RPC response from `dispatch`. The old `InvalidParamsError` is gone
+  - instead do a regular `assert` on arguments.
 - `response.is_notification` renamed to `response.wanted`, which is the
   opposite of is_notification. This means the original request was not a
   notification, it had an id, and does expect a response.
-- Removed "respond to notification errors", which broke the specification. We
-  still respond to invalid json/json-rpc requests, in which case it's not
-  possible to know if the request is a notification.
-- Removed the "config" module. Configure with dispatch arguments or config
-  file.
-- Removed the "six" dependency
+- Removed "respond to notification errors" option, which broke the
+  specification. We still respond to invalid json/json-rpc requests, in which
+  case it's not possible to know if the request is a notification.
+- Removed the "config" module. Added external config file, `.jsonrpcserverrc`.
+  (alternatively configure with arguments to dispatch)
+- Removed the "six" dependency, no longer needed.
 - Configure logging Pythonically.
 - Add type hints
 - Move tests to pytest
 - Passing a context object to dispatch now sets it as the first positional
-  argument to the method. `def fruits(context, color):`
+  argument to the method. `def fruits(ctx, color):`
 - Check params with regular asserts.
 
 ## 3.5.6 (Jun 28, 2018)
