@@ -1,5 +1,4 @@
+from .async_dispatcher import dispatch as async_dispatch
 from .dispatcher import dispatch
-from .methods import Methods
-
-# A default Methods object which can be used, or user can create their own.
-methods = Methods()
+from .methods import add as method
+from .server import serve

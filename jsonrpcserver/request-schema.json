@@ -9,7 +9,8 @@
         {
             "description": "An array of requests",
             "type": "array",
-            "items": { "$ref": "#/definitions/request" }
+            "items": { "$ref": "#/definitions/request" },
+            "minItems": 1
         }
     ],
     "definitions": {

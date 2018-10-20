@@ -1,13 +1,13 @@
 """
-The return value from ``dispatch`` is a response object.
+Responses.
 
-::
+The return value from `dispatch` is a Response object.
 
-    >>> response = methods.dispatch(request)
-    >>> response
-    {'jsonrpc': '2.0', 'result': 'foo', 'id': 1}
+    >>> response = dispatch(request)
+    >>> response.result
+    'foo'
 
-Use ``str()`` to get a JSON-encoded string::
+Use `str()` to get a JSON-encoded string::
 
     >>> str(response)
     '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
@@ -16,27 +16,86 @@ There's also an HTTP status code if you need it::
 
     >>> response.http_status
     200
+
+Response heirarchy:
+
+    NotificationResponse
+    DictResponse - a dict
+        SuccessResponse
+        ErrorResponse
+            InvalidJSONResponse
+            InvalidJSONRPCResponse
+            MethodNotFoundResponse
+            InvalidParamsResponse
+            ExceptionResponse
+    BatchResponse - a list of DictResponses
 """
 import json
+from abc import ABC, abstractmethod
 from collections import OrderedDict
+from typing import Any, Dict, Iterable, Optional, cast
 
 from . import status
-from .exceptions import JsonRpcServerError, ServerError
+
+UNSPECIFIED = object()
 
 
-def sort_response(response):
+class Response(ABC):
+    """Base class of all responses."""
+
+    def __init__(self, http_status: Optional[int] = None) -> None:
+        self.http_status = http_status
+
+    @property
+    @abstractmethod
+    def wanted(self) -> bool:
+        """
+        Indicates that this response is wanted by the request; the request had an "id"
+        member, and was therefore not a JSON-RPC Notification object. All responses are
+        wanted, except NotificationResponse.
+
+        Note that blocking/synchronous transfer protocols require a response to every
+        request no matter what, in which case this property should be ignored and
+        str(response) returned regardless.
+        """
+
+
+class NotificationResponse(Response):
     """
-    Sort the keys in a JSON-RPC response object.
+    Notification response.
 
-    This has no effect other than making it nicer to read.
+    Returned from processing a successful
+    [notification](http://www.jsonrpc.org/specification#notification) (i.e. a request
+    with no `id` member).
+    """
 
-    Example::
+    def __init__(self, http_status: int = status.HTTP_NO_CONTENT) -> None:
+        super().__init__(http_status=http_status)
 
-        >>> json.dumps(sort_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
+    @property
+    def wanted(self) -> bool:
+        return False
+
+    def __str__(self) -> str:
+        return ""
+
+
+def sort_dict_response(response: Dict[str, Any]) -> OrderedDict:
+    """
+    Sort the keys of a dict, returning an OrderedDict.
+
+    This has no effect other than making it nicer to read. It's also only useful with
+    Python 3.5, since from 3.6 onwards, dictionaries hold their order.
+
+    Args:
+        response: The JSON-RPC response to sort.
+
+    Returns:
+        The same response, sorted as an OrderedDict.
+
+    Examples:
+        >>> json.dumps(sort_dict_response({'id': 2, 'result': 5, 'jsonrpc': '2.0'}))
         {"jsonrpc": "2.0", "result": 5, "id": 1}
-
-    :param response: JSON-RPC response, in dictionary form.
-    :return: The same response, sorted in an ``OrderedDict``.
     """
     root_order = ["jsonrpc", "result", "error", "id"]
     error_order = ["code", "message", "data"]
@@ -48,132 +107,203 @@ def sort_response(response):
     return req
 
 
-class Response(object):
-    """Base class of all responses."""
+class DictResponse(Response):
+    """Abstract..."""
 
-    is_notification = False
-
-    def __str__(self):
-        raise NotImplementedError()
-
-
-class RequestResponse(Response, dict):
-    """
-    Response returned from a Request.
-
-    Returned from processing a successful request with an ``id`` member,
-    (indicating that a payload is expected back).
-    """
-
-    #: The recommended HTTP status code.
-    http_status = status.HTTP_OK
-
-    def __init__(self, request_id, result):
+    def __init__(self, *args: Any, id: Any, **kwargs: Any) -> None:
         """
-        :param request_id:
-            Matches the original request's id value.
-        :param result:
-            The payload from processing the request. If the request was a
-            JSON-RPC notification (i.e. the request id is ``None``), the result
-            must also be ``None`` because notifications don't require any data
-            returned.
+        Args:
+            id: Must be the same as the value as the id member in the Request Object. If
+                there was an error in detecting the id in the Request object (e.g. Parse
+                error/Invalid Request), it MUST be Null.
         """
-        # Ensure we're not responding to a notification with data
-        if request_id is None:
-            raise ValueError(
-                "Requests must have an id, use NotificationResponse instead"
-            )
-        super(RequestResponse, self).__init__(
-            {"jsonrpc": "2.0", "result": result, "id": request_id}
-        )
+        super().__init__(*args, **kwargs)
+        self.id = id
 
-    def __str__(self):
-        """JSON-RPC response string."""
-        return json.dumps(sort_response(self))
+    @property
+    def wanted(self) -> bool:
+        return True
+
+    @abstractmethod
+    def deserialized(self) -> dict:
+        """Gets the response as a dictionary. Used by __str__."""
+
+    def __str__(self) -> str:
+        """Use str() to get the JSON-RPC response string."""
+        return json.dumps(sort_dict_response(self.deserialized()))
 
 
-class ErrorResponse(Response, dict):
+class SuccessResponse(DictResponse):
+    """
+    Success response returned from a request.
+
+    Returned from processing a successful request with an `id` member indicating that a
+    result payload is expected back.
+    """
+
+    def __init__(
+        self, result: Any, *, http_status: int = status.HTTP_OK, **kwargs: Any
+    ) -> None:
+        """
+        Args:
+            result:
+                The payload from processing the request. If the request was a JSON-RPC
+                notification (i.e. the request id is `None`), the result must also be
+                `None` because notifications don't require any data returned.
+            http_status: 
+        """
+        super().__init__(http_status=http_status, **kwargs)
+        self.result = result
+
+    def deserialized(self) -> dict:
+        return {"jsonrpc": "2.0", "result": self.result, "id": self.id}
+
+
+class ErrorResponse(DictResponse):
     """
     Error response.
 
     Returned if there was an error while processing the request.
     """
 
-    def __init__(self, http_status, request_id, code, message, data=None, debug=False):
+    def __init__(
+        self,
+        message: str,
+        *args: Any,
+        code: int,
+        data: Any = UNSPECIFIED,
+        debug: bool,  # required, named
+        **kwargs: Any,
+    ) -> None:
         """
-        :param http_status:
-            The recommended HTTP status code.
-        :param request_id:
-            Must be the same as the value as the id member in the Request
-            Object. If there was an error in detecting the id in the Request
-            object (e.g. Parse error/Invalid Request), it MUST be Null.
-        :param code:
-            A Number that indicates the error type that occurred. This MUST be
-            an integer.
-        :param message:
-            A string providing a short description of the error, eg.  "Invalid
-            params"
-        :param data:
-            A Primitive or Structured value that contains additional information
-            about the error. This may be omitted.
+        Args:
+            message: A string providing a short description of the error, eg.  "Invalid
+                params".
+            code: A Number that indicates the error type that occurred. This MUST be an
+                integer.
+            data: A Primitive or Structured value that contains additional information
+                about the error. This may be omitted.
+            debug: Include more (possibly sensitive) information in the response.
         """
-        super(ErrorResponse, self).__init__(
-            {
-                "jsonrpc": "2.0",
-                "error": {"code": code, "message": message},
-                "id": request_id,
-            }
-        )
-        #: Holds extra information about the error.
-        if debug and data:
-            self["error"]["data"] = data
-        #: The recommended HTTP status code. (the status code depends on the
-        #: error)
-        self.http_status = http_status
+        super().__init__(*args, **kwargs)
+        self.code = code
+        self.message = message
+        self.data = data
+        self.debug = debug
 
-    def __str__(self):
-        """JSON-RPC response string."""
-        return json.dumps(sort_response(self))
+    def deserialized(self) -> dict:
+        dct = {
+            "jsonrpc": "2.0",
+            "error": {"code": self.code, "message": self.message},
+            "id": self.id,
+        }  # type: Dict[str, Any]
+        if self.data is not UNSPECIFIED and self.debug:
+            dct["error"]["data"] = self.data
+        return dct
+
+
+class InvalidJSONResponse(ErrorResponse):
+    def __init__(
+        self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
+    ) -> None:
+        super().__init__(
+            "Invalid JSON",
+            code=status.JSONRPC_PARSE_ERROR_CODE,
+            http_status=http_status,
+            # Must include an id in error responses, but it's impossible to retrieve
+            id=None,
+            *args,
+            **kwargs,
+        )
+        assert self.id is None
+
+
+class InvalidJSONRPCResponse(ErrorResponse):
+    def __init__(
+        self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
+    ) -> None:
+        super().__init__(
+            "Invalid JSON-RPC",
+            code=status.JSONRPC_INVALID_REQUEST_CODE,
+            http_status=http_status,
+            # Must include an id in error responses, but it's impossible to retrieve
+            id=None,
+            *args,
+            **kwargs,
+        )
+        assert self.id is None
+
+
+class MethodNotFoundResponse(ErrorResponse):
+    def __init__(
+        self, *args: Any, http_status: int = status.HTTP_NOT_FOUND, **kwargs: Any
+    ) -> None:
+        super().__init__(
+            "Method not found",
+            code=status.JSONRPC_METHOD_NOT_FOUND_CODE,
+            http_status=http_status,
+            *args,
+            **kwargs,
+        )
+
+
+class InvalidParamsResponse(ErrorResponse):
+    def __init__(
+        self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
+    ) -> None:
+        super().__init__(
+            "Invalid parameters",
+            code=status.JSONRPC_INVALID_PARAMS_CODE,
+            http_status=http_status,
+            *args,
+            **kwargs,
+        )
 
 
 class ExceptionResponse(ErrorResponse):
-    """Returns an ErrorResponse built from an exception."""
-
-    def __init__(self, ex, request_id, debug=False):
-        if not isinstance(ex, JsonRpcServerError):
-            ex = ServerError(str(ex))
-        super(ExceptionResponse, self).__init__(
-            ex.http_status, request_id, ex.code, ex.message, ex.data, debug=debug
+    def __init__(
+        self,
+        exc: BaseException,
+        *args: Any,
+        http_status: int = status.HTTP_INTERNAL_ERROR,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            "Server error",
+            code=-32000,
+            data=f"{exc.__class__.__name__}: {str(exc)}",
+            http_status=http_status,
+            *args,
+            **kwargs,
         )
 
 
-class NotificationResponse(Response):
-    """
-    Notification response.
-
-    Returned from processing a successful `notification
-    <http://www.jsonrpc.org/specification#notification>`_ (i.e. a request with
-    no ``id`` member).
-    """
-
-    #: This is the only notification
-    is_notification = True
-    #: The HTTP status to send in response to notifications.
-    http_status = status.HTTP_NO_CONTENT
-
-    def __str__(self):
-        return ""
-
-
-class BatchResponse(Response, list):
+class BatchResponse(Response):
     """
     Returned from batch requests.
 
-    Basically a collection of responses.
+    A collection of Responses, either success or error.
     """
 
-    http_status = status.HTTP_OK
+    def __init__(
+        self, responses: Iterable[Response], http_status: int = status.HTTP_OK
+    ) -> None:
+        super().__init__(http_status=http_status)
+        # Remove notifications; these are not allowed in batch responses
+        self.responses = cast(
+            Iterable[DictResponse], {r for r in responses if r.wanted}
+        )
 
-    def __str__(self):
+    @property
+    def wanted(self) -> bool:
+        return True
+
+    def deserialized(self) -> list:
+        return [r.deserialized() for r in self.responses]
+
+    def __str__(self) -> str:
         """JSON-RPC response string."""
-        return json.dumps(self)
+        dicts = self.deserialized()
+        # For an all-notifications response, an empty string should be returned, as per
+        # spec
+        return json.dumps(dicts) if len(dicts) else ""

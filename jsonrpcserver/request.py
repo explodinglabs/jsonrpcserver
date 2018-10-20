@@ -3,133 +3,122 @@ Request class.
 
 Represents a JSON-RPC request object.
 """
-import logging
-import traceback
-from contextlib import contextmanager
+import re
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from .exceptions import JsonRpcServerError
-from .log import log
-from .request_utils import convert_camel_case as ccc
-from .request_utils import convert_camel_case_keys as ccc_keys
-from .request_utils import (
-    get_arguments,
-    get_method,
-    validate_against_schema,
-    validate_arguments_against_signature,
-)
-from .response import ExceptionResponse, NotificationResponse, RequestResponse, Response
-
-logger = logging.getLogger(__name__)
+NOCONTEXT = object()
+NOPARAMS = object()
 
 
-class Request(object):
+# NOID is used as a request's id attribute to signify request is a Notification. We
+# can't use None which is a valid ID.
+NOID = object()
+
+
+def convert_camel_case_string(name: str) -> str:
+    """Convert camel case string to snake case"""
+    string = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", string).lower()
+
+
+def convert_camel_case_keys(original_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """Converts all keys of a dict from camel case to snake case, recursively"""
+    new_dict = dict()
+    for key, val in original_dict.items():
+        if isinstance(val, dict):
+            # Recurse
+            new_dict[convert_camel_case_string(key)] = convert_camel_case_keys(val)
+        else:
+            new_dict[convert_camel_case_string(key)] = val
+    return new_dict
+
+
+def get_arguments(
+    params: Union[List, Dict, object] = NOPARAMS, context: Any = NOCONTEXT
+) -> Tuple[List, Dict]:
+    """
+    Get the positional and keyword arguments from a request.
+
+    Takes the 'params' part of a JSON-RPC request and converts it to either positional
+    or named arguments usable in a Python function call. Note that a JSON-RPC request
+    can only have positional _or_ named arguments, but not both. See
+    http://www.jsonrpc.org/specification#parameter_structures
+
+    Args:
+        params: The 'params' part of the JSON-RPC request (should be a list or dict).
+            The 'params' value can be a JSON array (Python list), object (Python dict),
+            or None.
+        context: Optionally include some context data, which will be included as the
+            first positional arguments passed to the method.
+
+    Returns:
+        A two-tuple containing the positional (in a list, or None) and named (in a dict,
+        or None) arguments, extracted from the 'params' part of the request.
+    """
+    positionals, nameds = [], {}  # type: list, dict
+    if params is not NOPARAMS:
+        assert isinstance(params, (list, dict))
+        if isinstance(params, list):
+            positionals, nameds = (params, {})
+        elif isinstance(params, dict):
+            positionals, nameds = ([], params)
+
+    # If context data was passed, include it as the first positional argument.
+    if context is not NOCONTEXT:
+        positionals = [context] + positionals
+
+    return (positionals, nameds)
+
+
+class Request:
     """
     Represents a JSON-RPC Request object.
 
     Encapsulates a JSON-RPC request, providing details such as the method name,
-    arguments, and whether it's a request or a notification, and provides a
-    ``process`` method to execute the request.
-    """
+    arguments, and whether it's a request or a notification, and provides a `process`
+    method to execute the request.
 
-    @contextmanager
-    def handle_exceptions(self):
-        """Sets the response value"""
-        try:
-            yield
-        except Exception as exc:
-            # Log the exception if it wasn't explicitly raised by the method
-            if not isinstance(exc, JsonRpcServerError):
-                log(logger, logging.ERROR, traceback.format_exc())
-            # Notifications should not be responded to, even for errors (unless
-            # overridden in configuration)
-            if self.is_notification and not self.notification_errors:
-                self.response = NotificationResponse()
-            else:
-                self.response = ExceptionResponse(
-                    exc, getattr(self, "request_id", None), debug=self.debug
-                )
+    Note: There's no need to validate here, because the schema should have validated the
+    data already.
+    """
 
     def __init__(
         self,
-        request,
-        context=None,
-        convert_camel_case=False,
-        debug=False,
-        schema_validation=True,
-        notification_errors=False,
-    ):
+        method: str,
+        *,
+        params: Any = None,
+        id: Any = NOID,
+        jsonrpc: Optional[str] = None,  # ignored
+        context: Any = NOCONTEXT,
+        convert_camel_case: bool = False,
+    ) -> None:
         """
-        :param request: JSON-RPC request, in dict form.
-        :param context: Optional context object that will be passed to the RPC
-            method.
-        :param convert_camel_case:
-        :param debug:
-        :param notification_errors:
-        :param schema_validation:
+        Args:
+            method, params, id, jsonrpc: Parts of the JSON-RPC request.
+            context: If passed, will be the first positional argument passed to the
+                method.
+            convert_camel_case: Will convert the method name and any keyword parameter
+                names to snake_case.
         """
-        self.debug = debug
-        self.notification_errors = notification_errors
-        # Handle parsing & validation errors
-        with self.handle_exceptions():
-            # Validate against the JSON-RPC schema
-            if schema_validation:
-                validate_against_schema(request)
-            # Get method name from the request. We can assume the key exists
-            # because the request passed the schema.
-            self.method_name = request["method"]
-            # Get arguments from the request, if any
-            self.args, self.kwargs = get_arguments(
-                request.get("params"), context=context
-            )
-            # Get request id, if any
-            self.request_id = request.get("id")
-            # Convert camelcase to snake case
-            if convert_camel_case:
-                self.method_name = ccc(self.method_name)
-                if self.kwargs:
-                    self.kwargs = ccc_keys(self.kwargs)
-            self.response = None
+        self.jsonrpc = jsonrpc
+        self.method = method
+        self.args, self.kwargs = (
+            get_arguments(params, context=context)
+            if isinstance(params, (list, dict))
+            else ([], {})
+        )
+        self.id = id
+
+        if convert_camel_case:
+            self.method = convert_camel_case_string(self.method)
+            if self.kwargs:
+                self.kwargs = convert_camel_case_keys(self.kwargs)
 
     @property
-    def is_notification(self):
+    def is_notification(self) -> bool:
         """
-        Returns True if the request is a JSON-RPC Notification (ie. No id
-        attribute is included). False if it's a request.
+        Returns:
+            True if the request is a JSON-RPC Notification (ie. No id attribute is
+            included). False if it doesn't, meaning it's a JSON-RPC "Request".
         """
-        return hasattr(self, "request_id") and self.request_id is None
-
-    def call(self, methods):
-        """
-        Call the appropriate method from a list.
-
-        Find the method from the passed list, and call it, returning a Response
-        """
-        # Validation or parsing may have failed in __init__, in which case
-        # there's no point calling. It would've already set the response.
-        if not self.response:
-            # Handle setting the result/exception of the call
-            with self.handle_exceptions():
-                # Get the method object from a list (raises MethodNotFound)
-                callable_ = self.get_method(methods)
-                # Ensure the arguments match the method's signature
-                validate_arguments_against_signature(callable_, self.args, self.kwargs)
-                # Call the method
-                result = callable_(*(self.args or []), **(self.kwargs or {}))
-                # Set the response
-                if self.is_notification:
-                    self.response = NotificationResponse()
-                else:
-                    self.response = RequestResponse(self.request_id, result)
-        # Ensure the response has been set before returning it
-        assert isinstance(self.response, Response), "Invalid response type"
-        return self.response
-
-    def get_method(self, methods):
-        """
-        Find and return a callable representing the method for this request.
-
-        :param methods: List or dictionary of named functions
-        :raises MethodNotFound: If no method is found
-        :returns: Callable representing the method
-        """
-        return get_method(methods, self.method_name)
+        return self.id is NOID

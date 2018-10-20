@@ -1,8 +1,11 @@
-from jsonrpcserver import methods
+"""Using jsonrpcserver's built-in serve() function"""
+from jsonrpcserver import method, serve
 
-@methods.add
+
+@method
 def ping():
-    return 'pong'
+    return "pong"
 
-if __name__ == '__main__':
-    methods.serve_forever()
+
+if __name__ == "__main__":
+    serve()
