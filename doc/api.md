@@ -162,5 +162,5 @@ async def ping():
 response = await async_dispatch(request)
 ```
 
-Questions? [beauinmelbourne@gmail.com](mailto:beauinmelbourne@gmail.com)  
-Issues? [Gitub](https://github.com/bcb/jsonrpcclient/issues)
+Questions? [beauinmelbourne@gmail.com](mailto:beauinmelbourne@gmail.com)
+or create an [issue](https://github.com/bcb/jsonrpcclient/issues).
