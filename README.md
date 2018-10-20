@@ -9,11 +9,6 @@
 [example usage](https://jsonrpcserver.readthedocs.io/en/latest/examples.html),
 and read the [updated documentation](https://jsonrpcserver.readthedocs.io/).*
 
-Oct 14, 2018: Version 4 release candidate is ready for testing! Try it with
-`pip install jsonrpcserver==4.0.0-rc2`. See basic usage in the code branch
-[here](https://github.com/bcb/jsonrpcserver/tree/4.0) or full documentation
-[here](https://github.com/bcb/jsonrpcserver/blob/4.0/doc/api.md).
-
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 
 ```python
