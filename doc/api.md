@@ -2,17 +2,21 @@
 
 # jsonrpcserver Guide
 
-This library allows you to act on remote procedure calls.
+Jsonrpcserver allows you to act on remote procedure calls.
 
 ## Methods
 
 First build a list of methods that can be called remotely.
 
-Use the `@method` decorator to register a method to the list:
+There are three public functions, `method`, `serve` and `dispatch`.
 
 ```python
-from jsonrpcserver import method, serve
+from jsonrpcserver import method, serve, dispatch
+```
 
+Use the `@method` decorator to register functions that can be called remotely:
+
+```
 @method
 def ping():
     return 'pong'
@@ -25,10 +29,10 @@ Add as many methods as needed, then start the development server:
  * Listening on port 5000
 ```
 
-For production use a more sophisticated option (see [examples in various
+For production, use a more sophisticated framework (see [examples in various
 frameworks](examples.html)).
 
-For those, there's a `dispatch()` method.
+For those, there's a `dispatch` method.
 
 ## Dispatch
 
@@ -36,7 +40,7 @@ The `dispatch` function processes a JSON-RPC request and calls the appropriate
 method:
 
 ```python
->>> response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 ```
 
 The return value is a `Response` object.
@@ -46,7 +50,7 @@ The return value is a `Response` object.
 'pong'
 ```
 
-Use `str()` to get a JSON-encoded string:
+Use `str()` to get the JSON-serialized response:
 
 ```python
 >>> str(response)
@@ -80,12 +84,12 @@ def ping(context):
 
 ### Configuration
 
-Any of the following options can be passed to `dispatch`, or put in a config
-file (see below):
+Other options can be passed to `dispatch`, or put in a config file (see
+below):
 
 **basic_logging**
 
-Adds log handlers to log requests and responses to stderr.
+Adds log handlers, to log all requests and responses to stderr.
 
 **convert_camel_case**
 
@@ -109,11 +113,14 @@ placed in the current or home directory:
 ```ini
 [general]
 basic_logging = yes
+convert_camel_case = yes
+debug = yes
+trim_log_values = yes
 ```
 
 ## Validation
 
-Methods can take arguments, positional or named (but not both, this is a
+Methods can take either positional or named arguments (but not both, this is a
 limitation of JSON-RPC).
 
 Assert on arguments to validate them.
@@ -132,13 +139,12 @@ The dispatcher will give the appropriate response:
 {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 ```
 
-*To include the "Name is required" message in the response, pass debug=True to
-dispatch.*
+*To include the "No fruits of that colour" message in the response, pass
+debug=True to dispatch.*
 
 ## Async
 
-Asyncio is supported Python 3.5+, allowing requests to be dispatched to
-coroutines.
+Asyncio is supported, allowing requests to be dispatched to coroutines.
 
 ```python
 from jsonrpcserver import method, async_dispatch
@@ -149,3 +155,5 @@ async def ping():
 
 response = await async_dispatch(request)
 ```
+
+Questions? [beauinmelbourne@gmail.com](mailto:beauinmelbourne@gmail.com)
