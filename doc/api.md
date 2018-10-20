@@ -13,7 +13,7 @@ pip install jsonrpcserver
 ```
 
 For Python versions older than 3.6, install a 3.x version, and jump over to
-[the 3.x docs](https://jsonrpcclient.readthedocs.io/en/3.5.6/).
+[the 3.x docs](https://jsonrpcserver.readthedocs.io/en/3.5.6/).
 
 ```sh
 pip install "jsonrpcserver>=3,<4"
@@ -50,7 +50,7 @@ Start the development server:
 ```
 
 For production, use a more sophisticated framework (see [examples in various
-frameworks](examples.html)). For those, there's a `dispatch` method.
+frameworks](examples.html)). For those, there's a `dispatch` function.
 
 ## Dispatch
 
@@ -68,18 +68,18 @@ The return value is a `Response` object.
 'pong'
 ```
 
-Use `str()` to get the JSON-serialized response:
-
-```python
->>> str(response)
-'{"jsonrpc": "2.0", "result": "pong", "id": 1}'
-```
-
 There's also an HTTP status code if needed:
 
 ```python
 >>> response.http_status
 200
+```
+
+Use `str()` to get the JSON-serialized response:
+
+```python
+>>> str(response)
+'{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
 ### Context
