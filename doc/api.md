@@ -36,10 +36,6 @@ def ping():
 Methods can take either positional or named arguments (but not both, this is a
 limitation of JSON-RPC).
 
-Other ways of registering methods is to pass them as positional arguments,
-e.g. `method(func1, func2, func3)` or named e.g. `method(ping=lambda: "pong",
-foo=lambda: "bar")`.
-
 ## Serve
 
 Start the development server:
@@ -63,9 +59,11 @@ response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 
 The return value is a `Response` object.
 
+Use `str()` to get the JSON-serialized response:
+
 ```python
->>> response.result
-'pong'
+>>> str(response)
+'{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
 There's also an HTTP status code if needed:
@@ -73,13 +71,6 @@ There's also an HTTP status code if needed:
 ```python
 >>> response.http_status
 200
-```
-
-Use `str()` to get the JSON-serialized response:
-
-```python
->>> str(response)
-'{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
 ### Context
@@ -149,7 +140,7 @@ def fruits(color):
 The dispatcher will give the appropriate response:
 
 ```python
->>> response = dispatch({'jsonrpc': '2.0', 'method': 'fruits', 'params': ["blue"], 'id': 1})
+>>> response = dispatch('{"jsonrpc": "2.0", "method": "fruits", "params": ["blue"], "id": 1}')
 >>> str(response)
 {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 ```
