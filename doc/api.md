@@ -22,7 +22,30 @@ def ping():
     return 'pong'
 ```
 
-Add as many methods as needed, then start the development server:
+Methods can take either positional or named arguments (but not both, this is a
+limitation of JSON-RPC).
+
+Another way of registering methods is to call `method` like so:
+
+```python
+def f1():
+    ...
+
+def f2():
+    ...
+
+method(f1, f2)  # Register as many methods as you like
+```
+
+Or name the methods:
+
+```python
+method(ping=lambda: "pong", foo=lambda: "bar")
+```
+
+## Serve
+
+Start the development server:
 
 ```python
 >>> serve()
@@ -30,9 +53,7 @@ Add as many methods as needed, then start the development server:
 ```
 
 For production, use a more sophisticated framework (see [examples in various
-frameworks](examples.html)).
-
-For those, there's a `dispatch` method.
+frameworks](examples.html)). For those, there's a `dispatch` method.
 
 ## Dispatch
 
@@ -119,9 +140,6 @@ trim_log_values = yes
 ```
 
 ## Validation
-
-Methods can take either positional or named arguments (but not both, this is a
-limitation of JSON-RPC).
 
 Assert on arguments to validate them.
 
