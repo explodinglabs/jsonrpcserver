@@ -16,7 +16,7 @@ from jsonrpcserver import method, serve, dispatch
 
 Use the `@method` decorator to register functions that can be called remotely:
 
-```
+```python
 @method
 def ping():
     return 'pong'
@@ -25,23 +25,9 @@ def ping():
 Methods can take either positional or named arguments (but not both, this is a
 limitation of JSON-RPC).
 
-Another way of registering methods is to call `method` like so:
-
-```python
-def f1():
-    ...
-
-def f2():
-    ...
-
-method(f1, f2)  # Register as many methods as you like
-```
-
-Or name the methods:
-
-```python
-method(ping=lambda: "pong", foo=lambda: "bar")
-```
+Other ways of registering methods is to pass them as positional arguments,
+e.g. `method(func1, func2, func3)` or named e.g. `method(ping=lambda: "pong",
+foo=lambda: "bar")`.
 
 ## Serve
 
