@@ -150,7 +150,7 @@ The dispatcher will give the appropriate response:
 
 ```python
 >>> response = dispatch({'jsonrpc': '2.0', 'method': 'fruits', 'params': ["blue"], 'id': 1})
->>> response.deserialized()
+>>> str(response)
 {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params'}, 'id': 1}
 ```
 
@@ -171,4 +171,5 @@ async def ping():
 response = await async_dispatch(request)
 ```
 
-Questions? [beauinmelbourne@gmail.com](mailto:beauinmelbourne@gmail.com)
+Questions? [beauinmelbourne@gmail.com](mailto:beauinmelbourne@gmail.com)  
+Issues? [Gitub](https://github.com/bcb/jsonrpcclient/issues)
