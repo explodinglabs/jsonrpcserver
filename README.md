@@ -27,8 +27,9 @@ Full documentation is at [jsonrpcserver.readthedocs.io](https://jsonrpcserver.re
 ## Testing
 
 ```sh
-pip install pytest
+pip install pytest mypy
 pytest
+mypy jsonrpcserver
 ```
 
 See also: [jsonrpcclient](https://github.com/bcb/jsonrpcclient)
