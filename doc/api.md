@@ -66,6 +66,13 @@ Use `str()` to get the JSON-serialized response:
 '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
+`deserialized()` gives the response as a Python object:
+
+```python
+>>> response.deserialized()
+{'jsonrpc': '2.0', 'result': 'pong', 'id': 1}
+```
+
 There's also an HTTP status code if needed:
 
 ```python
