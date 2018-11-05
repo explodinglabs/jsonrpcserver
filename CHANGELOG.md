@@ -2,7 +2,7 @@
 
 ## 4.0.0 (Oct 14, 2018)
 
-_The 4.x releases will support Python 3.5+ only._
+_The 4.x releases will support Python 3.6+ only._
 
 - Dispatch now works only with `Methods` object. No longer accepts a
   dictionary or list.
