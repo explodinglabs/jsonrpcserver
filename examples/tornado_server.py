@@ -3,15 +3,14 @@ from jsonrpcserver import method, async_dispatch as dispatch
 
 
 @method
-async def ping():
+async def ping() -> str:
     return "pong"
 
 
 class MainHandler(web.RequestHandler):
-    async def post(self):
+    async def post(self) -> None:
         request = self.request.body.decode()
         response = await dispatch(request)
-        print(response)
         if response.wanted:
             self.write(str(response))
 
