@@ -1,0 +1,23 @@
+fail_fast: true
+repos:
+  - repo: https://github.com/ambv/black
+    rev: 'master'
+    hooks:
+      - id: black
+        args: [--diff, --check]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'master'
+    hooks:
+      - id: mypy
+        exclude: ^tests/
+        args: [--disallow-untyped-defs, --ignore-missing-imports, --no-strict-optional]
+
+  - repo: https://github.com/pre-commit/mirrors-pylint
+    rev: 'master'
+    hooks:
+      - id: pylint
+        exclude: ^tests/
+        args: [--verbose, --enable=unused-import]
+        language: system
+        verbose: true
