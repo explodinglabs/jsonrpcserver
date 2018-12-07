@@ -1,4 +1,4 @@
-# jsonrpcserver
+# Jsonrpcserver
 
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 
