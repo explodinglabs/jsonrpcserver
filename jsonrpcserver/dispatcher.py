@@ -12,8 +12,7 @@ from contextlib import contextmanager
 from json import JSONDecodeError
 from json import loads as deserialize
 from types import SimpleNamespace
-from typing import (Any, Dict, Generator, Iterable, List, Optional, Set, Tuple,
-                    Union)
+from typing import Any, Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
@@ -23,10 +22,17 @@ from pkg_resources import resource_string
 from .log import log_
 from .methods import Method, Methods, global_methods, validate_args
 from .request import NOCONTEXT, Request
-from .response import (BatchResponse, ExceptionResponse, InvalidJSONResponse,
-                       InvalidJSONRPCResponse, InvalidParamsResponse,
-                       MethodNotFoundResponse, NotificationResponse, Response,
-                       SuccessResponse)
+from .response import (
+    BatchResponse,
+    ExceptionResponse,
+    InvalidJSONResponse,
+    InvalidJSONRPCResponse,
+    InvalidParamsResponse,
+    MethodNotFoundResponse,
+    NotificationResponse,
+    Response,
+    SuccessResponse,
+)
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")

@@ -276,6 +276,7 @@ class ExceptionResponse(ErrorResponse):
             *args,
             **kwargs,
         )
+        self.exc = exc
 
 
 class BatchResponse(Response):
