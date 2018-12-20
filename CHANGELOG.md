@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 4.0.1 (Dec 21, 2018)
+
+- Include exception in ExceptionResponse. Closes #74.
+
 ## 4.0.0 (Oct 14, 2018)
 
 _The 4.x releases will support Python 3.6+ only._
