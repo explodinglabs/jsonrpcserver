@@ -102,11 +102,7 @@ class Request:
         """
         self.jsonrpc = jsonrpc
         self.method = method
-        self.args, self.kwargs = (
-            get_arguments(params, context=context)
-            if isinstance(params, (list, dict))
-            else ([], {})
-        )
+        self.args, self.kwargs = get_arguments(params or NOPARAMS, context=context)
         self.id = id
 
         if convert_camel_case:
