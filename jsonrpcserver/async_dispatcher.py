@@ -8,13 +8,26 @@ from typing import Any, Iterable, Optional, Union
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
 
-from .dispatcher import (add_handlers, config, create_requests,
-                         handle_exceptions, log_request, log_response,
-                         remove_handlers, schema, validate)
+from .dispatcher import (
+    add_handlers,
+    config,
+    create_requests,
+    handle_exceptions,
+    log_request,
+    log_response,
+    remove_handlers,
+    schema,
+    validate,
+)
 from .methods import Method, Methods, global_methods, validate_args
 from .request import NOCONTEXT, Request
-from .response import (BatchResponse, InvalidJSONResponse,
-                       InvalidJSONRPCResponse, Response, SuccessResponse)
+from .response import (
+    BatchResponse,
+    InvalidJSONResponse,
+    InvalidJSONRPCResponse,
+    Response,
+    SuccessResponse,
+)
 
 
 async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
