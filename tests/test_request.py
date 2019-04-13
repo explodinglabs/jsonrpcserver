@@ -57,6 +57,12 @@ def test_get_arguments_keyword_with_context():
     assert args == (["baz"], {"foo": "bar"})
 
 
+# With the "context" argument, but without params
+def test_get_arguments_no_params_with_context():
+    args = get_arguments(context="bar")
+    assert args == (["bar"], {})
+
+
 def test_request():
     assert Request(method="foo").method == "foo"
 
