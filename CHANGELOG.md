@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 4.0.2 (Apr 13, 2019)
+
+- Fix to allow passing context when no parameters are passed.
+
 ## 4.0.1 (Dec 21, 2018)
 
 - Include exception in ExceptionResponse. Closes #74.
