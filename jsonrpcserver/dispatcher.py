@@ -4,9 +4,9 @@ Dispatcher.
 The dispatch() function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
-import collections
 import logging
 import os
+from collections.abc import Iterable
 from configparser import ConfigParser
 from contextlib import contextmanager
 from json import JSONDecodeError
@@ -164,7 +164,7 @@ def call_requests(
         methods: The list of methods that can be called.
         debug: Include more information in error responses.
     """
-    if isinstance(requests, collections.Iterable):
+    if isinstance(requests, Iterable):
         return BatchResponse(safe_call(r, methods, debug=debug) for r in requests)
     return safe_call(requests, methods, debug=debug)
 
