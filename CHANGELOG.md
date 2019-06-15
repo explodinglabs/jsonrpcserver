@@ -1,5 +1,10 @@
 # jsonrpcserver Change Log
 
+## 4.0.3 (Jun 15, 2019)
+
+- Update dependencies to allow jsonschema version 3.x
+- Support Python 3.8
+
 ## 4.0.2 (Apr 13, 2019)
 
 - Fix to allow passing context when no parameters are passed.

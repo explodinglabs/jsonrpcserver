@@ -11,6 +11,7 @@ setup(
     classifiers=[
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     description="Process JSON-RPC requests",
     extras_require={
@@ -35,5 +36,5 @@ setup(
     package_data={"jsonrpcserver": ["request-schema.json"]},
     packages=["jsonrpcserver"],
     url="https://github.com/bcb/jsonrpcserver",
-    version="4.0.2",
+    version="4.0.3",
 )
