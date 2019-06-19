@@ -8,7 +8,7 @@ limitation of JSON-RPC).
 """
 from typing import Any, Callable, Optional
 
-from funcsigs import signature  # type: ignore
+from inspect import signature
 
 Method = Callable[..., Any]
 
