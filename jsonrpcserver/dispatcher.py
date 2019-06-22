@@ -16,7 +16,7 @@ from typing import Any, Dict, Generator, Iterable, List, Optional, Set, Tuple, U
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
-from jsonschema import validate as jsonschema_validate  # type: ignore
+from jsonschema.validators import validator_for  # type: ignore
 from pkg_resources import resource_string
 
 from .log import log_
@@ -37,7 +37,11 @@ from .response import (
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
 
+# Prepare the jsonschema validator
 schema = deserialize(resource_string(__name__, "request-schema.json"))
+klass = validator_for(schema)
+klass.check_schema(schema)
+validator = klass(schema)
 
 DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
 DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
@@ -92,7 +96,7 @@ def validate(request: Union[Dict, List], schema: dict) -> Union[Dict, List]:
     Raises:
         jsonschema.ValidationError
     """
-    jsonschema_validate(request, schema)
+    validator.validate(request)
     return request
 
 
