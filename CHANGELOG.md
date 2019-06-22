@@ -1,5 +1,10 @@
 # jsonrpcserver Change Log
 
+## 4.0.4 (Jun 22, 2019)
+
+- Use faster method of jsonschema validation
+- Use inspect from stdlib, removing the need for funcsigs
+
 ## 4.0.3 (Jun 15, 2019)
 
 - Update dependencies to allow jsonschema version 3.x
