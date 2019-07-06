@@ -8,7 +8,7 @@ limitation of JSON-RPC).
 """
 from typing import Any, Callable, Optional
 
-from inspect import signature
+from inspect import signature, getmembers
 
 Method = Callable[..., Any]
 
@@ -38,6 +38,29 @@ def validate(method: Callable) -> Callable:
 
 class Methods:
     """Holds a list of methods that can be called by a JSON-RPC request."""
+
+    @classmethod
+    def from_object(cls, obj: Any) -> "Methods":
+        """
+        Create a Methods with all public callable attributes of an object.
+
+        Public attributes are attributes that do not start with an underscore.
+
+        N.B. When passing this a class, instance methods will be included with
+        their first argument as a "self" instance.
+
+        Args:
+            obj: Object whose public methods will be part of the returned Methods.
+
+        Returns:
+            Methods containing only the public methods of the given object.
+        """
+        methods = {
+            attr_name: attr
+            for attr_name, attr in getmembers(obj)
+            if not attr_name.startswith("_") and callable(attr)
+        }
+        return cls(**methods)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.items = {}  # type: dict
