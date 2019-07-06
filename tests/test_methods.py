@@ -126,6 +126,55 @@ def test_add_instance_method_custom_name():
     assert methods.items["custom2"].__call__() == "b"
 
 
+def test_methods_from_class():
+    class FooClass:
+        @staticmethod
+        def staticmethod():
+            return "Static"
+
+        @classmethod
+        def classmethod():
+            return "Static"
+
+        def public(self):
+            return "Public"
+
+        def _private(self):
+            return "Private"
+
+    methods = Methods.from_object(FooClass)
+
+    assert "staticmethod" in methods.items
+    assert "classmethod" in methods.items
+    assert "public" in methods.items
+    assert "_private" not in methods.items
+
+    # We must have instance for instance methods
+    with pytest.raises(Exception):
+        methods.items["public"]()
+
+
+def test_methods_from_instance():
+    class FooClass:
+        def __init__(self, name):
+            self.name = name
+
+        def get_name(self):
+            return self.name
+
+        def set_name(self, name):
+            self.name = name
+
+    obj = FooClass("A")
+    methods = Methods.from_object(obj)
+
+    # You cannot access the underlying function (i.e. 'is') without dot syntax.
+    assert methods.items["get_name"] == obj.get_name
+    # obj and methods must be linked
+    methods.items["set_name"]("B")
+    assert obj.get_name() == "B"
+
+
 def test_add_function_via_decorator():
     methods = Methods()
 
