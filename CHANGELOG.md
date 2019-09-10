@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 4.0.5 (Sep 10, 2019)
+
+- Include license in package.
+
 ## 4.0.4 (Jun 22, 2019)
 
 - Use faster method of jsonschema validation
