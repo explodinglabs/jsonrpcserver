@@ -33,7 +33,7 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     name="jsonrpcserver",
-    package_data={"jsonrpcserver": ["request-schema.json"]},
+    package_data={"jsonrpcserver": ["request-schema.json", "py.typed"]},
     packages=["jsonrpcserver"],
     url="https://github.com/bcb/jsonrpcserver",
     version="4.0.5",
