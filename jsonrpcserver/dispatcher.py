@@ -24,6 +24,7 @@ from .methods import Method, Methods, global_methods, validate_args
 from .request import NOCONTEXT, Request
 from .response import (
     BatchResponse,
+    ErrorResponse,
     ExceptionResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
@@ -32,6 +33,9 @@ from .response import (
     NotificationResponse,
     Response,
     SuccessResponse,
+)
+from .errors import (
+    ApiError,
 )
 
 request_logger = logging.getLogger(__name__ + ".request")
@@ -132,6 +136,13 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
         handler.response = InvalidParamsResponse(
             id=request.id, data=str(exc), debug=debug
         )
+    except ApiError as exc: # Method signals custom error
+        handler.response = ErrorResponse(
+                str(exc), code=exc.code, data=exc.data,
+                id=request.id,
+                # always set debug to send data to client
+                debug=True,
+            )
     except Exception as exc:  # Other error inside method - server error
         handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
     finally:

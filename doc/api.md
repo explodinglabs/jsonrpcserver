@@ -155,6 +155,29 @@ The dispatcher will give the appropriate response:
 *To include the "No fruits of that colour" message in the response, pass
 debug=True to dispatch.*
 
+## Errors
+
+To send a custom error response to the client, raise an `ApiError`.
+
+```python
+@method
+def get_page(path):
+    if path.startswith('private/'):
+        raise ApiError("This path is forbidden", code=403, data={'path': 'private/'})
+```
+
+The dispatcher sends an appropriate error response:
+
+```python
+>>> response = dispatch('{"jsonrpc": "2.0", "method": "get_page", "params": ["private/index.html"], "id": 1}')
+>>> str(response)
+'{"jsonrpc": "2.0", "error": {"code": 403, "message": "This path is forbidden", "data": {"path": "private/"}}, "id": 1}'
+```
+
+Both the error code and data are optional and may be omitted. The `data` parameter
+accepts any serializable value while `code` must be an integer. Some negative error codes
+are, however, reserved by the jsonrpc standard.
+
 ## Async
 
 Asyncio is supported, allowing requests to be dispatched to coroutines.
