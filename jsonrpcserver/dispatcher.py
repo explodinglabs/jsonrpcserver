@@ -35,6 +35,7 @@ from .response import (
     SuccessResponse,
 )
 from .errors import (
+    MethodNotFoundError,
     ApiError,
 )
 
@@ -126,7 +127,7 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
     handler = SimpleNamespace(response=None)
     try:
         yield handler
-    except KeyError:
+    except (MethodNotFoundError, KeyError):
         handler.response = MethodNotFoundResponse(
             id=request.id, data=request.method, debug=debug
         )
@@ -163,7 +164,7 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
         A Response object.
     """
     with handle_exceptions(request, debug) as handler:
-        result = call(methods.items[request.method], *request.args, **request.kwargs)
+        result = call(methods.lookup(request.method), *request.args, **request.kwargs)
         handler.response = SuccessResponse(result=result, id=request.id)
     return handler.response
 

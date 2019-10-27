@@ -3,6 +3,10 @@ from typing import Any
 
 from .response import UNSPECIFIED
 
+class MethodNotFoundError(KeyError):
+    """ Method lookup failed """
+    pass
+
 class ApiError(RuntimeError):
     """ A method responds with a custom error """
 
