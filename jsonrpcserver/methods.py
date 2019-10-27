@@ -10,7 +10,7 @@ from typing import Any, Callable, Optional
 
 from inspect import signature
 
-from .errors import MethodNotFoundError
+from .errors import MethodNotFoundError, InvalidArgumentsError
 
 Method = Callable[..., Any]
 
@@ -27,9 +27,12 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
         kwargs: Keyword arguments.
 
     Raises:
-        TypeError: If the arguments cannot be passed to the function.
+        InvalidArgumentsError: If the arguments cannot be passed to the function.
     """
-    signature(func).bind(*args, **kwargs)
+    try:
+        signature(func).bind(*args, **kwargs)
+    except TypeError as exc:
+        raise InvalidArgumentsError from exc
     return func
 
 
