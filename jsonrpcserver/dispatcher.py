@@ -36,6 +36,7 @@ from .response import (
 )
 from .errors import (
     MethodNotFoundError,
+    InvalidArgumentsError,
     ApiError,
 )
 
@@ -131,9 +132,9 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
         handler.response = MethodNotFoundResponse(
             id=request.id, data=request.method, debug=debug
         )
-    except (TypeError, AssertionError) as exc:
-        # Invalid Params - TypeError is raised by jsonschema, AssertionError raised
-        # inside the methods.
+    except (InvalidArgumentsError, TypeError, AssertionError) as exc:
+        # Invalid Params - InvalidArgumentsError is raised by validate_args,
+        # AssertionError raised inside the methods.
         handler.response = InvalidParamsResponse(
             id=request.id, data=str(exc), debug=debug
         )

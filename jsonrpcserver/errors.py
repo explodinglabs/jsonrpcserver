@@ -7,6 +7,10 @@ class MethodNotFoundError(KeyError):
     """ Method lookup failed """
     pass
 
+class InvalidArgumentsError(TypeError):
+    """ Method arguments invalid """
+    pass
+
 class ApiError(RuntimeError):
     """ A method responds with a custom error """
 
