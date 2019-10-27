@@ -37,7 +37,7 @@ async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
     with handle_exceptions(request, debug) as handler:
         result = await call(
-            methods.items[request.method], *request.args, **request.kwargs
+            methods.lookup(request.method), *request.args, **request.kwargs
         )
         handler.response = SuccessResponse(result=result, id=request.id)
     return handler.response

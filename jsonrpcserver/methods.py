@@ -10,6 +10,8 @@ from typing import Any, Callable, Optional
 
 from inspect import signature
 
+from .errors import MethodNotFoundError
+
 Method = Callable[..., Any]
 
 
@@ -71,6 +73,24 @@ class Methods:
         if len(args):
             return args[0]  # for the decorator to work
         return None
+
+    def lookup(self, method_name) -> Method:
+        """
+        Lookup a method
+
+        Args:
+            method_name: Method name to look up
+
+        Returns:
+            callable method
+
+        Raises:
+            MethodNotFoundError if method_name is not found
+        """
+        method = self.items.get(method_name)
+        if not method:
+            raise MethodNotFoundError(method_name)
+        return method
 
 
 # A default Methods object which can be used, or user can create their own.

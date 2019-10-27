@@ -4,6 +4,10 @@ from typing import Any
 from .response import UNSPECIFIED
 from . import status
 
+class MethodNotFoundError(KeyError):
+    """ Method lookup failed """
+    pass
+
 class ApiError(RuntimeError):
     """ A method responds with a custom error """
 

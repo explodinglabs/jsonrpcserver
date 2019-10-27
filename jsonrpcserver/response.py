@@ -270,7 +270,7 @@ class ExceptionResponse(ErrorResponse):
     ) -> None:
         super().__init__(
             "Server error",
-            code=-32000,
+            code=status.JSONRPC_SERVER_ERROR_CODE,
             data=f"{exc.__class__.__name__}: {str(exc)}",
             http_status=http_status,
             *args,
