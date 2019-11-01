@@ -1,6 +1,6 @@
 """Asynchronous dispatch"""
 import asyncio
-import collections
+import collections.abc
 from json import JSONDecodeError
 from json import loads as deserialize
 from typing import Any, Iterable, Optional, Union
@@ -46,7 +46,7 @@ async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Respo
 async def call_requests(
     requests: Union[Request, Iterable[Request]], methods: Methods, debug: bool
 ) -> Response:
-    if isinstance(requests, collections.Iterable):
+    if isinstance(requests, collections.abc.Iterable):
         responses = (safe_call(r, methods, debug=debug) for r in requests)
         return BatchResponse(await asyncio.gather(*responses))
     return await safe_call(requests, methods, debug=debug)
