@@ -144,6 +144,7 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
                 debug=True,
             )
     except Exception as exc:  # Other error inside method - server error
+        logging.exception(exc)
         handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
     finally:
         if request.is_notification:
