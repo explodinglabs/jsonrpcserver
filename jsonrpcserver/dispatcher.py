@@ -34,9 +34,7 @@ from .response import (
     Response,
     SuccessResponse,
 )
-from .errors import (
-    ApiError,
-)
+from .errors import MethodNotFoundError, InvalidArgumentsError, ApiError
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
@@ -126,23 +124,25 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
     handler = SimpleNamespace(response=None)
     try:
         yield handler
-    except KeyError:
+    except (MethodNotFoundError, KeyError):
         handler.response = MethodNotFoundResponse(
             id=request.id, data=request.method, debug=debug
         )
-    except (TypeError, AssertionError) as exc:
-        # Invalid Params - TypeError is raised by jsonschema, AssertionError raised
-        # inside the methods.
+    except (InvalidArgumentsError, TypeError, AssertionError) as exc:
+        # Invalid Params - InvalidArgumentsError is raised by validate_args,
+        # AssertionError raised inside the methods.
         handler.response = InvalidParamsResponse(
             id=request.id, data=str(exc), debug=debug
         )
-    except ApiError as exc: # Method signals custom error
+    except ApiError as exc:  # Method signals custom error
         handler.response = ErrorResponse(
-                str(exc), code=exc.code, data=exc.data,
-                id=request.id,
-                # always set debug to send data to client
-                debug=True,
-            )
+            str(exc),
+            code=exc.code,
+            data=exc.data,
+            id=request.id,
+            # always set debug to send data to client
+            debug=True,
+        )
     except Exception as exc:  # Other error inside method - server error
         logging.exception(exc)
         handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
@@ -164,7 +164,7 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
         A Response object.
     """
     with handle_exceptions(request, debug) as handler:
-        result = call(methods.items[request.method], *request.args, **request.kwargs)
+        result = call(methods.lookup(request.method), *request.args, **request.kwargs)
         handler.response = SuccessResponse(result=result, id=request.id)
     return handler.response
 

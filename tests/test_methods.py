@@ -3,6 +3,7 @@ from functools import partial
 import pytest
 
 from jsonrpcserver.methods import Methods, add, validate_args
+from jsonrpcserver.errors import MethodNotFoundError
 
 
 def test_validate_no_arguments():
@@ -163,3 +164,18 @@ def test_get():
     methods = Methods(cat, dog)
     assert methods.items["cat"] == cat
     assert methods.items["dog"] == dog
+
+def test_lookup():
+    def foo():
+        pass
+
+    methods = Methods()
+    methods.items["foo"] = foo
+
+    assert methods.lookup("foo") is foo
+
+def test_lookup_failure():
+    methods = Methods()
+
+    with pytest.raises(MethodNotFoundError):
+        methods.lookup("bar")

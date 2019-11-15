@@ -10,6 +10,8 @@ from typing import Any, Callable, Optional
 
 from inspect import signature
 
+from .errors import MethodNotFoundError, InvalidArgumentsError
+
 Method = Callable[..., Any]
 
 
@@ -25,9 +27,12 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
         kwargs: Keyword arguments.
 
     Raises:
-        TypeError: If the arguments cannot be passed to the function.
+        InvalidArgumentsError: If the arguments cannot be passed to the function.
     """
-    signature(func).bind(*args, **kwargs)
+    try:
+        signature(func).bind(*args, **kwargs)
+    except TypeError as exc:
+        raise InvalidArgumentsError from exc
     return func
 
 
@@ -71,6 +76,24 @@ class Methods:
         if len(args):
             return args[0]  # for the decorator to work
         return None
+
+    def lookup(self, method_name) -> Method:
+        """
+        Lookup a method
+
+        Args:
+            method_name: Method name to look up
+
+        Returns:
+            callable method
+
+        Raises:
+            MethodNotFoundError if method_name is not found
+        """
+        method = self.items.get(method_name)
+        if not method:
+            raise MethodNotFoundError(method_name)
+        return method
 
 
 # A default Methods object which can be used, or user can create their own.
