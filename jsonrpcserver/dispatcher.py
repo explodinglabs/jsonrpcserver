@@ -133,7 +133,7 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
             id=request.id, data=str(exc), debug=debug
         )
     except Exception as exc:  # Other error inside method - server error
-        request_logger.exception("Error in method {!r} for request with id {}".format(request.method, request.id))
+        logging.exception(exc)
         handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
     finally:
         if request.is_notification:
