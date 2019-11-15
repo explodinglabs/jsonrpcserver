@@ -2,17 +2,12 @@
 from typing import Any
 
 from .response import UNSPECIFIED
-from . import status
+
 
 class ApiError(RuntimeError):
     """ A method responds with a custom error """
 
-    def __init__(
-        self,
-        message: str,
-        code: int = status.JSONRPC_SERVER_ERROR_CODE,
-        data: Any = UNSPECIFIED,
-        ):
+    def __init__(self, message: str, code: int = 1, data: Any = UNSPECIFIED):
         """
         Args:
             message: A string providing a short description of the error, eg.  "Invalid
