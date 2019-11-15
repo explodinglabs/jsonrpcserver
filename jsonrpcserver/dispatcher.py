@@ -124,11 +124,11 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
     handler = SimpleNamespace(response=None)
     try:
         yield handler
-    except (MethodNotFoundError, KeyError):
+    except MethodNotFoundError:
         handler.response = MethodNotFoundResponse(
             id=request.id, data=request.method, debug=debug
         )
-    except (InvalidArgumentsError, TypeError, AssertionError) as exc:
+    except (InvalidArgumentsError, AssertionError) as exc:
         # Invalid Params - InvalidArgumentsError is raised by validate_args,
         # AssertionError raised inside the methods.
         handler.response = InvalidParamsResponse(
