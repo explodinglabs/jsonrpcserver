@@ -1,5 +1,21 @@
 # jsonrpcserver Change Log
 
+## 4.1.0 (Nov 16, 2019)
+
+- Add InvalidParamsError for validating input. Previously the advice was to
+  `assert` on input values. However, AssertionError was too generic an
+  exception. Instead, raise InvalidParamsError. Note `assert` will still work
+  but will be removed in the next major release (5.0).
+- Method not found errors no longer use KeyError, which was too generic. Now
+  we have an exception specifically for this error.
+- Uncaught exceptions raised inside methods will now be logged. We've been
+  simply responding to the client with a Server Error. Now the traceback will
+  be logged server-side.
+- Fix a deprecation warning related to collections.abc.
+- Add py.typed to indicate this package supports typing.
+
+Thanks to steinymity for his work on this release.
+
 ## 4.0.5 (Sep 10, 2019)
 
 - Include license in package.

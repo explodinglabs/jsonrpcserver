@@ -36,5 +36,5 @@ setup(
     package_data={"jsonrpcserver": ["request-schema.json", "py.typed"]},
     packages=["jsonrpcserver"],
     url="https://github.com/bcb/jsonrpcserver",
-    version="4.0.5",
+    version="4.1.0",
 )
