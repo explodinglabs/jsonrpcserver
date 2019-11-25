@@ -112,9 +112,6 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
     Returns:
         The "result" part of the JSON-RPC response (the return value from the method).
-
-    Raises:
-        InvalidParamsError: If arguments don't match function signature.
     """
     return validate_args(method, *args, **kwargs)(*args, **kwargs)
 
