@@ -3,7 +3,7 @@ from functools import partial
 import pytest
 
 from jsonrpcserver.methods import Methods, add, validate_args
-from jsonrpcserver.errors import MethodNotFoundError
+from jsonrpcserver.errors import MethodNotFoundError, InvalidParamsError
 
 
 def test_validate_no_arguments():
@@ -11,7 +11,7 @@ def test_validate_no_arguments():
 
 
 def test_validate_no_arguments_too_many_positionals():
-    with pytest.raises(TypeError):
+    with pytest.raises(InvalidParamsError):
         validate_args(lambda: None, "foo")
 
 
@@ -20,7 +20,7 @@ def test_validate_positionals():
 
 
 def test_validate_positionals_not_passed():
-    with pytest.raises(TypeError):
+    with pytest.raises(InvalidParamsError):
         validate_args(lambda x: None, foo="bar")
 
 
@@ -165,6 +165,7 @@ def test_get():
     assert methods.items["cat"] == cat
     assert methods.items["dog"] == dog
 
+
 def test_lookup():
     def foo():
         pass
@@ -173,6 +174,7 @@ def test_lookup():
     methods.items["foo"] = foo
 
     assert methods.lookup("foo") is foo
+
 
 def test_lookup_failure():
     methods = Methods()

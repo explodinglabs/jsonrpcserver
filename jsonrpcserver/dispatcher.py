@@ -34,7 +34,7 @@ from .response import (
     Response,
     SuccessResponse,
 )
-from .errors import MethodNotFoundError, InvalidArgumentsError, ApiError
+from .errors import MethodNotFoundError, InvalidParamsError, ApiError
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
@@ -112,9 +112,6 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
     Returns:
         The "result" part of the JSON-RPC response (the return value from the method).
-
-    Raises:
-        TypeError: If arguments don't match function signature.
     """
     return validate_args(method, *args, **kwargs)(*args, **kwargs)
 
@@ -124,13 +121,14 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
     handler = SimpleNamespace(response=None)
     try:
         yield handler
-    except (MethodNotFoundError, KeyError):
+    except MethodNotFoundError:
         handler.response = MethodNotFoundResponse(
             id=request.id, data=request.method, debug=debug
         )
-    except (InvalidArgumentsError, TypeError, AssertionError) as exc:
-        # Invalid Params - InvalidArgumentsError is raised by validate_args,
-        # AssertionError raised inside the methods.
+    except (InvalidParamsError, AssertionError) as exc:
+        # InvalidParamsError is raised by validate_args. AssertionError is raised inside
+        # the methods, however it's better to raise InvalidParamsError inside methods.
+        # AssertionError will be removed in the next major release.
         handler.response = InvalidParamsResponse(
             id=request.id, data=str(exc), debug=debug
         )

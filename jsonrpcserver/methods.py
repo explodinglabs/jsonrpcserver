@@ -10,7 +10,7 @@ from typing import Any, Callable, Optional
 
 from inspect import signature
 
-from .errors import MethodNotFoundError, InvalidArgumentsError
+from .errors import MethodNotFoundError, InvalidParamsError
 
 Method = Callable[..., Any]
 
@@ -19,20 +19,23 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
     """
     Check if the request's arguments match a function's signature.
 
-    Raises TypeError exception if arguments cannot be passed to a function.
+    Raises InvalidParamsError if arguments cannot be passed to a function.
 
     Args:
         func: The function to check.
         args: Positional arguments.
         kwargs: Keyword arguments.
 
+    Returns:
+        The same function passed in.
+
     Raises:
-        InvalidArgumentsError: If the arguments cannot be passed to the function.
+        InvalidParamsError: If the arguments cannot be passed to the function.
     """
     try:
         signature(func).bind(*args, **kwargs)
     except TypeError as exc:
-        raise InvalidArgumentsError from exc
+        raise InvalidParamsError from exc
     return func
 
 
