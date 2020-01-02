@@ -90,7 +90,7 @@ def lookup(methods: Methods, method_name: str) -> Method:
         method_name: Method name to look up
 
     Returns:
-        callable method
+        The callable method.
 
     Raises:
         MethodNotFoundError if method_name is not found
