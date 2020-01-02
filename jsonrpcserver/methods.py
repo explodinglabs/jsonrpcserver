@@ -80,23 +80,25 @@ class Methods:
             return args[0]  # for the decorator to work
         return None
 
-    def lookup(self, method_name) -> Method:
-        """
-        Lookup a method
 
-        Args:
-            method_name: Method name to look up
+def lookup(methods: Methods, method_name: str) -> Method:
+    """
+    Lookup a method
 
-        Returns:
-            callable method
+    Args:
+        methods: Methods object
+        method_name: Method name to look up
 
-        Raises:
-            MethodNotFoundError if method_name is not found
-        """
-        method = self.items.get(method_name)
-        if not method:
-            raise MethodNotFoundError(method_name)
-        return method
+    Returns:
+        callable method
+
+    Raises:
+        MethodNotFoundError if method_name is not found
+    """
+    try:
+        return methods.items[method_name]
+    except KeyError as exc:
+        raise MethodNotFoundError(method_name) from exc
 
 
 # A default Methods object which can be used, or user can create their own.

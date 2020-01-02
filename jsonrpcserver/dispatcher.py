@@ -20,7 +20,7 @@ from jsonschema.validators import validator_for  # type: ignore
 from pkg_resources import resource_string
 
 from .log import log_
-from .methods import Method, Methods, global_methods, validate_args
+from .methods import Method, Methods, global_methods, validate_args, lookup
 from .request import NOCONTEXT, Request
 from .response import (
     BatchResponse,
@@ -162,7 +162,7 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
         A Response object.
     """
     with handle_exceptions(request, debug) as handler:
-        result = call(methods.lookup(request.method), *request.args, **request.kwargs)
+        result = call(lookup(methods, request.method), *request.args, **request.kwargs)
         handler.response = SuccessResponse(result=result, id=request.id)
     return handler.response
 

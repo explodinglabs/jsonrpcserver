@@ -2,7 +2,7 @@ from functools import partial
 
 import pytest
 
-from jsonrpcserver.methods import Methods, add, validate_args
+from jsonrpcserver.methods import Methods, add, validate_args, lookup
 from jsonrpcserver.errors import MethodNotFoundError, InvalidParamsError
 
 
@@ -173,11 +173,11 @@ def test_lookup():
     methods = Methods()
     methods.items["foo"] = foo
 
-    assert methods.lookup("foo") is foo
+    assert lookup(methods, "foo") is foo
 
 
 def test_lookup_failure():
     methods = Methods()
 
     with pytest.raises(MethodNotFoundError):
-        methods.lookup("bar")
+        lookup(methods, "bar")
