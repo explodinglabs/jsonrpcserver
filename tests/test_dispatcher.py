@@ -25,7 +25,7 @@ from jsonrpcserver.response import (
     NotificationResponse,
     SuccessResponse,
 )
-from jsonrpcserver.errors import ApiError
+from jsonrpcserver.exceptions import ApiError
 
 
 def ping():

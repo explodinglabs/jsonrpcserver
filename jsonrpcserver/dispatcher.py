@@ -34,7 +34,7 @@ from .response import (
     Response,
     SuccessResponse,
 )
-from .errors import MethodNotFoundError, InvalidParamsError, ApiError
+from .exceptions import MethodNotFoundError, InvalidParamsError, ApiError
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
