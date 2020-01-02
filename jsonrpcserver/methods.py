@@ -83,7 +83,7 @@ class Methods:
 
 def lookup(methods: Methods, method_name: str) -> Method:
     """
-    Lookup a method
+    Lookup a method.
 
     Args:
         methods: Methods object
@@ -93,7 +93,7 @@ def lookup(methods: Methods, method_name: str) -> Method:
         The callable method.
 
     Raises:
-        MethodNotFoundError if method_name is not found
+        MethodNotFoundError if method_name is not found.
     """
     try:
         return methods.items[method_name]
