@@ -114,8 +114,9 @@ parameter names to snake case. Default is *False*.
 
 **debug**
 
-If True, more information is included in error responses, such as an exception
-message. Default is *False*.
+If True, more information is included in error responses, such as an
+exception message. *For ApiError, this value is ignored, and data is always
+included.* Default is *False*.
 
 **trim_log_values**
 
@@ -134,47 +135,31 @@ debug = yes
 trim_log_values = yes
 ```
 
-## Validation
+## Errors
 
-Assert on arguments to validate them.
+The library handles most errors related to the JSON-RPC standard.
+
+To send an application-defined error to the client, raise `ApiError`.
 
 ```python
+from jsonrpcserver.exceptions import ApiError
+
 @method
 def fruits(color):
-    assert color in ("red", "orange", "yellow"), "No fruits of that colour"
+    if color not in ("red", "orange", "yellow"):
+        raise ApiError("No fruits of that colour")
 ```
 
 The dispatcher will give the appropriate response:
 
 ```python
 >>> str(dispatch('{"jsonrpc": "2.0", "method": "fruits", "params": ["blue"], "id": 1}'))
-'{"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}'
-```
-
-*To include the "No fruits of that colour" message in the response, pass
-debug=True to dispatch.*
-
-## Application Defined Errors
-
-To send an application defined error response to the client, raise an `ApiError`.
-
-```python
-@method
-def get_page(path):
-    if path.startswith('private/'):
-        raise ApiError("This path is forbidden", code=403, data={'path': 'private/'})
-```
-
-The dispatcher sends an appropriate error response:
-
-```python
->>> str(dispatch('{"jsonrpc": "2.0", "method": "get_page", "params": ["private/index.html"], "id": 1}'))
-'{"jsonrpc": "2.0", "error": {"code": 403, "message": "This path is forbidden", "data": {"path": "private/"}}, "id": 1}'
+'{"jsonrpc": "2.0", "error": {"code": 1, "message": "No fruits of that colour"}, "id": 1}'
 ```
 
 Both the error code and data are optional and may be omitted. The `data`
-parameter accepts any serializable value while `code` must be an integer. Some
-negative error codes are, however, reserved by the JSON-RPC standard.
+parameter accepts any serializable value while `code` must be an integer.
+Some negative error codes are, however, reserved by the JSON-RPC standard.
 
 ## Async
 
