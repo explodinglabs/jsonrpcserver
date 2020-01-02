@@ -161,7 +161,7 @@ class SuccessResponse(DictResponse):
 
 class ErrorResponse(DictResponse):
     """
-    Error response.
+    Base class for the other errors.
 
     Returned if there was an error while processing the request.
     """
@@ -277,6 +277,13 @@ class ExceptionResponse(ErrorResponse):
             **kwargs,
         )
         self.exc = exc
+
+
+class ApiErrorResponse(ErrorResponse):
+    def __init__(
+        self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
+    ) -> None:
+        super().__init__(http_status=http_status, *args, **kwargs)
 
 
 class BatchResponse(Response):
