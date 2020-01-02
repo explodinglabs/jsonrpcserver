@@ -33,7 +33,7 @@ Response heirarchy:
 import json
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Any, Dict, Iterable, Optional, cast
+from typing import Any, Dict, Iterable, cast
 
 from . import status
 
@@ -43,7 +43,7 @@ UNSPECIFIED = object()
 class Response(ABC):
     """Base class of all responses."""
 
-    def __init__(self, http_status: Optional[int] = None) -> None:
+    def __init__(self, http_status: int) -> None:
         self.http_status = http_status
 
     @property
