@@ -114,9 +114,8 @@ parameter names to snake case. Default is *False*.
 
 **debug**
 
-If True, more information is included in error responses, such as an
-exception message. *For ApiError, this value is ignored, and data is always
-included.* Default is *False*.
+If True, more information is included in error responses, such as an exception
+message. *For ApiError, this value is ignored.* Default is *False*.
 
 **trim_log_values**
 
