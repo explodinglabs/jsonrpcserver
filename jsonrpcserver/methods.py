@@ -10,7 +10,7 @@ from typing import Any, Callable, Optional
 
 from inspect import signature
 
-from .errors import MethodNotFoundError, InvalidParamsError
+from .exceptions import MethodNotFoundError, InvalidParamsError
 
 Method = Callable[..., Any]
 

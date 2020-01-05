@@ -23,8 +23,8 @@ from .log import log_
 from .methods import Method, Methods, global_methods, validate_args
 from .request import NOCONTEXT, Request
 from .response import (
+    ApiErrorResponse,
     BatchResponse,
-    ErrorResponse,
     ExceptionResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
@@ -34,7 +34,7 @@ from .response import (
     Response,
     SuccessResponse,
 )
-from .errors import MethodNotFoundError, InvalidParamsError, ApiError
+from .exceptions import MethodNotFoundError, InvalidParamsError, ApiError
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
@@ -133,7 +133,7 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
             id=request.id, data=str(exc), debug=debug
         )
     except ApiError as exc:  # Method signals custom error
-        handler.response = ErrorResponse(
+        handler.response = ApiErrorResponse(
             str(exc),
             code=exc.code,
             data=exc.data,

@@ -104,7 +104,7 @@ def test_success_response_null_result():
 
 
 def test_error_response():
-    response = ErrorResponse("foo", id=1, code=-1, debug=True)
+    response = ErrorResponse("foo", id=1, code=-1, debug=True, http_status=200)
     assert response.code == -1
     assert response.message == "foo"
     assert response.wanted == True
@@ -119,7 +119,7 @@ def test_error_response_no_id():
     # notifications under certain circumstances, such as "invalid json" and "invalid
     # json-rpc".
     assert (
-        str(ErrorResponse("foo", id=None, code=-1, debug=True))
+        str(ErrorResponse("foo", id=None, code=-1, debug=True, http_status=200))
         == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}, "id": null}'
     )
 
@@ -127,14 +127,22 @@ def test_error_response_no_id():
 def test_error_response_data_with_debug_disabled():
     # The data is not included, because debug is False
     assert (
-        str(ErrorResponse("foo", id=None, code=-1, data="bar", debug=False))
+        str(
+            ErrorResponse(
+                "foo", id=None, code=-1, data="bar", debug=False, http_status=200
+            )
+        )
         == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}, "id": null}'
     )
 
 
 def test_error_response_data_with_debug_enabled():
     assert (
-        str(ErrorResponse("foo", id=None, code=-1, data="bar", debug=True))
+        str(
+            ErrorResponse(
+                "foo", id=None, code=-1, data="bar", debug=True, http_status=200
+            )
+        )
         == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo", "data": "bar"}, "id": null}'
     )
 
