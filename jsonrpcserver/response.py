@@ -33,7 +33,7 @@ Response heirarchy:
 import json
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Any, Dict, Iterable, Optional, cast
+from typing import Any, Dict, Iterable, cast
 
 from . import status
 
@@ -43,7 +43,7 @@ UNSPECIFIED = object()
 class Response(ABC):
     """Base class of all responses."""
 
-    def __init__(self, http_status: Optional[int] = None) -> None:
+    def __init__(self, http_status: int) -> None:
         self.http_status = http_status
 
     @property
@@ -161,7 +161,7 @@ class SuccessResponse(DictResponse):
 
 class ErrorResponse(DictResponse):
     """
-    Error response.
+    Base class for the other errors.
 
     Returned if there was an error while processing the request.
     """
@@ -277,6 +277,13 @@ class ExceptionResponse(ErrorResponse):
             **kwargs,
         )
         self.exc = exc
+
+
+class ApiErrorResponse(ErrorResponse):
+    def __init__(
+        self, *args: Any, http_status: int = status.HTTP_BAD_REQUEST, **kwargs: Any
+    ) -> None:
+        super().__init__(http_status=http_status, *args, **kwargs)
 
 
 class BatchResponse(Response):

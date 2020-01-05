@@ -3,7 +3,7 @@ from functools import partial
 import pytest
 
 from jsonrpcserver.methods import Methods, add, validate_args, lookup
-from jsonrpcserver.errors import MethodNotFoundError, InvalidParamsError
+from jsonrpcserver.exceptions import MethodNotFoundError, InvalidParamsError
 
 
 def test_validate_no_arguments():
