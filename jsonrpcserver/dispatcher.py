@@ -134,12 +134,7 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
         )
     except ApiError as exc:  # Method signals custom error
         handler.response = ApiErrorResponse(
-            str(exc),
-            code=exc.code,
-            data=exc.data,
-            id=request.id,
-            # always set debug to send data to client
-            debug=True,
+            str(exc), code=exc.code, data=exc.data, id=request.id, debug=debug
         )
     except Exception as exc:  # Other error inside method - server error
         logging.exception(exc)
