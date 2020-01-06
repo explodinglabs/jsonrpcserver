@@ -87,10 +87,9 @@ def test_safe_call_api_error():
     def error():
         raise ApiError("Client Error", code=123, data={"data": 42})
 
-    response = safe_call(Request(method="error", id=1), Methods(error), debug=False)
+    response = safe_call(Request(method="error", id=1), Methods(error), debug=True)
     assert isinstance(response, ErrorResponse)
-    response_dict = response.deserialized()
-    error_dict = response_dict["error"]
+    error_dict = response.deserialized()["error"]
     assert error_dict["message"] == "Client Error"
     assert error_dict["code"] == 123
     assert error_dict["data"] == {"data": 42}
@@ -100,7 +99,7 @@ def test_safe_call_api_error_minimal():
     def error():
         raise ApiError("Client Error")
 
-    response = safe_call(Request(method="error", id=1), Methods(error), debug=False)
+    response = safe_call(Request(method="error", id=1), Methods(error), debug=True)
     assert isinstance(response, ErrorResponse)
     response_dict = response.deserialized()
     error_dict = response_dict["error"]
