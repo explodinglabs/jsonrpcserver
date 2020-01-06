@@ -4,7 +4,19 @@ from typing import Any
 from .response import UNSPECIFIED
 
 
-class ApiError(RuntimeError):
+class MethodNotFoundError(Exception):
+    """ Method lookup failed """
+
+    pass
+
+
+class InvalidParamsError(Exception):
+    """ Method arguments invalid """
+
+    pass
+
+
+class ApiError(Exception):
     """ A method responds with a custom error """
 
     def __init__(self, message: str, code: int = 1, data: Any = UNSPECIFIED):
