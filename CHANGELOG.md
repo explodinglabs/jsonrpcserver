@@ -2,20 +2,18 @@
 
 ## 4.1.0 (Nov 16, 2019)
 
-- Add an ApiError exception. Raise it to send an application-defined error
-  response.
 - Add InvalidParamsError exception, for input validation. Previously the
   advice was to `assert` on input values. However, AssertionError was too
   generic an exception. Instead, raise InvalidParamsError. Note `assert` will
   still work but will be removed in the next major release (5.0).
-- Add MethodNotFound exception. Similar to InvalidParamsError, previously we
-  were using KeyError which was too generic. Now we have an exception
-  specifically for this error.
+- Add an ApiError exception; raise it to send an application defined error
+  response. This covers the line in the JSON-RPC spec, "The remainder of the
+  space is available for application defined errors."
 - Uncaught exceptions raised inside methods will now be logged. We've been
   simply responding to the client with a Server Error. Now the traceback will
   also be logged server-side.
 - Fix a deprecation warning related to collections.abc.
-- Add py.typed to indicate this package supports typing.
+- Add py.typed to indicate this package supports typing. (PEP 561)
 
 Thanks to steinymity for his work on this release.
 
