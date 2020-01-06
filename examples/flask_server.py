@@ -11,8 +11,7 @@ def ping():
 
 @app.route("/", methods=["POST"])
 def index():
-    req = request.get_data().decode()
-    response = dispatch(req)
+    response = dispatch(request.get_data().decode())
     return Response(str(response), response.http_status, mimetype="application/json")
 
 
