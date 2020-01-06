@@ -138,27 +138,36 @@ trim_log_values = yes
 
 The library handles most errors related to the JSON-RPC standard.
 
-To send an application-defined error to the client, raise `ApiError`.
-
 ```python
-from jsonrpcserver.exceptions import ApiError
+from jsonrpcserver.exceptions import InvalidParamsError
 
 @method
 def fruits(color):
     if color not in ("red", "orange", "yellow"):
-        raise ApiError("No fruits of that colour")
+        raise InvalidParamsError("No fruits of that colour")
 ```
 
 The dispatcher will give the appropriate response:
 
 ```python
->>> str(dispatch('{"jsonrpc": "2.0", "method": "fruits", "params": ["blue"], "id": 1}'))
-'{"jsonrpc": "2.0", "error": {"code": 1, "message": "No fruits of that colour"}, "id": 1}'
+>>> str(dispatch('{"jsonrpc": "2.0", "method": "fruits", "params": {"color": "blue"}, "id": 1}'))
+'{"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid parameters"}, "id": 1}'
 ```
 
-Both the error code and data are optional and may be omitted. The `data`
-parameter accepts any serializable value while `code` must be an integer.
-Some negative error codes are, however, reserved by the JSON-RPC standard.
+To send some other application-defined error response, raise an `ApiError` in
+a similar way.
+
+```python
+from jsonrpcserver.exceptions import ApiError
+
+@method
+def my_method():
+    if some_condition:
+        raise ApiError("Can't fulfill the request")
+```
+
+To include the message passed when raising the exception, set `debug` to True.
+(See Configuration above.)
 
 ## Async
 

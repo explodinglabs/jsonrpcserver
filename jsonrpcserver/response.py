@@ -183,7 +183,8 @@ class ErrorResponse(DictResponse):
                 integer.
             data: A Primitive or Structured value that contains additional information
                 about the error. This may be omitted.
-            debug: Include more (possibly sensitive) information in the response.
+            debug: Include the data attribute which may include more (possibly
+                sensitive) information in the response.
         """
         super().__init__(*args, **kwargs)
         self.code = code
@@ -261,6 +262,8 @@ class InvalidParamsResponse(ErrorResponse):
 
 
 class ExceptionResponse(ErrorResponse):
+    """Sent for unhandled exceptions - 'server error'."""
+
     def __init__(
         self,
         exc: BaseException,
