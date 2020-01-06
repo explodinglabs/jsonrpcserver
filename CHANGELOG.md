@@ -9,6 +9,8 @@
 - Add an ApiError exception; raise it to send an application defined error
   response. This covers the line in the JSON-RPC spec, "The remainder of the
   space is available for application defined errors."
+- A KeyError raised inside methods will no longer send a "method not found"
+  response.
 - Uncaught exceptions raised inside methods will now be logged. We've been
   simply responding to the client with a Server Error. Now the traceback will
   also be logged server-side.
