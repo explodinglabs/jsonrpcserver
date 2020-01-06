@@ -1,6 +1,6 @@
 # jsonrpcserver Change Log
 
-## 4.1.0 (Nov 16, 2019)
+## 4.1.0 (Jan 6, 2020)
 
 - Add InvalidParamsError exception, for input validation. Previously the
   advice was to `assert` on input values. However, AssertionError was too
