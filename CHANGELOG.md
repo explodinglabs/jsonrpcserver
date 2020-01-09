@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 4.1.1 (Jan 8, 2020)
+
+- Fix file permission on all files.
+
 ## 4.1.0 (Jan 6, 2020)
 
 - Add InvalidParamsError exception, for input validation. Previously the
