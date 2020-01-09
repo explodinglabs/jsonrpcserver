@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 4.1.2 (Jan 9, 2020)
+
+- Fix the egg-info directory in package.
+
 ## 4.1.1 (Jan 8, 2020)
 
 - Fix file permission on all files.
