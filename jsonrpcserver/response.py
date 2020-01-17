@@ -37,8 +37,6 @@ from typing import Any, Dict, Iterable, cast
 
 from . import status
 
-UNSPECIFIED = object()
-
 
 class Response(ABC):
     """Base class of all responses."""
@@ -171,7 +169,7 @@ class ErrorResponse(DictResponse):
         message: str,
         *args: Any,
         code: int,
-        data: Any = UNSPECIFIED,
+        data: Any = None,
         debug: bool,  # required, named
         **kwargs: Any,
     ) -> None:
@@ -198,7 +196,7 @@ class ErrorResponse(DictResponse):
             "error": {"code": self.code, "message": self.message},
             "id": self.id,
         }  # type: Dict[str, Any]
-        if self.data is not UNSPECIFIED and self.debug:
+        if self.data is not None and self.debug:
             dct["error"]["data"] = self.data
         return dct
 

@@ -1,8 +1,6 @@
 """Exceptions"""
 from typing import Any
 
-from .response import UNSPECIFIED
-
 
 class MethodNotFoundError(Exception):
     """ Method lookup failed """
@@ -19,7 +17,7 @@ class InvalidParamsError(Exception):
 class ApiError(Exception):
     """ A method responds with a custom error """
 
-    def __init__(self, message: str, code: int = 1, data: Any = UNSPECIFIED):
+    def __init__(self, message: str, code: int = 1, data: Any = None):
         """
         Args:
             message: A string providing a short description of the error, eg.  "Invalid
