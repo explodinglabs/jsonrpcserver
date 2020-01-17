@@ -21,6 +21,7 @@ setup(
             "aiozmq",
             "flask",
             "flask-socketio",
+            "gmqtt",
             "pyzmq",
             "tornado",
             "websockets",
