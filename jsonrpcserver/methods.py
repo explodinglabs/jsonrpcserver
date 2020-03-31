@@ -35,7 +35,7 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
     try:
         signature(func).bind(*args, **kwargs)
     except TypeError as exc:
-        raise InvalidParamsError from exc
+        raise InvalidParamsError(exc) from exc
     return func
 
 

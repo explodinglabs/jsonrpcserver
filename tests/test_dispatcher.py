@@ -13,19 +13,13 @@ from jsonrpcserver.dispatcher import (
     remove_handlers,
     safe_call,
 )
+from jsonrpcserver.exceptions import ApiError
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.request import NOCONTEXT, Request
 from jsonrpcserver.response import (
-    BatchResponse,
-    ErrorResponse,
-    InvalidJSONResponse,
-    InvalidJSONRPCResponse,
-    InvalidParamsResponse,
-    MethodNotFoundResponse,
-    NotificationResponse,
-    SuccessResponse,
+    BatchResponse, ErrorResponse, InvalidJSONRPCResponse, InvalidJSONResponse, InvalidParamsResponse,
+    MethodNotFoundResponse, NotificationResponse, SuccessResponse,
 )
-from jsonrpcserver.exceptions import ApiError
 
 
 def ping():
@@ -222,6 +216,21 @@ def test_dispatch_pure_invalid_params():
     assert isinstance(response, InvalidParamsResponse)
 
 
+def test_dispatch_pure_invalid_params_count():
+    def foo(colour: str, size: str):
+        pass
+
+    response = dispatch_pure(
+        '{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
+        Methods(foo),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+    )
+    assert isinstance(response, InvalidParamsResponse)
+    assert response.data == 'missing a required argument: \'size\''
+
+
 # def test_dispatch_pure_invalid_params_notification():
 #    def foo(bar):
 #        if bar < 0:
@@ -339,8 +348,8 @@ def test_examples_invalid_json():
     )
     assert isinstance(response, ErrorResponse)
     assert (
-        str(response)
-        == '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Invalid JSON", "data": "Expecting \':\' delimiter: line 1 column 96 (char 95)"}, "id": null}'
+            str(response)
+            == '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Invalid JSON", "data": "Expecting \':\' delimiter: line 1 column 96 (char 95)"}, "id": null}'
     )
 
 
@@ -351,8 +360,8 @@ def test_examples_empty_array():
     )
     assert isinstance(response, ErrorResponse)
     assert (
-        str(response)
-        == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": null}, "id": null}'
+            str(response)
+            == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": null}, "id": null}'
     )
 
 
@@ -366,8 +375,8 @@ def test_examples_invalid_jsonrpc_batch():
     )
     assert isinstance(response, InvalidJSONRPCResponse)
     assert (
-        str(response)
-        == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": null}, "id": null}'
+            str(response)
+            == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": null}, "id": null}'
     )
 
 
@@ -385,8 +394,8 @@ def test_examples_multiple_invalid_jsonrpc():
     )
     assert isinstance(response, ErrorResponse)
     assert (
-        str(response)
-        == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": null}, "id": null}'
+            str(response)
+            == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": null}, "id": null}'
     )
 
 
