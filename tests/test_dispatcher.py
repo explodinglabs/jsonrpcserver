@@ -222,6 +222,21 @@ def test_dispatch_pure_invalid_params():
     assert isinstance(response, InvalidParamsResponse)
 
 
+def test_dispatch_pure_invalid_params_count():
+    def foo(colour: str, size: str):
+        pass
+
+    response = dispatch_pure(
+        '{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
+        Methods(foo),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+    )
+    assert isinstance(response, InvalidParamsResponse)
+    assert response.data == 'missing a required argument: \'size\''
+
+
 # def test_dispatch_pure_invalid_params_notification():
 #    def foo(bar):
 #        if bar < 0:
