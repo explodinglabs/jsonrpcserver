@@ -108,6 +108,21 @@ def test_safe_call_api_error_minimal():
     assert "data" not in error_dict
 
 
+def test_non_json_encodable_resonse():
+    def method():
+        return b"Hello, World"
+
+    response = safe_call(Request(method="method", id=1), Methods(method), debug=False)
+    # response must be serializable here
+    str(response)
+    assert isinstance(response, ErrorResponse)
+    response_dict = response.deserialized()
+    error_dict = response_dict["error"]
+    assert error_dict["message"] == "Server error"
+    assert error_dict["code"] == -32000
+    assert "data" not in error_dict
+
+
 # call_requests
 
 
