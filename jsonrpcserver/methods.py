@@ -39,11 +39,6 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
     return func
 
 
-def ensure_callable(method: Callable) -> Callable:
-    assert callable(method)
-    return method
-
-
 class Methods:
     """Holds a list of methods that can be called by a JSON-RPC request."""
 
@@ -75,9 +70,9 @@ class Methods:
         # dictionary comprehension. Otherwise different exceptions will be raised in 3.8
         # vs earlier Pythons, depending on evaluation order.
         for m in args:
-            ensure_callable(m)
+            assert callable(m)
         for _, m in kwargs.items():
-            ensure_callable(m)
+            assert callable(m)
         self.items = {
             **self.items,
             # Methods passed as positional args need a __name__ attribute, raises
