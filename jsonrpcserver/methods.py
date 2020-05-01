@@ -40,7 +40,6 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
 
 
 def ensure_callable(method: Callable) -> Callable:
-    print(type(method))
     assert callable(method)
     return method
 
