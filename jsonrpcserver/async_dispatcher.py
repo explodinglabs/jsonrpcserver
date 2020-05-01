@@ -2,7 +2,7 @@
 import asyncio
 import collections.abc
 from json import JSONDecodeError
-from json import loads as deserialize
+from json import dumps as serialize, loads as deserialize
 from typing import Any, Iterable, Optional, Union
 
 from apply_defaults import apply_config  # type: ignore
@@ -39,9 +39,10 @@ async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Respo
         result = await call(
             lookup(methods, request.method), *request.args, **request.kwargs
         )
+        # Ensure value returned from the method is JSON-serializable. If not,
+        # handle_exception will set handler.response to an ExceptionResponse
+        serialize(result)
         handler.response = SuccessResponse(result=result, id=request.id)
-        # test serializability
-        assert str(handler.response)
     return handler.response
 
 
