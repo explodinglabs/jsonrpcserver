@@ -10,7 +10,7 @@ from collections.abc import Iterable
 from configparser import ConfigParser
 from contextlib import contextmanager
 from json import JSONDecodeError
-from json import loads as deserialize
+from json import dumps as serialize, loads as deserialize
 from types import SimpleNamespace
 from typing import Any, Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
 
@@ -158,9 +158,10 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
     """
     with handle_exceptions(request, debug) as handler:
         result = call(lookup(methods, request.method), *request.args, **request.kwargs)
+        # Ensure value returned from the method is JSON-serializable. If not,
+        # handle_exception will set handler.response to an ExceptionResponse
+        serialize(result)
         handler.response = SuccessResponse(result=result, id=request.id)
-        # test serializability
-        assert str(handler.response)
     return handler.response
 
 
