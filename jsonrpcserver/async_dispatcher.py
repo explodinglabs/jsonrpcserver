@@ -40,6 +40,8 @@ async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Respo
             lookup(methods, request.method), *request.args, **request.kwargs
         )
         handler.response = SuccessResponse(result=result, id=request.id)
+        # test serializability
+        assert str(handler.response)
     return handler.response
 
 
