@@ -55,9 +55,10 @@ class Methods:
             **kwargs: Mapping of named arguments.
 
         Raises:
-            AttributeError: Raised if the method passed as a positional argument has no
-                name. (i.e. it has no `__name__` property.)
             AssertionError: Raised if the method is not callable.
+            AttributeError: Will be raised if a method is passed as a positional
+                argument but has no `__name__` property (so we have no key for the items
+                dictionary).
 
         Examples:
             methods = Methods()
