@@ -44,6 +44,17 @@ def test_add_function():
     assert methods.items["foo"] is foo
 
 
+def test_add_no_name():
+    # AttibuteError will be raised if a method is passed as a positional argument with
+    # no __name__ attribute
+    class C(object):
+        def __call__(self):
+            return None
+
+    with pytest.raises(AttributeError):
+        Methods(C())
+
+
 def test_add_non_callable():
     with pytest.raises(AssertionError):
         Methods(None)

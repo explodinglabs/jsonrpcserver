@@ -39,11 +39,6 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
     return func
 
 
-def validate(method: Callable) -> Callable:
-    assert callable(method)
-    return method
-
-
 class Methods:
     """Holds a list of methods that can be called by a JSON-RPC request."""
 
@@ -60,8 +55,10 @@ class Methods:
             **kwargs: Mapping of named arguments.
 
         Raises:
-            AttributeError: Raised if the method being added has no name. (i.e. it has
-                no `__name__` property, and no `name` argument was given.)
+            AssertionError: Raised if the method is not callable.
+            AttributeError: Will be raised if a method is passed as a positional
+                argument but has no `__name__` property (so we have no key for the items
+                dictionary).
 
         Examples:
             methods = Methods()
@@ -69,12 +66,20 @@ class Methods:
             def subtract(minuend, subtrahend):
                 return minuend - subtrahend
         """
+        # Multiple loops here, but due to changes in dictionary comprehension evaluation
+        # order in Python 3.8 (PEP 572), we need to validate separately from the
+        # dictionary comprehension. Otherwise different exceptions will be raised in 3.8
+        # vs earlier Pythons, depending on evaluation order.
+        for m in args:
+            assert callable(m)
+        for _, m in kwargs.items():
+            assert callable(m)
         self.items = {
             **self.items,
             # Methods passed as positional args need a __name__ attribute, raises
             # AttributeError otherwise.
-            **{m.__name__: validate(m) for m in args},
-            **{k: validate(v) for k, v in kwargs.items()},
+            **{m.__name__: m for m in args},
+            **{k: v for k, v in kwargs.items()},
         }
         if len(args):
             return args[0]  # for the decorator to work
