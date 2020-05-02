@@ -1,5 +1,13 @@
 # jsonrpcserver Change Log
 
+## 4.1.3 (May 2, 2020)
+
+- In the case of a method returning a non-serializable value, return a JSON-RPC
+  error response. It was previously erroring server-side without responding to
+  the client. (#119)
+- Fix for Python 3.8 - ensures the same exceptions will be raised in 3.8 and
+  pre-3.8. (#122)
+
 ## 4.1.2 (Jan 9, 2020)
 
 - Fix the egg-info directory in package.
