@@ -32,7 +32,8 @@
                 "params": {
                     "type": [ "array", "object" ]
                 }
-            }
+            },
+            "additionalProperties": false
         }
     }
 }
