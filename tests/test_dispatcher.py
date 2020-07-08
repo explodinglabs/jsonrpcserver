@@ -12,6 +12,8 @@ from jsonrpcserver.dispatcher import (
     log_response,
     remove_handlers,
     safe_call,
+    default_deserialize,
+    default_serialize,
 )
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.request import NOCONTEXT, Request
@@ -52,14 +54,21 @@ def test_log_response():
 
 
 def test_safe_call_success_response():
-    response = safe_call(Request(method="ping", id=1), Methods(ping), debug=True)
+    response = safe_call(
+        Request(method="ping", id=1),
+        Methods(ping),
+        debug=True,
+        serialize=default_serialize,
+    )
     assert isinstance(response, SuccessResponse)
     assert response.result == "pong"
     assert response.id == 1
 
 
 def test_safe_call_notification():
-    response = safe_call(Request(method="ping"), Methods(ping), debug=True)
+    response = safe_call(
+        Request(method="ping"), Methods(ping), debug=True, serialize=default_serialize
+    )
     assert isinstance(response, NotificationResponse)
 
 
@@ -67,18 +76,28 @@ def test_safe_call_notification_failure():
     def fail():
         raise ValueError()
 
-    response = safe_call(Request(method="foo"), Methods(fail), debug=True)
+    response = safe_call(
+        Request(method="foo"), Methods(fail), debug=True, serialize=default_serialize
+    )
     assert isinstance(response, NotificationResponse)
 
 
 def test_safe_call_method_not_found():
-    response = safe_call(Request(method="nonexistant", id=1), Methods(ping), debug=True)
+    response = safe_call(
+        Request(method="nonexistant", id=1),
+        Methods(ping),
+        debug=True,
+        serialize=default_serialize,
+    )
     assert isinstance(response, MethodNotFoundResponse)
 
 
 def test_safe_call_invalid_args():
     response = safe_call(
-        Request(method="ping", params=[1], id=1), Methods(ping), debug=True
+        Request(method="ping", params=[1], id=1),
+        Methods(ping),
+        debug=True,
+        serialize=default_serialize,
     )
     assert isinstance(response, InvalidParamsResponse)
 
@@ -87,7 +106,12 @@ def test_safe_call_api_error():
     def error():
         raise ApiError("Client Error", code=123, data={"data": 42})
 
-    response = safe_call(Request(method="error", id=1), Methods(error), debug=True)
+    response = safe_call(
+        Request(method="error", id=1),
+        Methods(error),
+        debug=True,
+        serialize=default_serialize,
+    )
     assert isinstance(response, ErrorResponse)
     error_dict = response.deserialized()["error"]
     assert error_dict["message"] == "Client Error"
@@ -99,7 +123,12 @@ def test_safe_call_api_error_minimal():
     def error():
         raise ApiError("Client Error")
 
-    response = safe_call(Request(method="error", id=1), Methods(error), debug=True)
+    response = safe_call(
+        Request(method="error", id=1),
+        Methods(error),
+        debug=True,
+        serialize=default_serialize,
+    )
     assert isinstance(response, ErrorResponse)
     response_dict = response.deserialized()
     error_dict = response_dict["error"]
@@ -112,7 +141,12 @@ def test_non_json_encodable_resonse():
     def method():
         return b"Hello, World"
 
-    response = safe_call(Request(method="method", id=1), Methods(method), debug=False)
+    response = safe_call(
+        Request(method="method", id=1),
+        Methods(method),
+        debug=False,
+        serialize=default_serialize,
+    )
     # response must be serializable here
     str(response)
     assert isinstance(response, ErrorResponse)
@@ -134,6 +168,7 @@ def test_call_requests_with_context():
         Request("ping_with_context", convert_camel_case=False),
         Methods(ping_with_context),
         debug=True,
+        serialize=default_serialize,
     )
     # Assert is in the method
 
@@ -147,6 +182,7 @@ def test_call_requests_batch_all_notifications():
         },
         Methods(ping),
         debug=True,
+        serialize=default_serialize,
     )
     assert str(response) == ""
 
@@ -179,6 +215,8 @@ def test_dispatch_pure_request():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == "pong"
@@ -192,6 +230,8 @@ def test_dispatch_pure_notification():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, NotificationResponse)
 
@@ -203,6 +243,8 @@ def test_dispatch_pure_notification_invalid_jsonrpc():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, ErrorResponse)
 
@@ -210,7 +252,13 @@ def test_dispatch_pure_notification_invalid_jsonrpc():
 def test_dispatch_pure_invalid_json():
     """Unable to parse, must return an error"""
     response = dispatch_pure(
-        "{", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+        "{",
+        Methods(ping),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, InvalidJSONResponse)
 
@@ -218,7 +266,13 @@ def test_dispatch_pure_invalid_json():
 def test_dispatch_pure_invalid_jsonrpc():
     """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
     response = dispatch_pure(
-        "{}", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+        "{}",
+        Methods(ping),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, InvalidJSONRPCResponse)
 
@@ -233,6 +287,8 @@ def test_dispatch_pure_invalid_params():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, InvalidParamsResponse)
 
@@ -247,9 +303,11 @@ def test_dispatch_pure_invalid_params_count():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, InvalidParamsResponse)
-    assert response.data == 'missing a required argument: \'size\''
+    assert response.data == "missing a required argument: 'size'"
 
 
 # def test_dispatch_pure_invalid_params_notification():
@@ -295,6 +353,8 @@ def test_examples_positionals():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == 19
@@ -306,6 +366,8 @@ def test_examples_positionals():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == -19
@@ -321,6 +383,8 @@ def test_examples_nameds():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == 19
@@ -332,6 +396,8 @@ def test_examples_nameds():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == 19
@@ -345,6 +411,8 @@ def test_examples_notification():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, NotificationResponse)
 
@@ -355,6 +423,8 @@ def test_examples_notification():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, NotificationResponse)
 
@@ -366,6 +436,8 @@ def test_examples_invalid_json():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, ErrorResponse)
     assert (
@@ -377,7 +449,13 @@ def test_examples_invalid_json():
 def test_examples_empty_array():
     # This is an invalid JSON-RPC request, should return an error.
     response = dispatch_pure(
-        "[]", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+        "[]",
+        Methods(ping),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, ErrorResponse)
     assert (
@@ -392,7 +470,13 @@ def test_examples_invalid_jsonrpc_batch():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_pure(
-        "[1]", Methods(ping), convert_camel_case=False, context=NOCONTEXT, debug=True
+        "[1]",
+        Methods(ping),
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, InvalidJSONRPCResponse)
     assert (
@@ -412,6 +496,8 @@ def test_examples_multiple_invalid_jsonrpc():
         convert_camel_case=False,
         context=NOCONTEXT,
         debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     assert isinstance(response, ErrorResponse)
     assert (
@@ -452,7 +538,13 @@ def test_examples_mixed_requests_and_notifications():
         ]
     )
     response = dispatch_pure(
-        requests, methods, convert_camel_case=False, context=NOCONTEXT, debug=True
+        requests,
+        methods,
+        convert_camel_case=False,
+        context=NOCONTEXT,
+        debug=True,
+        serialize=default_serialize,
+        deserialize=default_deserialize,
     )
     expected = [
         {"jsonrpc": "2.0", "result": 7, "id": "1"},

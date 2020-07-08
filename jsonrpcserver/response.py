@@ -30,10 +30,10 @@ Response heirarchy:
             ExceptionResponse
     BatchResponse - a list of DictResponses
 """
-import json
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Any, Dict, Iterable, cast
+from typing import Any, Dict, Iterable, cast, Callable
+from json import dumps as default_serialize
 
 from . import status
 
@@ -43,8 +43,11 @@ UNSPECIFIED = object()
 class Response(ABC):
     """Base class of all responses."""
 
-    def __init__(self, http_status: int) -> None:
+    def __init__(
+        self, http_status: int, serialize_func: Callable = default_serialize
+    ) -> None:
         self.http_status = http_status
+        self._serialize = serialize_func
 
     @property
     @abstractmethod
@@ -130,7 +133,7 @@ class DictResponse(Response):
 
     def __str__(self) -> str:
         """Use str() to get the JSON-RPC response string."""
-        return json.dumps(sort_dict_response(self.deserialized()))
+        return self._serialize(sort_dict_response(self.deserialized()))
 
 
 class SuccessResponse(DictResponse):
@@ -150,7 +153,7 @@ class SuccessResponse(DictResponse):
                 The payload from processing the request. If the request was a JSON-RPC
                 notification (i.e. the request id is `None`), the result must also be
                 `None` because notifications don't require any data returned.
-            http_status: 
+            http_status:
         """
         super().__init__(http_status=http_status, **kwargs)
         self.result = result
@@ -297,9 +300,12 @@ class BatchResponse(Response):
     """
 
     def __init__(
-        self, responses: Iterable[Response], http_status: int = status.HTTP_OK
+        self,
+        responses: Iterable[Response],
+        http_status: int = status.HTTP_OK,
+        **kwargs: Any,
     ) -> None:
-        super().__init__(http_status=http_status)
+        super().__init__(http_status=http_status, **kwargs)
         # Remove notifications; these are not allowed in batch responses
         self.responses = cast(
             Iterable[DictResponse], {r for r in responses if r.wanted}
@@ -317,4 +323,4 @@ class BatchResponse(Response):
         dicts = self.deserialized()
         # For an all-notifications response, an empty string should be returned, as per
         # spec
-        return json.dumps(dicts) if len(dicts) else ""
+        return self._serialize(dicts) if len(dicts) else ""
