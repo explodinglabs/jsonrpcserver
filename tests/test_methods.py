@@ -148,6 +148,16 @@ def test_add_function_via_decorator():
     assert methods.items["foo"] is foo
 
 
+def test_add_function_custom_name_via_decorator():
+    methods = Methods()
+
+    @methods.add(name='bar')
+    def foo():
+        pass
+
+    assert methods.items["bar"] is foo
+
+
 def test_add_static_method_via_decorator():
     methods = Methods()
 

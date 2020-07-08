@@ -65,7 +65,26 @@ class Methods:
             @methods.add
             def subtract(minuend, subtrahend):
                 return minuend - subtrahend
+
+            @methods.add(name='divide')
+            def division(dividend, divisor):
+                return dividend / divisor
         """
+        if "name" in kwargs and isinstance(kwargs["name"], str):
+            return self._parameterized_add(*args, **kwargs)
+        else:
+            return self._batch_add(*args, **kwargs)
+
+    def _parameterized_add(self, name: str) -> Callable:
+        def decorator(method):
+            assert callable(method)
+            self.items[name] = method
+
+            return method
+
+        return decorator
+
+    def _batch_add(self, *args: Any, **kwargs: Any) -> Optional[Callable]:
         # Multiple loops here, but due to changes in dictionary comprehension evaluation
         # order in Python 3.8 (PEP 572), we need to validate separately from the
         # dictionary comprehension. Otherwise different exceptions will be raised in 3.8
