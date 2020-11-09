@@ -4,7 +4,7 @@
 
 - Add ability to use custom serializer and deserializer ([#125](https://github.com/bcb/jsonrpcserver/pull/125))
 - Add ability to use custom method name ([#127](https://github.com/bcb/jsonrpcserver/pull/127))
-- Deny additional parameters in json-rpc request ([#128]()https://github.com/bcb/jsonrpcserver/pull/128))
+- Deny additional parameters in json-rpc request ([#128](https://github.com/bcb/jsonrpcserver/pull/128))
 
 Thanks to deptyped.
 
