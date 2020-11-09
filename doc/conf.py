@@ -116,7 +116,7 @@ html_theme = "cygnus"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {"analytics_id": "UA-81795603-3"}
+html_theme_options = {"analytics_id": "G-G05775CD6C"}  # UA-81795603-3
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = [cygnus.get_path()]
