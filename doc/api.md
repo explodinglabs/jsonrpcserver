@@ -33,8 +33,11 @@ def ping():
     return 'pong'
 ```
 
-Methods can take either positional or named arguments (but not both, this is a
-limitation of JSON-RPC).
+Methods can accept either positional or named arguments (but not both -- this
+is a limitation of JSON-RPC).
+
+The RPC method will have the same name as the Python function; to use a
+different name, pass it to the decorator, for example `@method(name="foo")`.
 
 ## Serve
 
@@ -78,6 +81,12 @@ There's also an HTTP status code if needed:
 ```python
 >>> response.http_status
 200
+```
+
+To use a custom serializer or deserializer, pass them to dispatch:
+
+```python
+response = dispatch(request, serialize=ujson.dumps, deserialize=ujson.loads)
 ```
 
 ### Context
