@@ -10,9 +10,20 @@ from collections.abc import Iterable
 from configparser import ConfigParser
 from contextlib import contextmanager
 from json import JSONDecodeError
-from json import dumps as serialize, loads as deserialize
+from json import dumps as default_serialize, loads as default_deserialize
 from types import SimpleNamespace
-from typing import Any, Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+    Callable,
+)
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
@@ -40,7 +51,7 @@ request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
 
 # Prepare the jsonschema validator
-schema = deserialize(resource_string(__name__, "request-schema.json"))
+schema = default_deserialize(resource_string(__name__, "request-schema.json"))
 klass = validator_for(schema)
 klass.check_schema(schema)
 validator = klass(schema)
@@ -144,7 +155,9 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
             handler.response = NotificationResponse()
 
 
-def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
+def safe_call(
+    request: Request, methods: Methods, *, debug: bool, serialize: Callable
+) -> Response:
     """
     Call a Request, catching exceptions to ensure we always return a Response.
 
@@ -152,6 +165,7 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
         request: The Request object.
         methods: The list of methods that can be called.
         debug: Include more information in error responses.
+        serialize: Function that is used to serialize data.
 
     Returns:
         A Response object.
@@ -161,12 +175,17 @@ def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
         # Ensure value returned from the method is JSON-serializable. If not,
         # handle_exception will set handler.response to an ExceptionResponse
         serialize(result)
-        handler.response = SuccessResponse(result=result, id=request.id)
+        handler.response = SuccessResponse(
+            result=result, id=request.id, serialize_func=serialize
+        )
     return handler.response
 
 
 def call_requests(
-    requests: Union[Request, Iterable[Request]], methods: Methods, debug: bool
+    requests: Union[Request, Iterable[Request]],
+    methods: Methods,
+    debug: bool,
+    serialize: Callable,
 ) -> Response:
     """
     Takes a request or list of Requests and calls them.
@@ -175,10 +194,14 @@ def call_requests(
         requests: Request object, or a collection of them.
         methods: The list of methods that can be called.
         debug: Include more information in error responses.
+        serialize: Function that is used to serialize data.
     """
     if isinstance(requests, Iterable):
-        return BatchResponse(safe_call(r, methods, debug=debug) for r in requests)
-    return safe_call(requests, methods, debug=debug)
+        return BatchResponse(
+            [safe_call(r, methods, debug=debug, serialize=serialize) for r in requests],
+            serialize_func=serialize,
+        )
+    return safe_call(requests, methods, debug=debug, serialize=serialize)
 
 
 def create_requests(
@@ -211,6 +234,8 @@ def dispatch_pure(
     context: Any,
     convert_camel_case: bool,
     debug: bool,
+    serialize: Callable,
+    deserialize: Callable,
 ) -> Response:
     """
     Pure version of dispatch - no logging, no optional parameters.
@@ -225,6 +250,8 @@ def dispatch_pure(
         context: If specified, will be the first positional argument in all requests.
         convert_camel_case: Will convert the method name/any named params to snake case.
         debug: Include more information in error responses.
+        serialize: Function that is used to serialize data.
+        deserialize: Function that is used to deserialize data.
     Returns:
         A Response.
     """
@@ -240,6 +267,7 @@ def dispatch_pure(
         ),
         methods,
         debug=debug,
+        serialize=serialize,
     )
 
 
@@ -253,6 +281,8 @@ def dispatch(
     context: Any = NOCONTEXT,
     debug: bool = False,
     trim_log_values: bool = False,
+    serialize: Callable = default_serialize,
+    deserialize: Callable = default_deserialize,
     **kwargs: Any,
 ) -> Response:
     """
@@ -270,6 +300,8 @@ def dispatch(
             case.
         debug: Include more information in error responses.
         trim_log_values: Show abbreviated requests and responses in log.
+        serialize: Function that is used to serialize data.
+        deserialize: Function that is used to deserialize data.
 
     Returns:
         A Response.
@@ -289,6 +321,8 @@ def dispatch(
         debug=debug,
         context=context,
         convert_camel_case=convert_camel_case,
+        serialize=serialize,
+        deserialize=deserialize,
     )
     log_response(str(response), trim_log_values=trim_log_values)
     # Remove the temporary stream handlers

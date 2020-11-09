@@ -2,8 +2,8 @@
 import asyncio
 import collections.abc
 from json import JSONDecodeError
-from json import dumps as serialize, loads as deserialize
-from typing import Any, Iterable, Optional, Union
+from json import dumps as default_serialize, loads as default_deserialize
+from typing import Any, Iterable, Optional, Union, Callable
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
@@ -34,7 +34,9 @@ async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
     return await validate_args(method, *args, **kwargs)(*args, **kwargs)
 
 
-async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Response:
+async def safe_call(
+    request: Request, methods: Methods, *, debug: bool, serialize: Callable
+) -> Response:
     with handle_exceptions(request, debug) as handler:
         result = await call(
             lookup(methods, request.method), *request.args, **request.kwargs
@@ -42,17 +44,24 @@ async def safe_call(request: Request, methods: Methods, *, debug: bool) -> Respo
         # Ensure value returned from the method is JSON-serializable. If not,
         # handle_exception will set handler.response to an ExceptionResponse
         serialize(result)
-        handler.response = SuccessResponse(result=result, id=request.id)
+        handler.response = SuccessResponse(
+            result=result, id=request.id, serialize_func=serialize
+        )
     return handler.response
 
 
 async def call_requests(
-    requests: Union[Request, Iterable[Request]], methods: Methods, debug: bool
+    requests: Union[Request, Iterable[Request]],
+    methods: Methods,
+    debug: bool,
+    serialize: Callable,
 ) -> Response:
     if isinstance(requests, collections.abc.Iterable):
-        responses = (safe_call(r, methods, debug=debug) for r in requests)
-        return BatchResponse(await asyncio.gather(*responses))
-    return await safe_call(requests, methods, debug=debug)
+        responses = (
+            safe_call(r, methods, debug=debug, serialize=serialize) for r in requests
+        )
+        return BatchResponse(await asyncio.gather(*responses), serialize_func=serialize)
+    return await safe_call(requests, methods, debug=debug, serialize=serialize)
 
 
 async def dispatch_pure(
@@ -61,7 +70,9 @@ async def dispatch_pure(
     *,
     context: Any,
     convert_camel_case: bool,
-    debug: bool
+    debug: bool,
+    serialize: Callable,
+    deserialize: Callable,
 ) -> Response:
     try:
         deserialized = validate(deserialize(request), schema)
@@ -75,6 +86,7 @@ async def dispatch_pure(
         ),
         methods,
         debug=debug,
+        serialize=serialize,
     )
 
 
@@ -88,7 +100,9 @@ async def dispatch(
     context: Any = NOCONTEXT,
     debug: bool = False,
     trim_log_values: bool = False,
-    **kwargs: Any
+    serialize: Callable = default_serialize,
+    deserialize: Callable = default_deserialize,
+    **kwargs: Any,
 ) -> Response:
     # Use the global methods object if no methods object was passed.
     methods = global_methods if methods is None else methods
@@ -102,6 +116,8 @@ async def dispatch(
         debug=debug,
         context=context,
         convert_camel_case=convert_camel_case,
+        serialize=serialize,
+        deserialize=deserialize,
     )
     log_response(str(response), trim_log_values=trim_log_values)
     # Remove the temporary stream handlers
