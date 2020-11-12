@@ -16,7 +16,7 @@ For Python versions older than 3.6, install a 3.x version, and jump over to
 [the 3.x docs](https://jsonrpcserver.readthedocs.io/en/3.5.6/).
 
 ```sh
-pip install "jsonrpcserver>=3,<4"
+pip install "jsonrpcserver<4"
 ```
 
 There are three public functions, `method`, `serve` and `dispatch`.
