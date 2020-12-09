@@ -4,6 +4,7 @@ Dispatcher.
 The dispatch() function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
+import asyncio
 import logging
 import os
 from collections.abc import Iterable
@@ -147,6 +148,9 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
         handler.response = ApiErrorResponse(
             str(exc), code=exc.code, data=exc.data, id=request.id, debug=debug
         )
+    except asyncio.CancelledError:
+        # Allow CancelledError from asyncio task cancellation to bubble up
+        raise
     except Exception as exc:  # Other error inside method - server error
         logging.exception(exc)
         handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
