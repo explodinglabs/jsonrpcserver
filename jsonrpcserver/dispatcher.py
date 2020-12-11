@@ -149,7 +149,11 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
             str(exc), code=exc.code, data=exc.data, id=request.id, debug=debug
         )
     except asyncio.CancelledError:
-        # Allow CancelledError from asyncio task cancellation to bubble up
+        # Allow CancelledError from asyncio task cancellation to bubble up. Without
+        # this, CancelledError is caught and handled, resulting in a "Server error"
+        # response object from the dispatcher, but because the CancelledError doesn't
+        # bubble up the rpc_server task doesn't exit. See PR
+        # https://github.com/bcb/jsonrpcserver/pull/132
         raise
     except Exception as exc:  # Other error inside method - server error
         logging.exception(exc)
