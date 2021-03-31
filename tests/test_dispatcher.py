@@ -3,6 +3,7 @@ from json import dumps as serialize
 from unittest.mock import sentinel
 
 from jsonrpcserver.dispatcher import (
+    Context,
     add_handlers,
     call_requests,
     create_requests,
@@ -16,7 +17,7 @@ from jsonrpcserver.dispatcher import (
     default_serialize,
 )
 from jsonrpcserver.methods import Methods, global_methods
-from jsonrpcserver.request import NOCONTEXT, Request
+from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import (
     BatchResponse,
     ErrorResponse,
@@ -30,7 +31,7 @@ from jsonrpcserver.response import (
 from jsonrpcserver.exceptions import ApiError
 
 
-def ping():
+def ping(context: Context):
     return "pong"
 
 
@@ -55,9 +56,10 @@ def test_log_response():
 
 def test_safe_call_success_response():
     response = safe_call(
-        Request(method="ping", id=1),
+        Request(method="ping", params=[], id=1),
         Methods(ping),
         debug=True,
+        extra=None,
         serialize=default_serialize,
     )
     assert isinstance(response, SuccessResponse)
@@ -67,7 +69,11 @@ def test_safe_call_success_response():
 
 def test_safe_call_notification():
     response = safe_call(
-        Request(method="ping"), Methods(ping), debug=True, serialize=default_serialize
+        Request(method="ping", params=[], id=NOID),
+        Methods(ping),
+        debug=True,
+        extra=None,
+        serialize=default_serialize,
     )
     assert isinstance(response, NotificationResponse)
 
@@ -77,16 +83,21 @@ def test_safe_call_notification_failure():
         raise ValueError()
 
     response = safe_call(
-        Request(method="foo"), Methods(fail), debug=True, serialize=default_serialize
+        Request(method="foo", params=[], id=NOID),
+        Methods(fail),
+        debug=True,
+        extra=None,
+        serialize=default_serialize,
     )
     assert isinstance(response, NotificationResponse)
 
 
 def test_safe_call_method_not_found():
     response = safe_call(
-        Request(method="nonexistant", id=1),
+        Request(method="nonexistant", params=[], id=1),
         Methods(ping),
         debug=True,
+        extra=None,
         serialize=default_serialize,
     )
     assert isinstance(response, MethodNotFoundResponse)
@@ -97,19 +108,21 @@ def test_safe_call_invalid_args():
         Request(method="ping", params=[1], id=1),
         Methods(ping),
         debug=True,
+        extra=None,
         serialize=default_serialize,
     )
     assert isinstance(response, InvalidParamsResponse)
 
 
 def test_safe_call_api_error():
-    def error():
+    def error(context: Context):
         raise ApiError("Client Error", code=123, data={"data": 42})
 
     response = safe_call(
-        Request(method="error", id=1),
+        Request(method="error", params=[], id=1),
         Methods(error),
         debug=True,
+        extra=None,
         serialize=default_serialize,
     )
     assert isinstance(response, ErrorResponse)
@@ -120,13 +133,14 @@ def test_safe_call_api_error():
 
 
 def test_safe_call_api_error_minimal():
-    def error():
+    def error(context: Context):
         raise ApiError("Client Error")
 
     response = safe_call(
-        Request(method="error", id=1),
+        Request(method="error", params=[], id=1),
         Methods(error),
         debug=True,
+        extra=None,
         serialize=default_serialize,
     )
     assert isinstance(response, ErrorResponse)
@@ -138,13 +152,14 @@ def test_safe_call_api_error_minimal():
 
 
 def test_non_json_encodable_resonse():
-    def method():
+    def method(context: Context):
         return b"Hello, World"
 
     response = safe_call(
-        Request(method="method", id=1),
+        Request(method="method", params=[], id=1),
         Methods(method),
         debug=False,
+        extra=None,
         serialize=default_serialize,
     )
     # response must be serializable here
@@ -160,14 +175,15 @@ def test_non_json_encodable_resonse():
 # call_requests
 
 
-def test_call_requests_with_context():
-    def ping_with_context(context=None):
-        assert context is sentinel.context
+def test_call_requests_with_extra():
+    def ping_with_extra(context: Context):
+        assert context.extra is sentinel.extra
 
     call_requests(
-        Request("ping_with_context", convert_camel_case=False),
-        Methods(ping_with_context),
+        Request(method="ping_with_extra", params=[], id=1),
+        Methods(ping_with_extra),
         debug=True,
+        extra=sentinel.extra,
         serialize=default_serialize,
     )
     # Assert is in the method
@@ -176,12 +192,13 @@ def test_call_requests_with_context():
 def test_call_requests_batch_all_notifications():
     """Should return a BatchResponse response, an empty list"""
     response = call_requests(
-        {
-            Request(**{"jsonrpc": "2.0", "method": "notify_sum", "params": [1, 2, 4]}),
-            Request(**{"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}),
-        },
+        [
+            Request(method="notify_sum", params=[1, 2, 4], id=NOID),
+            Request(method="notify_hello", params=[7], id=NOID),
+        ],
         Methods(ping),
         debug=True,
+        extra=None,
         serialize=default_serialize,
     )
     assert str(response) == ""
@@ -191,16 +208,13 @@ def test_call_requests_batch_all_notifications():
 
 
 def test_create_requests():
-    requests = create_requests(
-        {"jsonrpc": "2.0", "method": "ping"}, convert_camel_case=False
-    )
+    requests = create_requests({"jsonrpc": "2.0", "method": "ping"})
     assert isinstance(requests, Request)
 
 
 def test_create_requests_batch():
     requests = create_requests(
         [{"jsonrpc": "2.0", "method": "ping"}, {"jsonrpc": "2.0", "method": "ping"}],
-        convert_camel_case=False,
     )
     assert iter(requests)
 
@@ -212,9 +226,8 @@ def test_dispatch_pure_request():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -227,9 +240,8 @@ def test_dispatch_pure_notification():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "ping"}',
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -240,9 +252,8 @@ def test_dispatch_pure_notification_invalid_jsonrpc():
     response = dispatch_pure(
         '{"jsonrpc": "0", "method": "notify"}',
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -254,9 +265,8 @@ def test_dispatch_pure_invalid_json():
     response = dispatch_pure(
         "{",
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -268,9 +278,8 @@ def test_dispatch_pure_invalid_jsonrpc():
     response = dispatch_pure(
         "{}",
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -278,15 +287,14 @@ def test_dispatch_pure_invalid_jsonrpc():
 
 
 def test_dispatch_pure_invalid_params():
-    def foo(colour):
+    def foo(context: Context, colour):
         assert colour in ("orange", "red", "yellow"), "Invalid colour"
 
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
         Methods(foo),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -294,15 +302,14 @@ def test_dispatch_pure_invalid_params():
 
 
 def test_dispatch_pure_invalid_params_count():
-    def foo(colour: str, size: str):
+    def foo(context: Context, colour: str, size: str):
         pass
 
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
         Methods(foo),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -344,15 +351,14 @@ def test_dispatch_basic_logging():
 
 
 def test_examples_positionals():
-    def subtract(minuend, subtrahend):
+    def subtract(context: Context, minuend, subtrahend):
         return minuend - subtrahend
 
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
         Methods(subtract),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -363,9 +369,8 @@ def test_examples_positionals():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
         Methods(subtract),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -374,15 +379,14 @@ def test_examples_positionals():
 
 
 def test_examples_nameds():
-    def subtract(**kwargs):
+    def subtract(context: Context, **kwargs):
         return kwargs["minuend"] - kwargs["subtrahend"]
 
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
         Methods(subtract),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -393,9 +397,8 @@ def test_examples_nameds():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
         Methods(subtract),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -408,9 +411,8 @@ def test_examples_notification():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
         methods,
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -420,9 +422,8 @@ def test_examples_notification():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foobar"}',
         methods,
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -433,9 +434,8 @@ def test_examples_invalid_json():
     response = dispatch_pure(
         '[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -451,9 +451,8 @@ def test_examples_empty_array():
     response = dispatch_pure(
         "[]",
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -472,9 +471,8 @@ def test_examples_invalid_jsonrpc_batch():
     response = dispatch_pure(
         "[1]",
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -493,9 +491,8 @@ def test_examples_multiple_invalid_jsonrpc():
     response = dispatch_pure(
         "[1, 2, 3]",
         Methods(ping),
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )
@@ -517,10 +514,10 @@ def test_examples_mixed_requests_and_notifications():
     """
     methods = Methods(
         **{
-            "sum": lambda *args: sum(args),
-            "notify_hello": lambda *args: 19,
-            "subtract": lambda *args: args[0] - sum(args[1:]),
-            "get_data": lambda: ["hello", 5],
+            "sum": lambda _, *args: sum(args),
+            "notify_hello": lambda _, *args: 19,
+            "subtract": lambda _, *args: args[0] - sum(args[1:]),
+            "get_data": lambda _: ["hello", 5],
         }
     )
     requests = serialize(
@@ -540,9 +537,8 @@ def test_examples_mixed_requests_and_notifications():
     response = dispatch_pure(
         requests,
         methods,
-        convert_camel_case=False,
-        context=NOCONTEXT,
         debug=True,
+        extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
     )

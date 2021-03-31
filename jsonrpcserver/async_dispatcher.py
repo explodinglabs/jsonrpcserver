@@ -20,7 +20,7 @@ from .dispatcher import (
     validate,
 )
 from .methods import Method, Methods, global_methods, validate_args, lookup
-from .request import NOCONTEXT, Request
+from .request import Request
 from .response import (
     BatchResponse,
     InvalidJSONResponse,
@@ -69,7 +69,6 @@ async def dispatch_pure(
     methods: Methods,
     *,
     context: Any,
-    convert_camel_case: bool,
     debug: bool,
     serialize: Callable,
     deserialize: Callable,
@@ -81,9 +80,7 @@ async def dispatch_pure(
     except ValidationError as exc:
         return InvalidJSONRPCResponse(data=None, debug=debug)
     return await call_requests(
-        create_requests(
-            deserialized, context=context, convert_camel_case=convert_camel_case
-        ),
+        create_requests(deserialized, context=context),
         methods,
         debug=debug,
         serialize=serialize,
@@ -96,8 +93,7 @@ async def dispatch(
     methods: Optional[Methods] = None,
     *,
     basic_logging: bool = False,
-    convert_camel_case: bool = False,
-    context: Any = NOCONTEXT,
+    context: Optional[dict] = None,
     debug: bool = False,
     trim_log_values: bool = False,
     serialize: Callable = default_serialize,
@@ -115,7 +111,6 @@ async def dispatch(
         methods,
         debug=debug,
         context=context,
-        convert_camel_case=convert_camel_case,
         serialize=serialize,
         deserialize=deserialize,
     )
