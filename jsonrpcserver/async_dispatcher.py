@@ -9,6 +9,7 @@ from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
 
 from .dispatcher import (
+    Context,
     add_handlers,
     config,
     create_requests,
@@ -35,12 +36,20 @@ async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
 
 async def safe_call(
-    request: Request, methods: Methods, *, debug: bool, serialize: Callable
+    request: Request, methods: Methods, *, debug: bool, extra: Any, serialize: Callable
 ) -> Response:
     with handle_exceptions(request, debug) as handler:
-        result = await call(
-            lookup(methods, request.method), *request.args, **request.kwargs
-        )
+        if isinstance(request.params, list):
+            result = await call(
+                lookup(methods, request.method),
+                *([Context(request=request, extra=extra)] + request.params),
+            )
+        else:
+            result = await call(
+                lookup(methods, request.method),
+                Context(request=request, extra=extra),
+                **request.params,
+            )
         # Ensure value returned from the method is JSON-serializable. If not,
         # handle_exception will set handler.response to an ExceptionResponse
         serialize(result)
@@ -54,22 +63,26 @@ async def call_requests(
     requests: Union[Request, Iterable[Request]],
     methods: Methods,
     debug: bool,
+    extra: Any,
     serialize: Callable,
 ) -> Response:
     if isinstance(requests, collections.abc.Iterable):
         responses = (
-            safe_call(r, methods, debug=debug, serialize=serialize) for r in requests
+            safe_call(r, methods, debug=debug, extra=extra, serialize=serialize)
+            for r in requests
         )
         return BatchResponse(await asyncio.gather(*responses), serialize_func=serialize)
-    return await safe_call(requests, methods, debug=debug, serialize=serialize)
+    return await safe_call(
+        requests, methods, debug=debug, extra=extra, serialize=serialize
+    )
 
 
 async def dispatch_pure(
     request: str,
     methods: Methods,
     *,
-    context: Any,
     debug: bool,
+    extra: Any,
     serialize: Callable,
     deserialize: Callable,
 ) -> Response:
@@ -80,9 +93,10 @@ async def dispatch_pure(
     except ValidationError as exc:
         return InvalidJSONRPCResponse(data=None, debug=debug)
     return await call_requests(
-        create_requests(deserialized, context=context),
+        create_requests(deserialized),
         methods,
         debug=debug,
+        extra=extra,
         serialize=serialize,
     )
 
@@ -93,8 +107,8 @@ async def dispatch(
     methods: Optional[Methods] = None,
     *,
     basic_logging: bool = False,
-    context: Optional[dict] = None,
     debug: bool = False,
+    extra: Optional[Any] = None,
     trim_log_values: bool = False,
     serialize: Callable = default_serialize,
     deserialize: Callable = default_deserialize,
@@ -110,7 +124,7 @@ async def dispatch(
         request,
         methods,
         debug=debug,
-        context=context,
+        extra=extra,
         serialize=serialize,
         deserialize=deserialize,
     )
