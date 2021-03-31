@@ -235,7 +235,7 @@ def call_requests(
         if isinstance(requests, list)
         else safe_call(
             cast(Request, requests),
-            methods=methods,
+            methods,
             debug=debug,
             extra=extra,
             serialize=serialize,
