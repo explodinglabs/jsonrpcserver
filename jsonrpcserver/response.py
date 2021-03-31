@@ -53,13 +53,13 @@ class Response(ABC):
     @abstractmethod
     def wanted(self) -> bool:
         """
-        Indicates that this response is wanted by the request; the request had an "id"
-        member, and was therefore not a JSON-RPC Notification object. All responses are
-        wanted, except NotificationResponse.
+        Indicates that this response is wanted by the request; the request had
+        an "id" member, and was therefore not a JSON-RPC Notification object.
+        All responses are wanted, except NotificationResponse.
 
-        Note that blocking/synchronous transfer protocols require a response to every
-        request no matter what, in which case this property should be ignored and
-        str(response) returned regardless.
+        Note that blocking/synchronous transfer protocols require a response to
+        every request no matter what, in which case this property should be
+        ignored and str(response) returned regardless.
         """
 
 
@@ -68,8 +68,8 @@ class NotificationResponse(Response):
     Notification response.
 
     Returned from processing a successful
-    [notification](http://www.jsonrpc.org/specification#notification) (i.e. a request
-    with no `id` member).
+    [notification](http://www.jsonrpc.org/specification#notification) (i.e. a
+    request with no `id` member).
     """
 
     def __init__(self, http_status: int = status.HTTP_NO_CONTENT) -> None:
@@ -87,8 +87,9 @@ def sort_dict_response(response: Dict[str, Any]) -> OrderedDict:
     """
     Sort the keys of a dict, returning an OrderedDict.
 
-    This has no effect other than making it nicer to read. It's also only useful with
-    Python 3.5, since from 3.6 onwards, dictionaries hold their order.
+    This has no effect other than making it nicer to read. It's also only
+    useful with Python 3.5, since from 3.6 onwards, dictionaries hold their
+    order.
 
     Args:
         response: The JSON-RPC response to sort.
@@ -116,9 +117,10 @@ class DictResponse(Response):
     def __init__(self, *args: Any, id: Any, **kwargs: Any) -> None:
         """
         Args:
-            id: Must be the same as the value as the id member in the Request Object. If
-                there was an error in detecting the id in the Request object (e.g. Parse
-                error/Invalid Request), it MUST be Null.
+            id: Must be the same as the value as the id member in the Request
+                Object. If there was an error in detecting the id in the
+                Request object (e.g. Parse error/Invalid Request), it MUST be
+                Null.
         """
         super().__init__(*args, **kwargs)
         self.id = id

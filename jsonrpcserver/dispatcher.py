@@ -15,15 +15,16 @@ from json import dumps as default_serialize, loads as default_deserialize
 from types import SimpleNamespace
 from typing import (
     Any,
+    Callable,
     Dict,
     Generator,
     Iterable,
     List,
+    NamedTuple,
     Optional,
     Set,
     Tuple,
     Union,
-    Callable,
 )
 
 from apply_defaults import apply_config  # type: ignore
@@ -33,7 +34,7 @@ from pkg_resources import resource_string
 
 from .log import log_
 from .methods import Method, Methods, global_methods, validate_args, lookup
-from .request import NOCONTEXT, Request
+from .request import Request, is_notification, NOID
 from .response import (
     ApiErrorResponse,
     BatchResponse,
@@ -62,6 +63,11 @@ DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
 
 config = ConfigParser(default_section="dispatch")
 config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
+
+Context = NamedTuple(
+    "Context",
+    [("request", Request), ("extra", Any)],
+)
 
 
 def add_handlers() -> Tuple[logging.Handler, logging.Handler]:
@@ -159,12 +165,12 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
         logging.exception(exc)
         handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
     finally:
-        if request.is_notification:
+        if is_notification(request):
             handler.response = NotificationResponse()
 
 
 def safe_call(
-    request: Request, methods: Methods, *, debug: bool, serialize: Callable
+    request: Request, methods: Methods, *, debug: bool, extra: Any, serialize: Callable
 ) -> Response:
     """
     Call a Request, catching exceptions to ensure we always return a Response.
@@ -179,7 +185,17 @@ def safe_call(
         A Response object.
     """
     with handle_exceptions(request, debug) as handler:
-        result = call(lookup(methods, request.method), *request.args, **request.kwargs)
+        if isinstance(request.params, list):
+            result = call(
+                lookup(methods, request.method),
+                *([Context(request=request, extra=extra)] + request.params),
+            )
+        else:
+            result = call(
+                lookup(methods, request.method),
+                Context(request=request, extra=extra),
+                **request.params,
+            )
         # Ensure value returned from the method is JSON-serializable. If not,
         # handle_exception will set handler.response to an ExceptionResponse
         serialize(result)
@@ -192,6 +208,8 @@ def safe_call(
 def call_requests(
     requests: Union[Request, Iterable[Request]],
     methods: Methods,
+    *,
+    extra: Any,
     debug: bool,
     serialize: Callable,
 ) -> Response:
@@ -204,44 +222,59 @@ def call_requests(
         debug: Include more information in error responses.
         serialize: Function that is used to serialize data.
     """
-    if isinstance(requests, Iterable):
-        return BatchResponse(
-            [safe_call(r, methods, debug=debug, serialize=serialize) for r in requests],
+    return (
+        BatchResponse(
+            [
+                safe_call(
+                    r, methods=methods, debug=debug, extra=extra, serialize=serialize
+                )
+                for r in requests
+            ],
             serialize_func=serialize,
         )
-    return safe_call(requests, methods, debug=debug, serialize=serialize)
+        if isinstance(requests, list)
+        else safe_call(
+            requests, methods=methods, debug=debug, extra=extra, serialize=serialize
+        )
+    )
 
 
 def create_requests(
-    requests: Union[Dict, List], *, context: Any = NOCONTEXT, convert_camel_case: bool
+    requests: Union[Dict, List[Dict]],
 ) -> Union[Request, Set[Request]]:
     """
-    Create a Request object from a dictionary (or list of them).
+    Converts a raw deserialized request dictionary to a Request (namedtuple).
 
     Args:
-        requests: Request object, or a collection of them.
-        methods: The list of methods that can be called.
-        context: If specified, will be the first positional argument in all requests.
-        convert_camel_case: Will convert the method name/any named params to snake case.
+        requests: Request dict, or a list of dicts.
 
     Returns:
-        A Request object, or a collection of them.
+        A Request object, or a list of them.
     """
-    if isinstance(requests, list):
-        return {
-            Request(context=context, convert_camel_case=convert_camel_case, **request)
+    return (
+        [
+            Request(
+                method=request["method"],
+                params=request.get("params", []),
+                id=request.get("id", NOID),
+            )
             for request in requests
-        }
-    return Request(context=context, convert_camel_case=convert_camel_case, **requests)
+        ]
+        if isinstance(requests, list)
+        else Request(
+            method=requests["method"],
+            params=requests.get("params", []),
+            id=requests.get("id", NOID),
+        )
+    )
 
 
 def dispatch_pure(
     request: str,
     methods: Methods,
     *,
-    context: Any,
-    convert_camel_case: bool,
     debug: bool,
+    extra: Any,
     serialize: Callable,
     deserialize: Callable,
 ) -> Response:
@@ -255,9 +288,8 @@ def dispatch_pure(
     Args:
         request: The incoming request string.
         methods: Collection of methods that can be called.
-        context: If specified, will be the first positional argument in all requests.
-        convert_camel_case: Will convert the method name/any named params to snake case.
         debug: Include more information in error responses.
+        extra: Will be included in the context dictionary passed to methods.
         serialize: Function that is used to serialize data.
         deserialize: Function that is used to deserialize data.
     Returns:
@@ -270,10 +302,9 @@ def dispatch_pure(
     except ValidationError as exc:
         return InvalidJSONRPCResponse(data=None, debug=debug)
     return call_requests(
-        create_requests(
-            deserialized, context=context, convert_camel_case=convert_camel_case
-        ),
-        methods,
+        create_requests(deserialized),
+        methods=methods,
+        extra=extra,
         debug=debug,
         serialize=serialize,
     )
@@ -285,8 +316,7 @@ def dispatch(
     methods: Optional[Methods] = None,
     *,
     basic_logging: bool = False,
-    convert_camel_case: bool = False,
-    context: Any = NOCONTEXT,
+    extra: Optional[dict] = None,
     debug: bool = False,
     trim_log_values: bool = False,
     serialize: Callable = default_serialize,
@@ -303,9 +333,7 @@ def dispatch(
         request: The incoming request string.
         methods: Collection of methods that can be called. If not passed, uses the
             internal methods object.
-        context: If specified, will be the first positional argument in all requests.
-        convert_camel_case: Convert keys in params dictionary from camel case to snake
-            case.
+        extra: Extra data available inside methods (as context.extra).
         debug: Include more information in error responses.
         trim_log_values: Show abbreviated requests and responses in log.
         serialize: Function that is used to serialize data.
@@ -327,8 +355,7 @@ def dispatch(
         request,
         methods,
         debug=debug,
-        context=context,
-        convert_camel_case=convert_camel_case,
+        extra=extra,
         serialize=serialize,
         deserialize=deserialize,
     )

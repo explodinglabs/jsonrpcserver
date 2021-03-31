@@ -116,11 +116,6 @@ below):
 
 Adds log handlers, to log all requests and responses to stderr.
 
-**convert_camel_case**
-
-Attempts to clean up requests before processing, by changing the method and
-parameter names to snake case. Default is *False*.
-
 **debug**
 
 If True, more information is included in error responses, such as an exception
@@ -138,7 +133,6 @@ placed in the current or home directory:
 ```ini
 [general]
 basic_logging = yes
-convert_camel_case = yes
 debug = yes
 trim_log_values = yes
 ```

@@ -1,5 +1,17 @@
 # jsonrpcserver Change Log
 
+## 5.0.0 (Coming Soon)
+
+- Methods now take a "context" as the first param. It includes the request
+  object, plus an "extra" value (None if not passed to dispatch).
+- dispatch's context param renamed to "extra". This value is included in the
+  context object passed to every method.
+- Removed "convert camel case" option.
+
+Refactoring/internal changes:
+
+- Changed all classes (Request, Response, Methods) to NamedTuples.
+
 ## 4.2.0 (Nov 9, 2020)
 
 - Add ability to use custom serializer and deserializer ([#125](https://github.com/bcb/jsonrpcserver/pull/125))
