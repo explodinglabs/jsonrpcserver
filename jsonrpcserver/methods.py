@@ -85,18 +85,19 @@ class Methods:
         return decorator
 
     def _batch_add(self, *args: Any, **kwargs: Any) -> Optional[Callable]:
-        # Multiple loops here, but due to changes in dictionary comprehension evaluation
-        # order in Python 3.8 (PEP 572), we need to validate separately from the
-        # dictionary comprehension. Otherwise different exceptions will be raised in 3.8
-        # vs earlier Pythons, depending on evaluation order.
+        # Multiple loops here, but due to changes in dictionary comprehension
+        # evaluation order in Python 3.8 (PEP 572), we need to validate
+        # separately from the dictionary comprehension. Otherwise different
+        # exceptions will be raised in 3.8 vs earlier Pythons, depending on
+        # evaluation order.
         for m in args:
             assert callable(m)
         for _, m in kwargs.items():
             assert callable(m)
         self.items = {
             **self.items,
-            # Methods passed as positional args need a __name__ attribute, raises
-            # AttributeError otherwise.
+            # Methods passed as positional args need a __name__ attribute,
+            # raises AttributeError otherwise.
             **{m.__name__: m for m in args},
             **{k: v for k, v in kwargs.items()},
         }

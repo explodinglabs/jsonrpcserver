@@ -22,9 +22,9 @@ from typing import (
     List,
     NamedTuple,
     Optional,
-    Set,
     Tuple,
     Union,
+    cast,
 )
 
 from apply_defaults import apply_config  # type: ignore
@@ -234,14 +234,18 @@ def call_requests(
         )
         if isinstance(requests, list)
         else safe_call(
-            requests, methods=methods, debug=debug, extra=extra, serialize=serialize
+            cast(Request, requests),
+            methods=methods,
+            debug=debug,
+            extra=extra,
+            serialize=serialize,
         )
     )
 
 
 def create_requests(
     requests: Union[Dict, List[Dict]],
-) -> Union[Request, Set[Request]]:
+) -> Union[Request, List[Request]]:
     """
     Converts a raw deserialized request dictionary to a Request (namedtuple).
 
@@ -316,7 +320,7 @@ def dispatch(
     methods: Optional[Methods] = None,
     *,
     basic_logging: bool = False,
-    extra: Optional[dict] = None,
+    extra: Optional[Any] = None,
     debug: bool = False,
     trim_log_values: bool = False,
     serialize: Callable = default_serialize,
