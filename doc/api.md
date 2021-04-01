@@ -116,11 +116,6 @@ below):
 
 Adds log handlers, to log all requests and responses to stderr.
 
-**debug**
-
-If True, more information is included in error responses, such as an exception
-message. *For ApiError, this value is ignored.* Default is *False*.
-
 **trim_log_values**
 
 Show abbreviated requests and responses in logs. Default is *False*.
@@ -133,7 +128,6 @@ placed in the current or home directory:
 ```ini
 [general]
 basic_logging = yes
-debug = yes
 trim_log_values = yes
 ```
 
@@ -157,8 +151,8 @@ The dispatcher will give the appropriate response:
 '{"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid parameters"}, "id": 1}'
 ```
 
-To send some other application-defined error response, raise an `ApiError` in
-a similar way.
+To send some other application-defined error response, raise an `ApiError` in a
+similar way.
 
 ```python
 from jsonrpcserver.exceptions import ApiError
@@ -168,9 +162,6 @@ def my_method():
     if some_condition:
         raise ApiError("Can't fulfill the request")
 ```
-
-To include the message passed when raising the exception, set `debug` to True.
-(See Configuration above.)
 
 ## Async
 

@@ -7,6 +7,8 @@
 - dispatch's context param renamed to "extra". This value is included in the
   context object passed to every method.
 - Removed "convert camel case" option.
+- Removed the custom exceptions. From methods, return an ErrorResponse instead
+  of raising an exception.
 
 Refactoring/internal changes:
 

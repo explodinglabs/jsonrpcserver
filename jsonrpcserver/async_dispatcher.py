@@ -36,9 +36,9 @@ async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
 
 async def safe_call(
-    request: Request, methods: Methods, *, debug: bool, extra: Any, serialize: Callable
+    request: Request, methods: Methods, *, extra: Any, serialize: Callable
 ) -> Response:
-    with handle_exceptions(request, debug) as handler:
+    with handle_exceptions(request) as handler:
         if isinstance(request.params, list):
             result = await call(
                 lookup(methods, request.method),
@@ -62,26 +62,21 @@ async def safe_call(
 async def call_requests(
     requests: Union[Request, Iterable[Request]],
     methods: Methods,
-    debug: bool,
     extra: Any,
     serialize: Callable,
 ) -> Response:
     if isinstance(requests, collections.abc.Iterable):
         responses = (
-            safe_call(r, methods, debug=debug, extra=extra, serialize=serialize)
-            for r in requests
+            safe_call(r, methods, extra=extra, serialize=serialize) for r in requests
         )
         return BatchResponse(await asyncio.gather(*responses), serialize_func=serialize)
-    return await safe_call(
-        requests, methods, debug=debug, extra=extra, serialize=serialize
-    )
+    return await safe_call(requests, methods, extra=extra, serialize=serialize)
 
 
 async def dispatch_pure(
     request: str,
     methods: Methods,
     *,
-    debug: bool,
     extra: Any,
     serialize: Callable,
     deserialize: Callable,
@@ -89,13 +84,12 @@ async def dispatch_pure(
     try:
         deserialized = validate(deserialize(request), schema)
     except JSONDecodeError as exc:
-        return InvalidJSONResponse(data=str(exc), debug=debug)
+        return InvalidJSONResponse(data=str(exc))
     except ValidationError as exc:
-        return InvalidJSONRPCResponse(data=None, debug=debug)
+        return InvalidJSONRPCResponse(data=None)
     return await call_requests(
         create_requests(deserialized),
         methods,
-        debug=debug,
         extra=extra,
         serialize=serialize,
     )
@@ -107,7 +101,6 @@ async def dispatch(
     methods: Optional[Methods] = None,
     *,
     basic_logging: bool = False,
-    debug: bool = False,
     extra: Optional[Any] = None,
     trim_log_values: bool = False,
     serialize: Callable = default_serialize,
@@ -123,7 +116,6 @@ async def dispatch(
     response = await dispatch_pure(
         request,
         methods,
-        debug=debug,
         extra=extra,
         serialize=serialize,
         deserialize=deserialize,

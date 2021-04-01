@@ -58,7 +58,6 @@ def test_safe_call_success_response():
     response = safe_call(
         Request(method="ping", params=[], id=1),
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -71,7 +70,6 @@ def test_safe_call_notification():
     response = safe_call(
         Request(method="ping", params=[], id=NOID),
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -85,7 +83,6 @@ def test_safe_call_notification_failure():
     response = safe_call(
         Request(method="foo", params=[], id=NOID),
         Methods(fail),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -96,7 +93,6 @@ def test_safe_call_method_not_found():
     response = safe_call(
         Request(method="nonexistant", params=[], id=1),
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -107,7 +103,6 @@ def test_safe_call_invalid_args():
     response = safe_call(
         Request(method="ping", params=[1], id=1),
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -121,7 +116,6 @@ def test_safe_call_api_error():
     response = safe_call(
         Request(method="error", params=[], id=1),
         Methods(error),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -139,7 +133,6 @@ def test_safe_call_api_error_minimal():
     response = safe_call(
         Request(method="error", params=[], id=1),
         Methods(error),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -158,7 +151,6 @@ def test_non_json_encodable_resonse():
     response = safe_call(
         Request(method="method", params=[], id=1),
         Methods(method),
-        debug=False,
         extra=None,
         serialize=default_serialize,
     )
@@ -169,7 +161,7 @@ def test_non_json_encodable_resonse():
     error_dict = response_dict["error"]
     assert error_dict["message"] == "Server error"
     assert error_dict["code"] == -32000
-    assert "data" not in error_dict
+    assert "data" in error_dict
 
 
 # call_requests
@@ -182,7 +174,6 @@ def test_call_requests_with_extra():
     call_requests(
         Request(method="ping_with_extra", params=[], id=1),
         Methods(ping_with_extra),
-        debug=True,
         extra=sentinel.extra,
         serialize=default_serialize,
     )
@@ -197,7 +188,6 @@ def test_call_requests_batch_all_notifications():
             Request(method="notify_hello", params=[7], id=NOID),
         ],
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
     )
@@ -226,7 +216,6 @@ def test_dispatch_pure_request():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -240,7 +229,6 @@ def test_dispatch_pure_notification():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "ping"}',
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -252,7 +240,6 @@ def test_dispatch_pure_notification_invalid_jsonrpc():
     response = dispatch_pure(
         '{"jsonrpc": "0", "method": "notify"}',
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -265,7 +252,6 @@ def test_dispatch_pure_invalid_json():
     response = dispatch_pure(
         "{",
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -278,7 +264,6 @@ def test_dispatch_pure_invalid_jsonrpc():
     response = dispatch_pure(
         "{}",
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -293,7 +278,6 @@ def test_dispatch_pure_invalid_params():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
         Methods(foo),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -308,7 +292,6 @@ def test_dispatch_pure_invalid_params_count():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
         Methods(foo),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -357,7 +340,6 @@ def test_examples_positionals():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
         Methods(subtract),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -369,7 +351,6 @@ def test_examples_positionals():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
         Methods(subtract),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -385,7 +366,6 @@ def test_examples_nameds():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
         Methods(subtract),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -397,7 +377,6 @@ def test_examples_nameds():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
         Methods(subtract),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -411,7 +390,6 @@ def test_examples_notification():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
         methods,
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -422,7 +400,6 @@ def test_examples_notification():
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foobar"}',
         methods,
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -434,7 +411,6 @@ def test_examples_invalid_json():
     response = dispatch_pure(
         '[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -451,7 +427,6 @@ def test_examples_empty_array():
     response = dispatch_pure(
         "[]",
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -471,7 +446,6 @@ def test_examples_invalid_jsonrpc_batch():
     response = dispatch_pure(
         "[1]",
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -491,7 +465,6 @@ def test_examples_multiple_invalid_jsonrpc():
     response = dispatch_pure(
         "[1, 2, 3]",
         Methods(ping),
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -537,7 +510,6 @@ def test_examples_mixed_requests_and_notifications():
     response = dispatch_pure(
         requests,
         methods,
-        debug=True,
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,

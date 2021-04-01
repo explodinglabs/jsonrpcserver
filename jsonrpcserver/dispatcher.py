@@ -135,24 +135,20 @@ def call(method: Method, *args: Any, **kwargs: Any) -> Any:
 
 
 @contextmanager
-def handle_exceptions(request: Request, debug: bool) -> Generator:
+def handle_exceptions(request: Request) -> Generator:
     handler = SimpleNamespace(response=None)
     try:
         yield handler
     except MethodNotFoundError:
-        handler.response = MethodNotFoundResponse(
-            id=request.id, data=request.method, debug=debug
-        )
+        handler.response = MethodNotFoundResponse(id=request.id, data=request.method)
     except (InvalidParamsError, AssertionError) as exc:
         # InvalidParamsError is raised by validate_args. AssertionError is raised inside
         # the methods, however it's better to raise InvalidParamsError inside methods.
         # AssertionError will be removed in the next major release.
-        handler.response = InvalidParamsResponse(
-            id=request.id, data=str(exc), debug=debug
-        )
+        handler.response = InvalidParamsResponse(id=request.id, data=str(exc))
     except ApiError as exc:  # Method signals custom error
         handler.response = ApiErrorResponse(
-            str(exc), code=exc.code, data=exc.data, id=request.id, debug=debug
+            str(exc), code=exc.code, data=exc.data, id=request.id
         )
     except asyncio.CancelledError:
         # Allow CancelledError from asyncio task cancellation to bubble up. Without
@@ -163,14 +159,14 @@ def handle_exceptions(request: Request, debug: bool) -> Generator:
         raise
     except Exception as exc:  # Other error inside method - server error
         logging.exception(exc)
-        handler.response = ExceptionResponse(exc, id=request.id, debug=debug)
+        handler.response = ExceptionResponse(exc, id=request.id)
     finally:
         if is_notification(request):
             handler.response = NotificationResponse()
 
 
 def safe_call(
-    request: Request, methods: Methods, *, debug: bool, extra: Any, serialize: Callable
+    request: Request, methods: Methods, *, extra: Any, serialize: Callable
 ) -> Response:
     """
     Call a Request, catching exceptions to ensure we always return a Response.
@@ -178,13 +174,12 @@ def safe_call(
     Args:
         request: The Request object.
         methods: The list of methods that can be called.
-        debug: Include more information in error responses.
         serialize: Function that is used to serialize data.
 
     Returns:
         A Response object.
     """
-    with handle_exceptions(request, debug) as handler:
+    with handle_exceptions(request) as handler:
         if isinstance(request.params, list):
             result = call(
                 lookup(methods, request.method),
@@ -210,7 +205,6 @@ def call_requests(
     methods: Methods,
     *,
     extra: Any,
-    debug: bool,
     serialize: Callable,
 ) -> Response:
     """
@@ -219,15 +213,12 @@ def call_requests(
     Args:
         requests: Request object, or a collection of them.
         methods: The list of methods that can be called.
-        debug: Include more information in error responses.
         serialize: Function that is used to serialize data.
     """
     return (
         BatchResponse(
             [
-                safe_call(
-                    r, methods=methods, debug=debug, extra=extra, serialize=serialize
-                )
+                safe_call(r, methods=methods, extra=extra, serialize=serialize)
                 for r in requests
             ],
             serialize_func=serialize,
@@ -236,7 +227,6 @@ def call_requests(
         else safe_call(
             cast(Request, requests),
             methods,
-            debug=debug,
             extra=extra,
             serialize=serialize,
         )
@@ -277,7 +267,6 @@ def dispatch_pure(
     request: str,
     methods: Methods,
     *,
-    debug: bool,
     extra: Any,
     serialize: Callable,
     deserialize: Callable,
@@ -292,7 +281,6 @@ def dispatch_pure(
     Args:
         request: The incoming request string.
         methods: Collection of methods that can be called.
-        debug: Include more information in error responses.
         extra: Will be included in the context dictionary passed to methods.
         serialize: Function that is used to serialize data.
         deserialize: Function that is used to deserialize data.
@@ -302,14 +290,13 @@ def dispatch_pure(
     try:
         deserialized = validate(deserialize(request), schema)
     except JSONDecodeError as exc:
-        return InvalidJSONResponse(data=str(exc), debug=debug)
+        return InvalidJSONResponse(data=str(exc))
     except ValidationError as exc:
-        return InvalidJSONRPCResponse(data=None, debug=debug)
+        return InvalidJSONRPCResponse(data=None)
     return call_requests(
         create_requests(deserialized),
         methods=methods,
         extra=extra,
-        debug=debug,
         serialize=serialize,
     )
 
@@ -321,7 +308,6 @@ def dispatch(
     *,
     basic_logging: bool = False,
     extra: Optional[Any] = None,
-    debug: bool = False,
     trim_log_values: bool = False,
     serialize: Callable = default_serialize,
     deserialize: Callable = default_deserialize,
@@ -338,7 +324,6 @@ def dispatch(
         methods: Collection of methods that can be called. If not passed, uses the
             internal methods object.
         extra: Extra data available inside methods (as context.extra).
-        debug: Include more information in error responses.
         trim_log_values: Show abbreviated requests and responses in log.
         serialize: Function that is used to serialize data.
         deserialize: Function that is used to deserialize data.
@@ -358,7 +343,6 @@ def dispatch(
     response = dispatch_pure(
         request,
         methods,
-        debug=debug,
         extra=extra,
         serialize=serialize,
         deserialize=deserialize,

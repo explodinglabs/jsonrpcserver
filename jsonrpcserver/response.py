@@ -177,7 +177,6 @@ class ErrorResponse(DictResponse):
         *args: Any,
         code: int,
         data: Any = UNSPECIFIED,
-        debug: bool,  # required, named
         **kwargs: Any,
     ) -> None:
         """
@@ -188,14 +187,11 @@ class ErrorResponse(DictResponse):
                 integer.
             data: A Primitive or Structured value that contains additional information
                 about the error. This may be omitted.
-            debug: Include the data attribute which may include more (possibly
-                sensitive) information in the response.
         """
         super().__init__(*args, **kwargs)
         self.code = code
         self.message = message
         self.data = data
-        self.debug = debug
 
     def deserialized(self) -> dict:
         dct = {
@@ -203,7 +199,7 @@ class ErrorResponse(DictResponse):
             "error": {"code": self.code, "message": self.message},
             "id": self.id,
         }  # type: Dict[str, Any]
-        if self.data is not UNSPECIFIED and self.debug:
+        if self.data is not UNSPECIFIED:
             dct["error"]["data"] = self.data
         return dct
 
