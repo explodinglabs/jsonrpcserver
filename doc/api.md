@@ -139,7 +139,9 @@ invalid json or invalid json-rpc requests.
 To return a custom error response:
 
 ```python
-from jsonrpcserver.response import Context, InvalidParamsResponse, Response, SuccessResponse
+from jsonrpcserver.dispatcher import Context
+from jsonrpcserver.response import InvalidParamsResponse, Response, SuccessResponse
+)
 
 @method
 def fruits(context: Context, color: str) -> Response:
