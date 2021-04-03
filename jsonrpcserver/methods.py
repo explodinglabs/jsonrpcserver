@@ -10,16 +10,12 @@ from typing import Any, Callable, Optional
 
 from inspect import signature
 
-from .exceptions import MethodNotFoundError, InvalidParamsError
-
 Method = Callable[..., Any]
 
 
-def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
+def validate_args(func: Method, *args: Any, **kwargs: Any) -> str:
     """
     Check if the request's arguments match a function's signature.
-
-    Raises InvalidParamsError if arguments cannot be passed to a function.
 
     Args:
         func: The function to check.
@@ -27,16 +23,14 @@ def validate_args(func: Method, *args: Any, **kwargs: Any) -> Method:
         kwargs: Keyword arguments.
 
     Returns:
-        The same function passed in.
-
-    Raises:
-        InvalidParamsError: If the arguments cannot be passed to the function.
+        An empty string if arguments can be passed to a function, an error
+        message otherwise.
     """
     try:
         signature(func).bind(*args, **kwargs)
     except TypeError as exc:
-        raise InvalidParamsError(exc) from exc
-    return func
+        return str(exc)
+    return ""
 
 
 class Methods:
@@ -104,26 +98,6 @@ class Methods:
         if len(args):
             return args[0]  # for the decorator to work
         return None
-
-
-def lookup(methods: Methods, method_name: str) -> Method:
-    """
-    Lookup a method.
-
-    Args:
-        methods: Methods object
-        method_name: Method name to look up
-
-    Returns:
-        The callable method.
-
-    Raises:
-        MethodNotFoundError if method_name is not found.
-    """
-    try:
-        return methods.items[method_name]
-    except KeyError as exc:
-        raise MethodNotFoundError(method_name) from exc
 
 
 # A default Methods object which can be used, or user can create their own.

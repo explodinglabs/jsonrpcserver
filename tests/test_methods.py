@@ -2,30 +2,29 @@ from functools import partial
 
 import pytest
 
-from jsonrpcserver.methods import Methods, add, validate_args, lookup
-from jsonrpcserver.exceptions import MethodNotFoundError, InvalidParamsError
+from jsonrpcserver.methods import Methods, add, validate_args
 
 
 def test_validate_no_arguments():
-    validate_args(lambda: None)
+    assert validate_args(lambda: None) == ""
 
 
 def test_validate_no_arguments_too_many_positionals():
-    with pytest.raises(InvalidParamsError):
-        validate_args(lambda: None, "foo")
+    assert validate_args(lambda: None, "foo") == "too many positional arguments"
 
 
 def test_validate_positionals():
-    validate_args(lambda x: None, 1)
+    assert validate_args(lambda x: None, 1) == ""
 
 
 def test_validate_positionals_not_passed():
-    with pytest.raises(InvalidParamsError):
-        validate_args(lambda x: None, foo="bar")
+    assert (
+        validate_args(lambda x: None, foo="bar") == "missing a required argument: 'x'"
+    )
 
 
 def test_validate_keywords():
-    validate_args(lambda **kwargs: None, foo="bar")
+    assert validate_args(lambda **kwargs: None, foo="bar") == ""
 
 
 def test_validate_object_method():
@@ -40,8 +39,7 @@ def test_add_function():
     def foo():
         pass
 
-    methods = Methods(foo)
-    assert methods.items["foo"] is foo
+    assert Methods(foo).items["foo"] is foo
 
 
 def test_add_no_name():
@@ -151,7 +149,7 @@ def test_add_function_via_decorator():
 def test_add_function_custom_name_via_decorator():
     methods = Methods()
 
-    @methods.add(name='bar')
+    @methods.add(name="bar")
     def foo():
         pass
 
@@ -185,20 +183,3 @@ def test_get():
     methods = Methods(cat, dog)
     assert methods.items["cat"] == cat
     assert methods.items["dog"] == dog
-
-
-def test_lookup():
-    def foo():
-        pass
-
-    methods = Methods()
-    methods.items["foo"] = foo
-
-    assert lookup(methods, "foo") is foo
-
-
-def test_lookup_failure():
-    methods = Methods()
-
-    with pytest.raises(MethodNotFoundError):
-        lookup(methods, "bar")

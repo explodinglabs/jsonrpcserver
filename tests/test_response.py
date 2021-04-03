@@ -18,6 +18,43 @@ from jsonrpcserver.response import (
 )
 
 
+# Moved from test_dispatcher, need to test to_json with a non-json-serializable
+# value.
+# def test_non_json_encodable_resonse():
+#    def method(context: Context):
+#        return SuccessResponse(b"Hello, World", id=context.request.id)
+#
+#    response = safe_call(
+#        Request(method="method", params=[], id=1),
+#        Methods(method),
+#        extra=None,
+#        serialize=default_serialize,
+#    )
+#    # response must be serializable here
+#    str(response)
+#    assert isinstance(response, ErrorResponse)
+#    response_dict = response.deserialized()
+#    error_dict = response_dict["error"]
+#    assert error_dict["message"] == "Server error"
+#    assert error_dict["code"] == -32000
+#    assert "data" in error_dict
+
+
+# Moved from test_dispatcher, need to test to_json with batch responses
+# def test_dispatch_requests_pure_batch_all_notifications():
+#    """Should return a BatchResponse response, an empty list"""
+#    response = dispatch_requests_pure(
+#        [
+#            Request(method="notify_sum", params=[1, 2, 4], id=NOID),
+#            Request(method="notify_hello", params=[7], id=NOID),
+#        ],
+#        Methods(ping),
+#        extra=None,
+#        serialize=default_serialize,
+#    )
+#    assert str(response) == ""
+
+
 def test_response():
     with pytest.raises(TypeError):
         Response()  # Abstract
