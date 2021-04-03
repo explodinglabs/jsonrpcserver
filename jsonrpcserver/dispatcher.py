@@ -4,20 +4,16 @@ Dispatcher.
 The dispatch() function takes a JSON-RPC request, logs it, calls the appropriate method,
 then logs and returns the response.
 """
-import asyncio
 import logging
 import os
 from collections.abc import Iterable
 from configparser import ConfigParser
-from contextlib import contextmanager
 from json import JSONDecodeError
 from json import dumps as default_serialize, loads as default_deserialize
-from types import SimpleNamespace
 from typing import (
     Any,
     Callable,
     Dict,
-    Generator,
     Iterable,
     List,
     NamedTuple,
@@ -33,10 +29,9 @@ from jsonschema.validators import validator_for  # type: ignore
 from pkg_resources import resource_string
 
 from .log import log_
-from .methods import Method, Methods, global_methods, validate_args, lookup
+from .methods import Methods, global_methods, validate_args
 from .request import Request, is_notification, NOID
 from .response import (
-    ApiErrorResponse,
     BatchResponse,
     ExceptionResponse,
     InvalidJSONResponse,
@@ -45,12 +40,18 @@ from .response import (
     MethodNotFoundResponse,
     NotificationResponse,
     Response,
-    SuccessResponse,
 )
-from .exceptions import MethodNotFoundError, InvalidParamsError, ApiError
+
+Context = NamedTuple(
+    "Context",
+    [("request", Request), ("extra", Any)],
+)
 
 request_logger = logging.getLogger(__name__ + ".request")
 response_logger = logging.getLogger(__name__ + ".response")
+
+DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
+DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
 
 # Prepare the jsonschema validator
 schema = default_deserialize(resource_string(__name__, "request-schema.json"))
@@ -58,16 +59,9 @@ klass = validator_for(schema)
 klass.check_schema(schema)
 validator = klass(schema)
 
-DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
-DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
-
+# Read configuration file
 config = ConfigParser(default_section="dispatch")
 config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
-
-Context = NamedTuple(
-    "Context",
-    [("request", Request), ("extra", Any)],
-)
 
 
 def add_handlers() -> Tuple[logging.Handler, logging.Handler]:
@@ -120,49 +114,30 @@ def validate(request: Union[Dict, List], schema: dict) -> Union[Dict, List]:
     return request
 
 
-def call(method: Method, *args: Any, **kwargs: Any) -> Any:
-    """
-    Validates arguments and then calls the method.
-
-    Args:
-        method: The method to call.
-        *args, **kwargs: Arguments to the method.
-
-    Returns:
-        The "result" part of the JSON-RPC response (the return value from the method).
-    """
-    return validate_args(method, *args, **kwargs)(*args, **kwargs)
+def c(request, method, *args, **kwargs) -> Response:
+    errors = validate_args(method, *args, **kwargs)
+    return (
+        method(*args, **kwargs)
+        if not errors
+        else InvalidParamsResponse(data=errors, id=request.id)
+    )
 
 
-@contextmanager
-def handle_exceptions(request: Request) -> Generator:
-    handler = SimpleNamespace(response=None)
-    try:
-        yield handler
-    except MethodNotFoundError:
-        handler.response = MethodNotFoundResponse(id=request.id, data=request.method)
-    except (InvalidParamsError, AssertionError) as exc:
-        # InvalidParamsError is raised by validate_args. AssertionError is raised inside
-        # the methods, however it's better to raise InvalidParamsError inside methods.
-        # AssertionError will be removed in the next major release.
-        handler.response = InvalidParamsResponse(id=request.id, data=str(exc))
-    except ApiError as exc:  # Method signals custom error
-        handler.response = ApiErrorResponse(
-            str(exc), code=exc.code, data=exc.data, id=request.id
+def call(request: Request, method: Callable, *, extra: Any) -> Response:
+    return (
+        c(
+            request,
+            method,
+            *([Context(request=request, extra=extra)] + request.params),
         )
-    except asyncio.CancelledError:
-        # Allow CancelledError from asyncio task cancellation to bubble up. Without
-        # this, CancelledError is caught and handled, resulting in a "Server error"
-        # response object from the dispatcher, but because the CancelledError doesn't
-        # bubble up the rpc_server task doesn't exit. See PR
-        # https://github.com/bcb/jsonrpcserver/pull/132
-        raise
-    except Exception as exc:  # Other error inside method - server error
-        logging.exception(exc)
-        handler.response = ExceptionResponse(exc, id=request.id)
-    finally:
-        if is_notification(request):
-            handler.response = NotificationResponse()
+        if isinstance(request.params, list)
+        else c(
+            request,
+            method,
+            Context(request=request, extra=extra),
+            **request.params,
+        )
+    )
 
 
 def safe_call(
@@ -179,28 +154,19 @@ def safe_call(
     Returns:
         A Response object.
     """
-    with handle_exceptions(request) as handler:
-        if isinstance(request.params, list):
-            result = call(
-                lookup(methods, request.method),
-                *([Context(request=request, extra=extra)] + request.params),
-            )
+    if request.method in methods.items:
+        try:
+            response = call(request, methods.items[request.method], extra=extra)
+        except Exception as exc:  # Other error inside method - server error
+            logging.exception(exc)
+            return ExceptionResponse(exc, id=request.id)
         else:
-            result = call(
-                lookup(methods, request.method),
-                Context(request=request, extra=extra),
-                **request.params,
-            )
-        # Ensure value returned from the method is JSON-serializable. If not,
-        # handle_exception will set handler.response to an ExceptionResponse
-        serialize(result)
-        handler.response = SuccessResponse(
-            result=result, id=request.id, serialize_func=serialize
-        )
-    return handler.response
+            return NotificationResponse() if is_notification(request) else response
+    else:
+        return MethodNotFoundResponse(data=request.method, id=request.id)
 
 
-def call_requests(
+def dispatch_requests_pure(
     requests: Union[Request, Iterable[Request]],
     methods: Methods,
     *,
@@ -231,6 +197,19 @@ def call_requests(
             serialize=serialize,
         )
     )
+
+
+def dispatch_requests(
+    requests: Union[Request, Iterable[Request]],
+    methods: Methods,
+    *,
+    extra: Optional[Any] = None,
+    serialize: Callable = default_serialize,
+) -> Response:
+    """
+    Impure (public) version of dispatch_requests_pure - has default values.
+    """
+    return dispatch_requests_pure(requests, methods, extra=extra, serialize=serialize)
 
 
 def create_requests(
@@ -293,12 +272,13 @@ def dispatch_pure(
         return InvalidJSONResponse(data=str(exc))
     except ValidationError as exc:
         return InvalidJSONRPCResponse(data=None)
-    return call_requests(
-        create_requests(deserialized),
-        methods=methods,
-        extra=extra,
-        serialize=serialize,
-    )
+    else:
+        return dispatch_requests_pure(
+            create_requests(deserialized),
+            methods=methods,
+            extra=extra,
+            serialize=serialize,
+        )
 
 
 @apply_config(config)

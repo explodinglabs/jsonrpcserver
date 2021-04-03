@@ -9,6 +9,7 @@
 - Removed "convert camel case" option.
 - Removed the custom exceptions. From methods, return an ErrorResponse instead
   of raising an exception.
+- Methods should now return a Response object, and not raise exceptions.
 
 Refactoring/internal changes:
 

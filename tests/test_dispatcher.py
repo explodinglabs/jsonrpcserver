@@ -1,3 +1,4 @@
+"""TODO: Add tests for dispatch_requests (non-pure version)"""
 import logging
 from json import dumps as serialize
 from unittest.mock import sentinel
@@ -5,7 +6,7 @@ from unittest.mock import sentinel
 from jsonrpcserver.dispatcher import (
     Context,
     add_handlers,
-    call_requests,
+    dispatch_requests_pure,
     create_requests,
     dispatch,
     dispatch_pure,
@@ -19,6 +20,7 @@ from jsonrpcserver.dispatcher import (
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import (
+    ApiErrorResponse,
     BatchResponse,
     ErrorResponse,
     InvalidJSONResponse,
@@ -28,11 +30,10 @@ from jsonrpcserver.response import (
     NotificationResponse,
     SuccessResponse,
 )
-from jsonrpcserver.exceptions import ApiError
 
 
 def ping(context: Context):
-    return "pong"
+    return SuccessResponse("pong", id=context.request.id)
 
 
 def test_add_handlers():
@@ -78,10 +79,10 @@ def test_safe_call_notification():
 
 def test_safe_call_notification_failure():
     def fail():
-        raise ValueError()
+        1 / 0
 
     response = safe_call(
-        Request(method="foo", params=[], id=NOID),
+        Request(method="fail", params=[], id=NOID),
         Methods(fail),
         extra=None,
         serialize=default_serialize,
@@ -111,7 +112,9 @@ def test_safe_call_invalid_args():
 
 def test_safe_call_api_error():
     def error(context: Context):
-        raise ApiError("Client Error", code=123, data={"data": 42})
+        return ApiErrorResponse(
+            "Client Error", code=123, data={"data": 42}, id=context.request.id
+        )
 
     response = safe_call(
         Request(method="error", params=[], id=1),
@@ -128,7 +131,7 @@ def test_safe_call_api_error():
 
 def test_safe_call_api_error_minimal():
     def error(context: Context):
-        raise ApiError("Client Error")
+        return ApiErrorResponse("Client Error", code=123, id=context.request.id)
 
     response = safe_call(
         Request(method="error", params=[], id=1),
@@ -140,58 +143,24 @@ def test_safe_call_api_error_minimal():
     response_dict = response.deserialized()
     error_dict = response_dict["error"]
     assert error_dict["message"] == "Client Error"
-    assert error_dict["code"] == 1
+    assert error_dict["code"] == 123
     assert "data" not in error_dict
 
 
-def test_non_json_encodable_resonse():
-    def method(context: Context):
-        return b"Hello, World"
-
-    response = safe_call(
-        Request(method="method", params=[], id=1),
-        Methods(method),
-        extra=None,
-        serialize=default_serialize,
-    )
-    # response must be serializable here
-    str(response)
-    assert isinstance(response, ErrorResponse)
-    response_dict = response.deserialized()
-    error_dict = response_dict["error"]
-    assert error_dict["message"] == "Server error"
-    assert error_dict["code"] == -32000
-    assert "data" in error_dict
+# dispatch_requests_pure
 
 
-# call_requests
-
-
-def test_call_requests_with_extra():
+def test_dispatch_requests_pure_with_extra():
     def ping_with_extra(context: Context):
         assert context.extra is sentinel.extra
 
-    call_requests(
+    dispatch_requests_pure(
         Request(method="ping_with_extra", params=[], id=1),
         Methods(ping_with_extra),
         extra=sentinel.extra,
         serialize=default_serialize,
     )
     # Assert is in the method
-
-
-def test_call_requests_batch_all_notifications():
-    """Should return a BatchResponse response, an empty list"""
-    response = call_requests(
-        [
-            Request(method="notify_sum", params=[1, 2, 4], id=NOID),
-            Request(method="notify_hello", params=[7], id=NOID),
-        ],
-        Methods(ping),
-        extra=None,
-        serialize=default_serialize,
-    )
-    assert str(response) == ""
 
 
 # create_requests
@@ -272,8 +241,9 @@ def test_dispatch_pure_invalid_jsonrpc():
 
 
 def test_dispatch_pure_invalid_params():
-    def foo(context: Context, colour):
-        assert colour in ("orange", "red", "yellow"), "Invalid colour"
+    def foo(context: Context, colour: str):
+        if colour not in ("orange", "red", "yellow"):
+            return InvalidParamsResponse(id=context.request.id)
 
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
@@ -335,7 +305,7 @@ def test_dispatch_basic_logging():
 
 def test_examples_positionals():
     def subtract(context: Context, minuend, subtrahend):
-        return minuend - subtrahend
+        return SuccessResponse(minuend - subtrahend, id=context.request.id)
 
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
@@ -361,7 +331,9 @@ def test_examples_positionals():
 
 def test_examples_nameds():
     def subtract(context: Context, **kwargs):
-        return kwargs["minuend"] - kwargs["subtrahend"]
+        return SuccessResponse(
+            kwargs["minuend"] - kwargs["subtrahend"], id=context.request.id
+        )
 
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
@@ -386,10 +358,9 @@ def test_examples_nameds():
 
 
 def test_examples_notification():
-    methods = {"update": lambda: None, "foobar": lambda: None}
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
-        methods,
+        Methods(update=lambda: None, foobar=lambda: None),
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -399,7 +370,7 @@ def test_examples_notification():
     # Second example
     response = dispatch_pure(
         '{"jsonrpc": "2.0", "method": "foobar"}',
-        methods,
+        Methods(update=lambda: None, foobar=lambda: None),
         extra=None,
         serialize=default_serialize,
         deserialize=default_deserialize,
@@ -478,20 +449,21 @@ def test_examples_multiple_invalid_jsonrpc():
 
 def test_examples_mixed_requests_and_notifications():
     """
-    We break the spec here. The examples put an invalid jsonrpc request in the mix here.
-    but it's removed to test the rest, because we're not validating each request
-    individually. Any invalid jsonrpc will respond with a single error message.
+    We break the spec here. The examples put an invalid jsonrpc request in the
+    mix here.  but it's removed to test the rest, because we're not validating
+    each request individually. Any invalid jsonrpc will respond with a single
+    error message.
 
     The spec example includes this which invalidates the entire request:
         {"foo": "boo"},
     """
     methods = Methods(
-        **{
-            "sum": lambda _, *args: sum(args),
-            "notify_hello": lambda _, *args: 19,
-            "subtract": lambda _, *args: args[0] - sum(args[1:]),
-            "get_data": lambda _: ["hello", 5],
-        }
+        sum=lambda ctx, *args: SuccessResponse(sum(args), id=ctx.request.id),
+        notify_hello=lambda ctx, *args: SuccessResponse(19, id=ctx.request.id),
+        subtract=lambda ctx, *args: SuccessResponse(
+            args[0] - sum(args[1:]), id=ctx.request.id
+        ),
+        get_data=lambda ctx: SuccessResponse(["hello", 5], id=ctx.request.id),
     )
     requests = serialize(
         [
@@ -525,5 +497,6 @@ def test_examples_mixed_requests_and_notifications():
         {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"},
     ]
     assert isinstance(response, BatchResponse)
+    print(response.deserialized())
     for r in response.deserialized():
         assert r in expected

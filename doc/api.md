@@ -133,34 +133,38 @@ trim_log_values = yes
 
 ## Errors
 
-The library handles most errors related to the JSON-RPC standard.
+The library handles some errors related to the JSON-RPC standard, such as
+invalid json or invalid json-rpc requests.
+
+To return a custom error response:
 
 ```python
-from jsonrpcserver.exceptions import InvalidParamsError
+from jsonrpcserver.response import Context, InvalidParamsResponse, SuccessResponse
 
 @method
-def fruits(color):
+def fruits(context: Context, color: str) -> Union[SuccessResponse, InvalidParamsResponse]:
     if color not in ("red", "orange", "yellow"):
-        raise InvalidParamsError("No fruits of that colour")
+        return InvalidParamsResponse("No fruits of that colour", id=context.request.id)
+    return SuccessResponse("blue", id=context.request.id)
 ```
 
 The dispatcher will give the appropriate response:
 
 ```python
->>> str(dispatch('{"jsonrpc": "2.0", "method": "fruits", "params": {"color": "blue"}, "id": 1}'))
-'{"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid parameters"}, "id": 1}'
+>>> dispatch('{"jsonrpc": "2.0", "method": "fruits", "params": {"color": "blue"}, "id": 1}')
+InvalidParamsResponse(code=-32602, message='Invalid parameters', id=1)
 ```
 
-To send some other application-defined error response, raise an `ApiError` in a
-similar way.
+To send some other application-defined error response, return an
+`ApiErrorResponse` in a similar way.
 
 ```python
-from jsonrpcserver.exceptions import ApiError
+from jsonrpcserver.response import ApiErrorResponse
 
 @method
 def my_method():
     if some_condition:
-        raise ApiError("Can't fulfill the request")
+        return ApiErrorResponse("Can't fulfill the request")
 ```
 
 ## Async

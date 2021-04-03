@@ -1,6 +1,8 @@
 """Asynchronous dispatch"""
+
 import asyncio
 import collections.abc
+import logging
 from json import JSONDecodeError
 from json import dumps as default_serialize, loads as default_deserialize
 from typing import Any, Iterable, Optional, Union, Callable
@@ -13,53 +15,73 @@ from .dispatcher import (
     add_handlers,
     config,
     create_requests,
-    handle_exceptions,
     log_request,
     log_response,
     remove_handlers,
     schema,
     validate,
 )
-from .methods import Method, Methods, global_methods, validate_args, lookup
-from .request import Request
+from .methods import Methods, global_methods, validate_args
+from .request import Request, is_notification
 from .response import (
     BatchResponse,
+    ExceptionResponse,
     InvalidJSONResponse,
     InvalidJSONRPCResponse,
+    InvalidParamsResponse,
+    NotificationResponse,
     Response,
     SuccessResponse,
 )
 
 
-async def call(method: Method, *args: Any, **kwargs: Any) -> Any:
-    return await validate_args(method, *args, **kwargs)(*args, **kwargs)
+async def call(request, method, *args, **kwargs) -> Response:
+    errors = validate_args(method, *args, **kwargs)
+    return (
+        await method(*args, **kwargs)
+        if not errors
+        else InvalidParamsResponse(data=errors, id=request.id)
+    )
 
 
 async def safe_call(
     request: Request, methods: Methods, *, extra: Any, serialize: Callable
 ) -> Response:
-    with handle_exceptions(request) as handler:
-        if isinstance(request.params, list):
-            result = await call(
-                lookup(methods, request.method),
+    try:
+        result = (
+            await call(
+                methods.items[request.method],
                 *([Context(request=request, extra=extra)] + request.params),
             )
-        else:
-            result = await call(
-                lookup(methods, request.method),
+            if isinstance(request.params, list)
+            else await call(
+                methods.items[request.method],
                 Context(request=request, extra=extra),
                 **request.params,
             )
+        )
         # Ensure value returned from the method is JSON-serializable. If not,
         # handle_exception will set handler.response to an ExceptionResponse
         serialize(result)
-        handler.response = SuccessResponse(
-            result=result, id=request.id, serialize_func=serialize
+    except asyncio.CancelledError:
+        # Allow CancelledError from asyncio task cancellation to bubble up. Without
+        # this, CancelledError is caught and handled, resulting in a "Server error"
+        # response object from the dispatcher, but because the CancelledError doesn't
+        # bubble up the rpc_server task doesn't exit. See PR
+        # https://github.com/bcb/jsonrpcserver/pull/132
+        raise
+    except Exception as exc:  # Other error inside method - server error
+        logging.exception(exc)
+        return ExceptionResponse(exc, id=request.id)
+    else:
+        return (
+            NotificationResponse()
+            if is_notification(request)
+            else SuccessResponse(result=result, id=request.id, serialize_func=serialize)
         )
-    return handler.response
 
 
-async def call_requests(
+async def dispatch_requests(
     requests: Union[Request, Iterable[Request]],
     methods: Methods,
     extra: Any,
@@ -87,7 +109,7 @@ async def dispatch_pure(
         return InvalidJSONResponse(data=str(exc))
     except ValidationError as exc:
         return InvalidJSONRPCResponse(data=None)
-    return await call_requests(
+    return await dispatch_requests(
         create_requests(deserialized),
         methods,
         extra=extra,
