@@ -1,18 +1,19 @@
-from flask import Flask, request, Response
+from flask import Flask, request
 from jsonrpcserver import method, dispatch
+from jsonrpcserver.result import Result, Success
+from jsonrpcserver.response import to_json
 
 app = Flask(__name__)
 
 
 @method
-def ping():
-    return "pong"
+def ping() -> Result:
+    return Success("pong")
 
 
 @app.route("/", methods=["POST"])
-def index():
-    response = dispatch(request.get_data().decode())
-    return Response(str(response), response.http_status, mimetype="application/json")
+def index() -> str:
+    return to_json(dispatch(request.get_data().decode()))
 
 
 if __name__ == "__main__":
