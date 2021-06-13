@@ -17,4 +17,4 @@ repos:
     hooks:
       - id: mypy
         exclude: ^tests/
-        args: [--ignore-missing-imports]
+        args: [--disallow-untyped-defs, --disallow-untyped-calls, --check-untyped-defs]

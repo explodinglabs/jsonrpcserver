@@ -144,7 +144,7 @@ from jsonrpcserver.response import InvalidParamsResponse, Response, SuccessRespo
 )
 
 @method
-def fruits(context: Context, color: str) -> Response:
+def fruits(context: Context, color: str) -> Result:
     if color not in ["red", "orange", "yellow"]:
         return InvalidParamsResponse("No fruits of that colour", id=context.request.id)
     return SuccessResponse("blue", id=context.request.id)

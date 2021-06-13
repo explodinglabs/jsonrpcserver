@@ -1,208 +1,146 @@
-import json
+"""
+TODO: Test to_json with a non-json-serializable.
+TODO: Test to_json with batch responses.
+"""
+from unittest.mock import sentinel
 
-import pytest
-
-from jsonrpcserver import status
+from jsonrpcserver.request import NOID
 from jsonrpcserver.response import (
-    BatchResponse,
     ErrorResponse,
-    ExceptionResponse,
-    InvalidJSONResponse,
-    InvalidJSONRPCResponse,
-    InvalidParamsResponse,
+    InvalidRequestResponse,
     MethodNotFoundResponse,
-    NotificationResponse,
-    Response,
+    NoResponse,
+    ParseErrorResponse,
+    ServerErrorResponse,
     SuccessResponse,
-    sort_dict_response,
+    UNSPECIFIED,
+    from_result,
+    to_dict,
 )
+from jsonrpcserver.result import Success, Error, InvalidParams
 
 
-# Moved from test_dispatcher, need to test to_json with a non-json-serializable
-# value.
-# def test_non_json_encodable_resonse():
-#    def method(context: Context):
-#        return SuccessResponse(b"Hello, World", id=context.request.id)
-#
-#    response = safe_call(
-#        Request(method="method", params=[], id=1),
-#        Methods(method),
-#        extra=None,
-#        serialize=default_serialize,
-#    )
-#    # response must be serializable here
-#    str(response)
-#    assert isinstance(response, ErrorResponse)
-#    response_dict = response.deserialized()
-#    error_dict = response_dict["error"]
-#    assert error_dict["message"] == "Server error"
-#    assert error_dict["code"] == -32000
-#    assert "data" in error_dict
+def test_SuccessResponse():
+    response = SuccessResponse(sentinel.result, sentinel.id)
+    assert response.result == sentinel.result
+    assert response.id == sentinel.id
 
 
-# Moved from test_dispatcher, need to test to_json with batch responses
-# def test_dispatch_requests_pure_batch_all_notifications():
-#    """Should return a BatchResponse response, an empty list"""
-#    response = dispatch_requests_pure(
-#        [
-#            Request(method="notify_sum", params=[1, 2, 4], id=NOID),
-#            Request(method="notify_hello", params=[7], id=NOID),
-#        ],
-#        Methods(ping),
-#        extra=None,
-#        serialize=default_serialize,
-#    )
-#    assert str(response) == ""
-
-
-def test_response():
-    with pytest.raises(TypeError):
-        Response()  # Abstract
-
-
-def test_response_http_status():
-    class Subclass(Response):
-        def wanted():
-            return True
-
-    response = Subclass(http_status=1)
-    assert response.http_status == 1
-
-
-def test_notification_response():
-    response = NotificationResponse()
-    assert response.http_status == 204
-    assert response.wanted == False
-    assert str(response) == ""
-
-
-def test_notification_response_str():
-    assert str(NotificationResponse()) == ""
-
-
-def test_batch_response():
-    response = BatchResponse(
-        {SuccessResponse("foo", id=1), SuccessResponse("bar", id=2)}
+def test_ErrorResponse():
+    response = ErrorResponse(
+        sentinel.code, sentinel.message, sentinel.data, sentinel.id
     )
-    expected = [
-        {"jsonrpc": "2.0", "result": "foo", "id": 1},
-        {"jsonrpc": "2.0", "result": "bar", "id": 2},
-    ]
-    assert response.wanted == True
-    for r in response.deserialized():
-        assert r in expected
+    assert response.code is sentinel.code
+    assert response.message is sentinel.message
+    assert response.data is sentinel.data
+    assert response.id is sentinel.id
 
 
-def test_sort_dict_response_success():
-    response = sort_dict_response({"id": 1, "result": 5, "jsonrpc": "2.0"})
-    assert json.dumps(response) == '{"jsonrpc": "2.0", "result": 5, "id": 1}'
+def test_ParseErrorResponse():
+    response = ParseErrorResponse(sentinel.data)
+    assert response.code == -32700
+    assert response.message == "Parse error"
+    assert response.data == sentinel.data
+    assert response.id == NOID
 
 
-def test_sort_dict_response_error():
-    response = sort_dict_response(
-        {
-            "id": 1,
-            "error": {
-                "data": "bar",
-                "message": "foo",
-                "code": status.JSONRPC_INVALID_REQUEST_CODE,
-            },
-            "jsonrpc": "2.0",
-        }
+def test_InvalidRequestResponse():
+    response = InvalidRequestResponse(sentinel.data)
+    assert response.code == -32600
+    assert response.message == "Invalid request"
+    assert response.data == sentinel.data
+    assert response.id == NOID
+
+
+def test_MethodNotFoundResponse():
+    response = MethodNotFoundResponse(sentinel.data, sentinel.id)
+    assert response.code == -32601
+    assert response.message == "Method not found"
+    assert response.data == sentinel.data
+    assert response.id == sentinel.id
+
+
+def test_InternalErrorResponse():
+    response = InternalErrorResponse(sentinel.data, sentinel.id)
+    assert response.code == -32603
+    assert response.message == "Internal error"
+    assert response.data == sentinel.data
+    assert response.id == sentinel.id
+
+
+def test_ServerErrorResponse():
+    response = ServerErrorResponse(sentinel.data, sentinel.id)
+    assert response.code == -32000
+    assert response.message == "Internal error"
+    assert response.data == sentinel.data
+    assert response.id == sentinel.id
+
+
+def test_from_result_Success():
+    response = from_result(Success(sentinel.result), sentinel.id)
+    assert isinstance(response, SuccessResponse) == True
+    assert response.result == sentinel.result
+    assert response.id == sentinel.id
+
+
+def test_from_result_Error():
+    response = from_result(
+        Error(code=sentinel.code, message=sentinel.message, data=sentinel.data),
+        sentinel.id,
     )
-    assert (
-        json.dumps(response)
-        == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "foo", "data": "bar"}, "id": 1}'
+    assert isinstance(response, ErrorResponse) == True
+    assert response.code == sentinel.code
+    assert response.message == sentinel.message
+    assert response.data == sentinel.data
+    assert response.id == sentinel.id
+
+
+def test_from_result_InvalidParams():
+    response = from_result(
+        InvalidParams(sentinel.message, sentinel.data),
+        sentinel.id,
     )
+    assert isinstance(response, ErrorResponse) == True
+    assert response.code == -32602
+    assert response.message == sentinel.message
+    assert response.data == sentinel.data
+    assert response.id == sentinel.id
 
 
-def test_success_response():
-    response = SuccessResponse("foo", id=1)
-    assert response.wanted == True
-    assert response.result == "foo"
-    assert str(response) == '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
+def test_from_result_InvalidParams_no_data():
+    response = from_result(InvalidParams(sentinel.message), sentinel.id)
+    assert isinstance(response, ErrorResponse) == True
+    assert response.code == -32602
+    assert response.message == sentinel.message
+    assert response.data == UNSPECIFIED
+    assert response.id == sentinel.id
 
 
-def test_success_response_str():
-    response = SuccessResponse("foo", id=1)
-    assert str(response) == '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
+def test_from_result_notification():
+    response = from_result(Success(result=sentinel.result), NOID)
+    assert isinstance(response, NoResponse) == True
 
 
-def test_success_response_null_id():
-    # OK - any type of id is acceptable
-    response = SuccessResponse("foo", id=None)
-    assert str(response) == '{"jsonrpc": "2.0", "result": "foo", "id": null}'
+def test_to_dict():
+    dct = to_dict(SuccessResponse(sentinel.result, sentinel.id))
+    assert dct["jsonrpc"] == "2.0"
+    assert dct["result"] == sentinel.result
+    assert dct["id"] == sentinel.id
 
 
-def test_success_response_null_result():
-    # Perfectly fine.
-    response = SuccessResponse(None, id=1)
-    assert str(response) == '{"jsonrpc": "2.0", "result": null, "id": 1}'
+def test_to_dict_SuccessResponse():
+    dct = to_dict(SuccessResponse(sentinel.result, sentinel.id))
+    assert dct["jsonrpc"] == "2.0"
+    assert dct["result"] == sentinel.result
+    assert dct["id"] == sentinel.id
 
 
-def test_error_response():
-    response = ErrorResponse("foo", id=1, code=-1, http_status=200)
-    assert response.code == -1
-    assert response.message == "foo"
-    assert response.wanted == True
-    assert (
-        str(response)
-        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}, "id": 1}'
+def test_to_dict_ErrorResponse():
+    dct = to_dict(
+        ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id)
     )
-
-
-def test_error_response_no_id():
-    # Responding with an error to a Notification - this is OK; we do respond to
-    # notifications under certain circumstances, such as "invalid json" and "invalid
-    # json-rpc".
-    assert (
-        str(ErrorResponse("foo", id=None, code=-1, http_status=200))
-        == '{"jsonrpc": "2.0", "error": {"code": -1, "message": "foo"}, "id": null}'
-    )
-
-
-def test_error_response_http_status():
-    response = ErrorResponse("foo", id=1, code=-1, http_status=status.HTTP_BAD_REQUEST)
-    assert response.http_status == status.HTTP_BAD_REQUEST
-
-
-def test_invalid_json_response():
-    assert (
-        str(InvalidJSONResponse(data="foo"))
-        == '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Invalid JSON", "data": "foo"}, "id": null}'
-    )
-
-
-def test_invalid_jsonrpc_response():
-    assert (
-        str(InvalidJSONRPCResponse(data="foo"))
-        == '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid JSON-RPC", "data": "foo"}, "id": null}'
-    )
-
-
-def test_method_not_found_response():
-    assert (
-        str(MethodNotFoundResponse(id=1, data="foo"))
-        == '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found", "data": "foo"}, "id": 1}'
-    )
-
-
-def test_invalid_params_response():
-    assert (
-        str(InvalidParamsResponse(id=1, data="bar"))
-        == '{"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid parameters", "data": "bar"}, "id": 1}'
-    )
-
-
-def test_exception_response():
-    assert (
-        str(ExceptionResponse(ValueError("foo"), id=1))
-        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: foo"}, "id": 1}'
-    )
-
-
-def test_exception_response_with_id():
-    assert (
-        str(ExceptionResponse(ValueError("foo"), id=1))
-        == '{"jsonrpc": "2.0", "error": {"code": -32000, "message": "Server error", "data": "ValueError: foo"}, "id": 1}'
-    )
+    assert dct["jsonrpc"] == "2.0"
+    assert dct["error"]["code"] == sentinel.code
+    assert dct["error"]["message"] == sentinel.message
+    assert dct["error"]["data"] == sentinel.data
+    assert dct["id"] == sentinel.id

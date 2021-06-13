@@ -4,7 +4,7 @@ import asyncio
 import collections.abc
 import logging
 from json import JSONDecodeError
-from json import dumps as default_serialize, loads as default_deserialize
+from json import loads as default_deserialize
 from typing import Any, Iterable, Optional, Union, Callable
 
 from apply_defaults import apply_config  # type: ignore
@@ -12,36 +12,27 @@ from jsonschema import ValidationError  # type: ignore
 
 from .dispatcher import (
     Context,
-    add_handlers,
     config,
     create_requests,
-    log_request,
-    log_response,
-    remove_handlers,
-    schema,
+    global_schema,
     validate,
 )
 from .methods import Methods, global_methods, validate_args
 from .request import Request, is_notification
-from .response import (
-    BatchResponse,
-    ExceptionResponse,
-    InvalidJSONResponse,
-    InvalidJSONRPCResponse,
-    InvalidParamsResponse,
-    NotificationResponse,
-    Response,
-    SuccessResponse,
-)
+from .response import Response
+from .result import InvalidParams, InternalError, Result
 
 
-async def call(request, method, *args, **kwargs) -> Response:
+async def call(request, method, *args, **kwargs) -> Result:
     errors = validate_args(method, *args, **kwargs)
-    return (
-        await method(*args, **kwargs)
-        if not errors
-        else InvalidParamsResponse(data=errors, id=request.id)
-    )
+    if errors:
+        return InvalidParams(errors)
+
+    try:
+        return await method(*args, **kwargs)
+    except Exception as exc:  # Other error inside method - server error
+        logging.exception(exc)
+        return InternalError(str(exc))
 
 
 async def safe_call(
@@ -104,7 +95,7 @@ async def dispatch_pure(
     deserialize: Callable,
 ) -> Response:
     try:
-        deserialized = validate(deserialize(request), schema)
+        deserialized = validate(deserialize(request), global_schema)
     except JSONDecodeError as exc:
         return InvalidJSONResponse(data=str(exc))
     except ValidationError as exc:
@@ -122,19 +113,14 @@ async def dispatch(
     request: str,
     methods: Optional[Methods] = None,
     *,
-    basic_logging: bool = False,
     extra: Optional[Any] = None,
-    trim_log_values: bool = False,
-    serialize: Callable = default_serialize,
     deserialize: Callable = default_deserialize,
     **kwargs: Any,
 ) -> Response:
     # Use the global methods object if no methods object was passed.
     methods = global_methods if methods is None else methods
     # Add temporary stream handlers for this request, and remove them later
-    if basic_logging:
-        request_handler, response_handler = add_handlers()
-    log_request(request, trim_log_values=trim_log_values)
+    logger.info(request)
     response = await dispatch_pure(
         request,
         methods,
@@ -142,7 +128,7 @@ async def dispatch(
         serialize=serialize,
         deserialize=deserialize,
     )
-    log_response(str(response), trim_log_values=trim_log_values)
+    logger.info(to_json(response))
     # Remove the temporary stream handlers
     if basic_logging:
         remove_handlers(request_handler, response_handler)
