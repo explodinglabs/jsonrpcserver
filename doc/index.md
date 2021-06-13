@@ -22,10 +22,20 @@ $ python server.py
 ```
 
 This example uses the built-in server, but any application can process
-requests with the `dispatch()` method. See [examples in various
-frameworks](examples.html), or read the [guide to usage and
-configuration](api.html).
+requests with the `dispatch()` method.
+
+## Examples
+
+See [examples in various frameworks](examples.html).
+
+## Guide
+
+Read the [guide to usage and configuration](api.html).
+
+## Contribute
 
 Contribute on [Github](https://github.com/bcb/jsonrpcserver).
 
-See also: [jsonrpcclient](https://jsonrpcclient.readthedocs.io/)
+## See Also
+
+[jsonrpcclient](https://jsonrpcclient.readthedocs.io/)
