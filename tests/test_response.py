@@ -9,13 +9,12 @@ from jsonrpcserver.response import (
     ErrorResponse,
     InvalidRequestResponse,
     MethodNotFoundResponse,
-    NoResponse,
     ParseErrorResponse,
     ServerErrorResponse,
     SuccessResponse,
     UNSPECIFIED,
     from_result,
-    to_dict,
+    to_serializable,
 )
 from jsonrpcserver.result import Success, Error, InvalidParams
 
@@ -96,10 +95,7 @@ def test_from_result_Error():
 
 
 def test_from_result_InvalidParams():
-    response = from_result(
-        InvalidParams(sentinel.message, sentinel.data),
-        sentinel.id,
-    )
+    response = from_result(InvalidParams(sentinel.message, sentinel.data), sentinel.id,)
     assert isinstance(response, ErrorResponse) == True
     assert response.code == -32602
     assert response.message == sentinel.message
@@ -118,25 +114,25 @@ def test_from_result_InvalidParams_no_data():
 
 def test_from_result_notification():
     response = from_result(Success(result=sentinel.result), NOID)
-    assert isinstance(response, NoResponse) == True
+    assert response is None
 
 
-def test_to_dict():
-    dct = to_dict(SuccessResponse(sentinel.result, sentinel.id))
+def test_to_serializable():
+    dct = to_serializable(SuccessResponse(sentinel.result, sentinel.id))
     assert dct["jsonrpc"] == "2.0"
     assert dct["result"] == sentinel.result
     assert dct["id"] == sentinel.id
 
 
-def test_to_dict_SuccessResponse():
-    dct = to_dict(SuccessResponse(sentinel.result, sentinel.id))
+def test_to_serializable_SuccessResponse():
+    dct = to_serializable(SuccessResponse(sentinel.result, sentinel.id))
     assert dct["jsonrpc"] == "2.0"
     assert dct["result"] == sentinel.result
     assert dct["id"] == sentinel.id
 
 
-def test_to_dict_ErrorResponse():
-    dct = to_dict(
+def test_to_serializable_ErrorResponse():
+    dct = to_serializable(
         ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id)
     )
     assert dct["jsonrpc"] == "2.0"

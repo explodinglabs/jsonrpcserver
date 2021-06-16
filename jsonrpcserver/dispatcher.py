@@ -34,21 +34,10 @@ from .response import (
     Response,
     ServerErrorResponse,
     from_result,
-    should_respond,
-    to_json,
 )
 from .result import InvalidParams, InternalError, Result
 
-Context = NamedTuple(
-    "Context",
-    [("request", Request), ("extra", Any)],
-)
-
-request_logger = logging.getLogger(__name__ + ".request")
-response_logger = logging.getLogger(__name__ + ".response")
-
-DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
-DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
+Context = NamedTuple("Context", [("request", Request), ("extra", Any)],)
 
 # Prepare the jsonschema validator
 global_schema = default_deserialize(resource_string(__name__, "request-schema.json"))
@@ -235,8 +224,6 @@ def dispatch(
             global_schema,
             request,
         )
-        if should_respond(response):
-            response_logger.info(to_json(cast(Response, response)))
         return response
     except Exception as exc:
         logging.exception(exc)

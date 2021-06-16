@@ -15,11 +15,7 @@ from jsonrpcserver.dispatcher import (
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.result import Result, Success
 from jsonrpcserver.request import Request, NOID
-from jsonrpcserver.response import (
-    ErrorResponse,
-    NoResponse,
-    SuccessResponse,
-)
+from jsonrpcserver.response import ErrorResponse, SuccessResponse
 
 
 def ping(context: Context) -> Result:
@@ -37,7 +33,7 @@ def test_dispatch_request_success_result():
 
 def test_dispatch_request_notification():
     response = dispatch_request(Methods(ping), None, Request("ping", [], NOID))
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_dispatch_request_notification_failure():
@@ -52,7 +48,7 @@ def test_dispatch_request_notification_failure():
         1 / 0
 
     response = dispatch_request(Methods(fail), None, Request("fail", [], NOID))
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_dispatch_request_method_not_found():
@@ -77,9 +73,7 @@ def test_dispatch_request_with_extra():
         return Success(None)
 
     dispatch_request(
-        Methods(ping_with_extra),
-        sentinel.extra,
-        Request("ping_with_extra", [], 1),
+        Methods(ping_with_extra), sentinel.extra, Request("ping_with_extra", [], 1),
     )
     # Assert is in the method
 
@@ -123,7 +117,7 @@ def test_dispatch_pure_notification():
         default_deserialize,
         global_schema,
     )
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_dispatch_pure_notification_invalid_jsonrpc():
@@ -273,7 +267,7 @@ def test_examples_notification():
         extra=None,
         deserialize=default_deserialize,
     )
-    assert isinstance(response, NoResponse)
+    assert response is None
 
     # Second example
     response = dispatch_pure(
@@ -282,7 +276,7 @@ def test_examples_notification():
         extra=None,
         deserialize=default_deserialize,
     )
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_examples_invalid_json():
@@ -299,10 +293,7 @@ def test_examples_invalid_json():
 def test_examples_empty_array():
     # This is an invalid JSON-RPC request, should return an error.
     response = dispatch_pure(
-        "[]",
-        Methods(ping),
-        extra=None,
-        deserialize=default_deserialize,
+        "[]", Methods(ping), extra=None, deserialize=default_deserialize,
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -314,10 +305,7 @@ def test_examples_invalid_jsonrpc_batch():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_pure(
-        "[1]",
-        Methods(ping),
-        extra=None,
-        deserialize=default_deserialize,
+        "[1]", Methods(ping), extra=None, deserialize=default_deserialize,
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -329,10 +317,7 @@ def test_examples_multiple_invalid_jsonrpc():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_pure(
-        "[1, 2, 3]",
-        Methods(ping),
-        extra=None,
-        deserialize=default_deserialize,
+        "[1, 2, 3]", Methods(ping), extra=None, deserialize=default_deserialize,
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -369,10 +354,7 @@ def test_examples_mixed_requests_and_notifications():
         ]
     )
     response = dispatch_pure(
-        requests,
-        methods,
-        extra=None,
-        deserialize=default_deserialize,
+        requests, methods, extra=None, deserialize=default_deserialize,
     )
     expected = [
         {"jsonrpc": "2.0", "result": 7, "id": "1"},
