@@ -85,7 +85,9 @@ def extract_kwargs(request: Request) -> dict:
     return request.params if isinstance(request.params, dict) else {}
 
 
-def dispatch_request(methods: Methods, extra: Any, request: Request) -> Response:
+def dispatch_request(
+    methods: Methods, extra: Any, request: Request
+) -> Union[Response, None]:
     """
     Dispatch a single Request.
 
@@ -94,19 +96,17 @@ def dispatch_request(methods: Methods, extra: Any, request: Request) -> Response
     Converts the return value (a Result) into a Response.
     """
     if request.method in methods.items:
-        return from_result(
-            call(
-                methods.items[request.method],
-                extract_args(request, extra),
-                extract_kwargs(request),
-            ),
-            request.id,
+        result = call(
+            methods.items[request.method],
+            extract_args(request, extra),
+            extract_kwargs(request),
         )
+        return None if request.id is None else from_result(result, request.id)
     else:
         return MethodNotFoundResponse(request.method, request.id)
 
 
-def all_are_notifications(requests: Union[Response, List[Response]]) -> bool:
+def all_are_notifications(requests: Union[Request, List[Request]]) -> bool:
     """
     Returns true if the request is a notification, or in the case of a batch
     request, if all requests are notifications. JSON-RPC must not respond to a
@@ -115,18 +115,26 @@ def all_are_notifications(requests: Union[Response, List[Response]]) -> bool:
     return (
         all(request.id is NOID for request in requests)
         if isinstance(requests, list)
-        else request.id is NOID,
+        else requests.id is NOID
     )
 
 
 def dispatch_requests(
     methods: Methods, extra: Any, requests: Union[Request, List[Request]]
 ) -> Union[Response, List[Response], None]:
-    response = filter(
-        lambda response: response.id is NOID,
-        [dispatch_request(methods, extra, request) for request in requests]
+    """
+    Important: The methods must be called, even if all requests are
+    notifications.
+    """
+    response = (
+        list(
+            filter(
+                lambda r: r is not None,
+                [dispatch_request(methods, extra, request) for request in requests],
+            )
+        )
         if isinstance(requests, list)
-        else dispatch_request(methods, extra, cast(Request, requests)),
+        else dispatch_request(methods, extra, cast(Request, requests))
     )
     return None if all_are_notifications(requests) else response
 
@@ -211,14 +219,14 @@ def dispatch_to_response(
     methods: Methods = None,
     extra: Optional[Any] = None,
     deserializer: Callable = json.loads,
-) -> Union[Response, List[Response]]:
+) -> Union[Response, List[Response], None]:
     """
     Dispatch a JSON-serialized request to methods.
 
     Maps a request string to a Response (or list of Responses).
 
-    This is a public method which wraps dispatch_pure, adding default values
-    and globals.
+    This is a public method which wraps dispatch_to_response_pure, adding
+    default values and globals.
 
     Args:
         request: The JSON-RPC request string.
@@ -229,12 +237,12 @@ def dispatch_to_response(
         deserialize: Function that is used to deserialize data.
 
     Returns:
-        A Response.
+        A Response, list of Responses or None.
 
     Examples:
         >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', [ping])
     """
-    return dispatch_pure(
+    return dispatch_to_response_pure(
         methods=global_methods if methods is None else methods,
         extra=extra,
         deserializer=deserializer,

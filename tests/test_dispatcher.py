@@ -6,7 +6,6 @@ from jsonrpcserver import status
 from jsonrpcserver.dispatcher import (
     Context,
     create_requests,
-    dispatch_to_response,
     dispatch_to_response_pure,
     dispatch_request,
     global_schema,
@@ -14,11 +13,7 @@ from jsonrpcserver.dispatcher import (
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.result import Result, Success
 from jsonrpcserver.request import Request, NOID
-from jsonrpcserver.response import (
-    ErrorResponse,
-    NoResponse,
-    SuccessResponse,
-)
+from jsonrpcserver.response import ErrorResponse, SuccessResponse
 
 
 def ping(context: Context) -> Result:
@@ -36,7 +31,7 @@ def test_dispatch_request_success_result():
 
 def test_dispatch_request_notification():
     response = dispatch_request(Methods(ping), None, Request("ping", [], NOID))
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_dispatch_request_notification_failure():
@@ -51,7 +46,7 @@ def test_dispatch_request_notification_failure():
         1 / 0
 
     response = dispatch_request(Methods(fail), None, Request("fail", [], NOID))
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_dispatch_request_method_not_found():
@@ -122,7 +117,7 @@ def test_dispatch_to_response_pure_notification():
         schema=global_schema,
         request='{"jsonrpc": "2.0", "method": "ping"}',
     )
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
@@ -272,7 +267,7 @@ def test_examples_notification():
         extra=None,
         deserialize=default_deserialize,
     )
-    assert isinstance(response, NoResponse)
+    assert response is None
 
     # Second example
     response = dispatch_to_response_pure(
@@ -281,7 +276,7 @@ def test_examples_notification():
         extra=None,
         deserialize=default_deserialize,
     )
-    assert isinstance(response, NoResponse)
+    assert response is None
 
 
 def test_examples_invalid_json():
