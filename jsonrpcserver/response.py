@@ -40,12 +40,8 @@ class ErrorResponse(NamedTuple):
     id: Any
 
 
-class NoResponse:
-    pass
-
-
 # Union of the two valid response types
-Response = Union[SuccessResponse, ErrorResponse, NoResponse]
+Response = Union[SuccessResponse, ErrorResponse]
 
 
 def ParseErrorResponse(data: Any) -> ErrorResponse:
@@ -78,19 +74,10 @@ def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
 
 def from_result(result: Result, id: Any) -> Response:
     """Converts a Result to a Response (by adding the request id)."""
-    if id is NOID:
-        return NoResponse()
-    elif isinstance(result, Success):
+    if isinstance(result, Success):
         return SuccessResponse(**result._asdict(), id=id)
     else:
         return ErrorResponse(**result._asdict(), id=id)
-
-
-def should_respond(response: Union[Response, List[Response]]) -> bool:
-    return isinstance(response, NoResponse) or (
-        isinstance(response, list)
-        and not all(isinstance(r, NoResponse) for r in response)
-    )
 
 
 def to_serializable(

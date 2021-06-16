@@ -1,14 +1,13 @@
 """TODO: Add tests for dispatch_requests (non-pure version)"""
-from json import dumps as serialize
+import json
 from unittest.mock import sentinel
 
 from jsonrpcserver import status
 from jsonrpcserver.dispatcher import (
     Context,
     create_requests,
-    default_deserialize,
-    dispatch,
-    dispatch_pure,
+    dispatch_to_response,
+    dispatch_to_response_pure,
     dispatch_request,
     global_schema,
 )
@@ -102,44 +101,44 @@ def test_create_requests_batch():
 # Dispatch pure
 
 
-def test_dispatch_pure():
-    response = dispatch_pure(
-        Methods(ping),
-        None,
-        default_deserialize,
-        global_schema,
-        '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+def test_dispatch_to_response_pure():
+    response = dispatch_to_response_pure(
+        methods=Methods(ping),
+        extra=None,
+        deserializer=json.loads,
+        schema=global_schema,
+        request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == "pong"
     assert response.id == 1
 
 
-def test_dispatch_pure_notification():
-    response = dispatch_pure(
-        '{"jsonrpc": "2.0", "method": "ping"}',
-        Methods(ping),
-        None,
-        default_deserialize,
-        global_schema,
+def test_dispatch_to_response_pure_notification():
+    response = dispatch_to_response_pure(
+        methods=Methods(ping),
+        extra=None,
+        deserializer=json.loads,
+        schema=global_schema,
+        request='{"jsonrpc": "2.0", "method": "ping"}',
     )
     assert isinstance(response, NoResponse)
 
 
-def test_dispatch_pure_notification_invalid_jsonrpc():
-    response = dispatch_pure(
+def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
+    response = dispatch_to_response_pure(
         Methods(ping),
         '{"jsonrpc": "0", "method": "notify"}',
         extra=None,
-        deserialize=default_deserialize,
+        deserialize=json.loads,
         schema=global_schema,
     )
     assert isinstance(response, ErrorResponse)
 
 
-def test_dispatch_pure_invalid_json():
+def test_dispatch_to_response_pure_invalid_json():
     """Unable to parse, must return an error"""
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         Methods(ping),
         "{",
         extra=None,
@@ -149,20 +148,20 @@ def test_dispatch_pure_invalid_json():
     assert isinstance(response, ErrorResponse)
 
 
-def test_dispatch_pure_invalid_jsonrpc():
+def test_dispatch_to_response_pure_invalid_jsonrpc():
     """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         "{}", Methods(ping), extra=None, deserialize=default_deserialize
     )
     assert isinstance(response, ErrorResponse)
 
 
-def test_dispatch_pure_invalid_params():
+def test_dispatch_to_response_pure_invalid_params():
     def foo(context: Context, colour: str):
         if colour not in ("orange", "red", "yellow"):
             return InvalidParamsResponse(id=context.request.id)
 
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
         Methods(foo),
         extra=None,
@@ -171,11 +170,11 @@ def test_dispatch_pure_invalid_params():
     assert isinstance(response, ErrorResponse)
 
 
-def test_dispatch_pure_invalid_params_count():
+def test_dispatch_to_response_pure_invalid_params_count():
     def foo(context: Context, colour: str, size: str):
         pass
 
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
         Methods(foo),
         extra=None,
@@ -185,11 +184,11 @@ def test_dispatch_pure_invalid_params_count():
     assert response.data == "missing a required argument: 'size'"
 
 
-# def test_dispatch_pure_invalid_params_notification():
+# def test_dispatch_to_response_pure_invalid_params_notification():
 #    def foo(bar):
 #        if bar < 0:
 #            raise InvalidRequestError("bar must be greater than zero")
-#    response = dispatch_pure(str(Notify("foo")), method
+#    response = dispatch_to_response_pure(str(Notify("foo")), method
 
 
 # dispatch
@@ -222,7 +221,7 @@ def test_examples_positionals():
     def subtract(context: Context, minuend, subtrahend):
         return Success(minuend - subtrahend)
 
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
         Methods(subtract),
         extra=None,
@@ -232,7 +231,7 @@ def test_examples_positionals():
     assert response.result == 19
 
     # Second example
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
         Methods(subtract),
         extra=None,
@@ -246,7 +245,7 @@ def test_examples_nameds():
     def subtract(context: Context, **kwargs):
         return Success(kwargs["minuend"] - kwargs["subtrahend"])
 
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
         Methods(subtract),
         extra=None,
@@ -256,7 +255,7 @@ def test_examples_nameds():
     assert response.result == 19
 
     # Second example
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
         Methods(subtract),
         extra=None,
@@ -267,7 +266,7 @@ def test_examples_nameds():
 
 
 def test_examples_notification():
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
         Methods(update=lambda: None, foobar=lambda: None),
         extra=None,
@@ -276,7 +275,7 @@ def test_examples_notification():
     assert isinstance(response, NoResponse)
 
     # Second example
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '{"jsonrpc": "2.0", "method": "foobar"}',
         Methods(update=lambda: None, foobar=lambda: None),
         extra=None,
@@ -286,7 +285,7 @@ def test_examples_notification():
 
 
 def test_examples_invalid_json():
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         '[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
         Methods(ping),
         extra=None,
@@ -298,7 +297,7 @@ def test_examples_invalid_json():
 
 def test_examples_empty_array():
     # This is an invalid JSON-RPC request, should return an error.
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         "[]",
         Methods(ping),
         extra=None,
@@ -313,7 +312,7 @@ def test_examples_invalid_jsonrpc_batch():
     We break the spec here, by not validating each request in the batch individually.
     The examples are expecting a batch response full of error responses.
     """
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         "[1]",
         Methods(ping),
         extra=None,
@@ -328,7 +327,7 @@ def test_examples_multiple_invalid_jsonrpc():
     We break the spec here, by not validating each request in the batch individually.
     The examples are expecting a batch response full of error responses.
     """
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         "[1, 2, 3]",
         Methods(ping),
         extra=None,
@@ -368,7 +367,7 @@ def test_examples_mixed_requests_and_notifications():
             {"jsonrpc": "2.0", "method": "get_data", "id": "9"},
         ]
     )
-    response = dispatch_pure(
+    response = dispatch_to_response_pure(
         requests,
         methods,
         extra=None,

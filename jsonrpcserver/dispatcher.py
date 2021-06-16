@@ -1,14 +1,13 @@
 """
 Dispatcher.
 
-The dispatch() function takes a JSON-RPC request, logs it, calls the appropriate method,
-then logs and returns the response.
+The dispatch() function takes a JSON-RPC request, calls the appropriate method,
+then returns the response.
 """
-import logging
+import json
 import os
+import logging
 from configparser import ConfigParser
-from json import JSONDecodeError
-from json import loads as default_deserialize
 from typing import (
     Any,
     Callable,
@@ -34,8 +33,7 @@ from .response import (
     Response,
     ServerErrorResponse,
     from_result,
-    should_respond,
-    to_json,
+    to_serializable,
 )
 from .result import InvalidParams, InternalError, Result
 
@@ -44,14 +42,8 @@ Context = NamedTuple(
     [("request", Request), ("extra", Any)],
 )
 
-request_logger = logging.getLogger(__name__ + ".request")
-response_logger = logging.getLogger(__name__ + ".response")
-
-DEFAULT_REQUEST_LOG_FORMAT = "--> %(message)s"
-DEFAULT_RESPONSE_LOG_FORMAT = "<-- %(message)s"
-
 # Prepare the jsonschema validator
-global_schema = default_deserialize(resource_string(__name__, "request-schema.json"))
+global_schema = json.loads(resource_string(__name__, "request-schema.json"))
 klass = validator_for(global_schema)
 klass.check_schema(global_schema)
 validator = klass(global_schema)
@@ -114,14 +106,29 @@ def dispatch_request(methods: Methods, extra: Any, request: Request) -> Response
         return MethodNotFoundResponse(request.method, request.id)
 
 
+def all_are_notifications(requests: Union[Response, List[Response]]) -> bool:
+    """
+    Returns true if the request is a notification, or in the case of a batch
+    request, if all requests are notifications. JSON-RPC must not respond to a
+    notification or list of notifications.
+    """
+    return (
+        all(request.id is NOID for request in requests)
+        if isinstance(requests, list)
+        else request.id is NOID,
+    )
+
+
 def dispatch_requests(
     methods: Methods, extra: Any, requests: Union[Request, List[Request]]
-) -> Union[Response, List[Response]]:
-    return (
+) -> Union[Response, List[Response], None]:
+    response = filter(
+        lambda response: response.id is NOID,
         [dispatch_request(methods, extra, request) for request in requests]
         if isinstance(requests, list)
-        else dispatch_request(methods, extra, cast(Request, requests))
+        else dispatch_request(methods, extra, cast(Request, requests)),
     )
+    return None if all_are_notifications(requests) else response
 
 
 def create_requests(requests: Union[Dict, List[Dict]]) -> Union[Request, List[Request]]:
@@ -161,16 +168,16 @@ def validate(schema: dict, request: Union[Dict, List]) -> Union[Dict, List]:
     return request
 
 
-def dispatch_pure(
-    methods: Methods, extra: Any, deserialize: Callable, schema: dict, request: str
-) -> Union[Response, List[Response]]:
+def dispatch_to_response_pure(
+    *, methods: Methods, extra: Any, deserializer: Callable, schema: dict, request: str
+) -> Union[Response, List[Response], None]:
     """
     Dispatch a JSON-serialized request string to methods.
 
     Maps a request string to Response(s).
 
-    Pure version of dispatch - no defaults, globals or logging. Use this
-    function for testing, not dispatch.
+    Pure version of dispatch - no defaults, globals, or logging. Use this
+    function for testing, not dispatch_to_response or dispatch.
 
     Args:
         methods: Collection of methods that can be called.
@@ -180,12 +187,12 @@ def dispatch_pure(
         request: The incoming request string.
 
     Returns:
-        A Response.
+        A Response, list of Responses, or None if all requests were notifications.
     """
     try:
         try:
-            deserialized = deserialize(request)
-        except JSONDecodeError as exc:
+            deserialized = deserializer(request)
+        except json.JSONDecodeError as exc:
             return ParseErrorResponse(str(exc))
         try:
             validate(deserialized, schema)
@@ -198,22 +205,23 @@ def dispatch_pure(
 
 
 @apply_config(config)
-def dispatch(
-    methods: Methods,
+def dispatch_to_response(
     request: str,
     *,
+    methods: Methods = None,
     extra: Optional[Any] = None,
-    deserialize: Callable = default_deserialize,
+    deserializer: Callable = json.loads,
 ) -> Union[Response, List[Response]]:
     """
     Dispatch a JSON-serialized request to methods.
 
-    Maps a request string to Response(s).
+    Maps a request string to a Response (or list of Responses).
 
-    This is the main public method, which wraps dispatch_pure - adding default
-    values, globals, logging.
+    This is a public method which wraps dispatch_pure, adding default values
+    and globals.
 
     Args:
+        request: The JSON-RPC request string.
         methods: Collection of methods that can be called. If not passed, uses
             the internal methods object.
         request: The incoming request string.
@@ -226,18 +234,26 @@ def dispatch(
     Examples:
         >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', [ping])
     """
-    try:
-        request_logger.info(request)
-        response = dispatch_pure(
-            global_methods if methods is None else methods,
-            extra,
-            deserialize,
-            global_schema,
-            request,
-        )
-        if should_respond(response):
-            response_logger.info(to_json(cast(Response, response)))
-        return response
-    except Exception as exc:
-        logging.exception(exc)
-        return ServerErrorResponse(str(exc), id=None)
+    return dispatch_pure(
+        methods=global_methods if methods is None else methods,
+        extra=extra,
+        deserializer=deserializer,
+        schema=global_schema,
+        request=request,
+    )
+
+
+def dispatch_to_json(
+    *args: Any, serializer: Callable = json.loads, **kwargs: Any
+) -> str:
+    """
+    This is the main public method, it goes through the entire JSON-RPC process
+    - taking a JSON-RPC request string, dispatching it, converting the
+    Response(s) into a serializable value and then serializing that to return a
+    JSON-RPC response string.
+    """
+    return serializer(to_serializable(dispatch_to_response(*args, **kwargs)))
+
+
+# "dispatch" is an alias of dispatch_to_json.
+dispatch = dispatch_to_json

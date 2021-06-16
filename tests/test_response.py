@@ -15,7 +15,7 @@ from jsonrpcserver.response import (
     SuccessResponse,
     UNSPECIFIED,
     from_result,
-    to_dict,
+    to_serializable,
 )
 from jsonrpcserver.result import Success, Error, InvalidParams
 
