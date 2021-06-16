@@ -101,7 +101,7 @@ def dispatch_request(
             extract_args(request, extra),
             extract_kwargs(request),
         )
-        return None if request.id is None else from_result(result, request.id)
+        return None if request.id is NOID else from_result(result, request.id)
     else:
         return MethodNotFoundResponse(request.method, request.id)
 
