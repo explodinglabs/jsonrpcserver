@@ -1,7 +1,3 @@
-"""
-TODO: Test to_json with a non-json-serializable.
-TODO: Test to_json with batch responses.
-"""
 from unittest.mock import sentinel
 
 from jsonrpcserver.request import NOID
@@ -40,7 +36,7 @@ def test_ParseErrorResponse():
     assert response.code == -32700
     assert response.message == "Parse error"
     assert response.data == sentinel.data
-    assert response.id == NOID
+    assert response.id == None
 
 
 def test_InvalidRequestResponse():
@@ -48,7 +44,7 @@ def test_InvalidRequestResponse():
     assert response.code == -32600
     assert response.message == "Invalid request"
     assert response.data == sentinel.data
-    assert response.id == NOID
+    assert response.id == None
 
 
 def test_MethodNotFoundResponse():
@@ -59,18 +55,10 @@ def test_MethodNotFoundResponse():
     assert response.id == sentinel.id
 
 
-def test_InternalErrorResponse():
-    response = InternalErrorResponse(sentinel.data, sentinel.id)
-    assert response.code == -32603
-    assert response.message == "Internal error"
-    assert response.data == sentinel.data
-    assert response.id == sentinel.id
-
-
 def test_ServerErrorResponse():
     response = ServerErrorResponse(sentinel.data, sentinel.id)
     assert response.code == -32000
-    assert response.message == "Internal error"
+    assert response.message == "Server error"
     assert response.data == sentinel.data
     assert response.id == sentinel.id
 
@@ -95,19 +83,19 @@ def test_from_result_Error():
 
 
 def test_from_result_InvalidParams():
-    response = from_result(InvalidParams(sentinel.message, sentinel.data), sentinel.id,)
+    response = from_result(InvalidParams(sentinel.data), sentinel.id)
     assert isinstance(response, ErrorResponse) == True
     assert response.code == -32602
-    assert response.message == sentinel.message
+    assert response.message == "Invalid params"
     assert response.data == sentinel.data
     assert response.id == sentinel.id
 
 
 def test_from_result_InvalidParams_no_data():
-    response = from_result(InvalidParams(sentinel.message), sentinel.id)
+    response = from_result(InvalidParams(), sentinel.id)
     assert isinstance(response, ErrorResponse) == True
     assert response.code == -32602
-    assert response.message == sentinel.message
+    assert response.message == "Invalid params"
     assert response.data == UNSPECIFIED
     assert response.id == sentinel.id
 

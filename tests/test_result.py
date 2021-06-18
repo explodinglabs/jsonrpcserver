@@ -8,28 +8,28 @@ def test_Success():
 
 
 def test_Error():
-    result = Error(-1, "foo")
-    assert result.code == -1
-    assert result.message == "foo"
+    result = Error(sentinel.code, sentinel.message)
+    assert result.code == sentinel.code
+    assert result.message == sentinel.message
     assert result.data == UNSPECIFIED
 
 
 def test_Error_with_data():
-    result = Error(-1, "foo", sentinel.data)
-    assert result.code == -1
-    assert result.message == "foo"
+    result = Error(sentinel.code, sentinel.message, sentinel.data)
+    assert result.code == sentinel.code
+    assert result.message == sentinel.message
     assert result.data == sentinel.data
 
 
 def test_InvalidParams():
-    result = InvalidParams("foo")
+    result = InvalidParams(sentinel.data)
     assert result.code == -32602
-    assert result.message == "foo"
-    assert result.data == UNSPECIFIED
+    assert result.message == "Invalid params"
+    assert result.data == sentinel.data
 
 
 def test_InvalidParams_with_data():
-    result = InvalidParams("foo", sentinel.data)
+    result = InvalidParams(sentinel.data)
     assert result.code == -32602
-    assert result.message == "foo"
+    assert result.message == "Invalid params"
     assert result.data == sentinel.data

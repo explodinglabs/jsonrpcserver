@@ -6,14 +6,21 @@ from jsonrpcserver import status
 from jsonrpcserver.dispatcher import (
     Context,
     create_requests,
-    dispatch_to_response_pure,
     dispatch_request,
-    global_schema,
+    dispatch_to_response,
+    dispatch_to_response_pure,
 )
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.result import Result, Success
 from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
+
+
+# def test_dispatch_to_response_pure_invalid_params_notification():
+#    def foo(bar):
+#        if bar < 0:
+#            raise InvalidRequestError("bar must be greater than zero")
+#    response = dispatch_to_response_pure(str(Notify("foo")), method
 
 
 def ping(context: Context) -> Result:
@@ -93,7 +100,7 @@ def test_create_requests_batch():
     assert iter(requests)
 
 
-# Dispatch pure
+# dispatch_to_response_pure
 
 
 def test_dispatch_to_response_pure():
@@ -101,7 +108,6 @@ def test_dispatch_to_response_pure():
         methods=Methods(ping),
         extra=None,
         deserializer=json.loads,
-        schema=global_schema,
         request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
     )
     assert isinstance(response, SuccessResponse)
@@ -114,7 +120,6 @@ def test_dispatch_to_response_pure_notification():
         methods=Methods(ping),
         extra=None,
         deserializer=json.loads,
-        schema=global_schema,
         request='{"jsonrpc": "2.0", "method": "ping"}',
     )
     assert response is None
@@ -122,11 +127,10 @@ def test_dispatch_to_response_pure_notification():
 
 def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
     response = dispatch_to_response_pure(
-        Methods(ping),
-        '{"jsonrpc": "0", "method": "notify"}',
+        methods=Methods(ping),
         extra=None,
-        deserialize=json.loads,
-        schema=global_schema,
+        deserializer=json.loads,
+        request='{"jsonrpc": "0", "method": "notify"}',
     )
     assert isinstance(response, ErrorResponse)
 
@@ -134,11 +138,7 @@ def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
 def test_dispatch_to_response_pure_invalid_json():
     """Unable to parse, must return an error"""
     response = dispatch_to_response_pure(
-        Methods(ping),
-        "{",
-        extra=None,
-        deserialize=default_deserialize,
-        schema=global_schema,
+        methods=Methods(ping), extra=None, deserializer=json.loads, request="{"
     )
     assert isinstance(response, ErrorResponse)
 
@@ -146,7 +146,7 @@ def test_dispatch_to_response_pure_invalid_json():
 def test_dispatch_to_response_pure_invalid_jsonrpc():
     """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
     response = dispatch_to_response_pure(
-        "{}", Methods(ping), extra=None, deserialize=default_deserialize
+        methods=Methods(ping), extra=None, deserializer=json.loads, request="{}"
     )
     assert isinstance(response, ErrorResponse)
 
@@ -157,10 +157,10 @@ def test_dispatch_to_response_pure_invalid_params():
             return InvalidParamsResponse(id=context.request.id)
 
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
-        Methods(foo),
+        methods=Methods(foo),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
     )
     assert isinstance(response, ErrorResponse)
 
@@ -170,43 +170,30 @@ def test_dispatch_to_response_pure_invalid_params_count():
         pass
 
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
-        Methods(foo),
+        methods=Methods(foo),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
     )
     assert isinstance(response, ErrorResponse)
     assert response.data == "missing a required argument: 'size'"
 
 
-# def test_dispatch_to_response_pure_invalid_params_notification():
-#    def foo(bar):
-#        if bar < 0:
-#            raise InvalidRequestError("bar must be greater than zero")
-#    response = dispatch_to_response_pure(str(Notify("foo")), method
+# dispatch_to_response
 
 
-# dispatch
-
-
-def test_dispatch():
-    response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', Methods(ping))
+def test_dispatch_to_response():
+    response = dispatch_to_response(
+        '{"jsonrpc": "2.0", "method": "ping", "id": 1}', Methods(ping)
+    )
     assert response.result == "pong"
 
 
-def test_dispatch_with_global_methods():
+def test_dispatch_to_response_with_global_methods():
     global_methods.items = {}
     global_methods.add(ping)
-    response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+    response = dispatch_to_response('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
     assert response.result == "pong"
-
-
-def test_dispatch_basic_logging():
-    response = dispatch(
-        '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-        Methods(ping),
-        basic_logging=True,
-    )
 
 
 # The remaining tests are direct from the examples in the specification
@@ -217,20 +204,20 @@ def test_examples_positionals():
         return Success(minuend - subtrahend)
 
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
-        Methods(subtract),
+        methods=Methods(subtract),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == 19
 
     # Second example
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
-        Methods(subtract),
+        methods=Methods(subtract),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == -19
@@ -241,20 +228,20 @@ def test_examples_nameds():
         return Success(kwargs["minuend"] - kwargs["subtrahend"])
 
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
-        Methods(subtract),
+        methods=Methods(subtract),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == 19
 
     # Second example
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
-        Methods(subtract),
+        methods=Methods(subtract),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
     )
     assert isinstance(response, SuccessResponse)
     assert response.result == 19
@@ -262,29 +249,29 @@ def test_examples_nameds():
 
 def test_examples_notification():
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
-        Methods(update=lambda: None, foobar=lambda: None),
+        methods=Methods(update=lambda: None, foobar=lambda: None),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
     )
     assert response is None
 
     # Second example
     response = dispatch_to_response_pure(
-        '{"jsonrpc": "2.0", "method": "foobar"}',
-        Methods(update=lambda: None, foobar=lambda: None),
+        methods=Methods(update=lambda: None, foobar=lambda: None),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='{"jsonrpc": "2.0", "method": "foobar"}',
     )
     assert response is None
 
 
 def test_examples_invalid_json():
     response = dispatch_to_response_pure(
-        '[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
-        Methods(ping),
+        methods=Methods(ping),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
+        request='[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_PARSE_ERROR_CODE
@@ -293,10 +280,10 @@ def test_examples_invalid_json():
 def test_examples_empty_array():
     # This is an invalid JSON-RPC request, should return an error.
     response = dispatch_to_response_pure(
-        "[]",
-        Methods(ping),
+        request="[]",
+        methods=Methods(ping),
         extra=None,
-        deserialize=default_deserialize,
+        deserializer=json.loads,
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -308,10 +295,7 @@ def test_examples_invalid_jsonrpc_batch():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_to_response_pure(
-        "[1]",
-        Methods(ping),
-        extra=None,
-        deserialize=default_deserialize,
+        methods=Methods(ping), extra=None, deserializer=json.loads, request="[1]"
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -323,10 +307,7 @@ def test_examples_multiple_invalid_jsonrpc():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_to_response_pure(
-        "[1, 2, 3]",
-        Methods(ping),
-        extra=None,
-        deserialize=default_deserialize,
+        methods=Methods(ping), extra=None, deserializer=json.loads, request="[1, 2, 3]"
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -348,7 +329,7 @@ def test_examples_mixed_requests_and_notifications():
         subtract=lambda _, *args: Success(args[0] - sum(args[1:])),
         get_data=lambda _: Success(["hello", 5]),
     )
-    requests = serialize(
+    requests = json.dumps(
         [
             {"jsonrpc": "2.0", "method": "sum", "params": [1, 2, 4], "id": "1"},
             {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
@@ -363,20 +344,24 @@ def test_examples_mixed_requests_and_notifications():
         ]
     )
     response = dispatch_to_response_pure(
-        requests,
-        methods,
-        extra=None,
-        deserialize=default_deserialize,
+        methods=methods, extra=None, deserializer=json.loads, request=requests
     )
     expected = [
-        {"jsonrpc": "2.0", "result": 7, "id": "1"},
-        {"jsonrpc": "2.0", "result": 19, "id": "2"},
-        {
-            "jsonrpc": "2.0",
-            "error": {"code": -32601, "message": "Method not found", "data": "foo.get"},
-            "id": "5",
-        },
-        {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"},
+        SuccessResponse(
+            result=7, id="1"
+        ),  # {"jsonrpc": "2.0", "result": 7, "id": "1"},
+        SuccessResponse(
+            result=19, id="2"
+        ),  # {"jsonrpc": "2.0", "result": 19, "id": "2"},
+        ErrorResponse(code=-32601, message="Method not found", data="foo.get", id="5"),
+        # {
+        #     "jsonrpc": "2.0",
+        #     "error": {"code": -32601, "message": "Method not found", "data": "foo.get"},
+        #     "id": "5",
+        # },
+        SuccessResponse(
+            result=["hello", 5], id="9"
+        ),  # {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"},
     ]
     assert isinstance(response, list)
     for r in response:

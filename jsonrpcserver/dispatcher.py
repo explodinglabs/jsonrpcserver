@@ -1,8 +1,8 @@
 """
 Dispatcher.
 
-The dispatch() function takes a JSON-RPC request, calls the appropriate method,
-then returns the response.
+The dispatch() function takes a JSON-RPC request, calls the appropriate method, then
+returns the response.
 """
 import json
 import os
@@ -16,13 +16,12 @@ from typing import (
     NamedTuple,
     Optional,
     Union,
-    cast,
 )
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
 from jsonschema.validators import validator_for  # type: ignore
-from pkg_resources import resource_string
+from pkg_resources import resource_string  # type: ignore
 
 from .methods import Methods, global_methods, validate_args
 from .request import Request, NOID
@@ -106,37 +105,31 @@ def dispatch_request(
         return MethodNotFoundResponse(request.method, request.id)
 
 
-def all_are_notifications(requests: Union[Request, List[Request]]) -> bool:
-    """
-    Returns true if the request is a notification, or in the case of a batch
-    request, if all requests are notifications. JSON-RPC must not respond to a
-    notification or list of notifications.
-    """
-    return (
-        all(request.id is NOID for request in requests)
-        if isinstance(requests, list)
-        else requests.id is NOID
-    )
+def none_if_empty(x: Any) -> Any:
+    return None if not x else x
+
+
+def remove_nones(responses: List[Union[None, Response]]) -> Union[List[Response]]:
+    return [x for x in responses if x is not None]
 
 
 def dispatch_requests(
     methods: Methods, extra: Any, requests: Union[Request, List[Request]]
-) -> Union[Response, List[Response], None]:
-    """
-    Important: The methods must be called, even if all requests are
-    notifications.
-    """
-    response = (
-        list(
-            filter(
-                lambda r: r is not None,
-                [dispatch_request(methods, extra, request) for request in requests],
-            )
+) -> Union[None, Response, List[Response]]:
+    """Important: The methods must be called. If all requests are notifications."""
+    return (
+        # Nones (notifications) must be removed - "A Response object SHOULD exist for
+        # each Request object, except that there SHOULD NOT be any Response objects for
+        # notifications."
+        # Also should not return an empty list, "If there are no Response objects
+        # contained within the Response array as it is to be sent to the client, the
+        # server MUST NOT return an empty Array and should return nothing at all."
+        none_if_empty(
+            remove_nones([dispatch_request(methods, extra, r) for r in requests])
         )
         if isinstance(requests, list)
-        else dispatch_request(methods, extra, cast(Request, requests))
+        else dispatch_request(methods, extra, requests)
     )
-    return None if all_are_notifications(requests) else response
 
 
 def create_requests(requests: Union[Dict, List[Dict]]) -> Union[Request, List[Request]]:
@@ -158,16 +151,17 @@ def create_requests(requests: Union[Dict, List[Dict]]) -> Union[Request, List[Re
     )
 
 
-def validate(schema: dict, request: Union[Dict, List]) -> Union[Dict, List]:
+def validate(request: Union[Dict, List]) -> Union[Dict, List]:
     """
-    Wraps jsonschema.validate, returning the same object passed in if
-    successful.
+    Wraps jsonschema.validate, returning the same object passed in if successful.
 
     Raises an exception if invalid.
 
     Args:
         request: The deserialized-from-json request.
-        schema: The jsonschema schema to validate against.
+
+    Returns:
+        The same object passed in.
 
     Raises:
         jsonschema.ValidationError
@@ -177,21 +171,20 @@ def validate(schema: dict, request: Union[Dict, List]) -> Union[Dict, List]:
 
 
 def dispatch_to_response_pure(
-    *, methods: Methods, extra: Any, deserializer: Callable, schema: dict, request: str
+    *, methods: Methods, extra: Any, deserializer: Callable, request: str
 ) -> Union[Response, List[Response], None]:
     """
     Dispatch a JSON-serialized request string to methods.
 
     Maps a request string to Response(s).
 
-    Pure version of dispatch - no defaults, globals, or logging. Use this
-    function for testing, not dispatch_to_response or dispatch.
+    Pure version of dispatch - no defaults, globals, or logging. Use this function for
+    testing, not dispatch_to_response or dispatch.
 
     Args:
         methods: Collection of methods that can be called.
         extra: Will be included in the context dictionary passed to methods.
         deserialize: Function that is used to deserialize data.
-        schema:
         request: The incoming request string.
 
     Returns:
@@ -203,9 +196,9 @@ def dispatch_to_response_pure(
         except json.JSONDecodeError as exc:
             return ParseErrorResponse(str(exc))
         try:
-            validate(deserialized, schema)
+            validate(deserialized)
         except ValidationError as exc:
-            return InvalidRequestResponse(str(exc))
+            return InvalidRequestResponse("The request failed schema validation")
         return dispatch_requests(methods, extra, create_requests(deserialized))
     except Exception as exc:
         logging.exception(exc)
@@ -215,8 +208,8 @@ def dispatch_to_response_pure(
 @apply_config(config)
 def dispatch_to_response(
     request: str,
-    *,
     methods: Methods = None,
+    *,
     extra: Optional[Any] = None,
     deserializer: Callable = json.loads,
 ) -> Union[Response, List[Response], None]:
@@ -225,13 +218,13 @@ def dispatch_to_response(
 
     Maps a request string to a Response (or list of Responses).
 
-    This is a public method which wraps dispatch_to_response_pure, adding
-    default values and globals.
+    This is a public method which wraps dispatch_to_response_pure, adding default values
+    and globals.
 
     Args:
         request: The JSON-RPC request string.
-        methods: Collection of methods that can be called. If not passed, uses
-            the internal methods object.
+        methods: Collection of methods that can be called. If not passed, uses the
+            internal methods object.
         request: The incoming request string.
         extra: Extra data available inside methods (as context.extra).
         deserialize: Function that is used to deserialize data.
@@ -246,7 +239,6 @@ def dispatch_to_response(
         methods=global_methods if methods is None else methods,
         extra=extra,
         deserializer=deserializer,
-        schema=global_schema,
         request=request,
     )
 
@@ -256,9 +248,9 @@ def dispatch_to_json(
 ) -> str:
     """
     This is the main public method, it goes through the entire JSON-RPC process
-    - taking a JSON-RPC request string, dispatching it, converting the
-    Response(s) into a serializable value and then serializing that to return a
-    JSON-RPC response string.
+    - taking a JSON-RPC request string, dispatching it, converting the Response(s) into
+    a serializable value and then serializing that to return a JSON-RPC response
+    string.
     """
     return serializer(to_serializable(dispatch_to_response(*args, **kwargs)))
 

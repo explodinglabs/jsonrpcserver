@@ -72,10 +72,11 @@ def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
     return ErrorResponse(status.JSONRPC_SERVER_ERROR_CODE, "Server error", data, id)
 
 
-def from_result(result: Result, id: Any) -> Response:
+def from_result(result: Result, id: Any) -> Union[Response, None]:
     """Converts a Result to a Response (by adding the request id)."""
-    assert id is not NOID  # Response can't be a notification.
-    if isinstance(result, Success):
+    if id is NOID:  # Response can't be a notification.
+        return None
+    elif isinstance(result, Success):
         return SuccessResponse(**result._asdict(), id=id)
     else:
         return ErrorResponse(**result._asdict(), id=id)
