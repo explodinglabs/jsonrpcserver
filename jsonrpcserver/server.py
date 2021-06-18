@@ -11,8 +11,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         request = self.rfile.read(int(str(self.headers["Content-Length"]))).decode()
         response = dispatch(request)
         # Return response
-        if response.wanted:
-            self.send_response(response.http_status)
+        if response is not None:
+            self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(str(response).encode())

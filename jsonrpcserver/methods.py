@@ -1,5 +1,6 @@
 """
-The "methods" object holds the list of functions that can be called by remote calls.
+The "methods" object holds the list of functions that can be called by remote
+calls.
 
 Add as many methods as needed.
 
@@ -70,7 +71,7 @@ class Methods:
             return self._batch_add(*args, **kwargs)
 
     def _parameterized_add(self, name: str) -> Callable:
-        def decorator(method):
+        def decorator(method: Callable) -> Callable:
             assert callable(method)
             self.items[name] = method
 

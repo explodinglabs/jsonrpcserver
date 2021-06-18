@@ -9,7 +9,12 @@
 - Removed "convert camel case" option.
 - Removed the custom exceptions. From methods, return an ErrorResponse instead
   of raising an exception.
-- Methods should now return a Response object, and not raise exceptions.
+- Methods should now return a Response object, and not raise exceptions to
+  return a JSON-RPC error.
+- Errors have been renamed to match the JSON-RPC spec (parse error, invalid
+  request, method not found, invalid params, internal error and server error).
+- Internal error JSON-RPC code fixed
+- Removed trim_log_values
 
 Refactoring/internal changes:
 
