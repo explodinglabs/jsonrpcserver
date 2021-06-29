@@ -182,7 +182,9 @@ def dispatch_to_response_pure(
     try:
         try:
             deserialized = deserializer(request)
-        except json.JSONDecodeError as exc:
+        # We don't know which deserializer will be used, so the specific exception that
+        # will be raised is unknown. Any exception is a parse error.
+        except Exception as exc:
             return ParseErrorResponse(str(exc))
         try:
             validate(deserialized)
