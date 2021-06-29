@@ -11,6 +11,7 @@ jobs:
       with:
         python-version: 3.8
     - run: |
+        pip install --upgrade pip
         pip install black==21.6b0 pylint==v3.0.0a3 mypy==v0.902
         black --diff --check jsonrpcserver
         pylint --disable=all --enable=unused-import jsonrpcserver
