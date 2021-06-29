@@ -1,3 +1,4 @@
+# type: ignore
 """Asynchronous dispatch"""
 
 import asyncio
