@@ -1,10 +1,10 @@
 """TODO: Add tests for dispatch_requests (non-pure version)"""
 import json
+from typing import Any
 from unittest.mock import sentinel
 
 from jsonrpcserver import status
 from jsonrpcserver.dispatcher import (
-    Context,
     create_requests,
     dispatch_request,
     dispatch_to_response,
@@ -23,7 +23,7 @@ from jsonrpcserver.response import ErrorResponse, SuccessResponse
 #    response = dispatch_to_response_pure(str(Notify("foo")), method
 
 
-def ping(context: Context) -> Result:
+def ping() -> Result:
     return Success("pong")
 
 
@@ -31,13 +31,17 @@ def ping(context: Context) -> Result:
 
 
 def test_dispatch_request_success_result():
-    response = dispatch_request(Methods(ping), None, Request("ping", [], 1))
+    response = dispatch_request(
+        methods=Methods(ping), context=None, request=Request("ping", [], 1)
+    )
     assert isinstance(response, SuccessResponse)
     assert response.result == "pong"
 
 
 def test_dispatch_request_notification():
-    response = dispatch_request(Methods(ping), None, Request("ping", [], NOID))
+    response = dispatch_request(
+        methods=Methods(ping), context=None, request=Request("ping", [], NOID)
+    )
     assert response is None
 
 
@@ -52,12 +56,16 @@ def test_dispatch_request_notification_failure():
     def fail(request: Request):
         1 / 0
 
-    response = dispatch_request(Methods(fail), None, Request("fail", [], NOID))
+    response = dispatch_request(
+        methods=Methods(fail), context=None, request=Request("fail", [], NOID)
+    )
     assert response is None
 
 
 def test_dispatch_request_method_not_found():
-    response = dispatch_request(Methods(ping), None, Request("nonexistant", [], 1))
+    response = dispatch_request(
+        methods=Methods(ping), context=None, request=Request("nonexistant", [], 1)
+    )
     assert isinstance(response, ErrorResponse)
     assert response.code == -32601
     assert response.message == "Method not found"
@@ -65,22 +73,24 @@ def test_dispatch_request_method_not_found():
 
 
 def test_dispatch_request_invalid_params():
-    response = dispatch_request(Methods(ping), None, Request("ping", [1], 1))
+    response = dispatch_request(
+        methods=Methods(ping), context=None, request=Request("ping", [1], 1)
+    )
     assert isinstance(response, ErrorResponse)
     assert response.code == -32602
     assert response.message == "Invalid params"
     assert response.id == 1
 
 
-def test_dispatch_request_with_extra():
-    def ping_with_extra(context: Context):
-        assert context.extra is sentinel.extra
+def test_dispatch_request_with_context():
+    def ping_with_context(context: Any):
+        assert context is sentinel.context
         return Success(None)
 
     dispatch_request(
-        Methods(ping_with_extra),
-        sentinel.extra,
-        Request("ping_with_extra", [], 1),
+        methods=Methods(ping_with_context),
+        context=sentinel.context,
+        request=Request("ping_with_context", [], 1),
     )
     # Assert is in the method
 
@@ -106,7 +116,7 @@ def test_create_requests_batch():
 def test_dispatch_to_response_pure():
     response = dispatch_to_response_pure(
         methods=Methods(ping),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
     )
@@ -118,7 +128,7 @@ def test_dispatch_to_response_pure():
 def test_dispatch_to_response_pure_notification():
     response = dispatch_to_response_pure(
         methods=Methods(ping),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "ping"}',
     )
@@ -128,7 +138,7 @@ def test_dispatch_to_response_pure_notification():
 def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
     response = dispatch_to_response_pure(
         methods=Methods(ping),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "0", "method": "notify"}',
     )
@@ -138,7 +148,7 @@ def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
 def test_dispatch_to_response_pure_invalid_json():
     """Unable to parse, must return an error"""
     response = dispatch_to_response_pure(
-        methods=Methods(ping), extra=None, deserializer=json.loads, request="{"
+        methods=Methods(ping), context=None, deserializer=json.loads, request="{"
     )
     assert isinstance(response, ErrorResponse)
 
@@ -146,19 +156,19 @@ def test_dispatch_to_response_pure_invalid_json():
 def test_dispatch_to_response_pure_invalid_jsonrpc():
     """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
     response = dispatch_to_response_pure(
-        methods=Methods(ping), extra=None, deserializer=json.loads, request="{}"
+        methods=Methods(ping), context=None, deserializer=json.loads, request="{}"
     )
     assert isinstance(response, ErrorResponse)
 
 
 def test_dispatch_to_response_pure_invalid_params():
-    def foo(context: Context, colour: str):
+    def foo(colour: str) -> Result:
         if colour not in ("orange", "red", "yellow"):
-            return InvalidParamsResponse(id=context.request.id)
+            return InvalidParams()
 
     response = dispatch_to_response_pure(
         methods=Methods(foo),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
     )
@@ -166,12 +176,12 @@ def test_dispatch_to_response_pure_invalid_params():
 
 
 def test_dispatch_to_response_pure_invalid_params_count():
-    def foo(context: Context, colour: str, size: str):
+    def foo(colour: str, size: str):
         pass
 
     response = dispatch_to_response_pure(
         methods=Methods(foo),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
     )
@@ -200,12 +210,12 @@ def test_dispatch_to_response_with_global_methods():
 
 
 def test_examples_positionals():
-    def subtract(context: Context, minuend, subtrahend):
+    def subtract(minuend, subtrahend):
         return Success(minuend - subtrahend)
 
     response = dispatch_to_response_pure(
         methods=Methods(subtract),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
     )
@@ -215,7 +225,7 @@ def test_examples_positionals():
     # Second example
     response = dispatch_to_response_pure(
         methods=Methods(subtract),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
     )
@@ -224,12 +234,12 @@ def test_examples_positionals():
 
 
 def test_examples_nameds():
-    def subtract(context: Context, **kwargs):
+    def subtract(**kwargs):
         return Success(kwargs["minuend"] - kwargs["subtrahend"])
 
     response = dispatch_to_response_pure(
         methods=Methods(subtract),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
     )
@@ -239,7 +249,7 @@ def test_examples_nameds():
     # Second example
     response = dispatch_to_response_pure(
         methods=Methods(subtract),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
     )
@@ -250,7 +260,7 @@ def test_examples_nameds():
 def test_examples_notification():
     response = dispatch_to_response_pure(
         methods=Methods(update=lambda: None, foobar=lambda: None),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
     )
@@ -259,7 +269,7 @@ def test_examples_notification():
     # Second example
     response = dispatch_to_response_pure(
         methods=Methods(update=lambda: None, foobar=lambda: None),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='{"jsonrpc": "2.0", "method": "foobar"}',
     )
@@ -269,7 +279,7 @@ def test_examples_notification():
 def test_examples_invalid_json():
     response = dispatch_to_response_pure(
         methods=Methods(ping),
-        extra=None,
+        context=None,
         deserializer=json.loads,
         request='[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
     )
@@ -282,7 +292,7 @@ def test_examples_empty_array():
     response = dispatch_to_response_pure(
         request="[]",
         methods=Methods(ping),
-        extra=None,
+        context=None,
         deserializer=json.loads,
     )
     assert isinstance(response, ErrorResponse)
@@ -295,7 +305,7 @@ def test_examples_invalid_jsonrpc_batch():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_to_response_pure(
-        methods=Methods(ping), extra=None, deserializer=json.loads, request="[1]"
+        methods=Methods(ping), context=None, deserializer=json.loads, request="[1]"
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -307,7 +317,10 @@ def test_examples_multiple_invalid_jsonrpc():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_to_response_pure(
-        methods=Methods(ping), extra=None, deserializer=json.loads, request="[1, 2, 3]"
+        methods=Methods(ping),
+        context=None,
+        deserializer=json.loads,
+        request="[1, 2, 3]",
     )
     assert isinstance(response, ErrorResponse)
     assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
@@ -324,10 +337,10 @@ def test_examples_mixed_requests_and_notifications():
         {"foo": "boo"},
     """
     methods = Methods(
-        sum=lambda _, *args: Success(sum(args)),
-        notify_hello=lambda _, *args: Success(19),
-        subtract=lambda _, *args: Success(args[0] - sum(args[1:])),
-        get_data=lambda _: Success(["hello", 5]),
+        sum=lambda *args: Success(sum(args)),
+        notify_hello=lambda *args: Success(19),
+        subtract=lambda *args: Success(args[0] - sum(args[1:])),
+        get_data=lambda: Success(["hello", 5]),
     )
     requests = json.dumps(
         [
@@ -344,7 +357,7 @@ def test_examples_mixed_requests_and_notifications():
         ]
     )
     response = dispatch_to_response_pure(
-        methods=methods, extra=None, deserializer=json.loads, request=requests
+        methods=methods, context=None, deserializer=json.loads, request=requests
     )
     expected = [
         SuccessResponse(

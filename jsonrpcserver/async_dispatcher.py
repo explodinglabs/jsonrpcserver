@@ -11,7 +11,6 @@ from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
 
 from .dispatcher import (
-    Context,
     config,
     create_requests,
     global_schema,
