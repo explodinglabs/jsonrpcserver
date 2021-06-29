@@ -4,12 +4,12 @@ on: [pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Mypy
+    name: Checks
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.x
     - run: |
         pip install --upgrade pip
         pip install black==21.6b0 pylint==v3.0.0a3 mypy==v0.902
