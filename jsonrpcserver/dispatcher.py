@@ -61,7 +61,6 @@ def call(method: Callable, args: list, kwargs: dict) -> Result:
     Returns:
         The Result from the method call.
     """
-    print(method, args, kwargs)
     errors = validate_args(method, *args, **kwargs)
     if errors:
         return InvalidParams(errors)
