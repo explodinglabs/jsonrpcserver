@@ -12,6 +12,6 @@ jobs:
         python-version: 3.8
     - run: |
         pip install black==21.6b0 pylint==v3.0.0a3 mypy==v0.902
-        black --diff --check
+        black --diff --check jsonrpcserver
         pylint --disable=all --enable=unused-import jsonrpcserver
         mypy --disallow-untyped-defs --disallow-untyped-calls --check-untyped-defs jsonrpcserver
