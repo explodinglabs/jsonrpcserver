@@ -8,15 +8,7 @@ import json
 import os
 import logging
 from configparser import ConfigParser
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    NamedTuple,
-    Optional,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Union
 
 from apply_defaults import apply_config  # type: ignore
 from jsonschema import ValidationError  # type: ignore
@@ -35,11 +27,6 @@ from .response import (
     to_serializable,
 )
 from .result import InvalidParams, InternalError, Result
-
-Context = NamedTuple(
-    "Context",
-    [("request", Request), ("extra", Any)],
-)
 
 # Prepare the jsonschema validator
 global_schema = json.loads(resource_string(__name__, "request-schema.json"))
@@ -72,12 +59,9 @@ def call(method: Callable, args: list, kwargs: dict) -> Result:
         return InternalError(str(exc))
 
 
-def extract_args(request: Request, extra: Any) -> list:
-    return (
-        [Context(request, extra)] + request.params
-        if isinstance(request.params, list)
-        else [Context(request, extra)]
-    )
+def extract_args(request: Request, context: Any) -> list:
+    params = request.params if isinstance(request.params, list) else []
+    return [context] + params if context else params
 
 
 def extract_kwargs(request: Request) -> dict:
@@ -85,7 +69,7 @@ def extract_kwargs(request: Request) -> dict:
 
 
 def dispatch_request(
-    methods: Methods, extra: Any, request: Request
+    *, methods: Methods, context: Any, request: Request
 ) -> Union[Response, None]:
     """
     Dispatch a single Request.
@@ -97,7 +81,7 @@ def dispatch_request(
     if request.method in methods.items:
         result = call(
             methods.items[request.method],
-            extract_args(request, extra),
+            extract_args(request, context),
             extract_kwargs(request),
         )
         return None if request.id is NOID else from_result(result, request.id)
@@ -114,7 +98,7 @@ def remove_nones(responses: List[Union[None, Response]]) -> Union[List[Response]
 
 
 def dispatch_requests(
-    methods: Methods, extra: Any, requests: Union[Request, List[Request]]
+    *, methods: Methods, context: Any, requests: Union[Request, List[Request]]
 ) -> Union[None, Response, List[Response]]:
     """Important: The methods must be called. If all requests are notifications."""
     return (
@@ -125,10 +109,15 @@ def dispatch_requests(
         # contained within the Response array as it is to be sent to the client, the
         # server MUST NOT return an empty Array and should return nothing at all."
         none_if_empty(
-            remove_nones([dispatch_request(methods, extra, r) for r in requests])
+            remove_nones(
+                [
+                    dispatch_request(methods=methods, context=context, request=r)
+                    for r in requests
+                ]
+            )
         )
         if isinstance(requests, list)
-        else dispatch_request(methods, extra, requests)
+        else dispatch_request(methods=methods, context=context, request=requests)
     )
 
 
@@ -171,7 +160,7 @@ def validate(request: Union[Dict, List]) -> Union[Dict, List]:
 
 
 def dispatch_to_response_pure(
-    *, methods: Methods, extra: Any, deserializer: Callable, request: str
+    *, methods: Methods, context: Any, deserializer: Callable, request: str
 ) -> Union[Response, List[Response], None]:
     """
     Dispatch a JSON-serialized request string to methods.
@@ -183,7 +172,7 @@ def dispatch_to_response_pure(
 
     Args:
         methods: Collection of methods that can be called.
-        extra: Will be included in the context dictionary passed to methods.
+        context: Will be passed to methods as the first param if not None.
         deserialize: Function that is used to deserialize data.
         request: The incoming request string.
 
@@ -199,7 +188,9 @@ def dispatch_to_response_pure(
             validate(deserialized)
         except ValidationError as exc:
             return InvalidRequestResponse("The request failed schema validation")
-        return dispatch_requests(methods, extra, create_requests(deserialized))
+        return dispatch_requests(
+            methods=methods, context=context, requests=create_requests(deserialized)
+        )
     except Exception as exc:
         logging.exception(exc)
         return ServerErrorResponse(str(exc), None)
@@ -210,7 +201,7 @@ def dispatch_to_response(
     request: str,
     methods: Methods = None,
     *,
-    extra: Optional[Any] = None,
+    context: Any = None,
     deserializer: Callable = json.loads,
 ) -> Union[Response, List[Response], None]:
     """
@@ -226,7 +217,7 @@ def dispatch_to_response(
         methods: Collection of methods that can be called. If not passed, uses the
             internal methods object.
         request: The incoming request string.
-        extra: Extra data available inside methods (as context.extra).
+        context: Will be passed to methods as the first param if not None.
         deserialize: Function that is used to deserialize data.
 
     Returns:
@@ -237,7 +228,7 @@ def dispatch_to_response(
     """
     return dispatch_to_response_pure(
         methods=global_methods if methods is None else methods,
-        extra=extra,
+        context=context,
         deserializer=deserializer,
         request=request,
     )
