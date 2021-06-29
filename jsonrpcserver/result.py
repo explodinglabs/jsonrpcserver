@@ -23,7 +23,7 @@ Which is equivalent to (-32602 is the Invalid Params error code in JSON-RPC):
 
     return Error(-32602, "Color is invalid")
 """
-from typing import Any, NamedTuple, Union
+from typing import Any, NamedTuple, Optional, Union
 
 from . import status
 
@@ -33,7 +33,7 @@ UNSPECIFIED = object()
 
 
 class Success(NamedTuple):
-    result: str
+    result: Optional[str] = None
 
 
 class Error(NamedTuple):
