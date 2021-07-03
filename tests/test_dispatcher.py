@@ -122,10 +122,10 @@ def test_create_requests_batch():
 
 def test_dispatch_to_response_pure():
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(ping),
         request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
     )
     assert isinstance(response, SuccessResponse)
@@ -135,10 +135,10 @@ def test_dispatch_to_response_pure():
 
 def test_dispatch_to_response_pure_notification():
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(ping),
         request='{"jsonrpc": "2.0", "method": "ping"}',
     )
     assert response is None
@@ -147,10 +147,10 @@ def test_dispatch_to_response_pure_notification():
 def test_dispatch_to_response_pure_invalid_json():
     """Unable to parse, must return an error"""
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(ping),
         request="{",
     )
     assert isinstance(response, ErrorResponse)
@@ -159,10 +159,10 @@ def test_dispatch_to_response_pure_invalid_json():
 
 def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(ping),
         request='{"jsonrpc": "0", "method": "notify"}',
     )
     assert isinstance(response, ErrorResponse)
@@ -172,10 +172,10 @@ def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
 def test_dispatch_to_response_pure_invalid_jsonrpc():
     """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(ping),
         request="{}",
     )
     assert isinstance(response, ErrorResponse)
@@ -188,10 +188,10 @@ def test_dispatch_to_response_pure_invalid_params():
             return InvalidParams()
 
     response = dispatch_to_response_pure(
-        methods=Methods(foo),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(foo),
         request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
     )
     assert isinstance(response, ErrorResponse)
@@ -203,10 +203,10 @@ def test_dispatch_to_response_pure_invalid_params_count():
         pass
 
     response = dispatch_to_response_pure(
-        methods=Methods(foo),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(foo),
         request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
     )
     assert isinstance(response, ErrorResponse)
@@ -220,10 +220,10 @@ def test_dispatch_to_response_pure_enforcing_result():
         return None
 
     response = dispatch_to_response_pure(
-        methods=Methods(not_a_result),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(not_a_result),
         request='{"jsonrpc": "2.0", "method": "not_a_result", "id": 1}',
     )
     assert isinstance(response, ErrorResponse)
@@ -355,10 +355,10 @@ def test_examples_invalid_jsonrpc_batch():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(ping),
         request="[1]",
     )
     assert isinstance(response, ErrorResponse)
@@ -371,10 +371,10 @@ def test_examples_multiple_invalid_jsonrpc():
     The examples are expecting a batch response full of error responses.
     """
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(ping),
         request="[1, 2, 3]",
     )
     assert isinstance(response, ErrorResponse)
@@ -412,10 +412,10 @@ def test_examples_mixed_requests_and_notifications():
         ]
     )
     response = dispatch_to_response_pure(
-        methods=methods,
-        context=None,
-        schema_validator=default_schema_validator,
         deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=methods,
         request=requests,
     )
     expected = [

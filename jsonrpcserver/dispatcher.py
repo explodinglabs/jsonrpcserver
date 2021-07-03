@@ -154,10 +154,10 @@ def create_requests(requests: Union[Dict, List[Dict]]) -> Union[Request, List[Re
 
 def dispatch_to_response_pure(
     *,
-    methods: Methods,
-    context: Any,
-    schema_validator: Callable,
     deserializer: Callable,
+    schema_validator: Callable,
+    context: Any,
+    methods: Methods,
     request: str,
 ) -> Union[Response, List[Response], None]:
     """
@@ -169,9 +169,10 @@ def dispatch_to_response_pure(
     testing, not dispatch_to_response or dispatch.
 
     Args:
-        methods: Collection of methods that can be called.
+        deserializer: Function that is used to deserialize data.
+        schema_validator:
         context: Will be passed to methods as the first param if not None.
-        deserialize: Function that is used to deserialize data.
+        methods: Collection of methods that can be called.
         request: The incoming request string.
 
     Returns:
@@ -219,11 +220,11 @@ def dispatch_to_response(
     Args:
         request: The JSON-RPC request string.
         methods: Collection of methods that can be called. If not passed, uses the
-            internal methods object.
+            internal, global methods object which is populated with the @method
+            decorator.
         context: Will be passed to methods as the first param if not None.
         schema_validator:
-        deserialize: Function that is used to deserialize data.
-        request: The incoming request string.
+        deserializer: Function that is used to deserialize data.
 
     Returns:
         A Response, list of Responses or None.
@@ -232,10 +233,10 @@ def dispatch_to_response(
         >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', [ping])
     """
     return dispatch_to_response_pure(
-        methods=global_methods if methods is None else methods,
-        context=context,
-        schema_validator=schema_validator,
         deserializer=deserializer,
+        schema_validator=schema_validator,
+        context=context,
+        methods=global_methods if methods is None else methods,
         request=request,
     )
 
