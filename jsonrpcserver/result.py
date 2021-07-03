@@ -25,7 +25,7 @@ Which is equivalent to (-32602 is the Invalid Params error code in JSON-RPC):
 """
 from typing import Any, NamedTuple, Optional, Union
 
-from .status import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
+from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
 
 # This is used to indicate when a value isn't present. We use this instead of
 # None, because None is a valid JSON-serializable type.
