@@ -1,8 +1,13 @@
 """
 Dispatcher.
 
-The dispatch() function takes a JSON-RPC request, calls the appropriate method, then
-returns the response.
+The main public function "dispatch" takes a JSON-RPC request (a json string), calls the
+appropriate method, returning a JSON-RPC response (a json string).
+
+Another public function is available, dispatch_to_response, which returns a Response
+object, without serializing it to json.
+
+This module is named dispatcher.py because dispatch clashes with the function name.
 """
 import json
 import os
