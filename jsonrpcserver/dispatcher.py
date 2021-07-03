@@ -11,7 +11,6 @@ from configparser import ConfigParser
 from typing import Any, Callable, Dict, List, Union
 
 from apply_defaults import apply_config  # type: ignore
-from jsonschema import ValidationError  # type: ignore
 from jsonschema.validators import validator_for  # type: ignore
 from pkg_resources import resource_string  # type: ignore
 
@@ -28,11 +27,14 @@ from .response import (
 )
 from .result import InvalidParams, InternalError, Result
 
-# Prepare the jsonschema validator
-global_schema = json.loads(resource_string(__name__, "request-schema.json"))
-klass = validator_for(global_schema)
-klass.check_schema(global_schema)
-validator = klass(global_schema)
+default_deserializer = json.loads
+
+# Prepare the jsonschema validator. This is global so it loads only once, not every
+# time dispatch is called.
+schema = json.loads(resource_string(__name__, "request-schema.json"))
+klass = validator_for(schema)
+klass.check_schema(schema)
+default_schema_validator = klass(schema).validate
 
 # Read configuration file
 config = ConfigParser(default_section="dispatch")
@@ -140,7 +142,7 @@ def create_requests(requests: Union[Dict, List[Dict]]) -> Union[Request, List[Re
     )
 
 
-def validate(request: Union[Dict, List]) -> Union[Dict, List]:
+def validate(validator: Callable, request: Union[Dict, List]) -> Union[Dict, List]:
     """
     Wraps jsonschema.validate, returning the same object passed in if successful.
 
@@ -153,14 +155,19 @@ def validate(request: Union[Dict, List]) -> Union[Dict, List]:
         The same object passed in.
 
     Raises:
-        jsonschema.ValidationError
+        An exception,
     """
-    validator.validate(request)
+    validator(request)
     return request
 
 
 def dispatch_to_response_pure(
-    *, methods: Methods, context: Any, deserializer: Callable, request: str
+    *,
+    methods: Methods,
+    context: Any,
+    schema_validator: Callable,
+    deserializer: Callable,
+    request: str,
 ) -> Union[Response, List[Response], None]:
     """
     Dispatch a JSON-serialized request string to methods.
@@ -186,9 +193,12 @@ def dispatch_to_response_pure(
         # will be raised is unknown. Any exception is a parse error.
         except Exception as exc:
             return ParseErrorResponse(str(exc))
+        # As above, we don't know which validator will be used, so the specific
+        # exception that will be raised is unknown. Any exception is an invalid request
+        # error.
         try:
-            validate(deserialized)
-        except ValidationError as exc:
+            schema_validator(deserialized)
+        except Exception as exc:
             return InvalidRequestResponse("The request failed schema validation")
         return dispatch_requests(
             methods=methods, context=context, requests=create_requests(deserialized)
@@ -204,7 +214,8 @@ def dispatch_to_response(
     methods: Methods = None,
     *,
     context: Any = None,
-    deserializer: Callable = json.loads,
+    schema_validator: Callable = default_schema_validator,
+    deserializer: Callable = default_deserializer,
 ) -> Union[Response, List[Response], None]:
     """
     Dispatch a JSON-serialized request to methods.
@@ -218,9 +229,10 @@ def dispatch_to_response(
         request: The JSON-RPC request string.
         methods: Collection of methods that can be called. If not passed, uses the
             internal methods object.
-        request: The incoming request string.
         context: Will be passed to methods as the first param if not None.
+        schema_validator:
         deserialize: Function that is used to deserialize data.
+        request: The incoming request string.
 
     Returns:
         A Response, list of Responses or None.
@@ -231,13 +243,16 @@ def dispatch_to_response(
     return dispatch_to_response_pure(
         methods=global_methods if methods is None else methods,
         context=context,
+        schema_validator=schema_validator,
         deserializer=deserializer,
         request=request,
     )
 
 
 def dispatch_to_json(
-    *args: Any, serializer: Callable = json.dumps, **kwargs: Any
+    *args: Any,
+    serializer: Callable = json.dumps,
+    **kwargs: Any,
 ) -> str:
     """
     This is the main public method, it goes through the entire JSON-RPC process
