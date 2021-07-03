@@ -16,9 +16,14 @@ elements, and then serialize it to JSON:
 """
 from typing import Any, List, NamedTuple, Union
 
-from . import status
 from .request import NOID
 from .result import Result, Success, UNSPECIFIED
+from .status import (
+    ERROR_INVALID_REQUEST,
+    ERROR_METHOD_NOT_FOUND,
+    ERROR_PARSE_ERROR,
+    ERROR_SERVER_ERROR,
+)
 
 
 class SuccessResponse(NamedTuple):
@@ -48,7 +53,7 @@ def ParseErrorResponse(data: Any) -> ErrorResponse:
     the id member in the Request Object.  If there was an error in detecting the id in
     the Request object (e.g. Parse error/Invalid Request), it MUST be Null."
     """
-    return ErrorResponse(status.JSONRPC_PARSE_ERROR_CODE, "Parse error", data, None)
+    return ErrorResponse(ERROR_PARSE_ERROR, "Parse error", data, None)
 
 
 def InvalidRequestResponse(data: Any) -> ErrorResponse:
@@ -57,19 +62,15 @@ def InvalidRequestResponse(data: Any) -> ErrorResponse:
     the id member in the Request Object.  If there was an error in detecting the id in
     the Request object (e.g. Parse error/Invalid Request), it MUST be Null."
     """
-    return ErrorResponse(
-        status.JSONRPC_INVALID_REQUEST_CODE, "Invalid request", data, None
-    )
+    return ErrorResponse(ERROR_INVALID_REQUEST, "Invalid request", data, None)
 
 
 def MethodNotFoundResponse(data: Any, id: Any) -> ErrorResponse:
-    return ErrorResponse(
-        status.JSONRPC_METHOD_NOT_FOUND_CODE, "Method not found", data, id
-    )
+    return ErrorResponse(ERROR_METHOD_NOT_FOUND, "Method not found", data, id)
 
 
 def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
-    return ErrorResponse(status.JSONRPC_SERVER_ERROR_CODE, "Server error", data, id)
+    return ErrorResponse(ERROR_SERVER_ERROR, "Server error", data, id)
 
 
 def from_result(result: Result, id: Any) -> Union[Response, None]:

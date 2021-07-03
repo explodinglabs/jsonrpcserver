@@ -25,7 +25,7 @@ from .response import (
     from_result,
     to_serializable,
 )
-from .result import InvalidParams, InternalError, Result
+from .result import InvalidParams, InternalError, Error, Result, Success
 
 default_deserializer = json.loads
 
@@ -55,7 +55,12 @@ def call(method: Callable, args: list, kwargs: dict) -> Result:
         return InvalidParams(errors)
 
     try:
-        return method(*args, **kwargs)
+        result = method(*args, **kwargs)
+        return (
+            InternalError("The method did not return a Result")
+            if not isinstance(result, (Success, Error))
+            else result
+        )
     except Exception as exc:  # Other error inside method - server error
         logging.exception(exc)
         return InternalError(str(exc))
