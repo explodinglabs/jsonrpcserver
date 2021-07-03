@@ -3,7 +3,6 @@ import json
 from typing import Any
 from unittest.mock import sentinel
 
-from jsonrpcserver import status
 from jsonrpcserver.dispatcher import (
     create_requests,
     default_deserializer,
@@ -13,9 +12,15 @@ from jsonrpcserver.dispatcher import (
     dispatch_to_response_pure,
 )
 from jsonrpcserver.methods import Methods, global_methods
-from jsonrpcserver.result import Result, Success
 from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
+from jsonrpcserver.result import Result, Success, InvalidParams
+from jsonrpcserver.status import (
+    ERROR_INTERNAL_ERROR,
+    ERROR_INVALID_PARAMS,
+    ERROR_INVALID_REQUEST,
+    ERROR_PARSE_ERROR,
+)
 
 
 # def test_dispatch_to_response_pure_invalid_params_notification():
@@ -139,17 +144,6 @@ def test_dispatch_to_response_pure_notification():
     assert response is None
 
 
-def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
-    response = dispatch_to_response_pure(
-        methods=Methods(ping),
-        context=None,
-        schema_validator=default_schema_validator,
-        deserializer=default_deserializer,
-        request='{"jsonrpc": "0", "method": "notify"}',
-    )
-    assert isinstance(response, ErrorResponse)
-
-
 def test_dispatch_to_response_pure_invalid_json():
     """Unable to parse, must return an error"""
     response = dispatch_to_response_pure(
@@ -160,6 +154,19 @@ def test_dispatch_to_response_pure_invalid_json():
         request="{",
     )
     assert isinstance(response, ErrorResponse)
+    assert response.code == ERROR_PARSE_ERROR
+
+
+def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
+    response = dispatch_to_response_pure(
+        methods=Methods(ping),
+        context=None,
+        schema_validator=default_schema_validator,
+        deserializer=default_deserializer,
+        request='{"jsonrpc": "0", "method": "notify"}',
+    )
+    assert isinstance(response, ErrorResponse)
+    assert response.code == ERROR_INVALID_REQUEST
 
 
 def test_dispatch_to_response_pure_invalid_jsonrpc():
@@ -172,6 +179,7 @@ def test_dispatch_to_response_pure_invalid_jsonrpc():
         request="{}",
     )
     assert isinstance(response, ErrorResponse)
+    assert response.code == ERROR_INVALID_REQUEST
 
 
 def test_dispatch_to_response_pure_invalid_params():
@@ -187,6 +195,7 @@ def test_dispatch_to_response_pure_invalid_params():
         request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
     )
     assert isinstance(response, ErrorResponse)
+    assert response.code == ERROR_INVALID_PARAMS
 
 
 def test_dispatch_to_response_pure_invalid_params_count():
@@ -201,7 +210,25 @@ def test_dispatch_to_response_pure_invalid_params_count():
         request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
     )
     assert isinstance(response, ErrorResponse)
-    assert response.data == "missing a required argument: 'size'"
+    assert response.code == ERROR_INVALID_PARAMS
+
+
+def test_dispatch_to_response_pure_enforcing_result():
+    """Methods should return a Result, otherwise we get an Internal Error response."""
+
+    def not_a_result():
+        return None
+
+    response = dispatch_to_response_pure(
+        methods=Methods(not_a_result),
+        context=None,
+        schema_validator=default_schema_validator,
+        deserializer=default_deserializer,
+        request='{"jsonrpc": "2.0", "method": "not_a_result", "id": 1}',
+    )
+    assert isinstance(response, ErrorResponse)
+    assert response.code == ERROR_INTERNAL_ERROR
+    assert response.data == "The method did not return a Result"
 
 
 # dispatch_to_response
@@ -306,7 +333,7 @@ def test_examples_invalid_json():
         request='[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
     )
     assert isinstance(response, ErrorResponse)
-    assert response.code == status.JSONRPC_PARSE_ERROR_CODE
+    assert response.code == ERROR_PARSE_ERROR
 
 
 def test_examples_empty_array():
@@ -319,7 +346,7 @@ def test_examples_empty_array():
         deserializer=default_deserializer,
     )
     assert isinstance(response, ErrorResponse)
-    assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
+    assert response.code == ERROR_INVALID_REQUEST
 
 
 def test_examples_invalid_jsonrpc_batch():
@@ -335,7 +362,7 @@ def test_examples_invalid_jsonrpc_batch():
         request="[1]",
     )
     assert isinstance(response, ErrorResponse)
-    assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
+    assert response.code == ERROR_INVALID_REQUEST
 
 
 def test_examples_multiple_invalid_jsonrpc():
@@ -351,7 +378,7 @@ def test_examples_multiple_invalid_jsonrpc():
         request="[1, 2, 3]",
     )
     assert isinstance(response, ErrorResponse)
-    assert response.code == status.JSONRPC_INVALID_REQUEST_CODE
+    assert response.code == ERROR_INVALID_REQUEST
 
 
 def test_examples_mixed_requests_and_notifications():

@@ -25,7 +25,7 @@ Which is equivalent to (-32602 is the Invalid Params error code in JSON-RPC):
 """
 from typing import Any, NamedTuple, Optional, Union
 
-from . import status
+from .status import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
 
 # This is used to indicate when a value isn't present. We use this instead of
 # None, because None is a valid JSON-serializable type.
@@ -47,12 +47,12 @@ Result = Union[Success, Error]
 
 
 def InvalidParams(data: Any = UNSPECIFIED) -> Error:
-    return Error(status.JSONRPC_INVALID_PARAMS_CODE, "Invalid params", data)
+    return Error(ERROR_INVALID_PARAMS, "Invalid params", data)
 
 
 def MethodNotFound(data: Any) -> Error:
-    return Error(status.JSONRPC_METHOD_NOT_FOUND_CODE, "Method not found", data)
+    return Error(ERROR_METHOD_NOT_FOUND, "Method not found", data)
 
 
 def InternalError(data: Any) -> Error:
-    return Error(status.JSONRPC_INTERNAL_ERROR_CODE, "Internal error", data)
+    return Error(ERROR_INTERNAL_ERROR, "Internal error", data)
