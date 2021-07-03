@@ -11,6 +11,7 @@ from jsonrpcserver.dispatcher import (
     dispatch_to_response,
     dispatch_to_response_pure,
 )
+from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
@@ -229,6 +230,25 @@ def test_dispatch_to_response_pure_enforcing_result():
     assert isinstance(response, ErrorResponse)
     assert response.code == ERROR_INTERNAL_ERROR
     assert response.data == "The method did not return a Result"
+
+
+def test_dispatch_to_response_pure_raising_exception():
+    """Allow raising an exception to return an error."""
+
+    def raise_exception():
+        raise JsonRpcError(code=0, message="foo", data="bar")
+
+    response = dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        context=None,
+        methods=Methods(raise_exception),
+        request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
+    )
+    assert isinstance(response, ErrorResponse)
+    assert response.code == 0
+    assert response.message == "foo"
+    assert response.data == "bar"
 
 
 # dispatch_to_response
