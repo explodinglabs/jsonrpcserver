@@ -1,13 +1,25 @@
 """
 Dispatcher.
 
-The main public function "dispatch" takes a JSON-RPC request (a json string), calls the
-appropriate method, returning a JSON-RPC response (a json string).
+"dispatch" takes a JSON-RPC request (a json string), calls the appropriate method,
+returning a JSON-RPC response in one of three forms, depending on which dispatch
+function was called:
 
-Another public function is available, dispatch_to_response, which returns a Response
-object, without serializing it to json.
+    dispatch_to_response:
+        Returns the JSON-RPC response as a Response object, a list of them, or None in
+        the case of a notification. This allows you to access attributes of the object
+        like `result`.
 
-This module is named dispatcher.py because dispatch clashes with the function name.
+    dispatch_to_serializable:
+        Returns the JSON-RPC response as a Python object, e.g.
+        {"jsonrpc": "2.0", "result": "foo", "id": 1}
+
+    dispatch_to_json: Returns the JSON-RPC response as a JSON string.
+        '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
+
+The main public function "dispatch" is an alias of dispatch_to_json.
+
+This module is named "dispatcher.py" because "dispatch" clashes with the function name.
 """
 import json
 import os
@@ -247,6 +259,10 @@ def dispatch_to_response(
     )
 
 
+def dispatch_to_serializable(*args: Any, **kwargs: Any) -> Union[dict, list]:
+    return to_serializable(dispatch_to_response(*args, **kwargs))
+
+
 def dispatch_to_json(
     *args: Any,
     serializer: Callable = json.dumps,
@@ -258,7 +274,7 @@ def dispatch_to_json(
     a serializable value and then serializing that to return a JSON-RPC response
     string.
     """
-    return serializer(to_serializable(dispatch_to_response(*args, **kwargs)))
+    return serializer(dispatch_to_serializable(*args, **kwargs))
 
 
 # "dispatch" is an alias of dispatch_to_json.
