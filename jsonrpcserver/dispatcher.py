@@ -142,25 +142,6 @@ def create_requests(requests: Union[Dict, List[Dict]]) -> Union[Request, List[Re
     )
 
 
-def validate(validator: Callable, request: Union[Dict, List]) -> Union[Dict, List]:
-    """
-    Wraps jsonschema.validate, returning the same object passed in if successful.
-
-    Raises an exception if invalid.
-
-    Args:
-        request: The deserialized-from-json request.
-
-    Returns:
-        The same object passed in.
-
-    Raises:
-        An exception,
-    """
-    validator(request)
-    return request
-
-
 def dispatch_to_response_pure(
     *,
     methods: Methods,
