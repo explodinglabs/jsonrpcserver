@@ -19,18 +19,18 @@ from apply_defaults import apply_config  # type: ignore
 from jsonschema.validators import validator_for  # type: ignore
 from pkg_resources import resource_string  # type: ignore
 
+from .exceptions import JsonRpcError
 from .methods import Methods, global_methods, validate_args
 from .request import Request, NOID
 from .response import (
     InvalidRequestResponse,
-    MethodNotFoundResponse,
     ParseErrorResponse,
     Response,
     ServerErrorResponse,
     from_result,
     to_serializable,
 )
-from .result import InvalidParams, InternalError, Error, Result, Success
+from .result import InvalidParams, InternalError, MethodNotFound, Error, Result, Success
 
 default_deserializer = json.loads
 
@@ -46,7 +46,7 @@ config = ConfigParser(default_section="dispatch")
 config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
 
 
-def call(method: Callable, args: list, kwargs: dict) -> Result:
+def call(methods: Methods, method_name: str, args: list, kwargs: dict) -> Result:
     """
     Calls a method.
 
@@ -55,20 +55,28 @@ def call(method: Callable, args: list, kwargs: dict) -> Result:
     Returns:
         The Result from the method call.
     """
+    try:
+        method = methods.items[method_name]
+    except KeyError:
+        return MethodNotFound(method_name)
+
     errors = validate_args(method, *args, **kwargs)
     if errors:
         return InvalidParams(errors)
 
     try:
         result = method(*args, **kwargs)
+    except JsonRpcError as exc:
+        return Error(code=exc.code, message=exc.message, data=exc.data)
+    except Exception as exc:  # Other error inside method - server error
+        logging.exception(exc)
+        return InternalError(str(exc))
+    else:
         return (
             InternalError("The method did not return a Result")
             if not isinstance(result, (Success, Error))
             else result
         )
-    except Exception as exc:  # Other error inside method - server error
-        logging.exception(exc)
-        return InternalError(str(exc))
 
 
 def extract_args(request: Request, context: Any) -> list:
@@ -90,15 +98,13 @@ def dispatch_request(
 
     Converts the return value (a Result) into a Response.
     """
-    if request.method in methods.items:
-        result = call(
-            methods.items[request.method],
-            extract_args(request, context),
-            extract_kwargs(request),
-        )
-        return None if request.id is NOID else from_result(result, request.id)
-    else:
-        return MethodNotFoundResponse(request.method, request.id)
+    result = call(
+        methods,
+        request.method,
+        extract_args(request, context),
+        extract_kwargs(request),
+    )
+    return None if request.id is NOID else from_result(result, request.id)
 
 
 def none_if_empty(x: Any) -> Any:
@@ -169,8 +175,8 @@ def dispatch_to_response_pure(
     testing, not dispatch_to_response or dispatch.
 
     Args:
-        deserializer: Function that is used to deserialize data.
-        schema_validator:
+        deserializer: Function that deserializes the JSON-RPC request.
+        schema_validator: Function that validates the JSON-RPC request.
         context: Will be passed to methods as the first param if not None.
         methods: Collection of methods that can be called.
         request: The incoming request string.
@@ -223,8 +229,8 @@ def dispatch_to_response(
             internal, global methods object which is populated with the @method
             decorator.
         context: Will be passed to methods as the first param if not None.
-        schema_validator:
-        deserializer: Function that is used to deserialize data.
+        schema_validator: Function that validates the JSON-RPC request.
+        deserializer: Function that deserializes the JSON-RPC request.
 
     Returns:
         A Response, list of Responses or None.
