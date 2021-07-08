@@ -1,5 +1,6 @@
 """TODO: Add tests for dispatch_requests (non-pure version)"""
 import json
+import pytest
 from typing import Any
 from unittest.mock import sentinel
 
@@ -7,21 +8,30 @@ from jsonrpcserver.codes import (
     ERROR_INTERNAL_ERROR,
     ERROR_INVALID_PARAMS,
     ERROR_INVALID_REQUEST,
+    ERROR_METHOD_NOT_FOUND,
     ERROR_PARSE_ERROR,
 )
 from jsonrpcserver.dispatcher import (
-    create_requests,
+    DispatchResult,
+    create_request,
     default_deserializer,
     default_schema_validator,
     dispatch_request,
     dispatch_to_response,
     dispatch_to_response_pure,
+    from_result,
 )
 from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
-from jsonrpcserver.result import Result, Success, InvalidParams
+from jsonrpcserver.result import (
+    Error,
+    InvalidParams,
+    Result,
+    Success,
+    UNSPECIFIED,
+)
 
 
 # def test_dispatch_to_response_pure_invalid_params_notification():
@@ -35,59 +45,102 @@ def ping() -> Result:
     return Success("pong")
 
 
+# from_result
+
+
+def test_from_result_Success():
+    response = from_result(
+        DispatchResult(Request("ping", [], sentinel.id), Success(sentinel.result))
+    )
+    assert isinstance(response, SuccessResponse) == True
+    assert response.result == sentinel.result
+    assert response.id == sentinel.id
+
+
+def test_from_result_Error():
+    response = from_result(
+        DispatchResult(
+            Request("ping", [], sentinel.id),
+            Error(code=sentinel.code, message=sentinel.message, data=sentinel.data),
+        ),
+    )
+    assert isinstance(response, ErrorResponse) == True
+    assert response.code == sentinel.code
+    assert response.message == sentinel.message
+    assert response.data == sentinel.data
+    assert response.id == sentinel.id
+
+
+def test_from_result_InvalidParams():
+    response = from_result(
+        DispatchResult(Request("ping", [], sentinel.id), InvalidParams(sentinel.data))
+    )
+    assert isinstance(response, ErrorResponse) == True
+    assert response.code == -32602
+    assert response.message == "Invalid params"
+    assert response.data == sentinel.data
+    assert response.id == sentinel.id
+
+
+def test_from_result_InvalidParams_no_data():
+    response = from_result(
+        DispatchResult(Request("ping", [], sentinel.id), InvalidParams())
+    )
+    assert isinstance(response, ErrorResponse) == True
+    assert response.code == -32602
+    assert response.message == "Invalid params"
+    assert response.data == UNSPECIFIED
+    assert response.id == sentinel.id
+
+
+def test_from_result_notification():
+    with pytest.raises(AssertionError):
+        from_result(
+            DispatchResult(Request("ping", [], NOID), Success(result=sentinel.result))
+        )
+
+
 # dispatch_request
 
 
 def test_dispatch_request_success_result():
-    response = dispatch_request(
-        methods=Methods(ping), context=None, request=Request("ping", [], 1)
-    )
-    assert isinstance(response, SuccessResponse)
-    assert response.result == "pong"
+    dispatch_result = dispatch_request(Methods(ping), None, Request("ping", [], 1))
+    assert dispatch_result.result.result == "pong"
 
 
 def test_dispatch_request_notification():
-    response = dispatch_request(
-        methods=Methods(ping), context=None, request=Request("ping", [], NOID)
-    )
-    assert response is None
+    """Result is still Success, but it won't be converted to a Response."""
+    dispatch_result = dispatch_request(Methods(ping), None, Request("ping", [], NOID))
+    assert isinstance(dispatch_result.result, Success)
 
 
 def test_dispatch_request_notification_failure():
     """
-    Should not respond. From the spec: Notifications are not confirmable by
-    definition, since they do not have a Response object to be returned. As
-    such, the Client would not be aware of any errors (like e.g. "Invalid
-    params","Internal error").
+    Should not respond. From the spec: Notifications are not confirmable by definition,
+    since they do not have a Response object to be returned. As such, the Client would
+    not be aware of any errors (like e.g. "Invalid params","Internal error").
     """
 
-    def fail(request: Request):
+    def fail():
         1 / 0
 
-    response = dispatch_request(
-        methods=Methods(fail), context=None, request=Request("fail", [], NOID)
-    )
-    assert response is None
+    dispatch_result = dispatch_request(Methods(fail), None, Request("fail", [], NOID))
+    assert isinstance(dispatch_result.result, Error)
+    assert dispatch_result.result.code == ERROR_INTERNAL_ERROR
 
 
 def test_dispatch_request_method_not_found():
-    response = dispatch_request(
-        methods=Methods(ping), context=None, request=Request("nonexistant", [], 1)
+    dispatch_result = dispatch_request(
+        Methods(ping), None, Request("nonexistant", [], 1)
     )
-    assert isinstance(response, ErrorResponse)
-    assert response.code == -32601
-    assert response.message == "Method not found"
-    assert response.id == 1
+    assert isinstance(dispatch_result.result, Error)
+    assert dispatch_result.result.code == ERROR_METHOD_NOT_FOUND
 
 
 def test_dispatch_request_invalid_params():
-    response = dispatch_request(
-        methods=Methods(ping), context=None, request=Request("ping", [1], 1)
-    )
-    assert isinstance(response, ErrorResponse)
-    assert response.code == -32602
-    assert response.message == "Invalid params"
-    assert response.id == 1
+    dispatch_result = dispatch_request(Methods(ping), None, Request("ping", [1], 1))
+    assert isinstance(dispatch_result.result, Error)
+    assert dispatch_result.result.code == ERROR_INVALID_PARAMS
 
 
 def test_dispatch_request_with_context():
@@ -96,9 +149,9 @@ def test_dispatch_request_with_context():
         return Success(None)
 
     dispatch_request(
-        methods=Methods(ping_with_context),
-        context=sentinel.context,
-        request=Request("ping_with_context", [], 1),
+        Methods(ping_with_context),
+        sentinel.context,
+        Request("ping_with_context", [], 1),
     )
     # Assert is in the method
 
@@ -106,16 +159,9 @@ def test_dispatch_request_with_context():
 # create_requests
 
 
-def test_create_requests():
-    requests = create_requests({"jsonrpc": "2.0", "method": "ping"})
-    assert isinstance(requests, Request)
-
-
-def test_create_requests_batch():
-    requests = create_requests(
-        [{"jsonrpc": "2.0", "method": "ping"}, {"jsonrpc": "2.0", "method": "ping"}],
-    )
-    assert iter(requests)
+def test_create_request():
+    request = create_request({"jsonrpc": "2.0", "method": "ping"})
+    assert isinstance(request, Request)
 
 
 # dispatch_to_response_pure
@@ -455,6 +501,6 @@ def test_examples_mixed_requests_and_notifications():
             result=["hello", 5], id="9"
         ),  # {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"},
     ]
-    assert isinstance(response, list)
+    # assert isinstance(response, Iterable)
     for r in response:
         assert r in expected

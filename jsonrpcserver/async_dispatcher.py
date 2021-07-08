@@ -2,58 +2,39 @@
 """Asynchronous dispatch"""
 
 import asyncio
-import collections.abc
 import logging
-from json import JSONDecodeError
-from json import loads as default_deserialize
-from typing import Any, Iterable, Optional, Union, Callable
 
 from apply_defaults import apply_config  # type: ignore
-from jsonschema import ValidationError  # type: ignore
 
-from .dispatcher import (
-    config,
-    create_requests,
-    global_schema,
-    validate,
-)
+from .dispatcher import config
 from .methods import Methods, global_methods, validate_args
-from .request import Request, is_notification
+from .request import Request
 from .response import Response
 from .result import InvalidParams, InternalError, Result
 
 
-async def call(request, method, *args, **kwargs) -> Result:
+async def call(methods: Methods, method_name: str, args: list, kwargs: dict) -> Result:
+    """
+    Calls a method.
+
+    Catches exceptions to ensure we always return a Response.
+
+    Returns:
+        The Result from the method call.
+    """
+    try:
+        method = methods.items[method_name]
+    except KeyError:
+        return MethodNotFound(method_name)
+
     errors = validate_args(method, *args, **kwargs)
     if errors:
         return InvalidParams(errors)
 
     try:
-        return await method(*args, **kwargs)
-    except Exception as exc:  # Other error inside method - server error
-        logging.exception(exc)
-        return InternalError(str(exc))
-
-
-async def safe_call(
-    request: Request, methods: Methods, *, extra: Any, serialize: Callable
-) -> Response:
-    try:
-        result = (
-            await call(
-                methods.items[request.method],
-                *([Context(request=request, extra=extra)] + request.params),
-            )
-            if isinstance(request.params, list)
-            else await call(
-                methods.items[request.method],
-                Context(request=request, extra=extra),
-                **request.params,
-            )
-        )
-        # Ensure value returned from the method is JSON-serializable. If not,
-        # handle_exception will set handler.response to an ExceptionResponse
-        serialize(result)
+        result = method(*args, **kwargs)
+    except JsonRpcError as exc:
+        return Error(code=exc.code, message=exc.message, data=exc.data)
     except asyncio.CancelledError:
         # Allow CancelledError from asyncio task cancellation to bubble up. Without
         # this, CancelledError is caught and handled, resulting in a "Server error"
@@ -63,73 +44,130 @@ async def safe_call(
         raise
     except Exception as exc:  # Other error inside method - server error
         logging.exception(exc)
-        return ExceptionResponse(exc, id=request.id)
+        return InternalError(str(exc))
     else:
         return (
-            NotificationResponse()
-            if is_notification(request)
-            else SuccessResponse(result=result, id=request.id, serialize_func=serialize)
+            InternalError("The method did not return a Result")
+            if not isinstance(result, (Success, Error))
+            else result
         )
+
+
+def dispatch_request(
+    *, methods: Methods, context: Any, request: Request
+) -> Union[Response, None]:
+    """
+    Dispatch a single Request.
+
+    Maps a single Request to a single Response.
+
+    Converts the return value (a Result) into a Response.
+    """
+    result = await call(
+        methods,
+        request.method,
+        extract_args(request, context),
+        extract_kwargs(request),
+    )
+    return None if request.id is NOID else from_result(result, request.id)
 
 
 async def dispatch_requests(
-    requests: Union[Request, Iterable[Request]],
-    methods: Methods,
-    extra: Any,
-    serialize: Callable,
-) -> Response:
-    if isinstance(requests, collections.abc.Iterable):
-        responses = (
-            safe_call(r, methods, extra=extra, serialize=serialize) for r in requests
+    *, methods: Methods, context: Any, requests: Union[Request, List[Request]]
+) -> Union[None, Response, List[Response]]:
+    """Important: The methods must be called. If all requests are notifications."""
+    return (
+        # Nones (notifications) must be removed - "A Response object SHOULD exist for
+        # each Request object, except that there SHOULD NOT be any Response objects for
+        # notifications."
+        # Also should not return an empty list, "If there are no Response objects
+        # contained within the Response array as it is to be sent to the client, the
+        # server MUST NOT return an empty Array and should return nothing at all."
+        none_if_empty(
+            remove_nones(
+                [
+                    await dispatch_request(methods=methods, context=context, request=r)
+                    for r in requests
+                ]
+            )
         )
-        return BatchResponse(await asyncio.gather(*responses), serialize_func=serialize)
-    return await safe_call(requests, methods, extra=extra, serialize=serialize)
-
-
-async def dispatch_pure(
-    request: str,
-    methods: Methods,
-    *,
-    extra: Any,
-    serialize: Callable,
-    deserialize: Callable,
-) -> Response:
-    try:
-        deserialized = validate(deserialize(request), global_schema)
-    except JSONDecodeError as exc:
-        return InvalidJSONResponse(data=str(exc))
-    except ValidationError as exc:
-        return InvalidJSONRPCResponse(data=None)
-    return await dispatch_requests(
-        create_requests(deserialized),
-        methods,
-        extra=extra,
-        serialize=serialize,
+        if isinstance(requests, list)
+        else await dispatch_request(methods=methods, context=context, request=requests)
     )
 
 
 @apply_config(config)
-async def dispatch(
-    request: str,
-    methods: Optional[Methods] = None,
+async def dispatch_to_response_pure(
     *,
-    extra: Optional[Any] = None,
-    deserialize: Callable = default_deserialize,
-    **kwargs: Any,
-) -> Response:
-    # Use the global methods object if no methods object was passed.
-    methods = global_methods if methods is None else methods
-    # Add temporary stream handlers for this request, and remove them later
-    logger.info(request)
-    response = await dispatch_pure(
-        request,
-        methods,
-        extra=extra,
-        serialize=serialize,
-        deserialize=deserialize,
+    deserializer: Callable,
+    schema_validator: Callable,
+    context: Any,
+    methods: Methods,
+    request: str,
+) -> Union[Response, List[Response], None]:
+    try:
+        try:
+            deserialized = deserializer(request)
+        # We don't know which deserializer will be used, so the specific exception that
+        # will be raised is unknown. Any exception is a parse error.
+        except Exception as exc:
+            return ParseErrorResponse(str(exc))
+        # As above, we don't know which validator will be used, so the specific
+        # exception that will be raised is unknown. Any exception is an invalid request
+        # error.
+        try:
+            schema_validator(deserialized)
+        except Exception as exc:
+            return InvalidRequestResponse("The request failed schema validation")
+        return await dispatch_requests(
+            methods=methods, context=context, requests=create_requests(deserialized)
+        )
+    except Exception as exc:
+        logging.exception(exc)
+        return ServerErrorResponse(str(exc), None)
+
+
+# --------------------------------------------------------------------------------------
+# Above here is pure: no using globals, default values, or raising exceptions. (actually
+# catching exceptions is impure but there's no escaping it.)
+#
+# Below is the public developer API.
+# --------------------------------------------------------------------------------------
+
+
+@apply_config(config)
+async def dispatch_to_response(
+    request: str,
+    methods: Methods = None,
+    *,
+    context: Any = None,
+    schema_validator: Callable = default_schema_validator,
+    deserializer: Callable = default_deserializer,
+) -> Union[Response, List[Response], None]:
+    return await dispatch_to_response_pure(
+        deserializer=deserializer,
+        schema_validator=schema_validator,
+        context=context,
+        methods=global_methods if methods is None else methods,
+        request=request,
     )
-    logger.info(to_json(response))
-    # Remove the temporary stream handlers
-    if basic_logging:
-        remove_handlers(request_handler, response_handler)
-    return response
+
+
+async def dispatch_to_serializable(*args: Any, **kwargs: Any) -> Union[dict, list]:
+    return to_serializable(await dispatch_to_response(*args, **kwargs))
+
+
+async def dispatch_to_json(
+    *args: Any, serializer: Callable = json.dumps, **kwargs: Any
+) -> str:
+    """
+    This is the main public method, it goes through the entire JSON-RPC process
+    - taking a JSON-RPC request string, dispatching it, converting the Response(s) into
+    a serializable value and then serializing that to return a JSON-RPC response
+    string.
+    """
+    return serializer(await dispatch_to_serializable(*args, **kwargs))
+
+
+# "dispatch" is an alias of dispatch_to_json.
+dispatch = dispatch_to_json

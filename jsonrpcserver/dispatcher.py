@@ -1,48 +1,28 @@
-"""
-Dispatcher.
-
-"dispatch" takes a JSON-RPC request (a json string), calls the appropriate method,
-returning a JSON-RPC response in one of three forms, depending on which dispatch
-function was called:
-
-    dispatch_to_response:
-        Returns the JSON-RPC response as a Response object, a list of them, or None in
-        the case of a notification. This allows you to access attributes of the object
-        like `result`.
-
-    dispatch_to_serializable:
-        Returns the JSON-RPC response as a Python object, e.g.
-        {"jsonrpc": "2.0", "result": "foo", "id": 1}
-
-    dispatch_to_json: Returns the JSON-RPC response as a JSON string.
-        '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
-
-The main public function "dispatch" is an alias of dispatch_to_json.
-
-This module is named "dispatcher.py" because "dispatch" clashes with the function name.
-"""
-import json
-import os
-import logging
 from configparser import ConfigParser
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Iterable, NamedTuple, Union
+import json
+import logging
+import os
 
 from apply_defaults import apply_config  # type: ignore
-from jsonschema.validators import validator_for  # type: ignore
 from pkg_resources import resource_string  # type: ignore
+from jsonschema.validators import validator_for  # type: ignore
+from pymonad.tools import curry, identity  # type: ignore
+from pymonad.either import Either, Left, Right  # type: ignore
 
 from .exceptions import JsonRpcError
 from .methods import Methods, global_methods, validate_args
 from .request import Request, NOID
 from .response import (
+    ErrorResponse,
     InvalidRequestResponse,
     ParseErrorResponse,
     Response,
-    ServerErrorResponse,
-    from_result,
+    SuccessResponse,
     to_serializable,
 )
-from .result import InvalidParams, InternalError, MethodNotFound, Error, Result, Success
+from .result import Error, InternalError, InvalidParams, MethodNotFound, Result, Success
+
 
 default_deserializer = json.loads
 
@@ -56,6 +36,47 @@ default_schema_validator = klass(schema).validate
 # Read configuration file
 config = ConfigParser(default_section="dispatch")
 config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
+
+
+class DispatchResult(NamedTuple):
+    request: Request
+    result: Result
+
+
+def extract_args(request: Request, context: Any) -> list:
+    params = request.params if isinstance(request.params, list) else []
+    return [context] + params if context else params
+
+
+def extract_kwargs(request: Request) -> dict:
+    return request.params if isinstance(request.params, dict) else {}
+
+
+def from_result(dispatch_result: DispatchResult) -> Response:
+    """Converts a Result to a Response (by adding the request id)."""
+    assert dispatch_result.request.id is not NOID, "Can't respond to a notification"
+    return (
+        SuccessResponse(
+            **dispatch_result.result._asdict(), id=dispatch_result.request.id
+        )
+        if isinstance(dispatch_result.result, Success)
+        else ErrorResponse(
+            **dispatch_result.result._asdict(), id=dispatch_result.request.id
+        )
+    )
+
+
+def from_results(
+    dispatch_results: Iterable[DispatchResult], is_batch: bool
+) -> Union[Response, Iterable[Response], None]:
+    # Gather the responses (only for the non-notifications).
+    responses = list(
+        map(from_result, filter(lambda dr: dr.request.id is not NOID, dispatch_results))
+    )
+    # Two rules need to be applied here: we should not respond to a list of
+    # notifications, that means returning None. Secondly, if it's not a batch request,
+    # take a single response out of the list.
+    return None if not len(responses) else (responses if is_batch else responses[0])
 
 
 def call(methods: Methods, method_name: str, args: list, kwargs: dict) -> Result:
@@ -91,83 +112,58 @@ def call(methods: Methods, method_name: str, args: list, kwargs: dict) -> Result
         )
 
 
-def extract_args(request: Request, context: Any) -> list:
-    params = request.params if isinstance(request.params, list) else []
-    return [context] + params if context else params
-
-
-def extract_kwargs(request: Request) -> dict:
-    return request.params if isinstance(request.params, dict) else {}
-
-
+@curry(3)
 def dispatch_request(
-    *, methods: Methods, context: Any, request: Request
-) -> Union[Response, None]:
-    """
-    Dispatch a single Request.
-
-    Maps a single Request to a single Response.
-
-    Converts the return value (a Result) into a Response.
-    """
-    result = call(
-        methods,
-        request.method,
-        extract_args(request, context),
-        extract_kwargs(request),
-    )
-    return None if request.id is NOID else from_result(result, request.id)
-
-
-def none_if_empty(x: Any) -> Any:
-    return None if not x else x
-
-
-def remove_nones(responses: List[Union[None, Response]]) -> Union[List[Response]]:
-    return [x for x in responses if x is not None]
-
-
-def dispatch_requests(
-    *, methods: Methods, context: Any, requests: Union[Request, List[Request]]
-) -> Union[None, Response, List[Response]]:
-    """Important: The methods must be called. If all requests are notifications."""
-    return (
-        # Nones (notifications) must be removed - "A Response object SHOULD exist for
-        # each Request object, except that there SHOULD NOT be any Response objects for
-        # notifications."
-        # Also should not return an empty list, "If there are no Response objects
-        # contained within the Response array as it is to be sent to the client, the
-        # server MUST NOT return an empty Array and should return nothing at all."
-        none_if_empty(
-            remove_nones(
-                [
-                    dispatch_request(methods=methods, context=context, request=r)
-                    for r in requests
-                ]
-            )
-        )
-        if isinstance(requests, list)
-        else dispatch_request(methods=methods, context=context, request=requests)
+    methods: Methods, context: Any, request: Request
+) -> DispatchResult:
+    return DispatchResult(
+        request=request,
+        result=call(
+            methods,
+            request.method,
+            extract_args(request, context),
+            extract_kwargs(request),
+        ),
     )
 
 
-def create_requests(requests: Union[Dict, List[Dict]]) -> Union[Request, List[Request]]:
-    """
-    Maps a deserialized request(s) (i.e. dict or list) to Request(s).
-
-    Args:
-        requests: Request dict, or a list of dicts.
-
-    Returns:
-        A Request (or a list of them).
-    """
-    return (
-        [Request(r["method"], r.get("params", []), r.get("id", NOID)) for r in requests]
-        if isinstance(requests, list)
-        else Request(
-            requests["method"], requests.get("params", []), requests.get("id", NOID)
-        )
+def create_request(request: dict) -> Request:
+    return Request(
+        request["method"], request.get("params", []), request.get("id", NOID)
     )
+
+
+def make_list(x: Any) -> list:
+    return [x] if not isinstance(x, list) else x
+
+
+@curry(2)
+def validate(
+    validator: Callable, request: Union[dict, list]
+) -> Either[Union[dict, list], Response]:
+    """
+    We don't know which validator will be used, so the specific exception that will be
+    raised is unknown. Any exception is an invalid request error.
+    """
+    try:
+        validator(request)
+    except Exception as exc:
+        return Left(InvalidRequestResponse("The request failed schema validation"))
+    return Right(request)
+
+
+@curry(2)
+def deserialize(
+    deserializer: Callable, request: str
+) -> Either[Union[dict, list], Response]:
+    """
+    We don't know which deserializer will be used, so the specific exception that will
+    be raised is unknown. Any exception is a parse error.
+    """
+    try:
+        return Right(deserializer(request))
+    except Exception as exc:
+        return Left(ParseErrorResponse(str(exc)))
 
 
 def dispatch_to_response_pure(
@@ -177,45 +173,30 @@ def dispatch_to_response_pure(
     context: Any,
     methods: Methods,
     request: str,
-) -> Union[Response, List[Response], None]:
-    """
-    Dispatch a JSON-serialized request string to methods.
-
-    Maps a request string to Response(s).
-
-    Pure version of dispatch - no defaults, globals, or logging. Use this function for
-    testing, not dispatch_to_response or dispatch.
-
-    Args:
-        deserializer: Function that deserializes the JSON-RPC request.
-        schema_validator: Function that validates the JSON-RPC request.
-        context: Will be passed to methods as the first param if not None.
-        methods: Collection of methods that can be called.
-        request: The incoming request string.
-
-    Returns:
-        A Response, list of Responses, or None if all requests were notifications.
-    """
-    try:
-        try:
-            deserialized = deserializer(request)
-        # We don't know which deserializer will be used, so the specific exception that
-        # will be raised is unknown. Any exception is a parse error.
-        except Exception as exc:
-            return ParseErrorResponse(str(exc))
-        # As above, we don't know which validator will be used, so the specific
-        # exception that will be raised is unknown. Any exception is an invalid request
-        # error.
-        try:
-            schema_validator(deserialized)
-        except Exception as exc:
-            return InvalidRequestResponse("The request failed schema validation")
-        return dispatch_requests(
-            methods=methods, context=context, requests=create_requests(deserialized)
+) -> Union[Response, Iterable[Response], None]:
+    return (
+        Right(request)
+        .bind(deserialize(deserializer))
+        .bind(validate(schema_validator))
+        .either(
+            identity,
+            lambda deserialized: from_results(
+                map(
+                    dispatch_request(methods, context),
+                    map(create_request, make_list(deserialized)),
+                ),
+                isinstance(deserialized, list),
+            ),
         )
-    except Exception as exc:
-        logging.exception(exc)
-        return ServerErrorResponse(str(exc), None)
+    )
+
+
+# --------------------------------------------------------------------------------------
+# Above here is pure: no using globals, default values, or raising exceptions. (actually
+# catching exceptions is impure but there's no escaping it.)
+#
+# Below is the public developer API.
+# --------------------------------------------------------------------------------------
 
 
 @apply_config(config)
@@ -226,7 +207,7 @@ def dispatch_to_response(
     context: Any = None,
     schema_validator: Callable = default_schema_validator,
     deserializer: Callable = default_deserializer,
-) -> Union[Response, List[Response], None]:
+) -> Union[Response, Iterable[Response], None]:
     """
     Dispatch a JSON-serialized request to methods.
 
@@ -259,14 +240,12 @@ def dispatch_to_response(
     )
 
 
-def dispatch_to_serializable(*args: Any, **kwargs: Any) -> Union[dict, list]:
+def dispatch_to_serializable(*args: Any, **kwargs: Any) -> Union[dict, list, None]:
     return to_serializable(dispatch_to_response(*args, **kwargs))
 
 
 def dispatch_to_json(
-    *args: Any,
-    serializer: Callable = json.dumps,
-    **kwargs: Any,
+    *args: Any, serializer: Callable = json.dumps, **kwargs: Any
 ) -> str:
     """
     This is the main public method, it goes through the entire JSON-RPC process

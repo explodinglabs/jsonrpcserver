@@ -22,8 +22,7 @@ from .codes import (
     ERROR_PARSE_ERROR,
     ERROR_SERVER_ERROR,
 )
-from .request import NOID
-from .result import Result, Success, UNSPECIFIED
+from .result import UNSPECIFIED
 
 
 class SuccessResponse(NamedTuple):
@@ -37,6 +36,11 @@ class SuccessResponse(NamedTuple):
 
 
 class ErrorResponse(NamedTuple):
+    """
+    It would be nice to subclass Error here, adding only id. But it's not possible to
+    easily subclass NamedTuples in Python 3.6. (I believe it can be done in 3.8.)
+    """
+
     code: int
     message: str
     data: Any
@@ -73,16 +77,6 @@ def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
     return ErrorResponse(ERROR_SERVER_ERROR, "Server error", data, id)
 
 
-def from_result(result: Result, id: Any) -> Union[Response, None]:
-    """Converts a Result to a Response (by adding the request id)."""
-    if id is NOID:  # Response can't be a notification.
-        return None
-    elif isinstance(result, Success):
-        return SuccessResponse(**result._asdict(), id=id)
-    else:
-        return ErrorResponse(**result._asdict(), id=id)
-
-
 def to_serializable_one(response: Response) -> dict:
     if isinstance(response, ErrorResponse):
         return {
@@ -100,9 +94,11 @@ def to_serializable_one(response: Response) -> dict:
 
 
 def to_serializable(
-    response: Union[Response, List[Response]]
-) -> Union[dict, List[dict]]:
+    response: Union[Response, List[Response], None]
+) -> Union[dict, List[dict], None]:
     """Converts a Response to a JSON-RPC response dict."""
+    if response is None:
+        return None
     if isinstance(response, list):
         return [to_serializable_one(r) for r in response]
     else:

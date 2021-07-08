@@ -1,6 +1,5 @@
 from unittest.mock import sentinel
 
-from jsonrpcserver.request import NOID
 from jsonrpcserver.response import (
     ErrorResponse,
     InvalidRequestResponse,
@@ -8,11 +7,8 @@ from jsonrpcserver.response import (
     ParseErrorResponse,
     ServerErrorResponse,
     SuccessResponse,
-    UNSPECIFIED,
-    from_result,
     to_serializable,
 )
-from jsonrpcserver.result import Success, Error, InvalidParams
 
 
 def test_SuccessResponse():
@@ -61,48 +57,6 @@ def test_ServerErrorResponse():
     assert response.message == "Server error"
     assert response.data == sentinel.data
     assert response.id == sentinel.id
-
-
-def test_from_result_Success():
-    response = from_result(Success(sentinel.result), sentinel.id)
-    assert isinstance(response, SuccessResponse) == True
-    assert response.result == sentinel.result
-    assert response.id == sentinel.id
-
-
-def test_from_result_Error():
-    response = from_result(
-        Error(code=sentinel.code, message=sentinel.message, data=sentinel.data),
-        sentinel.id,
-    )
-    assert isinstance(response, ErrorResponse) == True
-    assert response.code == sentinel.code
-    assert response.message == sentinel.message
-    assert response.data == sentinel.data
-    assert response.id == sentinel.id
-
-
-def test_from_result_InvalidParams():
-    response = from_result(InvalidParams(sentinel.data), sentinel.id)
-    assert isinstance(response, ErrorResponse) == True
-    assert response.code == -32602
-    assert response.message == "Invalid params"
-    assert response.data == sentinel.data
-    assert response.id == sentinel.id
-
-
-def test_from_result_InvalidParams_no_data():
-    response = from_result(InvalidParams(), sentinel.id)
-    assert isinstance(response, ErrorResponse) == True
-    assert response.code == -32602
-    assert response.message == "Invalid params"
-    assert response.data == UNSPECIFIED
-    assert response.id == sentinel.id
-
-
-def test_from_result_notification():
-    response = from_result(Success(result=sentinel.result), NOID)
-    assert response is None
 
 
 def test_to_serializable():
