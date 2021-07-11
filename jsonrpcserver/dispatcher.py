@@ -43,67 +43,6 @@ class DispatchResult(NamedTuple):
     result: Result
 
 
-def validate_result(result: Result) -> Result:
-    """Ensure value returned from method is a Result."""
-    return (
-        result
-        if isinstance(result, (Success, Error))
-        else InternalError("The method did not return a Result")
-    )
-
-
-def call(method: Callable, args: list, kwargs: dict) -> Result:
-    try:
-        return method(*args, **kwargs)
-    except JsonRpcError as exc:
-        return Error(code=exc.code, message=exc.message, data=exc.data)
-    except Exception as exc:  # Other error inside method - Internal error
-        # logging.exception(exc)
-        return InternalError(str(exc))
-
-
-def extract_args(request: Request, context: Any) -> list:
-    params = request.params if isinstance(request.params, list) else []
-    return [context] + params if context else params
-
-
-def extract_kwargs(request: Request) -> dict:
-    return request.params if isinstance(request.params, dict) else {}
-
-
-def validate_args(func: Callable, *args: Any, **kwargs: Any) -> Result:
-    try:
-        signature(func).bind(*args, **kwargs)
-    except TypeError as exc:
-        return InvalidParams(str(exc))
-    return Success(func)
-
-
-@curry(2)
-def get_method(methods: Methods, method_name: str) -> Either[Error, Callable]:
-    try:
-        return Success(methods.items[method_name])
-    except KeyError:
-        return MethodNotFound(method_name)
-
-
-@curry(3)
-def dispatch_request(
-    methods: Methods, context: Any, request: Request
-) -> DispatchResult:
-    # *extract_args(request, context), **extract_kwargs(request)
-    return DispatchResult(
-        request=request,
-        result=(
-            Success(request.method)
-            .bind(get_method(methods))
-            .bind(validate_args(request, context))
-            .bind(call(request, context))
-            .bind(validate_result)
-        ),
-    )
-
-
 def extract_list(
     is_batch: bool, responses: Iterable[Response]
 ) -> Union[Response, List[Response], None]:
@@ -140,6 +79,67 @@ def to_response(dispatch_result: DispatchResult) -> Response:
         else ErrorResponse(
             **dispatch_result.result._asdict(), id=dispatch_result.request.id
         )
+    )
+
+
+def extract_args(request: Request, context: Any) -> list:
+    params = request.params if isinstance(request.params, list) else []
+    return [context] + params if context else params
+
+
+def extract_kwargs(request: Request) -> dict:
+    return request.params if isinstance(request.params, dict) else {}
+
+
+def validate_result(result: Result) -> Result:
+    """Ensure value returned from method is a Result."""
+    return (
+        result
+        if isinstance(result, (Success, Error))
+        else InternalError("The method did not return a Result")
+    )
+
+
+def call(method: Callable, args: list, kwargs: dict) -> Result:
+    try:
+        return method(*args, **kwargs)
+    except JsonRpcError as exc:
+        return Error(code=exc.code, message=exc.message, data=exc.data)
+    except Exception as exc:  # Other error inside method - Internal error
+        # logging.exception(exc)
+        return InternalError(str(exc))
+
+
+def validate_args(func: Callable, *args: Any, **kwargs: Any) -> Result:
+    try:
+        signature(func).bind(*args, **kwargs)
+    except TypeError as exc:
+        return InvalidParams(str(exc))
+    return Success(func)
+
+
+@curry(2)
+def get_method(methods: Methods, method_name: str) -> Either[Error, Callable]:
+    try:
+        return Success(methods.items[method_name])
+    except KeyError:
+        return MethodNotFound(method_name)
+
+
+@curry(3)
+def dispatch_request(
+    methods: Methods, context: Any, request: Request
+) -> DispatchResult:
+    # *extract_args(request, context), **extract_kwargs(request)
+    return DispatchResult(
+        request=request,
+        result=(
+            Success(request.method)
+            .bind(get_method(methods))
+            .bind(validate_args(request, context))
+            .bind(call(request, context))
+            .bind(validate_result)
+        ),
     )
 
 
