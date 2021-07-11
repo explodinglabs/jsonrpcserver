@@ -20,6 +20,7 @@ from jsonrpcserver.dispatcher import (
     dispatch_to_response,
     dispatch_to_response_pure,
     from_result,
+    validate_args,
 )
 from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.methods import Methods, global_methods
@@ -98,6 +99,48 @@ def test_from_result_notification():
         from_result(
             DispatchResult(Request("ping", [], NOID), Success(result=sentinel.result))
         )
+
+
+# validate_args
+
+
+def test_validate_no_arguments():
+    f = lambda: None
+    assert validate_args(f) == Success(f)
+
+
+def test_validate_no_arguments_too_many_positionals():
+    result = validate_args(lambda: None, "foo")
+    assert result.code == ERROR_INVALID_PARAMS
+    assert result.data == "too many positional arguments"
+
+
+def test_validate_positionals():
+    f = lambda x: None
+    assert validate_args(f, 1) == Success(f)
+
+
+def test_validate_positionals_not_passed():
+    f = lambda x: None
+    result = validate_args(f, foo="bar")
+    assert result.code == ERROR_INVALID_PARAMS
+    assert result.data == "missing a required argument: 'x'"
+
+
+def test_validate_keywords():
+    f = lambda **kwargs: None
+    result = validate_args(f, foo="bar")
+    assert result == Success(f)
+
+
+def test_validate_object_method():
+    class FooClass:
+        def foo(self, one, two):
+            return "bar"
+
+    f = FooClass().foo
+    result = validate_args(f, "one", "two")
+    assert result == Success(f)
 
 
 # dispatch_request

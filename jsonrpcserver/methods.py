@@ -9,29 +9,7 @@ limitation of JSON-RPC).
 """
 from typing import Any, Callable, Optional
 
-from inspect import signature
-
 Method = Callable[..., Any]
-
-
-def validate_args(func: Method, *args: Any, **kwargs: Any) -> str:
-    """
-    Check if the request's arguments match a function's signature.
-
-    Args:
-        func: The function to check.
-        args: Positional arguments.
-        kwargs: Keyword arguments.
-
-    Returns:
-        An empty string if arguments can be passed to a function, an error
-        message otherwise.
-    """
-    try:
-        signature(func).bind(*args, **kwargs)
-    except TypeError as exc:
-        return str(exc)
-    return ""
 
 
 class Methods:

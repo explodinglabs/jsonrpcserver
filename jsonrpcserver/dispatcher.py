@@ -1,18 +1,18 @@
 from configparser import ConfigParser
-from typing import Any, Callable, Iterable, NamedTuple, Union
+from typing import Any, Callable, Iterable, List, NamedTuple, Union
 import json
-import logging
 import os
+from inspect import signature
+from itertools import filterfalse
 
 from apply_defaults import apply_config  # type: ignore
 from pkg_resources import resource_string  # type: ignore
 from jsonschema.validators import validator_for  # type: ignore
-from pymonad.tools import curry, identity  # type: ignore
-from pymonad.either import Either, Left, Right  # type: ignore
+from pymonad.tools import curry  # type: ignore
 
 from .exceptions import JsonRpcError
-from .methods import Methods, global_methods, validate_args
-from .request import Request, NOID
+from .methods import Methods, global_methods
+from .request import NOID, Request, is_notification
 from .response import (
     ErrorResponse,
     InvalidRequestResponse,
@@ -23,7 +23,7 @@ from .response import (
 )
 from .result import Error, InternalError, InvalidParams, MethodNotFound, Result, Success
 
-
+Deserialized = Union[dict, List[dict]]
 default_deserializer = json.loads
 
 # Prepare the jsonschema validator. This is global so it loads only once, not every
@@ -43,6 +43,25 @@ class DispatchResult(NamedTuple):
     result: Result
 
 
+def validate_result(result: Result) -> Result:
+    """Ensure value returned from method is a Result."""
+    return (
+        result
+        if isinstance(result, (Success, Error))
+        else InternalError("The method did not return a Result")
+    )
+
+
+def call(method: Callable, args: list, kwargs: dict) -> Result:
+    try:
+        return method(*args, **kwargs)
+    except JsonRpcError as exc:
+        return Error(code=exc.code, message=exc.message, data=exc.data)
+    except Exception as exc:  # Other error inside method - Internal error
+        # logging.exception(exc)
+        return InternalError(str(exc))
+
+
 def extract_args(request: Request, context: Any) -> list:
     params = request.params if isinstance(request.params, list) else []
     return [context] + params if context else params
@@ -52,8 +71,66 @@ def extract_kwargs(request: Request) -> dict:
     return request.params if isinstance(request.params, dict) else {}
 
 
-def from_result(dispatch_result: DispatchResult) -> Response:
-    """Converts a Result to a Response (by adding the request id)."""
+def validate_args(func: Callable, *args: Any, **kwargs: Any) -> Result:
+    try:
+        signature(func).bind(*args, **kwargs)
+    except TypeError as exc:
+        return InvalidParams(str(exc))
+    return Success(func)
+
+
+@curry(2)
+def get_method(methods: Methods, method_name: str) -> Either[Error, Callable]:
+    try:
+        return Success(methods.items[method_name])
+    except KeyError:
+        return MethodNotFound(method_name)
+
+
+@curry(3)
+def dispatch_request(
+    methods: Methods, context: Any, request: Request
+) -> DispatchResult:
+    # *extract_args(request, context), **extract_kwargs(request)
+    return DispatchResult(
+        request=request,
+        result=(
+            Success(request.method)
+            .bind(get_method(methods))
+            .bind(validate_args(request, context))
+            .bind(call(request, context))
+            .bind(validate_result)
+        ),
+    )
+
+
+def extract_list(
+    is_batch: bool, responses: Iterable[Response]
+) -> Union[Response, List[Response], None]:
+    """If it's a batch request, extract a single request from the list.
+
+    We also apply a JSON-RPC rule here. If it's a notification, or a batch of all
+    notifications, we should not respond. That means returning None instead of an empty
+    list.
+    """
+    # We have to reify the list here to determine if it's empty, which is unfortunate
+    # because we do another map later (when serializing to dicts). This function doesn't
+    # use the Responses, though, it could be an iterable of anything. So we could
+    # serialize before reaching here.
+    response_list = list(responses)
+    return (
+        None
+        if len(response_list) == 0
+        else (
+            response_list if is_batch else response_list[0]
+        )  # There will be at lease one request in a valid batch request
+    )
+
+
+def to_response(dispatch_result: DispatchResult) -> Response:
+    """Maps DispatchResults to Responses.
+
+    Don't pass a notification (filter them out before calling)."""
     assert dispatch_result.request.id is not NOID, "Can't respond to a notification"
     return (
         SuccessResponse(
@@ -63,67 +140,6 @@ def from_result(dispatch_result: DispatchResult) -> Response:
         else ErrorResponse(
             **dispatch_result.result._asdict(), id=dispatch_result.request.id
         )
-    )
-
-
-def from_results(
-    dispatch_results: Iterable[DispatchResult], is_batch: bool
-) -> Union[Response, Iterable[Response], None]:
-    # Gather the responses (only for the non-notifications).
-    responses = list(
-        map(from_result, filter(lambda dr: dr.request.id is not NOID, dispatch_results))
-    )
-    # Two rules need to be applied here: we should not respond to a list of
-    # notifications, that means returning None. Secondly, if it's not a batch request,
-    # take a single response out of the list.
-    return None if not len(responses) else (responses if is_batch else responses[0])
-
-
-def call(methods: Methods, method_name: str, args: list, kwargs: dict) -> Result:
-    """
-    Calls a method.
-
-    Catches exceptions to ensure we always return a Response.
-
-    Returns:
-        The Result from the method call.
-    """
-    try:
-        method = methods.items[method_name]
-    except KeyError:
-        return MethodNotFound(method_name)
-
-    errors = validate_args(method, *args, **kwargs)
-    if errors:
-        return InvalidParams(errors)
-
-    try:
-        result = method(*args, **kwargs)
-    except JsonRpcError as exc:
-        return Error(code=exc.code, message=exc.message, data=exc.data)
-    except Exception as exc:  # Other error inside method - server error
-        logging.exception(exc)
-        return InternalError(str(exc))
-    else:
-        return (
-            InternalError("The method did not return a Result")
-            if not isinstance(result, (Success, Error))
-            else result
-        )
-
-
-@curry(3)
-def dispatch_request(
-    methods: Methods, context: Any, request: Request
-) -> DispatchResult:
-    return DispatchResult(
-        request=request,
-        result=call(
-            methods,
-            request.method,
-            extract_args(request, context),
-            extract_kwargs(request),
-        ),
     )
 
 
@@ -137,57 +153,64 @@ def make_list(x: Any) -> list:
     return [x] if not isinstance(x, list) else x
 
 
+def dispatch_deserialized(
+    methods: Methods, context: Any, deserialized: Deserialized
+) -> Union[Response, Iterable[Response], None]:
+    return extract_list(
+        isinstance(deserialized, list),
+        map(
+            to_response,
+            filterfalse(
+                is_notification,
+                map(
+                    dispatch_request(methods, context),
+                    map(create_request, make_list(deserialized)),
+                ),
+            ),
+        ),
+    )
+
+
 @curry(2)
-def validate(
-    validator: Callable, request: Union[dict, list]
-) -> Either[Union[dict, list], Response]:
-    """
-    We don't know which validator will be used, so the specific exception that will be
-    raised is unknown. Any exception is an invalid request error.
+def validate(validator: Callable, request: Deserialized) -> Either[Error, Deserialized]:
+    """We don't know which validator will be used, so the specific exception that will
+    be raised is unknown. Any exception is an invalid request error.
     """
     try:
         validator(request)
     except Exception as exc:
-        return Left(InvalidRequestResponse("The request failed schema validation"))
-    return Right(request)
+        return InvalidRequestResponse("The request failed schema validation")
+    return Success(request)
 
 
 @curry(2)
-def deserialize(
-    deserializer: Callable, request: str
-) -> Either[Union[dict, list], Response]:
-    """
-    We don't know which deserializer will be used, so the specific exception that will
-    be raised is unknown. Any exception is a parse error.
+def deserialize(deserializer: Callable, request: str) -> Either[Error, Deserialized]:
+    """We don't know which deserializer will be used, so the specific exception that
+    will be raised is unknown. Any exception is a parse error.
     """
     try:
-        return Right(deserializer(request))
+        return Success(deserializer(request))
     except Exception as exc:
-        return Left(ParseErrorResponse(str(exc)))
+        return ParseErrorResponse(str(exc))
 
 
 def dispatch_to_response_pure(
     *,
     deserializer: Callable,
     schema_validator: Callable,
-    context: Any,
     methods: Methods,
+    context: Any,
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
-    return (
-        Right(request)
+    result = (
+        Success(request)
         .bind(deserialize(deserializer))
         .bind(validate(schema_validator))
-        .either(
-            identity,
-            lambda deserialized: from_results(
-                map(
-                    dispatch_request(methods, context),
-                    map(create_request, make_list(deserialized)),
-                ),
-                isinstance(deserialized, list),
-            ),
-        )
+    )
+    return (
+        result
+        if result.is_left()
+        else dispatch_deserialized(methods, context, result._value)
     )
 
 
