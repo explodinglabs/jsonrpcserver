@@ -1,35 +1,40 @@
 from unittest.mock import sentinel
 
-from jsonrpcserver.result import Success, Error, InvalidParams, UNSPECIFIED
+from jsonrpcserver.result import (
+    SuccessResult,
+    ErrorResult,
+    InvalidParamsResult,
+    UNSPECIFIED,
+)
 
 
-def test_Success():
-    assert Success(None).result is None
+def test_SuccessResult():
+    assert SuccessResult(None).result is None
 
 
-def test_Error():
-    result = Error(sentinel.code, sentinel.message)
+def test_ErrorResult():
+    result = ErrorResult(sentinel.code, sentinel.message)
     assert result.code == sentinel.code
     assert result.message == sentinel.message
     assert result.data == UNSPECIFIED
 
 
-def test_Error_with_data():
-    result = Error(sentinel.code, sentinel.message, sentinel.data)
+def test_ErrorResult_with_data():
+    result = ErrorResult(sentinel.code, sentinel.message, sentinel.data)
     assert result.code == sentinel.code
     assert result.message == sentinel.message
     assert result.data == sentinel.data
 
 
-def test_InvalidParams():
-    result = InvalidParams(sentinel.data)
+def test_InvalidParamsResult():
+    result = InvalidParamsResult(sentinel.data)
     assert result.code == -32602
     assert result.message == "Invalid params"
     assert result.data == sentinel.data
 
 
-def test_InvalidParams_with_data():
-    result = InvalidParams(sentinel.data)
+def test_InvalidParamsResult_with_data():
+    result = InvalidParamsResult(sentinel.data)
     assert result.code == -32602
     assert result.message == "Invalid params"
     assert result.data == sentinel.data

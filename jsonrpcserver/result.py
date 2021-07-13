@@ -23,7 +23,9 @@ Which is equivalent to (-32602 is the Invalid Params error code in JSON-RPC):
 
     return Error(-32602, "Color is invalid")
 """
-from typing import Any, NamedTuple, Optional, Union
+from typing import Any, NamedTuple
+
+from oslash.either import Either  # type: ignore
 
 from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
 
@@ -32,27 +34,36 @@ from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_
 UNSPECIFIED = object()
 
 
-class Success(NamedTuple):
-    result: Optional[str] = None
+class SuccessResult(NamedTuple):
+    result: Any
+
+    def __repr__(self) -> str:
+        return f"SuccessResult({self.result!r})"
 
 
-class Error(NamedTuple):
+class ErrorResult(NamedTuple):
     code: int
     message: str
     data: Any = UNSPECIFIED  # The spec says this value may be omitted
 
+    def __repr__(self) -> str:
+        return f"ErrorResult(code={self.code!r}, message={self.message!r}, data={self.data!r}"
+
 
 # Union of the two valid result types
-Result = Union[Success, Error]
+Result = Either[SuccessResult, ErrorResult]
 
 
-def InvalidParams(data: Any = UNSPECIFIED) -> Error:
-    return Error(ERROR_INVALID_PARAMS, "Invalid params", data)
+# Helpers
 
 
-def MethodNotFound(data: Any) -> Error:
-    return Error(ERROR_METHOD_NOT_FOUND, "Method not found", data)
+def MethodNotFoundResult(data: Any) -> ErrorResult:
+    return ErrorResult(ERROR_METHOD_NOT_FOUND, "Method not found", data)
 
 
-def InternalError(data: Any) -> Error:
-    return Error(ERROR_INTERNAL_ERROR, "Internal error", data)
+def InternalErrorResult(data: Any) -> ErrorResult:
+    return ErrorResult(ERROR_INTERNAL_ERROR, "Internal error", data)
+
+
+def InvalidParamsResult(data: Any = UNSPECIFIED) -> ErrorResult:
+    return ErrorResult(ERROR_INVALID_PARAMS, "Invalid params", data)

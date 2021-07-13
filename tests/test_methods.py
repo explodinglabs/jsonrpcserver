@@ -2,37 +2,7 @@ from functools import partial
 
 import pytest
 
-from jsonrpcserver.methods import Methods, add, validate_args
-
-
-def test_validate_no_arguments():
-    assert validate_args(lambda: None) == ""
-
-
-def test_validate_no_arguments_too_many_positionals():
-    assert validate_args(lambda: None, "foo") == "too many positional arguments"
-
-
-def test_validate_positionals():
-    assert validate_args(lambda x: None, 1) == ""
-
-
-def test_validate_positionals_not_passed():
-    assert (
-        validate_args(lambda x: None, foo="bar") == "missing a required argument: 'x'"
-    )
-
-
-def test_validate_keywords():
-    assert validate_args(lambda **kwargs: None, foo="bar") == ""
-
-
-def test_validate_object_method():
-    class FooClass:
-        def foo(self, one, two):
-            return "bar"
-
-    validate_args(FooClass().foo, "one", "two")
+from jsonrpcserver.methods import Methods, add
 
 
 def test_add_function():

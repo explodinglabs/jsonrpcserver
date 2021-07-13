@@ -14,7 +14,9 @@ elements, and then serialize it to JSON:
 >>> json.dumps(to_serializable(SuccessResponse(result='foo', id=1)))
 '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
 """
-from typing import Any, List, NamedTuple, Union
+from typing import Any, List, Type, NamedTuple, Union
+
+from oslash.either import Either  # type: ignore
 
 from .codes import (
     ERROR_INVALID_REQUEST,
@@ -47,8 +49,7 @@ class ErrorResponse(NamedTuple):
     id: Any
 
 
-# Union of the two valid response types
-Response = Union[SuccessResponse, ErrorResponse]
+Response = Type[Either[ErrorResponse, SuccessResponse]]
 
 
 def ParseErrorResponse(data: Any) -> ErrorResponse:
@@ -77,7 +78,7 @@ def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
     return ErrorResponse(ERROR_SERVER_ERROR, "Server error", data, id)
 
 
-def to_serializable_one(response: Response) -> dict:
+def to_serializable_one(response: Either[ErrorResponse, SuccessResponse]) -> dict:
     if isinstance(response, ErrorResponse):
         return {
             "jsonrpc": "2.0",
