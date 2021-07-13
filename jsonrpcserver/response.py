@@ -11,12 +11,12 @@ SuccessResponse(result='pong', id=1)
 Use to_serializable to get a dictionary or list containing the JSON-RPC response
 elements, and then serialize it to JSON:
 
->>> json.dumps(to_serializable(SuccessResponse(result='foo', id=1)))
+>>> json.dumps(to_serializable(Right(SuccessResponse(result='foo', id=1))))
 '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
 """
 from typing import Any, List, Type, NamedTuple, Union
 
-from oslash.either import Either  # type: ignore
+from oslash.either import Either, Left  # type: ignore
 
 from .codes import (
     ERROR_INVALID_REQUEST,
@@ -78,20 +78,29 @@ def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
     return ErrorResponse(ERROR_SERVER_ERROR, "Server error", data, id)
 
 
+def serialize_error(response: ErrorResponse) -> dict:
+    return {
+        "jsonrpc": "2.0",
+        "error": {
+            "code": response.code,
+            "message": response.message,
+            # "data" may be omitted.
+            **({"data": response.data} if response.data is not UNSPECIFIED else {}),
+        },
+        "id": response.id,
+    }
+
+
+def serialize_success(response: SuccessResponse) -> dict:
+    return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
+
+
 def to_serializable_one(response: Either[ErrorResponse, SuccessResponse]) -> dict:
-    if isinstance(response, ErrorResponse):
-        return {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": response.code,
-                "message": response.message,
-                # "data" may be omitted.
-                **({"data": response.data} if response.data is not UNSPECIFIED else {}),
-            },
-            "id": response.id,
-        }
-    else:  # isinstance(response, SuccessResponse):
-        return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
+    return (
+        serialize_error(response._error)
+        if isinstance(response, Left)
+        else serialize_success(response._value)
+    )
 
 
 def to_serializable(
@@ -100,7 +109,7 @@ def to_serializable(
     """Converts a Response to a JSON-RPC response dict."""
     if response is None:
         return None
-    if isinstance(response, list):
+    elif isinstance(response, list):
         return [to_serializable_one(r) for r in response]
     else:
         return to_serializable_one(response)
