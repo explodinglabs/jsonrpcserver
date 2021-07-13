@@ -231,9 +231,9 @@ def dispatch_to_response_pure(
 
 # --------------------------------------------------------------------------------------
 # Above here is pure: no using globals, default values, or raising exceptions. (actually
-# catching exceptions is impure but there's no escaping it.)
+# catching exceptions is impure but there's just no escaping that.)
 #
-# Below is the public developer API.
+# Below is the public API.
 # --------------------------------------------------------------------------------------
 
 
