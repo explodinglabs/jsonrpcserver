@@ -5,3 +5,4 @@
 .pytest_cache
 .tox
 .travis.yml
+dist/

@@ -25,7 +25,7 @@ Which is equivalent to (-32602 is the Invalid Params error code in JSON-RPC):
 """
 from typing import Any, NamedTuple
 
-from oslash.either import Either  # type: ignore
+from oslash.either import Either, Left, Right  # type: ignore
 
 from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
 
@@ -67,3 +67,15 @@ def InternalErrorResult(data: Any) -> ErrorResult:
 
 def InvalidParamsResult(data: Any = UNSPECIFIED) -> ErrorResult:
     return ErrorResult(ERROR_INVALID_PARAMS, "Invalid params", data)
+
+
+def Success(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
+    return Right(SuccessResult(*args, **kwargs))
+
+
+def Error(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
+    return Left(ErrorResult(*args, **kwargs))
+
+
+def InvalidParams(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
+    return Left(InvalidParamsResult(*args, **kwargs))
