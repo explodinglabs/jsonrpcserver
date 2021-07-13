@@ -2,26 +2,34 @@ from configparser import ConfigParser
 from typing import Any, Callable, Iterable, List, NamedTuple, Union
 import json
 import os
+from functools import partial
 from inspect import signature
-from itertools import filterfalse
 
 from apply_defaults import apply_config  # type: ignore
-from pkg_resources import resource_string  # type: ignore
 from jsonschema.validators import validator_for  # type: ignore
-from pymonad.tools import curry  # type: ignore
+from pkg_resources import resource_string  # type: ignore
+from oslash.either import Either, Left, Right  # type: ignore
 
 from .exceptions import JsonRpcError
 from .methods import Methods, global_methods
-from .request import NOID, Request, is_notification
+from .request import NOID, Request
 from .response import (
     ErrorResponse,
     InvalidRequestResponse,
     ParseErrorResponse,
     Response,
+    ServerErrorResponse,
     SuccessResponse,
     to_serializable,
 )
-from .result import Error, InternalError, InvalidParams, MethodNotFound, Result, Success
+from .result import (
+    ErrorResult,
+    InternalErrorResult,
+    InvalidParamsResult,
+    MethodNotFoundResult,
+    Result,
+    SuccessResult,
+)
 
 Deserialized = Union[dict, List[dict]]
 default_deserializer = json.loads
@@ -69,15 +77,25 @@ def extract_list(
 def to_response(dispatch_result: DispatchResult) -> Response:
     """Maps DispatchResults to Responses.
 
-    Don't pass a notification (filter them out before calling)."""
-    assert dispatch_result.request.id is not NOID, "Can't respond to a notification"
-    return (
-        SuccessResponse(
-            **dispatch_result.result._asdict(), id=dispatch_result.request.id
+    Don't pass a notification to this function.
+    """
+    if dispatch_result.request.id is NOID:
+        return Left(
+            ServerErrorResponse(
+                "Cannot respond to a notification", id=dispatch_result.request.id
+            )
         )
-        if isinstance(dispatch_result.result, Success)
-        else ErrorResponse(
-            **dispatch_result.result._asdict(), id=dispatch_result.request.id
+    return (
+        Left(
+            ErrorResponse(
+                **dispatch_result.result._error._asdict(), id=dispatch_result.request.id
+            )
+        )
+        if isinstance(dispatch_result.result, Left)
+        else Right(
+            SuccessResponse(
+                **dispatch_result.result._value._asdict(), id=dispatch_result.request.id
+            )
         )
     )
 
@@ -91,55 +109,49 @@ def extract_kwargs(request: Request) -> dict:
     return request.params if isinstance(request.params, dict) else {}
 
 
-def validate_result(result: Result) -> Result:
-    """Ensure value returned from method is a Result."""
-    return (
-        result
-        if isinstance(result, (Success, Error))
-        else InternalError("The method did not return a Result")
-    )
-
-
-def call(method: Callable, args: list, kwargs: dict) -> Result:
+def call(request: Request, context: Any, method: Callable) -> Result:
     try:
-        return method(*args, **kwargs)
+        result = method(*extract_args(request, context), **extract_kwargs(request))
+        assert (
+            isinstance(result, Left) and isinstance(result._error, ErrorResult)
+        ) or (
+            isinstance(result, Right) and isinstance(result._value, SuccessResult)
+        ), f"The method did not return a valid Result"
+        return result
     except JsonRpcError as exc:
-        return Error(code=exc.code, message=exc.message, data=exc.data)
+        return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     except Exception as exc:  # Other error inside method - Internal error
         # logging.exception(exc)
-        return InternalError(str(exc))
+        return Left(InternalErrorResult(str(exc)))
 
 
-def validate_args(func: Callable, *args: Any, **kwargs: Any) -> Result:
+def validate_args(
+    request: Request,
+    context: Any,
+    func: Callable,
+) -> Either[ErrorResult, Callable]:
     try:
-        signature(func).bind(*args, **kwargs)
+        signature(func).bind(*extract_args(request, context), **extract_kwargs(request))
     except TypeError as exc:
-        return InvalidParams(str(exc))
-    return Success(func)
+        return Left(InvalidParamsResult(str(exc)))
+    return Right(func)
 
 
-@curry(2)
-def get_method(methods: Methods, method_name: str) -> Either[Error, Callable]:
+def get_method(methods: Methods, method_name: str) -> Either[ErrorResult, Callable]:
     try:
-        return Success(methods.items[method_name])
+        return Right(methods.items[method_name])
     except KeyError:
-        return MethodNotFound(method_name)
+        return Left(MethodNotFoundResult(method_name))
 
 
-@curry(3)
 def dispatch_request(
     methods: Methods, context: Any, request: Request
 ) -> DispatchResult:
-    # *extract_args(request, context), **extract_kwargs(request)
     return DispatchResult(
         request=request,
-        result=(
-            Success(request.method)
-            .bind(get_method(methods))
-            .bind(validate_args(request, context))
-            .bind(call(request, context))
-            .bind(validate_result)
-        ),
+        result=get_method(methods, request.method)
+        .bind(partial(validate_args, request, context))
+        .bind(partial(call, request, context)),
     )
 
 
@@ -160,10 +172,10 @@ def dispatch_deserialized(
         isinstance(deserialized, list),
         map(
             to_response,
-            filterfalse(
-                is_notification,
+            filter(
+                lambda dr: dr.request.id is not NOID,
                 map(
-                    dispatch_request(methods, context),
+                    partial(dispatch_request, methods, context),
                     map(create_request, make_list(deserialized)),
                 ),
             ),
@@ -171,27 +183,29 @@ def dispatch_deserialized(
     )
 
 
-@curry(2)
-def validate(validator: Callable, request: Deserialized) -> Either[Error, Deserialized]:
+def validate(
+    validator: Callable, request: Deserialized
+) -> Either[ErrorResponse, Deserialized]:
     """We don't know which validator will be used, so the specific exception that will
     be raised is unknown. Any exception is an invalid request error.
     """
     try:
         validator(request)
     except Exception as exc:
-        return InvalidRequestResponse("The request failed schema validation")
-    return Success(request)
+        return Left(InvalidRequestResponse("The request failed schema validation"))
+    return Right(request)
 
 
-@curry(2)
-def deserialize(deserializer: Callable, request: str) -> Either[Error, Deserialized]:
+def deserialize(
+    deserializer: Callable, request: str
+) -> Either[ErrorResponse, Deserialized]:
     """We don't know which deserializer will be used, so the specific exception that
     will be raised is unknown. Any exception is a parse error.
     """
     try:
-        return Success(deserializer(request))
+        return Right(deserializer(request))
     except Exception as exc:
-        return ParseErrorResponse(str(exc))
+        return Left(ParseErrorResponse(str(exc)))
 
 
 def dispatch_to_response_pure(
@@ -202,16 +216,17 @@ def dispatch_to_response_pure(
     context: Any,
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
-    result = (
-        Success(request)
-        .bind(deserialize(deserializer))
-        .bind(validate(schema_validator))
-    )
-    return (
-        result
-        if result.is_left()
-        else dispatch_deserialized(methods, context, result._value)
-    )
+    try:
+        result = deserialize(deserializer, request).bind(
+            partial(validate, schema_validator)
+        )
+        return (
+            result
+            if isinstance(result, Left)
+            else dispatch_deserialized(methods, context, result._value)
+        )
+    except Exception as exc:
+        return Left(ServerErrorResponse(str(exc), None))
 
 
 # --------------------------------------------------------------------------------------

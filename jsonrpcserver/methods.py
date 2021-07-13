@@ -9,8 +9,6 @@ limitation of JSON-RPC).
 """
 from typing import Any, Callable, Optional
 
-Method = Callable[..., Any]
-
 
 class Methods:
     """Holds a list of methods that can be called by a JSON-RPC request."""
