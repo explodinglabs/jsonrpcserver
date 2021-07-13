@@ -21,6 +21,7 @@ from jsonrpcserver.dispatcher import (
     dispatch_request,
     dispatch_to_response,
     dispatch_to_response_pure,
+    identity,
     to_response,
     validate_args,
 )
@@ -232,6 +233,7 @@ def test_dispatch_to_response_pure():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(ping),
         request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
@@ -243,6 +245,7 @@ def test_dispatch_to_response_pure_notification():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(ping),
         request='{"jsonrpc": "2.0", "method": "ping"}',
@@ -255,6 +258,7 @@ def test_dispatch_to_response_pure_invalid_json():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(ping),
         request="{",
@@ -273,6 +277,7 @@ def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(ping),
         request='{"jsonrpc": "0", "method": "notify"}',
@@ -292,6 +297,7 @@ def test_dispatch_to_response_pure_invalid_jsonrpc():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(ping),
         request="{}",
@@ -314,6 +320,7 @@ def test_dispatch_to_response_pure_invalid_params():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(foo),
         request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
@@ -335,6 +342,7 @@ def test_dispatch_to_response_pure_invalid_params_count():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(foo),
         request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
@@ -358,6 +366,7 @@ def test_dispatch_to_response_pure_enforcing_result():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(not_a_result),
         request='{"jsonrpc": "2.0", "method": "not_a_result", "id": 1}',
@@ -381,6 +390,7 @@ def test_dispatch_to_response_pure_raising_exception():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(raise_exception),
         request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
@@ -416,6 +426,7 @@ def test_examples_positionals():
         methods=Methods(subtract),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
     )
@@ -426,6 +437,7 @@ def test_examples_positionals():
         methods=Methods(subtract),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
     )
@@ -440,6 +452,7 @@ def test_examples_nameds():
         methods=Methods(subtract),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
     )
@@ -450,6 +463,7 @@ def test_examples_nameds():
         methods=Methods(subtract),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
     )
@@ -461,6 +475,7 @@ def test_examples_notification():
         methods=Methods(update=lambda: None, foobar=lambda: None),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "update", "params": [1, 2, 3, 4, 5]}',
     )
@@ -471,6 +486,7 @@ def test_examples_notification():
         methods=Methods(update=lambda: None, foobar=lambda: None),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "foobar"}',
     )
@@ -482,6 +498,7 @@ def test_examples_invalid_json():
         methods=Methods(ping),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
         request='[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
     )
@@ -502,6 +519,7 @@ def test_examples_empty_array():
         methods=Methods(ping),
         context=None,
         schema_validator=default_schema_validator,
+        post_process=identity,
         deserializer=default_deserializer,
     )
     assert response == Left(
@@ -522,6 +540,7 @@ def test_examples_invalid_jsonrpc_batch():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(ping),
         request="[1]",
@@ -544,6 +563,7 @@ def test_examples_multiple_invalid_jsonrpc():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=Methods(ping),
         request="[1, 2, 3]",
@@ -591,6 +611,7 @@ def test_examples_mixed_requests_and_notifications():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
+        post_process=identity,
         context=None,
         methods=methods,
         request=requests,
