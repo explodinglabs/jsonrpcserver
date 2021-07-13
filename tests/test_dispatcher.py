@@ -16,16 +16,17 @@ from jsonrpcserver.codes import (
 from jsonrpcserver.dispatcher import (
     DispatchResult,
     create_request,
-    default_deserializer,
-    default_schema_validator,
     dispatch_request,
-    dispatch_to_response,
     dispatch_to_response_pure,
-    identity,
     to_response,
     validate_args,
 )
 from jsonrpcserver.exceptions import JsonRpcError
+from jsonrpcserver.main import (
+    default_deserializer,
+    default_schema_validator,
+    dispatch_to_response,
+)
 from jsonrpcserver.methods import Methods, global_methods
 from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
@@ -36,6 +37,7 @@ from jsonrpcserver.result import (
     SuccessResult,
     UNSPECIFIED,
 )
+from jsonrpcserver.utils import identity
 
 
 # def test_dispatch_to_response_pure_invalid_params_notification():

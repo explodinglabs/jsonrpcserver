@@ -1,18 +1,12 @@
-from configparser import ConfigParser
 from typing import Any, Callable, Iterable, List, NamedTuple, Union
-import json
 import logging
-import os
-from functools import partial, reduce
+from functools import partial
 from inspect import signature
 
-from apply_defaults import apply_config  # type: ignore
-from jsonschema.validators import validator_for  # type: ignore
-from pkg_resources import resource_string  # type: ignore
 from oslash.either import Either, Left, Right  # type: ignore
 
 from .exceptions import JsonRpcError
-from .methods import Methods, global_methods
+from .methods import Methods
 from .request import NOID, Request
 from .response import (
     ErrorResponse,
@@ -21,7 +15,6 @@ from .response import (
     Response,
     ServerErrorResponse,
     SuccessResponse,
-    to_serializable,
 )
 from .result import (
     ErrorResult,
@@ -31,32 +24,15 @@ from .result import (
     Result,
     SuccessResult,
 )
+from .utils import compose, make_list
+
 
 Deserialized = Union[dict, List[dict]]
-default_deserializer = json.loads
-
-# Prepare the jsonschema validator. This is global so it loads only once, not every
-# time dispatch is called.
-schema = json.loads(resource_string(__name__, "request-schema.json"))
-klass = validator_for(schema)
-klass.check_schema(schema)
-default_schema_validator = klass(schema).validate
-
-# Read configuration file
-config = ConfigParser(default_section="dispatch")
-config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
 
 
 class DispatchResult(NamedTuple):
     request: Request
     result: Result
-
-
-identity = lambda x: x
-
-
-def compose(*funcs: Callable) -> Callable:
-    return lambda x: reduce(lambda acc, f: f(acc), reversed(funcs), x)
 
 
 def extract_list(
@@ -169,10 +145,6 @@ def create_request(request: dict) -> Request:
     )
 
 
-def make_list(x: Any) -> list:
-    return [x] if not isinstance(x, list) else x
-
-
 def dispatch_deserialized(
     methods: Methods,
     context: Any,
@@ -242,73 +214,3 @@ def dispatch_to_response_pure(
     except Exception as exc:
         logging.exception(exc)
         return Left(ServerErrorResponse(str(exc), None))
-
-
-# --------------------------------------------------------------------------------------
-# Above here is pure: no globals, default values, or raising exceptions. (it catches
-# exceptions which is impure but there's just no escaping it.)
-#
-# Below is the public API.
-# --------------------------------------------------------------------------------------
-
-
-@apply_config(config)
-def dispatch_to_response(
-    request: str,
-    methods: Methods = None,
-    *,
-    context: Any = None,
-    schema_validator: Callable = default_schema_validator,
-    deserializer: Callable = default_deserializer,
-    post_process: Callable = identity,
-) -> Union[Response, Iterable[Response], None]:
-    """Dispatch a JSON-serialized request to methods.
-
-    Maps a request string to a Response (or list of Responses).
-
-    This is a public method which wraps dispatch_to_response_pure, adding default values
-    and globals.
-
-    Args:
-        request: The JSON-RPC request string.
-        methods: Collection of methods that can be called. If not passed, uses the
-            internal, global methods object which is populated with the @method
-            decorator.
-        context: Will be passed to methods as the first param if not None.
-        schema_validator: Function that validates the JSON-RPC request.
-        deserializer: Function that deserializes the JSON-RPC request.
-
-    Returns:
-        A Response, list of Responses or None.
-
-    Examples:
-        >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', [ping])
-    """
-    return dispatch_to_response_pure(
-        deserializer=deserializer,
-        schema_validator=schema_validator,
-        post_process=post_process,
-        context=context,
-        methods=global_methods if methods is None else methods,
-        request=request,
-    )
-
-
-def dispatch_to_serializable(*args: Any, **kwargs: Any) -> Union[dict, list, None]:
-    return dispatch_to_response(*args, post_process=to_serializable, **kwargs)
-
-
-def dispatch_to_json(
-    *args: Any, serializer: Callable = json.dumps, **kwargs: Any
-) -> str:
-    """This is the main public method, it goes through the entire JSON-RPC process,
-    taking a JSON-RPC request string, dispatching it, converting the Response(s) into a
-    serializable value and then serializing that to return a JSON-RPC response string.
-    """
-    return dispatch_to_response(
-        *args, post_process=compose(serializer, to_serializable), **kwargs
-    )
-
-
-# "dispatch" is an alias of dispatch_to_json.
-dispatch = dispatch_to_json

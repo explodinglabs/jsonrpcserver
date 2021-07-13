@@ -1,5 +1,7 @@
 from unittest.mock import sentinel
 
+from oslash.either import Left, Right
+
 from jsonrpcserver.response import (
     ErrorResponse,
     InvalidRequestResponse,
@@ -60,14 +62,14 @@ def test_ServerErrorResponse():
 
 
 def test_to_serializable():
-    dct = to_serializable(SuccessResponse(sentinel.result, sentinel.id))
+    dct = to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id)))
     assert dct["jsonrpc"] == "2.0"
     assert dct["result"] == sentinel.result
     assert dct["id"] == sentinel.id
 
 
 def test_to_serializable_SuccessResponse():
-    dct = to_serializable(SuccessResponse(sentinel.result, sentinel.id))
+    dct = to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id)))
     assert dct["jsonrpc"] == "2.0"
     assert dct["result"] == sentinel.result
     assert dct["id"] == sentinel.id
@@ -75,7 +77,7 @@ def test_to_serializable_SuccessResponse():
 
 def test_to_serializable_ErrorResponse():
     dct = to_serializable(
-        ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id)
+        Left(ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id))
     )
     assert dct["jsonrpc"] == "2.0"
     assert dct["error"]["code"] == sentinel.code
