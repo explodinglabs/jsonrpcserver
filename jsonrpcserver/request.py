@@ -5,7 +5,13 @@ Represents a JSON-RPC request object.
 """
 from typing import Any, NamedTuple, Union
 
-NOID = object()
+
+class NoId:
+    def __repr__(self) -> str:
+        return "<no id>"
+
+
+NOID = NoId()
 
 
 Request = NamedTuple(

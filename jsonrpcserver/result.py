@@ -31,7 +31,12 @@ from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_
 
 # This is used to indicate when a value isn't present. We use this instead of
 # None, because None is a valid JSON-serializable type.
-NODATA = object()
+class NoData:
+    def __repr__(self) -> str:
+        return "<no data>"
+
+
+NODATA = NoData()
 
 
 class SuccessResult(NamedTuple):
