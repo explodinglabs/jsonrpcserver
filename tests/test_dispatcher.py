@@ -1,7 +1,8 @@
 """TODO: Add tests for dispatch_requests (non-pure version)"""
-import json
 from typing import Any
 from unittest.mock import sentinel
+import json
+import pytest
 
 from oslash.either import Left, Right
 
@@ -11,7 +12,6 @@ from jsonrpcserver.codes import (
     ERROR_INVALID_REQUEST,
     ERROR_METHOD_NOT_FOUND,
     ERROR_PARSE_ERROR,
-    ERROR_SERVER_ERROR,
 )
 from jsonrpcserver.dispatcher import (
     DispatchResult,
@@ -100,14 +100,12 @@ def test_to_response_InvalidParamsResult_no_data():
 
 
 def test_to_response_notification():
-    response = to_response(
-        DispatchResult(Request("ping", [], NOID), SuccessResult(result=sentinel.result))
-    )
-    assert response == Left(
-        ErrorResponse(
-            ERROR_SERVER_ERROR, "Server error", "Cannot respond to a notification", NOID
+    with pytest.raises(AssertionError):
+        to_response(
+            DispatchResult(
+                Request("ping", [], NOID), SuccessResult(result=sentinel.result)
+            )
         )
-    )
 
 
 # validate_args
@@ -328,12 +326,7 @@ def test_dispatch_to_response_pure_invalid_params():
         request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
     )
     assert response == Left(
-        ErrorResponse(
-            ERROR_INVALID_PARAMS,
-            "Invalid params",
-            NODATA,
-            1,
-        )
+        ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1)
     )
 
 

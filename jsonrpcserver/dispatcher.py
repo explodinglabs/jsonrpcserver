@@ -1,7 +1,7 @@
-from typing import Any, Callable, Iterable, List, NamedTuple, Union
-import logging
 from functools import partial
 from inspect import signature
+from typing import Any, Callable, Iterable, List, NamedTuple, Union
+import logging
 
 from oslash.either import Either, Left, Right  # type: ignore
 
@@ -59,16 +59,9 @@ def extract_list(
 
 
 def to_response(dispatch_result: DispatchResult) -> Response:
-    """Maps DispatchResults to Responses.
-
-    Don't pass a notification to this function.
-    """
-    if dispatch_result.request.id is NOID:
-        return Left(
-            ServerErrorResponse(
-                "Cannot respond to a notification", id=dispatch_result.request.id
-            )
-        )
+    """Maps DispatchResults to Responses."""
+    # Don't pass a notification to this function - should return a Server Error.
+    assert dispatch_result.request.id is not NOID
     return (
         Left(
             ErrorResponse(
@@ -93,20 +86,23 @@ def extract_kwargs(request: Request) -> dict:
     return request.params if isinstance(request.params, dict) else {}
 
 
+def validate_result(result: Result) -> None:
+    assert (isinstance(result, Left) and isinstance(result._error, ErrorResult)) or (
+        isinstance(result, Right) and isinstance(result._value, SuccessResult)
+    ), f"The method did not return a valid Result"
+
+
 def call(request: Request, context: Any, method: Callable) -> Result:
     try:
         result = method(*extract_args(request, context), **extract_kwargs(request))
-        assert (
-            isinstance(result, Left) and isinstance(result._error, ErrorResult)
-        ) or (
-            isinstance(result, Right) and isinstance(result._value, SuccessResult)
-        ), f"The method did not return a valid Result"
-        return result
+        # The method should return a valid Result, else respond with "internal error".
+        validate_result(result)
     except JsonRpcError as exc:
         return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     except Exception as exc:  # Other error inside method - Internal error
         logging.exception(exc)
         return Left(InternalErrorResult(str(exc)))
+    return result
 
 
 def validate_args(
@@ -151,19 +147,15 @@ def dispatch_deserialized(
     post_process: Callable,
     deserialized: Deserialized,
 ) -> Union[Response, Iterable[Response], None]:
+    results = map(
+        compose(partial(dispatch_request, methods, context), create_request),
+        make_list(deserialized),
+    )
     return extract_list(
         isinstance(deserialized, list),
         map(
             compose(post_process, to_response),
-            filter(
-                lambda dr: dr.request.id is not NOID,
-                map(
-                    compose(
-                        partial(dispatch_request, methods, context), create_request
-                    ),
-                    make_list(deserialized),
-                ),
-            ),
+            filter(lambda dr: dr.request.id is not NOID, results),
         ),
     )
 
