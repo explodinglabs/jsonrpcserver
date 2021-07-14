@@ -4,7 +4,7 @@ from jsonrpcserver.result import (
     SuccessResult,
     ErrorResult,
     InvalidParamsResult,
-    UNSPECIFIED,
+    NODATA,
 )
 
 
@@ -16,7 +16,7 @@ def test_ErrorResult():
     result = ErrorResult(sentinel.code, sentinel.message)
     assert result.code == sentinel.code
     assert result.message == sentinel.message
-    assert result.data == UNSPECIFIED
+    assert result.data == NODATA
 
 
 def test_ErrorResult_with_data():
