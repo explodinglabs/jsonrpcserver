@@ -31,7 +31,7 @@ from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_
 
 # This is used to indicate when a value isn't present. We use this instead of
 # None, because None is a valid JSON-serializable type.
-UNSPECIFIED = object()
+NODATA = object()
 
 
 class SuccessResult(NamedTuple):
@@ -44,7 +44,7 @@ class SuccessResult(NamedTuple):
 class ErrorResult(NamedTuple):
     code: int
     message: str
-    data: Any = UNSPECIFIED  # The spec says this value may be omitted
+    data: Any = NODATA  # The spec says this value may be omitted
 
     def __repr__(self) -> str:
         return f"ErrorResult(code={self.code!r}, message={self.message!r}, data={self.data!r}"
@@ -65,7 +65,7 @@ def InternalErrorResult(data: Any) -> ErrorResult:
     return ErrorResult(ERROR_INTERNAL_ERROR, "Internal error", data)
 
 
-def InvalidParamsResult(data: Any = UNSPECIFIED) -> ErrorResult:
+def InvalidParamsResult(data: Any = NODATA) -> ErrorResult:
     return ErrorResult(ERROR_INVALID_PARAMS, "Invalid params", data)
 
 

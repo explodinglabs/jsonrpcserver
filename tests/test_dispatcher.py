@@ -35,7 +35,7 @@ from jsonrpcserver.result import (
     InvalidParamsResult,
     Result,
     SuccessResult,
-    UNSPECIFIED,
+    NODATA,
 )
 from jsonrpcserver.utils import identity
 
@@ -95,7 +95,7 @@ def test_to_response_InvalidParamsResult_no_data():
         DispatchResult(Request("ping", [], sentinel.id), Left(InvalidParamsResult()))
     )
     assert response == Left(
-        ErrorResponse(-32602, "Invalid params", UNSPECIFIED, sentinel.id)
+        ErrorResponse(-32602, "Invalid params", NODATA, sentinel.id)
     )
 
 
@@ -331,7 +331,7 @@ def test_dispatch_to_response_pure_invalid_params():
         ErrorResponse(
             ERROR_INVALID_PARAMS,
             "Invalid params",
-            UNSPECIFIED,
+            NODATA,
             1,
         )
     )

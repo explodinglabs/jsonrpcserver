@@ -24,7 +24,7 @@ from .codes import (
     ERROR_PARSE_ERROR,
     ERROR_SERVER_ERROR,
 )
-from .result import UNSPECIFIED
+from .result import NODATA
 
 
 class SuccessResponse(NamedTuple):
@@ -85,7 +85,7 @@ def serialize_error(response: ErrorResponse) -> dict:
             "code": response.code,
             "message": response.message,
             # "data" may be omitted.
-            **({"data": response.data} if response.data is not UNSPECIFIED else {}),
+            **({"data": response.data} if response.data is not NODATA else {}),
         },
         "id": response.id,
     }
