@@ -40,7 +40,7 @@ NODATA = NoData()
 
 
 class SuccessResult(NamedTuple):
-    result: Any
+    result: Any = None
 
     def __repr__(self) -> str:
         return f"SuccessResult({self.result!r})"
