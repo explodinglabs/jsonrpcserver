@@ -1,18 +1,23 @@
 """Demonstrates processing a batch of 100 requests asynchronously"""
 import asyncio
-from json import dumps as serialize
-from jsonrpcserver import method, async_dispatch as dispatch
+import json
+
+from jsonrpcserver import method, Success, Result
+from jsonrpcserver.async_main import dispatch
 
 
 @method
-async def sleep_():
+async def sleep_() -> Result:
     await asyncio.sleep(1)
+    return Success()
 
 
-async def handle(request):
-    return await dispatch(request)
+async def handle(request: str) -> None:
+    print(await dispatch(request))
 
 
 if __name__ == "__main__":
-    request = serialize([{"jsonrpc": "2.0", "method": "sleep_"} for _ in range(100)])
+    request = json.dumps(
+        [{"jsonrpc": "2.0", "method": "sleep_", "id": 1} for _ in range(100)]
+    )
     asyncio.get_event_loop().run_until_complete(handle(request))

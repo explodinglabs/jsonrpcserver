@@ -89,7 +89,7 @@ def extract_kwargs(request: Request) -> dict:
 def validate_result(result: Result) -> None:
     assert (isinstance(result, Left) and isinstance(result._error, ErrorResult)) or (
         isinstance(result, Right) and isinstance(result._value, SuccessResult)
-    ), f"The method did not return a valid Result"
+    ), f"The method did not return a valid Result ({result!r})"
 
 
 def call(request: Request, context: Any, method: Callable) -> Result:
@@ -160,7 +160,7 @@ def dispatch_deserialized(
     )
 
 
-def validate(
+def validate_request(
     validator: Callable, request: Deserialized
 ) -> Either[ErrorResponse, Deserialized]:
     """We don't know which validator will be used, so the specific exception that will
@@ -196,7 +196,7 @@ def dispatch_to_response_pure(
 ) -> Union[Response, Iterable[Response], None]:
     try:
         result = deserialize(deserializer, request).bind(
-            partial(validate, schema_validator)
+            partial(validate_request, schema_validator)
         )
         return (
             result
