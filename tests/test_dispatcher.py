@@ -40,13 +40,6 @@ from jsonrpcserver.result import (
 from jsonrpcserver.utils import identity
 
 
-# def test_dispatch_to_response_pure_invalid_params_notification():
-#    def foo(bar):
-#        if bar < 0:
-#            raise InvalidRequestError("bar must be greater than zero")
-#    response = dispatch_to_response_pure(str(Notify("foo")), method
-
-
 def ping() -> Result:
     return Right(SuccessResult("pong"))
 
@@ -273,14 +266,15 @@ def test_dispatch_to_response_pure_invalid_json():
     )
 
 
-def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
+def test_dispatch_to_response_pure_invalid_jsonrpc():
+    """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
         methods=Methods(ping),
-        request='{"jsonrpc": "0", "method": "notify"}',
+        request="{}",
     )
     assert response == Left(
         ErrorResponse(
@@ -292,15 +286,14 @@ def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
     )
 
 
-def test_dispatch_to_response_pure_invalid_jsonrpc():
-    """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
+def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
     response = dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
         methods=Methods(ping),
-        request="{}",
+        request='{"jsonrpc": "0", "method": "notify"}',
     )
     assert response == Left(
         ErrorResponse(
@@ -352,6 +345,22 @@ def test_dispatch_to_response_pure_invalid_params_count():
     )
 
 
+def test_dispatch_to_response_pure_invalid_params_notification():
+    def foo(bar):
+        if bar < 0:
+            raise Left(InvalidParams("bar must be greater than zero"))
+
+    response = dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        post_process=identity,
+        context=None,
+        methods=Methods(foo),
+        request='{"jsonrpc": "2.0", "method": "foo"}',
+    )
+    assert response == None
+
+
 def test_dispatch_to_response_pure_enforcing_result():
     """Methods should return a Result, otherwise we get an Internal Error response."""
 
@@ -370,7 +379,7 @@ def test_dispatch_to_response_pure_enforcing_result():
         ErrorResponse(
             ERROR_INTERNAL_ERROR,
             "Internal error",
-            "The method did not return a valid Result",
+            "The method did not return a valid Result (returned None)",
             1,
         )
     )

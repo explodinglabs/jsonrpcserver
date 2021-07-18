@@ -89,7 +89,7 @@ def extract_kwargs(request: Request) -> dict:
 def validate_result(result: Result) -> None:
     assert (isinstance(result, Left) and isinstance(result._error, ErrorResult)) or (
         isinstance(result, Right) and isinstance(result._value, SuccessResult)
-    ), f"The method did not return a valid Result ({result!r})"
+    ), f"The method did not return a valid Result (returned {result!r})"
 
 
 def call(request: Request, context: Any, method: Callable) -> Result:
