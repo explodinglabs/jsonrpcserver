@@ -1,3 +1,7 @@
+> **⚠ Warning: The master branch is for development of the upcoming version 5.**  
+> For the latest stable version, see the [4.x branch](https://github.com/bcb/jsonrpcserver/tree/4.x).
+> Also, please pin your version to "jsonrpcserver<5" until you're ready to upgrade to v5.
+
 # jsonrpcserver
 
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
