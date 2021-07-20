@@ -33,7 +33,7 @@ from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_
 # None, because None is a valid JSON-serializable type.
 class NoData:
     def __repr__(self) -> str:
-        return "<no data>"
+        return "<NoData>"
 
 
 NODATA = NoData()

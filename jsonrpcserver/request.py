@@ -8,7 +8,7 @@ from typing import Any, NamedTuple, Union
 
 class NoId:
     def __repr__(self) -> str:
-        return "<no id>"
+        return "<NoId>"
 
 
 NOID = NoId()

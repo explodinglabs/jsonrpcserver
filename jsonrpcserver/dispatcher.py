@@ -106,9 +106,7 @@ def call(request: Request, context: Any, method: Callable) -> Result:
 
 
 def validate_args(
-    request: Request,
-    context: Any,
-    func: Callable,
+    request: Request, context: Any, func: Callable
 ) -> Either[ErrorResult, Callable]:
     try:
         signature(func).bind(*extract_args(request, context), **extract_kwargs(request))
@@ -204,5 +202,6 @@ def dispatch_to_response_pure(
             else dispatch_deserialized(methods, context, post_process, result._value)
         )
     except Exception as exc:
+        # An error with the jsonrpcserver library.
         logging.exception(exc)
         return Left(ServerErrorResponse(str(exc), None))
