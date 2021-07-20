@@ -1,6 +1,6 @@
-> **⚠ Warning: The master branch is for development of the upcoming version 5.**  
+> **⚠ Note: The master branch is for development of the upcoming version 5.**  
 > For the latest stable version, see the [4.x branch](https://github.com/bcb/jsonrpcserver/tree/4.x).
-> Also, please pin your version to "jsonrpcserver<5" until you're ready to upgrade to v5.
+> Also, please pin your dependency to "jsonrpcserver<5" until you're ready to upgrade to v5.
 
 # jsonrpcserver
 
