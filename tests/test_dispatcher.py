@@ -1,6 +1,6 @@
 """TODO: Add tests for dispatch_requests (non-pure version)"""
 from typing import Any
-from unittest.mock import sentinel
+from unittest.mock import patch, sentinel
 import json
 import pytest
 
@@ -12,6 +12,7 @@ from jsonrpcserver.codes import (
     ERROR_INVALID_REQUEST,
     ERROR_METHOD_NOT_FOUND,
     ERROR_PARSE_ERROR,
+    ERROR_SERVER_ERROR,
 )
 from jsonrpcserver.dispatcher import (
     DispatchResult,
@@ -151,50 +152,10 @@ def test_validate_object_method():
 # dispatch_request
 
 
-def test_dispatch_request_success_result():
+def test_dispatch_request_success():
     request = Request("ping", [], 1)
     assert dispatch_request(Methods(ping), None, request) == DispatchResult(
         request, Right(SuccessResult("pong"))
-    )
-
-
-def test_dispatch_request_notification():
-    """Result is still Success, but it won't be converted to a Response."""
-    dispatch_result = dispatch_request(Methods(ping), None, Request("ping", [], NOID))
-    assert dispatch_result.result == Right(SuccessResult("pong"))
-
-
-def test_dispatch_request_notification_failure():
-    """
-    Should not respond. From the spec: Notifications are not confirmable by definition,
-    since they do not have a Response object to be returned. As such, the Client would
-    not be aware of any errors (like e.g. "Invalid params","Internal error").
-    """
-
-    def fail():
-        1 / 0
-
-    dispatch_result = dispatch_request(Methods(fail), None, Request("fail", [], NOID))
-    assert dispatch_result.result == Left(
-        ErrorResult(ERROR_INTERNAL_ERROR, "Internal error", "division by zero")
-    )
-
-
-def test_dispatch_request_method_not_found():
-    dispatch_result = dispatch_request(
-        Methods(ping), None, Request("nonexistant", [], 1)
-    )
-    assert dispatch_result.result == Left(
-        ErrorResult(ERROR_METHOD_NOT_FOUND, "Method not found", "nonexistant")
-    )
-
-
-def test_dispatch_request_invalid_params():
-    dispatch_result = dispatch_request(Methods(ping), None, Request("ping", [1], 1))
-    assert dispatch_result.result == Left(
-        ErrorResult(
-            ERROR_INVALID_PARAMS, "Invalid params", data="too many positional arguments"
-        )
     )
 
 
@@ -222,41 +183,30 @@ def test_create_request():
 # dispatch_to_response_pure
 
 
-def test_dispatch_to_response_pure():
-    response = dispatch_to_response_pure(
-        deserializer=default_deserializer,
-        schema_validator=default_schema_validator,
-        post_process=identity,
-        context=None,
-        methods=Methods(ping),
-        request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+def test_dispatch_to_response_pure_success():
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(ping),
+            request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+        )
+        == Right(SuccessResponse("pong", 1))
     )
-    assert response == Right(SuccessResponse("pong", 1))
 
 
-def test_dispatch_to_response_pure_notification():
-    response = dispatch_to_response_pure(
-        deserializer=default_deserializer,
-        schema_validator=default_schema_validator,
-        post_process=identity,
-        context=None,
-        methods=Methods(ping),
-        request='{"jsonrpc": "2.0", "method": "ping"}',
-    )
-    assert response is None
-
-
-def test_dispatch_to_response_pure_invalid_json():
+def test_dispatch_to_response_pure_parse_error():
     """Unable to parse, must return an error"""
-    response = dispatch_to_response_pure(
+    assert dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
         methods=Methods(ping),
         request="{",
-    )
-    assert response == Left(
+    ) == Left(
         ErrorResponse(
             ERROR_PARSE_ERROR,
             "Parse error",
@@ -266,17 +216,18 @@ def test_dispatch_to_response_pure_invalid_json():
     )
 
 
-def test_dispatch_to_response_pure_invalid_jsonrpc():
-    """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
-    response = dispatch_to_response_pure(
+def test_dispatch_to_response_pure_invalid_request():
+    """Invalid JSON-RPC, must return an error. (impossible to determine if
+    notification).
+    """
+    assert dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
         methods=Methods(ping),
         request="{}",
-    )
-    assert response == Left(
+    ) == Left(
         ErrorResponse(
             ERROR_INVALID_REQUEST,
             "Invalid request",
@@ -286,56 +237,31 @@ def test_dispatch_to_response_pure_invalid_jsonrpc():
     )
 
 
-def test_dispatch_to_response_pure_notification_invalid_jsonrpc():
-    response = dispatch_to_response_pure(
+def test_dispatch_to_response_pure_method_not_found():
+    assert dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(ping),
-        request='{"jsonrpc": "0", "method": "notify"}',
-    )
-    assert response == Left(
-        ErrorResponse(
-            ERROR_INVALID_REQUEST,
-            "Invalid request",
-            "The request failed schema validation",
-            None,
-        )
+        methods=Methods(),
+        request='{"jsonrpc": "2.0", "method": "non_existant", "id": 1}',
+    ) == Left(
+        ErrorResponse(ERROR_METHOD_NOT_FOUND, "Method not found", "non_existant", 1)
     )
 
 
-def test_dispatch_to_response_pure_invalid_params():
-    def foo(colour: str) -> Result:
-        if colour not in ("orange", "red", "yellow"):
-            return Left(InvalidParamsResult())
-
-    response = dispatch_to_response_pure(
-        deserializer=default_deserializer,
-        schema_validator=default_schema_validator,
-        post_process=identity,
-        context=None,
-        methods=Methods(foo),
-        request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
-    )
-    assert response == Left(
-        ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1)
-    )
-
-
-def test_dispatch_to_response_pure_invalid_params_count():
+def test_dispatch_to_response_pure_invalid_params_auto():
     def foo(colour: str, size: str):
         return Right(SuccessResult())
 
-    response = dispatch_to_response_pure(
+    assert dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
         methods=Methods(foo),
         request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
-    )
-    assert response == Left(
+    ) == Left(
         ErrorResponse(
             ERROR_INVALID_PARAMS,
             "Invalid params",
@@ -345,37 +271,73 @@ def test_dispatch_to_response_pure_invalid_params_count():
     )
 
 
-def test_dispatch_to_response_pure_invalid_params_notification():
-    def foo(bar):
-        if bar < 0:
-            raise Left(InvalidParams("bar must be greater than zero"))
+def test_dispatch_to_response_pure_invalid_params_explicitly_returned():
+    def foo(colour: str) -> Result:
+        if colour not in ("orange", "red", "yellow"):
+            return Left(InvalidParamsResult())
 
-    response = dispatch_to_response_pure(
-        deserializer=default_deserializer,
-        schema_validator=default_schema_validator,
-        post_process=identity,
-        context=None,
-        methods=Methods(foo),
-        request='{"jsonrpc": "2.0", "method": "foo"}',
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(foo),
+            request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
+        )
+        == Left(ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1))
     )
-    assert response == None
 
 
-def test_dispatch_to_response_pure_enforcing_result():
+def test_dispatch_to_response_pure_internal_error():
+    def foo():
+        raise ValueError("foo")
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(foo),
+            request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
+        )
+        == Left(ErrorResponse(ERROR_INTERNAL_ERROR, "Internal error", "foo", 1))
+    )
+
+
+@patch("jsonrpcserver.dispatcher.dispatch_request", side_effect=ValueError("foo"))
+def test_dispatch_to_response_pure_server_error(*_):
+    def foo():
+        return Success()
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(foo),
+            request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
+        )
+        == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
+    )
+
+
+def test_dispatch_to_response_pure_invalid_result():
     """Methods should return a Result, otherwise we get an Internal Error response."""
 
     def not_a_result():
         return None
 
-    response = dispatch_to_response_pure(
+    assert dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
         methods=Methods(not_a_result),
         request='{"jsonrpc": "2.0", "method": "not_a_result", "id": 1}',
-    )
-    assert response == Left(
+    ) == Left(
         ErrorResponse(
             ERROR_INTERNAL_ERROR,
             "Internal error",
@@ -391,15 +353,194 @@ def test_dispatch_to_response_pure_raising_exception():
     def raise_exception():
         raise JsonRpcError(code=0, message="foo", data="bar")
 
-    response = dispatch_to_response_pure(
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(raise_exception),
+            request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
+        )
+        == Left(ErrorResponse(0, "foo", "bar", 1))
+    )
+
+
+# dispatch_to_response_pure -- Notifications
+
+
+def test_dispatch_to_response_pure_notification_success():
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(ping),
+            request='{"jsonrpc": "2.0", "method": "ping"}',
+        )
+        == None
+    )
+
+
+def test_dispatch_to_response_pure_notification_parse_error():
+    """Unable to parse, must return an error"""
+    assert dispatch_to_response_pure(
         deserializer=default_deserializer,
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(raise_exception),
-        request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
+        methods=Methods(ping),
+        request="{",
+    ) == Left(
+        ErrorResponse(
+            ERROR_PARSE_ERROR,
+            "Parse error",
+            "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+            None,
+        )
     )
-    assert response == Left(ErrorResponse(0, "foo", "bar", 1))
+
+
+def test_dispatch_to_response_pure_notification_invalid_request():
+    """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        schema_validator=default_schema_validator,
+        post_process=identity,
+        context=None,
+        methods=Methods(ping),
+        request="{}",
+    ) == Left(
+        ErrorResponse(
+            ERROR_INVALID_REQUEST,
+            "Invalid request",
+            "The request failed schema validation",
+            None,
+        )
+    )
+
+
+def test_dispatch_to_response_pure_notification_method_not_found():
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(),
+            request='{"jsonrpc": "2.0", "method": "non_existant"}',
+        )
+        == None
+    )
+
+
+def test_dispatch_to_response_pure_notification_invalid_params_auto():
+    def foo(colour: str, size: str):
+        return Right(SuccessResult())
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(foo),
+            request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}}',
+        )
+        == None
+    )
+
+
+def test_dispatch_to_response_pure_invalid_params_notification_explicitly_returned():
+    def foo(colour: str) -> Result:
+        if colour not in ("orange", "red", "yellow"):
+            return Left(InvalidParamsResult())
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(foo),
+            request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"]}',
+        )
+        == None
+    )
+
+
+def test_dispatch_to_response_pure_notification_internal_error():
+    def foo(bar):
+        raise ValueError
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(foo),
+            request='{"jsonrpc": "2.0", "method": "foo"}',
+        )
+        == None
+    )
+
+
+@patch("jsonrpcserver.dispatcher.dispatch_request", side_effect=ValueError("foo"))
+def test_dispatch_to_response_pure_notification_server_error(*_):
+    def foo():
+        return Success()
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(foo),
+            request='{"jsonrpc": "2.0", "method": "foo"}',
+        )
+        == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
+    )
+
+
+def test_dispatch_to_response_pure_notification_invalid_result():
+    """Methods should return a Result, otherwise we get an Internal Error response."""
+
+    def not_a_result():
+        return None
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(not_a_result),
+            request='{"jsonrpc": "2.0", "method": "not_a_result"}',
+        )
+        == None
+    )
+
+
+def test_dispatch_to_response_pure_notification_raising_exception():
+    """Allow raising an exception to return an error."""
+
+    def raise_exception():
+        raise JsonRpcError(code=0, message="foo", data="bar")
+
+    assert (
+        dispatch_to_response_pure(
+            deserializer=default_deserializer,
+            schema_validator=default_schema_validator,
+            post_process=identity,
+            context=None,
+            methods=Methods(raise_exception),
+            request='{"jsonrpc": "2.0", "method": "raise_exception"}',
+        )
+        == None
+    )
 
 
 # dispatch_to_response
