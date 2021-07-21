@@ -18,4 +18,4 @@ repos:
       - id: mypy
         exclude: ^tests/
         args: [--strict]
-        additional_dependencies: ['apply_defaults', 'types-setuptools']
+        additional_dependencies: ['types-setuptools', 'apply_defaults']
