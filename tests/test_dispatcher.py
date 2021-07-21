@@ -33,8 +33,9 @@ from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
 from jsonrpcserver.result import (
     ErrorResult,
-    InvalidParamsResult,
+    InvalidParams,
     Result,
+    Success,
     SuccessResult,
     NODATA,
 )
@@ -42,7 +43,7 @@ from jsonrpcserver.utils import identity
 
 
 def ping() -> Result:
-    return Right(SuccessResult("pong"))
+    return Success("pong")
 
 
 # to_response
@@ -73,20 +74,18 @@ def test_to_response_ErrorResult():
     )
 
 
-def test_to_response_InvalidParamsResult():
+def test_to_response_InvalidParams():
     response = to_response(
-        DispatchResult(
-            Request("ping", [], sentinel.id), Left(InvalidParamsResult(sentinel.data))
-        )
+        DispatchResult(Request("ping", [], sentinel.id), InvalidParams(sentinel.data))
     )
     assert response == Left(
         ErrorResponse(-32602, "Invalid params", sentinel.data, sentinel.id)
     )
 
 
-def test_to_response_InvalidParamsResult_no_data():
+def test_to_response_InvalidParams_no_data():
     response = to_response(
-        DispatchResult(Request("ping", [], sentinel.id), Left(InvalidParamsResult()))
+        DispatchResult(Request("ping", [], sentinel.id), InvalidParams())
     )
     assert response == Left(
         ErrorResponse(-32602, "Invalid params", NODATA, sentinel.id)
@@ -162,7 +161,7 @@ def test_dispatch_request_success():
 def test_dispatch_request_with_context():
     def ping_with_context(context: Any):
         assert context is sentinel.context
-        return Right(SuccessResult(None))
+        return Success()
 
     dispatch_request(
         Methods(ping_with_context),
@@ -252,7 +251,7 @@ def test_dispatch_to_response_pure_method_not_found():
 
 def test_dispatch_to_response_pure_invalid_params_auto():
     def foo(colour: str, size: str):
-        return Right(SuccessResult())
+        return Success()
 
     assert dispatch_to_response_pure(
         deserializer=default_deserializer,
@@ -274,7 +273,7 @@ def test_dispatch_to_response_pure_invalid_params_auto():
 def test_dispatch_to_response_pure_invalid_params_explicitly_returned():
     def foo(colour: str) -> Result:
         if colour not in ("orange", "red", "yellow"):
-            return Left(InvalidParamsResult())
+            return InvalidParams()
 
     assert (
         dispatch_to_response_pure(
@@ -437,7 +436,7 @@ def test_dispatch_to_response_pure_notification_method_not_found():
 
 def test_dispatch_to_response_pure_notification_invalid_params_auto():
     def foo(colour: str, size: str):
-        return Right(SuccessResult())
+        return Success()
 
     assert (
         dispatch_to_response_pure(
@@ -455,7 +454,7 @@ def test_dispatch_to_response_pure_notification_invalid_params_auto():
 def test_dispatch_to_response_pure_invalid_params_notification_explicitly_returned():
     def foo(colour: str) -> Result:
         if colour not in ("orange", "red", "yellow"):
-            return Left(InvalidParamsResult())
+            return InvalidParams()
 
     assert (
         dispatch_to_response_pure(
@@ -565,7 +564,7 @@ def test_dispatch_to_response_with_global_methods():
 
 def test_examples_positionals():
     def subtract(minuend, subtrahend):
-        return Right(SuccessResult(minuend - subtrahend))
+        return Success(minuend - subtrahend)
 
     response = dispatch_to_response_pure(
         methods=Methods(subtract),
@@ -591,7 +590,7 @@ def test_examples_positionals():
 
 def test_examples_nameds():
     def subtract(**kwargs):
-        return Right(SuccessResult(kwargs["minuend"] - kwargs["subtrahend"]))
+        return Success(kwargs["minuend"] - kwargs["subtrahend"])
 
     response = dispatch_to_response_pure(
         methods=Methods(subtract),
