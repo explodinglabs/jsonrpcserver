@@ -14,7 +14,7 @@ elements, and then serialize it to JSON:
 >>> json.dumps(to_serializable(Right(SuccessResponse(result='foo', id=1))))
 '{"jsonrpc": "2.0", "result": "foo", "id": 1}'
 """
-from typing import Any, List, Type, NamedTuple, Union
+from typing import Any, Dict, List, Type, NamedTuple, Union
 
 from oslash.either import Either, Left  # type: ignore
 
@@ -49,7 +49,8 @@ class ErrorResponse(NamedTuple):
     id: Any
 
 
-Response = Type[Either[ErrorResponse, SuccessResponse]]
+Response = Either[ErrorResponse, SuccessResponse]
+ResponseType = Type[Either[ErrorResponse, SuccessResponse]]
 
 
 def ParseErrorResponse(data: Any) -> ErrorResponse:
@@ -78,7 +79,7 @@ def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
     return ErrorResponse(ERROR_SERVER_ERROR, "Server error", data, id)
 
 
-def serialize_error(response: ErrorResponse) -> dict:
+def serialize_error(response: ErrorResponse) -> Dict[str, Any]:
     return {
         "jsonrpc": "2.0",
         "error": {
@@ -91,11 +92,13 @@ def serialize_error(response: ErrorResponse) -> dict:
     }
 
 
-def serialize_success(response: SuccessResponse) -> dict:
+def serialize_success(response: SuccessResponse) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
 
 
-def to_serializable_one(response: Either[ErrorResponse, SuccessResponse]) -> dict:
+def to_serializable_one(
+    response: Either[ErrorResponse, SuccessResponse]
+) -> Dict[str, Any]:
     return (
         serialize_error(response._error)
         if isinstance(response, Left)
@@ -104,8 +107,8 @@ def to_serializable_one(response: Either[ErrorResponse, SuccessResponse]) -> dic
 
 
 def to_serializable(
-    response: Union[Response, List[Response], None]
-) -> Union[dict, List[dict], None]:
+    response: Union[ResponseType, List[ResponseType], None]
+) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
     """Converts a Response to a JSON-RPC response dict."""
     if response is None:
         return None
