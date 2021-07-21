@@ -1,12 +1,12 @@
 from functools import partial
 from inspect import signature
-from typing import Any, Callable, Iterable, List, NamedTuple, Union
+from typing import Any, Callable, Dict, Iterable, List, NamedTuple, Union
 import logging
 
 from oslash.either import Either, Left, Right  # type: ignore
 
 from .exceptions import JsonRpcError
-from .methods import Methods
+from .methods import Method, Methods
 from .request import NOID, Request
 from .response import (
     ErrorResponse,
@@ -27,7 +27,7 @@ from .result import (
 from .utils import compose, make_list
 
 
-Deserialized = Union[dict, List[dict]]
+Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
 
 class DispatchResult(NamedTuple):
@@ -77,12 +77,12 @@ def to_response(dispatch_result: DispatchResult) -> Response:
     )
 
 
-def extract_args(request: Request, context: Any) -> list:
+def extract_args(request: Request, context: Any) -> List[Any]:
     params = request.params if isinstance(request.params, list) else []
     return [context] + params if context else params
 
 
-def extract_kwargs(request: Request) -> dict:
+def extract_kwargs(request: Request) -> Dict[str, Any]:
     return request.params if isinstance(request.params, dict) else {}
 
 
@@ -92,7 +92,7 @@ def validate_result(result: Result) -> None:
     ), f"The method did not return a valid Result (returned {result!r})"
 
 
-def call(request: Request, context: Any, method: Callable) -> Result:
+def call(request: Request, context: Any, method: Method) -> Result:
     try:
         result = method(*extract_args(request, context), **extract_kwargs(request))
         # The method should return a valid Result, else respond with "internal error".
@@ -106,8 +106,8 @@ def call(request: Request, context: Any, method: Callable) -> Result:
 
 
 def validate_args(
-    request: Request, context: Any, func: Callable
-) -> Either[ErrorResult, Callable]:
+    request: Request, context: Any, func: Method
+) -> Either[ErrorResult, Method]:
     try:
         signature(func).bind(*extract_args(request, context), **extract_kwargs(request))
     except TypeError as exc:
@@ -115,7 +115,7 @@ def validate_args(
     return Right(func)
 
 
-def get_method(methods: Methods, method_name: str) -> Either[ErrorResult, Callable]:
+def get_method(methods: Methods, method_name: str) -> Either[ErrorResult, Method]:
     try:
         return Right(methods.items[method_name])
     except KeyError:
@@ -133,7 +133,7 @@ def dispatch_request(
     )
 
 
-def create_request(request: dict) -> Request:
+def create_request(request: Dict[str, Any]) -> Request:
     return Request(
         request["method"], request.get("params", []), request.get("id", NOID)
     )
@@ -142,24 +142,28 @@ def create_request(request: dict) -> Request:
 def dispatch_deserialized(
     methods: Methods,
     context: Any,
-    post_process: Callable,
+    post_process: Callable[[Deserialized], Iterable[Any]],
     deserialized: Deserialized,
 ) -> Union[Response, Iterable[Response], None]:
-    results = map(
-        compose(partial(dispatch_request, methods, context), create_request),
-        make_list(deserialized),
-    )
     return extract_list(
         isinstance(deserialized, list),
         map(
             compose(post_process, to_response),
-            filter(lambda dr: dr.request.id is not NOID, results),
+            filter(
+                lambda dr: dr.request.id is not NOID,
+                map(
+                    compose(
+                        partial(dispatch_request, methods, context), create_request
+                    ),
+                    make_list(deserialized),
+                ),
+            ),
         ),
     )
 
 
 def validate_request(
-    validator: Callable, request: Deserialized
+    validator: Callable[[Deserialized], Deserialized], request: Deserialized
 ) -> Either[ErrorResponse, Deserialized]:
     """We don't know which validator will be used, so the specific exception that will
     be raised is unknown. Any exception is an invalid request error.
@@ -172,7 +176,7 @@ def validate_request(
 
 
 def deserialize(
-    deserializer: Callable, request: str
+    deserializer: Callable[[str], Deserialized], request: str
 ) -> Either[ErrorResponse, Deserialized]:
     """We don't know which deserializer will be used, so the specific exception that
     will be raised is unknown. Any exception is a parse error.
@@ -185,11 +189,11 @@ def deserialize(
 
 def dispatch_to_response_pure(
     *,
-    deserializer: Callable,
-    schema_validator: Callable,
+    deserializer: Callable[[str], Deserialized],
+    schema_validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
-    post_process: Callable,
+    post_process: Callable[[Deserialized], Iterable[Any]],
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
     try:

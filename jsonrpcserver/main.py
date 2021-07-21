@@ -1,13 +1,13 @@
 import json
 import os
 from configparser import ConfigParser
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
 
-from apply_defaults import apply_config  # type: ignore
+from apply_defaults import apply_config
 from jsonschema.validators import validator_for  # type: ignore
-from pkg_resources import resource_string  # type: ignore
+from pkg_resources import resource_string
 
-from .dispatcher import dispatch_to_response_pure
+from .dispatcher import dispatch_to_response_pure, Deserialized
 from .methods import Methods, global_methods
 from .response import Response, to_serializable
 from .utils import compose, identity
@@ -30,12 +30,12 @@ config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
 @apply_config(config)
 def dispatch_to_response(
     request: str,
-    methods: Methods = None,
+    methods: Optional[Methods] = None,
     *,
     context: Any = None,
-    schema_validator: Callable = default_schema_validator,
-    deserializer: Callable = default_deserializer,
-    post_process: Callable = identity,
+    deserializer: Callable[[str], Deserialized] = default_deserializer,
+    schema_validator: Callable[[Deserialized], Deserialized] = default_schema_validator,
+    post_process: Callable[[Deserialized], Iterable[Any]] = identity,
 ) -> Union[Response, Iterable[Response], None]:
     """Dispatch a JSON-serialized request to methods.
 
@@ -69,19 +69,31 @@ def dispatch_to_response(
     )
 
 
-def dispatch_to_serializable(*args: Any, **kwargs: Any) -> Union[dict, list, None]:
-    return dispatch_to_response(*args, post_process=to_serializable, **kwargs)
+def dispatch_to_serializable(
+    *args: Any, **kwargs: Any
+) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    return cast(
+        Union[Dict[str, Any], List[Dict[str, Any]], None],
+        dispatch_to_response(*args, post_process=to_serializable, **kwargs),
+    )
 
 
 def dispatch_to_json(
-    *args: Any, serializer: Callable = json.dumps, **kwargs: Any
+    *args: Any,
+    serializer: Callable[
+        [Union[Dict[str, Any], List[Dict[str, Any]], None]], str
+    ] = json.dumps,
+    **kwargs: Any,
 ) -> str:
     """This is the main public method, it goes through the entire JSON-RPC process,
     taking a JSON-RPC request string, dispatching it, converting the Response(s) into a
     serializable value and then serializing that to return a JSON-RPC response string.
     """
-    return dispatch_to_response(
-        *args, post_process=compose(serializer, to_serializable), **kwargs
+    return cast(
+        str,
+        dispatch_to_response(
+            *args, post_process=compose(serializer, to_serializable), **kwargs
+        ),
     )
 
 

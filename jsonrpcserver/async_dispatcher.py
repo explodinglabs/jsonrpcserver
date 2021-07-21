@@ -16,21 +16,20 @@ from .dispatcher import (
     extract_kwargs,
     extract_list,
     get_method,
-    make_list,
     to_response,
     validate_args,
     validate_request,
     validate_result,
 )
 from .exceptions import JsonRpcError
-from .methods import Methods
+from .methods import Method, Methods
 from .request import Request, NOID
 from .result import Result, InternalErrorResult, ErrorResult
 from .response import Response, ServerErrorResponse
-from .utils import compose
+from .utils import compose, make_list
 
 
-async def call(request: Request, context: Any, method: Callable) -> Result:
+async def call(request: Request, context: Any, method: Method) -> Result:
     try:
         result = await method(
             *extract_args(request, context), **extract_kwargs(request)
@@ -63,7 +62,7 @@ async def dispatch_request(
 async def dispatch_deserialized(
     methods: Methods,
     context: Any,
-    post_process: Callable,
+    post_process: Callable[[Deserialized], Iterable[Any]],
     deserialized: Deserialized,
 ) -> Union[Response, Iterable[Response], None]:
     coroutines = (
@@ -82,11 +81,11 @@ async def dispatch_deserialized(
 
 async def dispatch_to_response_pure(
     *,
-    deserializer: Callable,
-    schema_validator: Callable,
+    deserializer: Callable[[str], Deserialized],
+    schema_validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
-    post_process: Callable,
+    post_process: Callable[[Deserialized], Iterable[Any]],
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
     try:

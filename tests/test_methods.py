@@ -140,7 +140,7 @@ def test_add_static_method_via_decorator():
 
 def test_global_methods_add():
     # The global "add" function which wraps global_methods.add
-    add(lambda x: y)
+    add(lambda: None)
 
 
 def test_get():

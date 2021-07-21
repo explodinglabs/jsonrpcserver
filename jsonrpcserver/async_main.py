@@ -1,9 +1,10 @@
 import json
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
 
-from apply_defaults import apply_config  # type: ignore
+from apply_defaults import apply_config
 
 from .async_dispatcher import dispatch_to_response_pure
+from .dispatcher import Deserialized
 from .main import config, default_schema_validator, default_deserializer
 from .methods import Methods, global_methods
 from .response import Response, to_serializable
@@ -13,12 +14,12 @@ from .utils import compose, identity
 @apply_config(config)
 async def dispatch_to_response(
     request: str,
-    methods: Methods = None,
+    methods: Optional[Methods] = None,
     *,
     context: Any = None,
-    schema_validator: Callable = default_schema_validator,
-    deserializer: Callable = default_deserializer,
-    post_process: Callable = identity,
+    deserializer: Callable[[str], Deserialized] = default_deserializer,
+    schema_validator: Callable[[Deserialized], Deserialized] = default_schema_validator,
+    post_process: Callable[[Deserialized], Iterable[Any]] = identity,
 ) -> Union[Response, Iterable[Response], None]:
     return await dispatch_to_response_pure(
         deserializer=deserializer,
@@ -32,15 +33,25 @@ async def dispatch_to_response(
 
 async def dispatch_to_serializable(
     *args: Any, **kwargs: Any
-) -> Union[dict, list, None]:
-    return await dispatch_to_response(*args, post_process=to_serializable, **kwargs)
+) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    return cast(
+        Union[Dict[str, Any], List[Dict[str, Any]], None],
+        await dispatch_to_response(*args, post_process=to_serializable, **kwargs),
+    )
 
 
 async def dispatch_to_json(
-    *args: Any, serializer: Callable = json.dumps, **kwargs: Any
+    *args: Any,
+    serializer: Callable[
+        [Union[Dict[str, Any], List[Dict[str, Any]], None]], str
+    ] = json.dumps,
+    **kwargs: Any,
 ) -> str:
-    return await dispatch_to_response(
-        *args, post_process=compose(serializer, to_serializable), **kwargs
+    return cast(
+        str,
+        await dispatch_to_response(
+            *args, post_process=compose(serializer, to_serializable), **kwargs
+        ),
     )
 
 
