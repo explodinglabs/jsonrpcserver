@@ -127,8 +127,8 @@ def create_request(request: Dict[str, Any]) -> Request:
     )
 
 
-def not_notification(t: Any) -> bool:
-    return t[0].id is not NOID
+def not_notification(request_result: Any) -> bool:
+    return request_result[0].id is not NOID
 
 
 def dispatch_deserialized(
