@@ -15,7 +15,6 @@ from jsonrpcserver.codes import (
     ERROR_SERVER_ERROR,
 )
 from jsonrpcserver.dispatcher import (
-    DispatchResult,
     create_request,
     dispatch_request,
     dispatch_to_response_pure,
@@ -51,22 +50,18 @@ def ping() -> Result:
 
 def test_to_response_SuccessResult():
     response = to_response(
-        DispatchResult(
-            Request("ping", [], sentinel.id), Right(SuccessResult(sentinel.result))
-        )
+        Request("ping", [], sentinel.id), Right(SuccessResult(sentinel.result))
     )
     assert response == Right(SuccessResponse(sentinel.result, sentinel.id))
 
 
 def test_to_response_ErrorResult():
     response = to_response(
-        DispatchResult(
-            Request("ping", [], sentinel.id),
-            Left(
-                ErrorResult(
-                    code=sentinel.code, message=sentinel.message, data=sentinel.data
-                )
-            ),
+        Request("ping", [], sentinel.id),
+        Left(
+            ErrorResult(
+                code=sentinel.code, message=sentinel.message, data=sentinel.data
+            )
         ),
     )
     assert response == Left(
@@ -76,7 +71,7 @@ def test_to_response_ErrorResult():
 
 def test_to_response_InvalidParams():
     response = to_response(
-        DispatchResult(Request("ping", [], sentinel.id), InvalidParams(sentinel.data))
+        Request("ping", [], sentinel.id), InvalidParams(sentinel.data)
     )
     assert response == Left(
         ErrorResponse(-32602, "Invalid params", sentinel.data, sentinel.id)
@@ -84,9 +79,7 @@ def test_to_response_InvalidParams():
 
 
 def test_to_response_InvalidParams_no_data():
-    response = to_response(
-        DispatchResult(Request("ping", [], sentinel.id), InvalidParams())
-    )
+    response = to_response(Request("ping", [], sentinel.id), InvalidParams())
     assert response == Left(
         ErrorResponse(-32602, "Invalid params", NODATA, sentinel.id)
     )
@@ -94,11 +87,7 @@ def test_to_response_InvalidParams_no_data():
 
 def test_to_response_notification():
     with pytest.raises(AssertionError):
-        to_response(
-            DispatchResult(
-                Request("ping", [], NOID), SuccessResult(result=sentinel.result)
-            )
-        )
+        to_response(Request("ping", [], NOID), SuccessResult(result=sentinel.result))
 
 
 # validate_args
@@ -151,10 +140,11 @@ def test_validate_object_method():
 # dispatch_request
 
 
-def test_dispatch_request_success():
+def test_dispatch_request():
     request = Request("ping", [], 1)
-    assert dispatch_request(Methods(ping), None, request) == DispatchResult(
-        request, Right(SuccessResult("pong"))
+    assert dispatch_request(Methods(ping), None, request) == (
+        request,
+        Right(SuccessResult("pong")),
     )
 
 
@@ -182,7 +172,7 @@ def test_create_request():
 # dispatch_to_response_pure
 
 
-def test_dispatch_to_response_pure_success():
+def test_dispatch_to_response_pure():
     assert (
         dispatch_to_response_pure(
             deserializer=default_deserializer,
@@ -368,7 +358,7 @@ def test_dispatch_to_response_pure_raising_exception():
 # dispatch_to_response_pure -- Notifications
 
 
-def test_dispatch_to_response_pure_notification_success():
+def test_dispatch_to_response_pure_notification():
     assert (
         dispatch_to_response_pure(
             deserializer=default_deserializer,

@@ -9,7 +9,6 @@ from jsonrpcserver.async_dispatcher import (
     dispatch_to_response_pure,
 )
 from jsonrpcserver.async_main import default_deserializer, default_schema_validator
-from jsonrpcserver.dispatcher import DispatchResult
 from jsonrpcserver.methods import Methods
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import SuccessResponse
@@ -31,8 +30,9 @@ async def test_call():
 @pytest.mark.asyncio
 async def test_dispatch_request():
     request = Request("ping", [], 1)
-    assert await dispatch_request(Methods(ping), None, request) == DispatchResult(
-        request, Right(SuccessResult("pong"))
+    assert await dispatch_request(Methods(ping), None, request) == (
+        request,
+        Right(SuccessResult("pong")),
     )
 
 

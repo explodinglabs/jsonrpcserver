@@ -1,7 +1,8 @@
 """Asynchronous dispatch"""
 
 from functools import partial
-from typing import Any, Callable, Iterable, Union
+from itertools import starmap
+from typing import Any, Callable, Iterable, Tuple, Union
 import asyncio
 import logging
 
@@ -9,13 +10,13 @@ from oslash.either import Left  # type: ignore
 
 from .dispatcher import (
     Deserialized,
-    DispatchResult,
     create_request,
     deserialize,
     extract_args,
     extract_kwargs,
     extract_list,
     get_method,
+    not_notification,
     to_response,
     validate_args,
     validate_request,
@@ -23,10 +24,10 @@ from .dispatcher import (
 )
 from .exceptions import JsonRpcError
 from .methods import Method, Methods
-from .request import Request, NOID
+from .request import Request
 from .result import Result, InternalErrorResult, ErrorResult
 from .response import Response, ServerErrorResponse
-from .utils import compose, make_list
+from .utils import make_list
 
 
 async def call(request: Request, context: Any, method: Method) -> Result:
@@ -45,36 +46,35 @@ async def call(request: Request, context: Any, method: Method) -> Result:
 
 async def dispatch_request(
     methods: Methods, context: Any, request: Request
-) -> DispatchResult:
+) -> Tuple[Request, Result]:
     method = get_method(methods, request.method).bind(
         partial(validate_args, request, context)
     )
-    return DispatchResult(
-        request=request,
-        result=(
-            method
-            if isinstance(method, Left)
-            else await call(request, context, method._value)
-        ),
+    return (
+        request,
+        method
+        if isinstance(method, Left)
+        else await call(request, context, method._value),
     )
 
 
 async def dispatch_deserialized(
     methods: Methods,
     context: Any,
-    post_process: Callable[[Deserialized], Iterable[Any]],
+    post_process: Callable[[Response], Iterable[Any]],
     deserialized: Deserialized,
 ) -> Union[Response, Iterable[Response], None]:
-    coroutines = (
-        dispatch_request(methods, context, r)
-        for r in map(create_request, make_list(deserialized))
+    results = await asyncio.gather(
+        *(
+            dispatch_request(methods, context, r)
+            for r in map(create_request, make_list(deserialized))
+        )
     )
-    results = await asyncio.gather(*coroutines)
     return extract_list(
         isinstance(deserialized, list),
         map(
-            compose(post_process, to_response),
-            filter(lambda dr: dr.request.id is not NOID, results),
+            post_process,
+            starmap(to_response, filter(not_notification, results)),
         ),
     )
 
@@ -85,7 +85,7 @@ async def dispatch_to_response_pure(
     schema_validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
-    post_process: Callable[[Deserialized], Iterable[Any]],
+    post_process: Callable[[Response], Iterable[Any]],
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
     try:
