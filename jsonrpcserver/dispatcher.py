@@ -1,6 +1,7 @@
 from functools import partial
 from inspect import signature
-from typing import Any, Callable, Dict, Iterable, List, NamedTuple, Union
+from itertools import starmap
+from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 import logging
 
 from oslash.either import Either, Left, Right  # type: ignore
@@ -30,11 +31,6 @@ from .utils import compose, make_list
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
 
-class DispatchResult(NamedTuple):
-    request: Request
-    result: Result
-
-
 def extract_list(
     is_batch: bool, responses: Iterable[Response]
 ) -> Union[Response, List[Response], None]:
@@ -58,22 +54,14 @@ def extract_list(
     )
 
 
-def to_response(dispatch_result: DispatchResult) -> Response:
-    """Maps DispatchResults to Responses."""
+def to_response(request: Request, result: Result) -> Response:
+    """Maps Requests & Results to Responses."""
     # Don't pass a notification to this function - should return a Server Error.
-    assert dispatch_result.request.id is not NOID
+    assert request.id is not NOID
     return (
-        Left(
-            ErrorResponse(
-                **dispatch_result.result._error._asdict(), id=dispatch_result.request.id
-            )
-        )
-        if isinstance(dispatch_result.result, Left)
-        else Right(
-            SuccessResponse(
-                **dispatch_result.result._value._asdict(), id=dispatch_result.request.id
-            )
-        )
+        Left(ErrorResponse(**result._error._asdict(), id=request.id))
+        if isinstance(result, Left)
+        else Right(SuccessResponse(**result._value._asdict(), id=request.id))
     )
 
 
@@ -124,10 +112,10 @@ def get_method(methods: Methods, method_name: str) -> Either[ErrorResult, Method
 
 def dispatch_request(
     methods: Methods, context: Any, request: Request
-) -> DispatchResult:
-    return DispatchResult(
-        request=request,
-        result=get_method(methods, request.method)
+) -> Tuple[Request, Result]:
+    return (
+        request,
+        get_method(methods, request.method)
         .bind(partial(validate_args, request, context))
         .bind(partial(call, request, context)),
     )
@@ -139,25 +127,25 @@ def create_request(request: Dict[str, Any]) -> Request:
     )
 
 
+def not_notification(t: Any) -> bool:
+    return t[0].id is not NOID
+
+
 def dispatch_deserialized(
     methods: Methods,
     context: Any,
-    post_process: Callable[[Deserialized], Iterable[Any]],
+    post_process: Callable[[Response], Iterable[Any]],
     deserialized: Deserialized,
 ) -> Union[Response, Iterable[Response], None]:
+    results = map(
+        compose(partial(dispatch_request, methods, context), create_request),
+        make_list(deserialized),
+    )
     return extract_list(
         isinstance(deserialized, list),
         map(
-            compose(post_process, to_response),
-            filter(
-                lambda dr: dr.request.id is not NOID,
-                map(
-                    compose(
-                        partial(dispatch_request, methods, context), create_request
-                    ),
-                    make_list(deserialized),
-                ),
-            ),
+            post_process,
+            starmap(to_response, filter(not_notification, results)),
         ),
     )
 
@@ -193,7 +181,7 @@ def dispatch_to_response_pure(
     schema_validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
-    post_process: Callable[[Deserialized], Iterable[Any]],
+    post_process: Callable[[Response], Iterable[Any]],
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
     try:
