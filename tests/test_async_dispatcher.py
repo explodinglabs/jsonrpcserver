@@ -9,7 +9,6 @@ from jsonrpcserver.async_dispatcher import (
     dispatch_to_response_pure,
 )
 from jsonrpcserver.async_main import default_deserializer, default_schema_validator
-from jsonrpcserver.methods import Methods
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import SuccessResponse
 from jsonrpcserver.result import Result, Success, SuccessResult
@@ -30,7 +29,7 @@ async def test_call():
 @pytest.mark.asyncio
 async def test_dispatch_request():
     request = Request("ping", [], 1)
-    assert await dispatch_request(Methods(ping), None, request) == (
+    assert await dispatch_request({"ping": ping}, None, request) == (
         request,
         Right(SuccessResult("pong")),
     )
@@ -40,7 +39,7 @@ async def test_dispatch_request():
 async def test_dispatch_deserialized():
     assert (
         await dispatch_deserialized(
-            Methods(ping),
+            {"ping": ping},
             None,
             identity,
             {"jsonrpc": "2.0", "method": "ping", "id": 1},
@@ -57,7 +56,7 @@ async def test_dispatch_to_response_pure_success():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(ping),
+            methods={"ping": ping},
             request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
         )
         == Right(SuccessResponse("pong", 1))
