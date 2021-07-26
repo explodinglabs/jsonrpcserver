@@ -11,7 +11,6 @@ from .result import Result
 Method = Callable[..., Result]
 Methods = Dict[str, Method]
 
-# A default Methods object which can be used, or user can create their own.
 global_methods = dict()
 
 
