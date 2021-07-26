@@ -27,7 +27,7 @@ from jsonrpcserver.main import (
     default_schema_validator,
     dispatch_to_response,
 )
-from jsonrpcserver.methods import Methods, global_methods
+from jsonrpcserver.methods import method
 from jsonrpcserver.request import Request, NOID
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
 from jsonrpcserver.result import (
@@ -142,7 +142,7 @@ def test_validate_object_method():
 
 def test_dispatch_request():
     request = Request("ping", [], 1)
-    assert dispatch_request(Methods(ping), None, request) == (
+    assert dispatch_request({"ping": ping}, None, request) == (
         request,
         Right(SuccessResult("pong")),
     )
@@ -154,7 +154,7 @@ def test_dispatch_request_with_context():
         return Success()
 
     dispatch_request(
-        Methods(ping_with_context),
+        {"ping_with_context": ping_with_context},
         sentinel.context,
         Request("ping_with_context", [], 1),
     )
@@ -179,7 +179,7 @@ def test_dispatch_to_response_pure():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(ping),
+            methods={"ping": ping},
             request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
         )
         == Right(SuccessResponse("pong", 1))
@@ -193,7 +193,7 @@ def test_dispatch_to_response_pure_parse_error():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(ping),
+        methods={"ping": ping},
         request="{",
     ) == Left(
         ErrorResponse(
@@ -214,7 +214,7 @@ def test_dispatch_to_response_pure_invalid_request():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(ping),
+        methods={"ping": ping},
         request="{}",
     ) == Left(
         ErrorResponse(
@@ -232,7 +232,7 @@ def test_dispatch_to_response_pure_method_not_found():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(),
+        methods={},
         request='{"jsonrpc": "2.0", "method": "non_existant", "id": 1}',
     ) == Left(
         ErrorResponse(ERROR_METHOD_NOT_FOUND, "Method not found", "non_existant", 1)
@@ -248,7 +248,7 @@ def test_dispatch_to_response_pure_invalid_params_auto():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(foo),
+        methods={"foo": foo},
         request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
     ) == Left(
         ErrorResponse(
@@ -271,7 +271,7 @@ def test_dispatch_to_response_pure_invalid_params_explicitly_returned():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(foo),
+            methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
         )
         == Left(ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1))
@@ -288,7 +288,7 @@ def test_dispatch_to_response_pure_internal_error():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(foo),
+            methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
         )
         == Left(ErrorResponse(ERROR_INTERNAL_ERROR, "Internal error", "foo", 1))
@@ -306,7 +306,7 @@ def test_dispatch_to_response_pure_server_error(*_):
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(foo),
+            methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
         )
         == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
@@ -324,7 +324,7 @@ def test_dispatch_to_response_pure_invalid_result():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(not_a_result),
+        methods={"not_a_result": not_a_result},
         request='{"jsonrpc": "2.0", "method": "not_a_result", "id": 1}',
     ) == Left(
         ErrorResponse(
@@ -348,7 +348,7 @@ def test_dispatch_to_response_pure_raising_exception():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(raise_exception),
+            methods={"raise_exception": raise_exception},
             request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
         )
         == Left(ErrorResponse(0, "foo", "bar", 1))
@@ -365,7 +365,7 @@ def test_dispatch_to_response_pure_notification():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(ping),
+            methods={"ping": ping},
             request='{"jsonrpc": "2.0", "method": "ping"}',
         )
         == None
@@ -379,7 +379,7 @@ def test_dispatch_to_response_pure_notification_parse_error():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(ping),
+        methods={"ping": ping},
         request="{",
     ) == Left(
         ErrorResponse(
@@ -398,7 +398,7 @@ def test_dispatch_to_response_pure_notification_invalid_request():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(ping),
+        methods={"ping": ping},
         request="{}",
     ) == Left(
         ErrorResponse(
@@ -417,7 +417,7 @@ def test_dispatch_to_response_pure_notification_method_not_found():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(),
+            methods={},
             request='{"jsonrpc": "2.0", "method": "non_existant"}',
         )
         == None
@@ -434,7 +434,7 @@ def test_dispatch_to_response_pure_notification_invalid_params_auto():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(foo),
+            methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}}',
         )
         == None
@@ -452,7 +452,7 @@ def test_dispatch_to_response_pure_invalid_params_notification_explicitly_return
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(foo),
+            methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"]}',
         )
         == None
@@ -469,7 +469,7 @@ def test_dispatch_to_response_pure_notification_internal_error():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(foo),
+            methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo"}',
         )
         == None
@@ -487,7 +487,7 @@ def test_dispatch_to_response_pure_notification_server_error(*_):
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(foo),
+            methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo"}',
         )
         == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
@@ -506,7 +506,7 @@ def test_dispatch_to_response_pure_notification_invalid_result():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(not_a_result),
+            methods={"not_a_result": not_a_result},
             request='{"jsonrpc": "2.0", "method": "not_a_result"}',
         )
         == None
@@ -525,7 +525,7 @@ def test_dispatch_to_response_pure_notification_raising_exception():
             schema_validator=default_schema_validator,
             post_process=identity,
             context=None,
-            methods=Methods(raise_exception),
+            methods={"raise_exception": raise_exception},
             request='{"jsonrpc": "2.0", "method": "raise_exception"}',
         )
         == None
@@ -537,14 +537,16 @@ def test_dispatch_to_response_pure_notification_raising_exception():
 
 def test_dispatch_to_response():
     response = dispatch_to_response(
-        '{"jsonrpc": "2.0", "method": "ping", "id": 1}', Methods(ping)
+        '{"jsonrpc": "2.0", "method": "ping", "id": 1}', {"ping": ping}
     )
     assert response == Right(SuccessResponse("pong", 1))
 
 
 def test_dispatch_to_response_with_global_methods():
-    global_methods.items = {}
-    global_methods.add(ping)
+    @method
+    def ping():
+        return Success("pong")
+
     response = dispatch_to_response('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
     assert response == Right(SuccessResponse("pong", 1))
 
@@ -557,7 +559,7 @@ def test_examples_positionals():
         return Success(minuend - subtrahend)
 
     response = dispatch_to_response_pure(
-        methods=Methods(subtract),
+        methods={"subtract": subtract},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -568,7 +570,7 @@ def test_examples_positionals():
 
     # Second example
     response = dispatch_to_response_pure(
-        methods=Methods(subtract),
+        methods={"subtract": subtract},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -583,7 +585,7 @@ def test_examples_nameds():
         return Success(kwargs["minuend"] - kwargs["subtrahend"])
 
     response = dispatch_to_response_pure(
-        methods=Methods(subtract),
+        methods={"subtract": subtract},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -594,7 +596,7 @@ def test_examples_nameds():
 
     # Second example
     response = dispatch_to_response_pure(
-        methods=Methods(subtract),
+        methods={"subtract": subtract},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -606,7 +608,7 @@ def test_examples_nameds():
 
 def test_examples_notification():
     response = dispatch_to_response_pure(
-        methods=Methods(update=lambda: None, foobar=lambda: None),
+        methods={"update": lambda: None, "foobar": lambda: None},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -617,7 +619,7 @@ def test_examples_notification():
 
     # Second example
     response = dispatch_to_response_pure(
-        methods=Methods(update=lambda: None, foobar=lambda: None),
+        methods={"update": lambda: None, "foobar": lambda: None},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -629,7 +631,7 @@ def test_examples_notification():
 
 def test_examples_invalid_json():
     response = dispatch_to_response_pure(
-        methods=Methods(ping),
+        methods={"ping": ping},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -650,7 +652,7 @@ def test_examples_empty_array():
     # This is an invalid JSON-RPC request, should return an error.
     response = dispatch_to_response_pure(
         request="[]",
-        methods=Methods(ping),
+        methods={"ping": ping},
         context=None,
         schema_validator=default_schema_validator,
         post_process=identity,
@@ -676,7 +678,7 @@ def test_examples_invalid_jsonrpc_batch():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(ping),
+        methods={"ping": ping},
         request="[1]",
     )
     assert response == Left(
@@ -699,7 +701,7 @@ def test_examples_multiple_invalid_jsonrpc():
         schema_validator=default_schema_validator,
         post_process=identity,
         context=None,
-        methods=Methods(ping),
+        methods={"ping": ping},
         request="[1, 2, 3]",
     )
     assert response == Left(
@@ -722,12 +724,12 @@ def test_examples_mixed_requests_and_notifications():
     The spec example includes this which invalidates the entire request:
         {"foo": "boo"},
     """
-    methods = Methods(
-        sum=lambda *args: Right(SuccessResult(sum(args))),
-        notify_hello=lambda *args: Right(SuccessResult(19)),
-        subtract=lambda *args: Right(SuccessResult(args[0] - sum(args[1:]))),
-        get_data=lambda: Right(SuccessResult(["hello", 5])),
-    )
+    methods = {
+        "sum": lambda *args: Right(SuccessResult(sum(args))),
+        "notify_hello": lambda *args: Right(SuccessResult(19)),
+        "subtract": lambda *args: Right(SuccessResult(args[0] - sum(args[1:]))),
+        "get_data": lambda: Right(SuccessResult(["hello", 5])),
+    }
     requests = json.dumps(
         [
             {"jsonrpc": "2.0", "method": "sum", "params": [1, 2, 4], "id": "1"},

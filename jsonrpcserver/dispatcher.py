@@ -105,7 +105,7 @@ def validate_args(
 
 def get_method(methods: Methods, method_name: str) -> Either[ErrorResult, Method]:
     try:
-        return Right(methods.items[method_name])
+        return Right(methods[method_name])
     except KeyError:
         return Left(MethodNotFoundResult(method_name))
 

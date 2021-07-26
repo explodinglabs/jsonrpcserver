@@ -10,7 +10,7 @@ from .main import (
     dispatch_to_response as dispatch_to_response,
     dispatch_to_serializable as dispatch_to_serializable,
 )
-from .methods import add as method
+from .methods import method
 from .result import (
     Error as Error,
     InvalidParams as InvalidParams,
