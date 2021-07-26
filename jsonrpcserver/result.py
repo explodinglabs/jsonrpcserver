@@ -28,15 +28,7 @@ from typing import Any, NamedTuple
 from oslash.either import Either, Left, Right  # type: ignore
 
 from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
-
-# This is used to indicate when a value isn't present. We use this instead of
-# None, because None is a valid JSON-serializable type.
-class NoData:
-    def __repr__(self) -> str:
-        return "<NoData>"
-
-
-NODATA = NoData()
+from .sentinels import NODATA
 
 
 class SuccessResult(NamedTuple):
