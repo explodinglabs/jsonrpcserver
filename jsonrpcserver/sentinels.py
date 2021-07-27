@@ -9,6 +9,6 @@ class Sentinel:
         return f"<{sys.intern(str(self.name)).rsplit('.', 1)[-1]}>"
 
 
-NODATA = Sentinel("NoData")
 NOCONTEXT = Sentinel("NoContext")
+NODATA = Sentinel("NoData")
 NOID = Sentinel("NoId")
