@@ -1,4 +1,4 @@
-"""We alias the imports so mypy considers them re-exported."""
+"""Use __all__ so mypy considers these re-exported."""
 __all__ = [
     "Error",
     "InvalidParams",
