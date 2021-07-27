@@ -136,8 +136,8 @@ def dispatch_deserialized(
     deserialized: Deserialized,
 ) -> Union[Response, List[Response], None]:
     """
-    Returns: A Response, a list of Responses, or None. Note that this function doesn't
-        fail, but it still might return an Either.
+    Returns: A Response, a list of Responses, or None. If post_process is passed, it's
+        applied to the Response(s).
     """
     results = map(
         compose(partial(dispatch_request, methods, context), create_request),
@@ -185,10 +185,10 @@ def dispatch_to_response_pure(
     context: Any,
     post_process: Callable[[Response], Iterable[Any]],
     request: str,
-) -> Union[Response, List[Response], None, Any, List[Any]]:
+) -> Union[Response, List[Response], None]:
     """
-    Returns: A Response, list of Responses, or None. If post_process is passed, it will
-        apply this function to the Response or list of Responses.
+    Returns: A Response, list of Responses, or None. If post_process is passed, it's
+        applied to the Response(s).
     """
     try:
         result = deserialize(deserializer, request).bind(
