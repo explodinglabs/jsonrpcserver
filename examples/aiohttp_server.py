@@ -1,19 +1,14 @@
 from aiohttp import web
-from jsonrpcserver import method, async_dispatch as dispatch
+from jsonrpcserver import Success, async_dispatch, method
 
 
 @method
 async def ping():
-    return "pong"
+    return Success("pong")
 
 
 async def handle(request):
-    request = await request.text()
-    response = await dispatch(request)
-    if response.wanted:
-        return web.json_response(response.deserialized(), status=response.http_status)
-    else:
-        return web.Response()
+    return web.json_response(await async_dispatch(await request.text()))
 
 
 app = web.Application()

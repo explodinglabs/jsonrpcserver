@@ -12,6 +12,7 @@ from jsonrpcserver.async_main import default_deserializer, default_schema_valida
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import SuccessResponse
 from jsonrpcserver.result import Result, Success, SuccessResult
+from jsonrpcserver.sentinels import NOCONTEXT
 from jsonrpcserver.utils import identity
 
 
@@ -21,7 +22,7 @@ async def ping() -> Result:
 
 @pytest.mark.asyncio
 async def test_call():
-    assert await call(Request("ping", [], 1), None, ping) == Right(
+    assert await call(Request("ping", [], 1), NOCONTEXT, ping) == Right(
         SuccessResult("pong")
     )
 
@@ -29,7 +30,7 @@ async def test_call():
 @pytest.mark.asyncio
 async def test_dispatch_request():
     request = Request("ping", [], 1)
-    assert await dispatch_request({"ping": ping}, None, request) == (
+    assert await dispatch_request({"ping": ping}, NOCONTEXT, request) == (
         request,
         Right(SuccessResult("pong")),
     )
@@ -40,7 +41,7 @@ async def test_dispatch_deserialized():
     assert (
         await dispatch_deserialized(
             {"ping": ping},
-            None,
+            NOCONTEXT,
             identity,
             {"jsonrpc": "2.0", "method": "ping", "id": 1},
         )
@@ -55,7 +56,7 @@ async def test_dispatch_to_response_pure_success():
             deserializer=default_deserializer,
             schema_validator=default_schema_validator,
             post_process=identity,
-            context=None,
+            context=NOCONTEXT,
             methods={"ping": ping},
             request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
         )

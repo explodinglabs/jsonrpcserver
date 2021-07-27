@@ -8,7 +8,7 @@ from oslash.either import Either, Left, Right  # type: ignore
 
 from .exceptions import JsonRpcError
 from .methods import Method, Methods
-from .request import NOID, Request
+from .request import Request
 from .response import (
     ErrorResponse,
     InvalidRequestResponse,
@@ -25,8 +25,8 @@ from .result import (
     Result,
     SuccessResult,
 )
+from .sentinels import NOCONTEXT, NOID
 from .utils import compose, make_list
-
 
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
@@ -67,7 +67,7 @@ def to_response(request: Request, result: Result) -> Response:
 
 def extract_args(request: Request, context: Any) -> List[Any]:
     params = request.params if isinstance(request.params, list) else []
-    return [context] + params if context else params
+    return [context] + params if context is not NOCONTEXT else params
 
 
 def extract_kwargs(request: Request) -> Dict[str, Any]:

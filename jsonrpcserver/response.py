@@ -24,7 +24,7 @@ from .codes import (
     ERROR_PARSE_ERROR,
     ERROR_SERVER_ERROR,
 )
-from .result import NODATA
+from .sentinels import NODATA
 
 
 class SuccessResponse(NamedTuple):
