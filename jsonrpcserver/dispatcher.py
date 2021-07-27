@@ -197,8 +197,6 @@ def dispatch_to_response_pure(
         return (
             post_process(result)
             if isinstance(result, Left)
-            # dispatch_deserialized returns either a Response, list of Responses, or
-            # None.
             else dispatch_deserialized(methods, context, post_process, result._value)
         )
     except Exception as exc:
