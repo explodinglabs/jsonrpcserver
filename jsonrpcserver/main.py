@@ -51,7 +51,9 @@ def dispatch_to_response(
             internal, global methods object which is populated with the @method
             decorator.
         context: Will be passed to methods as the first param if not None.
-        schema_validator: Function that validates the JSON-RPC request.
+        schema_validator: Function that validates the JSON-RPC request. The function
+            should raise an exception if the request is invalid. We don't care about the
+            return value otherwise.
         deserializer: Function that deserializes the JSON-RPC request.
 
     Returns:

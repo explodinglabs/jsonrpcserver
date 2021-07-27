@@ -155,6 +155,9 @@ def validate_request(
 ) -> Either[ErrorResponse, Deserialized]:
     """We don't know which validator will be used, so the specific exception that will
     be raised is unknown. Any exception is an invalid request error.
+
+    Returns:
+        The request received as an argument.
     """
     try:
         validator(request)
