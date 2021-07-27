@@ -8,6 +8,7 @@ from .dispatcher import Deserialized
 from .main import config, default_schema_validator, default_deserializer
 from .methods import Methods, global_methods
 from .response import Response, to_serializable
+from .sentinels import NOCONTEXT
 from .utils import compose, identity
 
 
@@ -16,7 +17,7 @@ async def dispatch_to_response(
     request: str,
     methods: Optional[Methods] = None,
     *,
-    context: Any = None,
+    context: Any = NOCONTEXT,
     deserializer: Callable[[str], Deserialized] = default_deserializer,
     schema_validator: Callable[[Deserialized], Deserialized] = default_schema_validator,
     post_process: Callable[[Deserialized], Iterable[Any]] = identity,
