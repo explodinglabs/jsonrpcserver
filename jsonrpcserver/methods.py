@@ -19,7 +19,6 @@ def method(
 ) -> Callable[..., Any]:
     def decorator(func: Method) -> Method:
         nonlocal name
-        global global_methods
         global_methods[name or func.__name__] = func
         return func
 
