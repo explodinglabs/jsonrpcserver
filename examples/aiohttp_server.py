@@ -8,7 +8,9 @@ async def ping():
 
 
 async def handle(request):
-    return web.json_response(await async_dispatch(await request.text()))
+    return web.Response(
+        text=await async_dispatch(await request.text()), content_type="application/json"
+    )
 
 
 app = web.Application()

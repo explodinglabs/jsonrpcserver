@@ -96,23 +96,12 @@ def serialize_success(response: SuccessResponse) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
 
 
-def to_serializable_one(
-    response: Either[ErrorResponse, SuccessResponse]
-) -> Dict[str, Any]:
+def to_serializable(
+    response: ResponseType,
+) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    """Converts a Response to a JSON-RPC response dict."""
     return (
         serialize_error(response._error)
         if isinstance(response, Left)
         else serialize_success(response._value)
     )
-
-
-def to_serializable(
-    response: Union[ResponseType, List[ResponseType], None]
-) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
-    """Converts a Response to a JSON-RPC response dict."""
-    if response is None:
-        return None
-    elif isinstance(response, list):
-        return [to_serializable_one(r) for r in response]
-    else:
-        return to_serializable_one(response)
