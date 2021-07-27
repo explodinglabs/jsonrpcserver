@@ -94,11 +94,11 @@ def dispatch_to_json(
     serializable value and then serializing that to return a JSON-RPC response string.
     """
     response = dispatch_to_serializable(*args, **kwargs)
-    # This next part is important. If there's no response, dispatch_to_serializable will
-    # give us None. Serializing None gives "null" which is valid json, however it's not
-    # a valid JSON-RPC response. The client may consider "null" a response and attempt
-    # to validate it against a JSON-RPC schema. Better to respond with nothing. See
-    # discussion at https://github.com/bcb/jsonrpcserver/discussions/163
+    # If there's no response, dispatch_to_serializable will give us None. Serializing
+    # None gives "null" which is valid json, however it's not a valid JSON-RPC response.
+    # The client may consider "null" a response and attempt to validate it against a
+    # JSON-RPC schema. Better to respond with nothing. See discussion at
+    # https://github.com/bcb/jsonrpcserver/discussions/163
     return "" if response is None else serializer(response)
 
 
