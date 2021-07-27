@@ -134,17 +134,18 @@ def dispatch_deserialized(
     context: Any,
     post_process: Callable[[Response], Iterable[Any]],
     deserialized: Deserialized,
-) -> Union[Response, Iterable[Response], None]:
+) -> Union[Response, List[Response], None]:
+    """
+    Returns: A Response, a list of Responses, or None. Note that this function doesn't
+        fail, but it still might return an Either.
+    """
     results = map(
         compose(partial(dispatch_request, methods, context), create_request),
         make_list(deserialized),
     )
     return extract_list(
         isinstance(deserialized, list),
-        map(
-            post_process,
-            starmap(to_response, filter(not_notification, results)),
-        ),
+        map(post_process, starmap(to_response, filter(not_notification, results))),
     )
 
 
@@ -184,17 +185,23 @@ def dispatch_to_response_pure(
     context: Any,
     post_process: Callable[[Response], Iterable[Any]],
     request: str,
-) -> Union[Response, Iterable[Response], None]:
+) -> Union[Response, List[Response], None, Any, List[Any]]:
+    """
+    Returns: A Response, list of Responses, or None. If post_process is passed, it will
+        apply this function to the Response or list of Responses.
+    """
     try:
         result = deserialize(deserializer, request).bind(
             partial(validate_request, schema_validator)
         )
         return (
-            result
+            post_process(result)
             if isinstance(result, Left)
+            # dispatch_deserialized returns either a Response, list of Responses, or
+            # None.
             else dispatch_deserialized(methods, context, post_process, result._value)
         )
     except Exception as exc:
         # An error with the jsonrpcserver library.
         logging.exception(exc)
-        return Left(ServerErrorResponse(str(exc), None))
+        return post_process(Left(ServerErrorResponse(str(exc), None)))

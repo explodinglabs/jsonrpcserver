@@ -93,7 +93,7 @@ async def dispatch_to_response_pure(
             partial(validate_request, schema_validator)
         )
         return (
-            result
+            post_process(result)
             if isinstance(result, Left)
             else await dispatch_deserialized(
                 methods, context, post_process, result._value
@@ -101,4 +101,4 @@ async def dispatch_to_response_pure(
         )
     except Exception as exc:
         logging.exception(exc)
-        return Left(ServerErrorResponse(str(exc), None))
+        return post_process(Left(ServerErrorResponse(str(exc), None)))
