@@ -1,3 +1,4 @@
+"""The public api functions."""
 import json
 import os
 from configparser import ConfigParser
