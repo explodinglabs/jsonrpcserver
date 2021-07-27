@@ -34,16 +34,14 @@ Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 def extract_list(
     is_batch: bool, responses: Iterable[Response]
 ) -> Union[Response, List[Response], None]:
-    """If it's a batch request, extract a single request from the list.
+    """If it's not a batch request, extract a single request from the list.
 
     We also apply a JSON-RPC rule here. If it's a notification, or a batch of all
     notifications, we should not respond. That means returning None instead of an empty
     list.
     """
-    # We have to reify the list here to determine if it's empty, which is unfortunate
-    # because we do another map later (when serializing to dicts). This function doesn't
-    # use the Responses, though, it could be an iterable of anything. So we could
-    # serialize before reaching here.
+    # We have to materialize the responses here to determine if there are any in the
+    # list. At least we're at the end of processing.
     response_list = list(responses)
     return (
         None
