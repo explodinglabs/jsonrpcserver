@@ -9,7 +9,7 @@ from .main import config, default_schema_validator, default_deserializer
 from .methods import Methods, global_methods
 from .response import Response, to_serializable
 from .sentinels import NOCONTEXT
-from .utils import compose, identity
+from .utils import identity
 
 
 @apply_config(config)
@@ -48,12 +48,8 @@ async def dispatch_to_json(
     ] = json.dumps,
     **kwargs: Any,
 ) -> str:
-    return cast(
-        str,
-        await dispatch_to_response(
-            *args, post_process=compose(serializer, to_serializable), **kwargs
-        ),
-    )
+    response = await dispatch_to_serializable(*args, **kwargs)
+    return "" if response is None else serializer(response)
 
 
 # "dispatch" is an alias of dispatch_to_json.
