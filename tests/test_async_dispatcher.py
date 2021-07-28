@@ -8,7 +8,7 @@ from jsonrpcserver.async_dispatcher import (
     dispatch_request,
     dispatch_to_response_pure,
 )
-from jsonrpcserver.async_main import default_deserializer, default_schema_validator
+from jsonrpcserver.async_main import default_deserializer, default_validator
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import SuccessResponse
 from jsonrpcserver.result import Result, Success, SuccessResult
@@ -54,7 +54,7 @@ async def test_dispatch_to_response_pure_success():
     assert (
         await dispatch_to_response_pure(
             deserializer=default_deserializer,
-            schema_validator=default_schema_validator,
+            validator=default_validator,
             post_process=identity,
             context=NOCONTEXT,
             methods={"ping": ping},

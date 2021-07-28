@@ -165,7 +165,7 @@ def validate_request(
     return Right(request)
 
 
-def deserialize(
+def deserialize_request(
     deserializer: Callable[[str], Deserialized], request: str
 ) -> Either[ErrorResponse, Deserialized]:
     """We don't know which deserializer will be used, so the specific exception that
@@ -180,7 +180,7 @@ def deserialize(
 def dispatch_to_response_pure(
     *,
     deserializer: Callable[[str], Deserialized],
-    schema_validator: Callable[[Deserialized], Deserialized],
+    validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
     post_process: Callable[[Response], Iterable[Any]],
@@ -191,8 +191,8 @@ def dispatch_to_response_pure(
         applied to the Response(s).
     """
     try:
-        result = deserialize(deserializer, request).bind(
-            partial(validate_request, schema_validator)
+        result = deserialize_request(deserializer, request).bind(
+            partial(validate_request, validator)
         )
         return (
             post_process(result)

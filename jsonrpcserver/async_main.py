@@ -6,7 +6,7 @@ from apply_defaults import apply_config
 
 from .async_dispatcher import dispatch_to_response_pure
 from .dispatcher import Deserialized
-from .main import config, default_schema_validator, default_deserializer
+from .main import config, default_validator, default_deserializer
 from .methods import Methods, global_methods
 from .response import Response, to_serializable
 from .sentinels import NOCONTEXT
@@ -20,12 +20,12 @@ async def dispatch_to_response(
     *,
     context: Any = NOCONTEXT,
     deserializer: Callable[[str], Deserialized] = default_deserializer,
-    schema_validator: Callable[[Deserialized], Deserialized] = default_schema_validator,
+    validator: Callable[[Deserialized], Deserialized] = default_validator,
     post_process: Callable[[Deserialized], Iterable[Any]] = identity,
 ) -> Union[Response, Iterable[Response], None]:
     return await dispatch_to_response_pure(
         deserializer=deserializer,
-        schema_validator=schema_validator,
+        validator=validator,
         post_process=post_process,
         context=context,
         methods=global_methods if methods is None else methods,
