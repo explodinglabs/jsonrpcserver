@@ -11,11 +11,11 @@ Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 ![Coverage Status](https://coveralls.io/repos/github/bcb/jsonrpcserver/badge.svg?branch=master)
 
 ```python
-from jsonrpcserver import method, serve
+from jsonrpcserver import Success, method, serve
 
 @method
 def ping():
-    return "pong"
+    return Success("pong")
 
 if __name__ == "__main__":
     serve()
