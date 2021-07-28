@@ -26,6 +26,8 @@ from .codes import (
 )
 from .sentinels import NODATA
 
+Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
+
 
 class SuccessResponse(NamedTuple):
     """
@@ -96,12 +98,18 @@ def serialize_success(response: SuccessResponse) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
 
 
-def to_serializable(
-    response: ResponseType,
-) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
-    """Converts a Response to a JSON-RPC response dict."""
+def to_serializable_one(response: ResponseType) -> Union[Deserialized, None]:
     return (
         serialize_error(response._error)
         if isinstance(response, Left)
         else serialize_success(response._value)
     )
+
+
+def to_serializable(response: ResponseType) -> Union[Deserialized, None]:
+    if response is None:
+        return None
+    elif isinstance(response, List):
+        return [to_serializable_one(r) for r in response]
+    else:
+        return to_serializable_one(response)

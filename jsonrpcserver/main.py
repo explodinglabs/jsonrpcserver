@@ -10,7 +10,7 @@ from pkg_resources import resource_string
 
 from .dispatcher import dispatch_to_response_pure, Deserialized
 from .methods import Methods, global_methods
-from .response import Response, to_serializable
+from .response import Response, to_serializable_one
 from .sentinels import NOCONTEXT
 from .utils import identity
 
@@ -35,7 +35,7 @@ def dispatch_to_response(
     methods: Optional[Methods] = None,
     *,
     context: Any = NOCONTEXT,
-    deserializer: Callable[[str], Deserialized] = default_deserializer,
+    deserializer: Callable[[str], Deserialized] = json.loads,
     schema_validator: Callable[[Deserialized], Deserialized] = default_schema_validator,
     post_process: Callable[[Deserialized], Iterable[Any]] = identity,
 ) -> Union[Response, Iterable[Response], None]:
@@ -78,7 +78,7 @@ def dispatch_to_serializable(
 ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
     return cast(
         Union[Dict[str, Any], List[Dict[str, Any]], None],
-        dispatch_to_response(*args, post_process=to_serializable, **kwargs),
+        dispatch_to_response(*args, post_process=to_serializable_one, **kwargs),
     )
 
 
@@ -94,10 +94,7 @@ def dispatch_to_json(
     serializable value and then serializing that to return a JSON-RPC response string.
     """
     response = dispatch_to_serializable(*args, **kwargs)
-    # If there's no response, dispatch_to_serializable will give us None. Serializing
-    # None gives "null" which is valid json, however it's not a valid JSON-RPC response.
-    # The client may consider "null" a response and attempt to validate it against a
-    # JSON-RPC schema. Better to respond with nothing. See discussion at
+    # Better to respond with nothing instead of json "null". See discussion at
     # https://github.com/bcb/jsonrpcserver/discussions/163
     return "" if response is None else serializer(response)
 
