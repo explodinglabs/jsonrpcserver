@@ -22,7 +22,7 @@ default_deserializer = json.loads
 schema = json.loads(resource_string(__name__, "request-schema.json"))
 klass = validator_for(schema)
 klass.check_schema(schema)
-default_schema_validator = klass(schema).validate
+default_validator = klass(schema).validate
 
 # Read configuration file
 config = ConfigParser(default_section="dispatch")
@@ -36,7 +36,7 @@ def dispatch_to_response(
     *,
     context: Any = NOCONTEXT,
     deserializer: Callable[[str], Deserialized] = json.loads,
-    schema_validator: Callable[[Deserialized], Deserialized] = default_schema_validator,
+    validator: Callable[[Deserialized], Deserialized] = default_validator,
     post_process: Callable[[Deserialized], Iterable[Any]] = identity,
 ) -> Union[Response, Iterable[Response], None]:
     """Dispatch a JSON-serialized request to methods.
@@ -52,7 +52,7 @@ def dispatch_to_response(
             internal, global methods object which is populated with the @method
             decorator.
         context: Will be passed to methods as the first param if not None.
-        schema_validator: Function that validates the JSON-RPC request. The function
+        validator: Function that validates the JSON-RPC request. The function
             should raise an exception if the request is invalid. We don't care about the
             return value otherwise.
         deserializer: Function that deserializes the JSON-RPC request.
@@ -65,7 +65,7 @@ def dispatch_to_response(
     """
     return dispatch_to_response_pure(
         deserializer=deserializer,
-        schema_validator=schema_validator,
+        validator=validator,
         post_process=post_process,
         context=context,
         methods=global_methods if methods is None else methods,

@@ -16,7 +16,6 @@ repos:
     rev: v0.910
     hooks:
       - id: mypy
-        exclude: ^tests
-        exclude: ^examples
+        exclude: (^tests|^examples)
         args: [--strict]
-        additional_dependencies: ['types-setuptools', 'apply_defaults']
+        additional_dependencies: ['apply_defaults', 'types-setuptools']

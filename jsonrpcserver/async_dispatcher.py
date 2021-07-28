@@ -11,7 +11,7 @@ from oslash.either import Left  # type: ignore
 from .dispatcher import (
     Deserialized,
     create_request,
-    deserialize,
+    deserialize_request,
     extract_args,
     extract_kwargs,
     extract_list,
@@ -82,15 +82,15 @@ async def dispatch_deserialized(
 async def dispatch_to_response_pure(
     *,
     deserializer: Callable[[str], Deserialized],
-    schema_validator: Callable[[Deserialized], Deserialized],
+    validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
     post_process: Callable[[Response], Iterable[Any]],
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
     try:
-        result = deserialize(deserializer, request).bind(
-            partial(validate_request, schema_validator)
+        result = deserialize_request(deserializer, request).bind(
+            partial(validate_request, validator)
         )
         return (
             post_process(result)
