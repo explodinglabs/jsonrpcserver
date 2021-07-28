@@ -15,11 +15,19 @@ from jsonrpcserver.codes import (
     ERROR_SERVER_ERROR,
 )
 from jsonrpcserver.dispatcher import (
+    call,
     create_request,
+    dispatch_deserialized,
     dispatch_request,
     dispatch_to_response_pure,
+    extract_list,
+    extract_args,
+    extract_kwargs,
+    get_method,
+    not_notification,
     to_response,
     validate_args,
+    validate_request,
 )
 from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.main import (
@@ -46,42 +54,59 @@ def ping() -> Result:
     return Success("pong")
 
 
+# extract_list
+
+
+def test_extract_list():
+    assert extract_list(False, [SuccessResponse("foo", 1)]) == SuccessResponse("foo", 1)
+
+
+def test_extract_list_notification():
+    assert extract_list(False, [None]) == None
+
+
+def test_extract_list_batch():
+    assert extract_list(True, [SuccessResponse("foo", 1)]) == [
+        SuccessResponse("foo", 1)
+    ]
+
+
+def test_extract_list_batch_all_notifications():
+    assert extract_list(True, []) == None
+
+
 # to_response
 
 
 def test_to_response_SuccessResult():
-    response = to_response(
+    assert to_response(
         Request("ping", [], sentinel.id), Right(SuccessResult(sentinel.result))
-    )
-    assert response == Right(SuccessResponse(sentinel.result, sentinel.id))
+    ) == Right(SuccessResponse(sentinel.result, sentinel.id))
 
 
 def test_to_response_ErrorResult():
-    response = to_response(
-        Request("ping", [], sentinel.id),
-        Left(
-            ErrorResult(
-                code=sentinel.code, message=sentinel.message, data=sentinel.data
-            )
-        ),
-    )
-    assert response == Left(
+    assert (
+        to_response(
+            Request("ping", [], sentinel.id),
+            Left(
+                ErrorResult(
+                    code=sentinel.code, message=sentinel.message, data=sentinel.data
+                )
+            ),
+        )
+    ) == Left(
         ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id)
     )
 
 
 def test_to_response_InvalidParams():
-    response = to_response(
+    assert to_response(
         Request("ping", [], sentinel.id), InvalidParams(sentinel.data)
-    )
-    assert response == Left(
-        ErrorResponse(-32602, "Invalid params", sentinel.data, sentinel.id)
-    )
+    ) == Left(ErrorResponse(-32602, "Invalid params", sentinel.data, sentinel.id))
 
 
 def test_to_response_InvalidParams_no_data():
-    response = to_response(Request("ping", [], sentinel.id), InvalidParams())
-    assert response == Left(
+    assert to_response(Request("ping", [], sentinel.id), InvalidParams()) == Left(
         ErrorResponse(-32602, "Invalid params", NODATA, sentinel.id)
     )
 
@@ -91,15 +116,33 @@ def test_to_response_notification():
         to_response(Request("ping", [], NOID), SuccessResult(result=sentinel.result))
 
 
-# validate_args
+# extract_args
 
 
-def test_validate_no_arguments():
+def test_extract_args():
+    assert extract_args(Request("ping", [], NOID), NOCONTEXT) == []
+
+
+def test_extract_args_with_context():
+    assert extract_args(Request("ping", ["bar"], NOID), "foo") == ["foo", "bar"]
+
+
+# extract_kwargs
+
+
+def test_extract_kwargs():
+    assert extract_kwargs(Request("ping", {"foo": "bar"}, NOID)) == {"foo": "bar"}
+
+
+# validate_result
+
+
+def test_validate_result_no_arguments():
     f = lambda: None
     assert validate_args(Request("f", [], NOID), NOCONTEXT, f) == Right(f)
 
 
-def test_validate_no_arguments_too_many_positionals():
+def test_validate_result_no_arguments_too_many_positionals():
     assert validate_args(Request("f", ["foo"], NOID), NOCONTEXT, lambda: None) == Left(
         ErrorResult(
             code=ERROR_INVALID_PARAMS,
@@ -109,12 +152,12 @@ def test_validate_no_arguments_too_many_positionals():
     )
 
 
-def test_validate_positionals():
+def test_validate_result_positionals():
     f = lambda x: None
     assert validate_args(Request("f", [1], NOID), NOCONTEXT, f) == Right(f)
 
 
-def test_validate_positionals_not_passed():
+def test_validate_result_positionals_not_passed():
     assert validate_args(
         Request("f", {"foo": "bar"}, NOID), NOCONTEXT, lambda x: None
     ) == Left(
@@ -124,18 +167,71 @@ def test_validate_positionals_not_passed():
     )
 
 
-def test_validate_keywords():
+def test_validate_result_keywords():
     f = lambda **kwargs: None
     assert validate_args(Request("f", {"foo": "bar"}, NOID), NOCONTEXT, f) == Right(f)
 
 
-def test_validate_object_method():
+def test_validate_result_object_method():
     class FooClass:
         def foo(self, one, two):
             return "bar"
 
     f = FooClass().foo
     assert validate_args(Request("f", ["one", "two"], NOID), NOCONTEXT, f) == Right(f)
+
+
+# call
+
+
+def test_call():
+    assert call(Request("ping", [], 1), NOCONTEXT, ping) == Right(SuccessResult("pong"))
+
+
+def test_call_raising_jsonrpcerror():
+    def method():
+        raise JsonRpcError(code=1, message="foo", data=NODATA)
+
+    assert call(Request("ping", [], 1), NOCONTEXT, method) == Left(
+        ErrorResult(1, "foo")
+    )
+
+
+def test_call_raising_exception():
+    def method():
+        raise ValueError("foo")
+
+    assert call(Request("ping", [], 1), NOCONTEXT, method) == Left(
+        ErrorResult(ERROR_INTERNAL_ERROR, "Internal error", "foo")
+    )
+
+
+# validate_args
+
+
+def test_validate_args():
+    assert validate_args(Request("ping", [], 1), NOCONTEXT, ping) == Right(ping)
+
+
+def test_validate_args():
+    assert validate_args(Request("ping", ["foo"], 1), NOCONTEXT, ping) == Left(
+        ErrorResult(
+            ERROR_INVALID_PARAMS, "Invalid params", "too many positional arguments"
+        )
+    )
+
+
+# get_method
+
+
+def test_get_method():
+    assert get_method({"ping": ping}, "ping") == Right(ping)
+
+
+def test_get_method():
+    assert get_method({"ping": ping}, "non-existant") == Left(
+        ErrorResult(ERROR_METHOD_NOT_FOUND, "Method not found", "non-existant")
+    )
 
 
 # dispatch_request
@@ -162,12 +258,68 @@ def test_dispatch_request_with_context():
     # Assert is in the method
 
 
-# create_requests
+# create_request
 
 
 def test_create_request():
     request = create_request({"jsonrpc": "2.0", "method": "ping"})
     assert isinstance(request, Request)
+
+
+# not_notification
+
+
+def test_not_notification():
+    assert not_notification((Request("ping", [], 1), SuccessResult("pong"))) == True
+
+
+def test_not_notification_false():
+    assert not_notification((Request("ping", [], NOID), SuccessResult("pong"))) == False
+
+
+# dispatch_deserialized
+
+
+def test_dispatch_deserialized():
+    assert (
+        dispatch_deserialized(
+            methods={"ping": ping},
+            context=NOCONTEXT,
+            post_process=identity,
+            deserialized={"jsonrpc": "2.0", "method": "ping", "id": 1},
+        )
+        == Right(SuccessResponse("pong", 1))
+    )
+
+
+# validate_request
+
+
+def test_validate_request():
+    request = {"jsonrpc": "2.0", "method": "ping"}
+    assert validate_request(default_validator, request) == Right(request)
+
+
+def test_validate_request_invalid():
+    assert validate_request(default_validator, {"jsonrpc": "2.0"}) == Left(
+        ErrorResponse(
+            ERROR_INVALID_REQUEST,
+            "Invalid request",
+            "The request failed schema validation",
+            None,
+        )
+    )
+
+
+# dispatch_request
+
+
+def test_dispatch_request():
+    request = Request("ping", [], 1)
+    assert dispatch_request({"ping": ping}, NOCONTEXT, request) == (
+        request,
+        Right(SuccessResult("pong")),
+    )
 
 
 # dispatch_to_response_pure

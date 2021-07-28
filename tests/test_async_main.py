@@ -37,3 +37,11 @@ async def test_dispatch_to_json():
         )
         == '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
     )
+
+
+@pytest.mark.asyncio
+async def test_dispatch_to_json_notification():
+    assert (
+        await dispatch_to_json('{"jsonrpc": "2.0", "method": "ping"}', {"ping": ping})
+        == ""
+    )
