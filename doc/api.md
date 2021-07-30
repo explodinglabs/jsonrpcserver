@@ -9,14 +9,14 @@ Jsonrpcserver allows you to act on remote procedure calls.
 Install the package with pip:
 
 ```sh
-pip install jsonrpcserver
+pip install --pre jsonrpcserver
 ```
 
-For Python versions older than 3.6, install a 3.x version, and jump over to
-[the 3.x docs](https://jsonrpcserver.readthedocs.io/en/3.5.6/).
+For Python versions older than 5, install version 4, and jump over to the
+[version 4 docs](https://jsonrpcserver.com/en/stable/).
 
 ```sh
-pip install "jsonrpcserver<4"
+pip install "jsonrpcserver<5"
 ```
 
 There are three public functions, `method`, `serve` and `dispatch`.
@@ -26,11 +26,11 @@ There are three public functions, `method`, `serve` and `dispatch`.
 Use the `@method` decorator to register functions that can be called remotely:
 
 ```python
-from jsonrpcserver import method, dispatch, serve
+from jsonrpcserver import Success, method, dispatch, serve
 
 @method
 def ping():
-    return 'pong'
+    return Success("pong")
 ```
 
 Methods can accept either positional or named arguments (but not both -- this

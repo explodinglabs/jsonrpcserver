@@ -1,24 +1,12 @@
 # jsonrpcserver Change Log
 
-## 5.0.0 (Coming Soon)
+## 5.0.0
 
-- Methods now take a "context" as the first param. It includes the request
-  object, plus an "extra" value (None if not passed to dispatch).
-- dispatch's context param renamed to "extra". This value is included in the
-  context object passed to every method.
+- Use Success or Error when returning a value from @methods.
+- Changed all classes (Request, Response, Methods, etc) to namedtuples.
+- Removed trim_log_values option
 - Removed "convert camel case" option.
-- Removed the custom exceptions. From methods, return an ErrorResponse instead
-  of raising an exception.
-- Methods should now return a Response object, and not raise exceptions to
-  return a JSON-RPC error.
-- Errors have been renamed to match the JSON-RPC spec (parse error, invalid
-  request, method not found, invalid params, internal error and server error).
-- Internal error JSON-RPC code fixed
-- Removed trim_log_values
-
-Refactoring/internal changes:
-
-- Changed all classes (Request, Response, Methods) to NamedTuples.
+- Removed the custom exceptions, replaced with one JsonRpcError exception.
 
 ## 4.2.0 (Nov 9, 2020)
 

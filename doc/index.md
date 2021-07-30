@@ -1,13 +1,16 @@
-# jsonrpcserver
+# jsonrpcserver 5
+
+> Version 5 is currently in alpha. For the stable release go to [version
+> 4](https://jsonrpcserver.com/en/stable/).
 
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 
 ```python
-from jsonrpcserver import method, serve
+from jsonrpcserver import Success, method, serve
 
 @method
 def ping():
-    return "pong"
+    return Success("pong")
 
 if __name__ == "__main__":
     serve()
@@ -16,7 +19,7 @@ if __name__ == "__main__":
 Start the server:
 
 ```sh
-$ pip install jsonrpcserver
+$ pip install --pre jsonrpcserver
 $ python server.py
  * Listening on port 5000
 ```

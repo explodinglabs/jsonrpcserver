@@ -1,13 +1,12 @@
 """setup.py"""
 from codecs import open as codecs_open
-from setuptools import setup
+from setuptools import setup  # type: ignore
 
 with codecs_open("README.md", "r", "utf-8") as f:
     README = f.read()
 
 setup(
     author="Beau Barker",
-    author_email="beauinmelbourne@gmail.com",
     classifiers=[
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -29,7 +28,7 @@ setup(
         ],
     },
     include_package_data=True,
-    install_requires=["apply_defaults<1", "jsonschema>=2,<4"],
+    install_requires=["apply_defaults<1", "jsonschema<4"],
     license="MIT",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -40,5 +39,5 @@ setup(
     zip_safe=False,
     packages=["jsonrpcserver"],
     url="https://github.com/bcb/jsonrpcserver",
-    version="4.2.0",
+    version="5.0.0a1",
 )
