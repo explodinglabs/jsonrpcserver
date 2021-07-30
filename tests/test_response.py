@@ -62,25 +62,44 @@ def test_ServerErrorResponse():
 
 
 def test_to_serializable():
-    dct = to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id)))
-    assert dct["jsonrpc"] == "2.0"
-    assert dct["result"] == sentinel.result
-    assert dct["id"] == sentinel.id
+    assert to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id))) == {
+        "jsonrpc": "2.0",
+        "result": sentinel.result,
+        "id": sentinel.id,
+    }
+
+
+def test_to_serializable_None():
+    assert to_serializable(None) == None
 
 
 def test_to_serializable_SuccessResponse():
-    dct = to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id)))
-    assert dct["jsonrpc"] == "2.0"
-    assert dct["result"] == sentinel.result
-    assert dct["id"] == sentinel.id
+    assert to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id))) == {
+        "jsonrpc": "2.0",
+        "result": sentinel.result,
+        "id": sentinel.id,
+    }
 
 
 def test_to_serializable_ErrorResponse():
-    dct = to_serializable(
+    assert to_serializable(
         Left(ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id))
-    )
-    assert dct["jsonrpc"] == "2.0"
-    assert dct["error"]["code"] == sentinel.code
-    assert dct["error"]["message"] == sentinel.message
-    assert dct["error"]["data"] == sentinel.data
-    assert dct["id"] == sentinel.id
+    ) == {
+        "jsonrpc": "2.0",
+        "error": {
+            "code": sentinel.code,
+            "message": sentinel.message,
+            "data": sentinel.data,
+        },
+        "id": sentinel.id,
+    }
+
+
+def test_to_serializable_list():
+    assert to_serializable([Right(SuccessResponse(sentinel.result, sentinel.id))]) == [
+        {
+            "jsonrpc": "2.0",
+            "result": sentinel.result,
+            "id": sentinel.id,
+        }
+    ]

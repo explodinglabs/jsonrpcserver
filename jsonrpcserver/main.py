@@ -1,8 +1,8 @@
-"""The public api functions."""
-import json
-import os
+"""The public functions."""
 from configparser import ConfigParser
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
+import json
+import os
 
 from apply_defaults import apply_config
 from jsonschema.validators import validator_for  # type: ignore

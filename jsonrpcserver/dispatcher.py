@@ -139,24 +139,12 @@ def dispatch_deserialized(
     Returns: A Response, a list of Responses, or None. If post_process is passed, it's
         applied to the Response(s).
     """
-    return extract_list(
-        isinstance(deserialized, list),
-        map(
-            post_process,
-            starmap(
-                to_response,
-                filter(
-                    not_notification,
-                    map(
-                        compose(
-                            partial(dispatch_request, methods, context), create_request
-                        ),
-                        make_list(deserialized),
-                    ),
-                ),
-            ),
-        ),
+    results = map(
+        compose(partial(dispatch_request, methods, context), create_request),
+        make_list(deserialized),
     )
+    responses = starmap(to_response, filter(not_notification, results))
+    return extract_list(isinstance(deserialized, list), map(post_process, responses))
 
 
 def validate_request(
