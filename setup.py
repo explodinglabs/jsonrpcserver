@@ -8,9 +8,9 @@ with codecs_open("README.md", "r", "utf-8") as f:
 setup(
     author="Beau Barker",
     classifiers=[
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     description="Process JSON-RPC requests",
     extras_require={
