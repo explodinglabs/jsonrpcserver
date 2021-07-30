@@ -1,4 +1,4 @@
-"""The public async api functions."""
+"""The public async functions."""
 import json
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
 

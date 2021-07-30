@@ -143,10 +143,8 @@ def dispatch_deserialized(
         compose(partial(dispatch_request, methods, context), create_request),
         make_list(deserialized),
     )
-    return extract_list(
-        isinstance(deserialized, list),
-        map(post_process, starmap(to_response, filter(not_notification, results))),
-    )
+    responses = starmap(to_response, filter(not_notification, results))
+    return extract_list(isinstance(deserialized, list), map(post_process, responses))
 
 
 def validate_request(
