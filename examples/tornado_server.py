@@ -1,18 +1,17 @@
 from tornado import ioloop, web
-from jsonrpcserver import method, async_dispatch as dispatch
+from jsonrpcserver import Success, method, async_dispatch as dispatch
 
 
 @method
 async def ping() -> str:
-    return "pong"
+    return Success("pong")
 
 
 class MainHandler(web.RequestHandler):
     async def post(self) -> None:
         request = self.request.body.decode()
-        response = await dispatch(request)
-        if response.wanted:
-            self.write(str(response))
+        if response := await dispatch(request):
+            self.write(response)
 
 
 app = web.Application([(r"/", MainHandler)])

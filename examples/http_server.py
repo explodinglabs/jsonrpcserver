@@ -1,11 +1,11 @@
 """Using Python's built-in HTTPServer"""
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from jsonrpcserver import method, dispatch
+from jsonrpcserver import Success, method, dispatch
 
 
 @method
 def ping():
-    return "pong"
+    return Success("pong")
 
 
 class TestHttpServer(BaseHTTPRequestHandler):
@@ -14,10 +14,10 @@ class TestHttpServer(BaseHTTPRequestHandler):
         request = self.rfile.read(int(self.headers["Content-Length"])).decode()
         response = dispatch(request)
         # Return response
-        self.send_response(response.http_status)
+        self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
-        self.wfile.write(str(response).encode())
+        self.wfile.write(response.encode())
 
 
 if __name__ == "__main__":

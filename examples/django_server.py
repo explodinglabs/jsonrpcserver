@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from jsonrpcserver import method, dispatch
 
@@ -10,7 +10,6 @@ def ping():
 
 @csrf_exempt
 def jsonrpc(request):
-    response = dispatch(request.body.decode())
-    return JsonResponse(
-        response.deserialized(), status=response.http_status, safe=False
+    return HttpResponse(
+        dispatch(request.body.decode()), content_type="application/json"
     )
