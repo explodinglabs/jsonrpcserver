@@ -19,6 +19,6 @@ if __name__ == "__main__":
     serve()
 ```
 
-Full documentation is at [jsonrpcserver.com](https://jsonrpcserver.com/).
+Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
 
 See also: [jsonrpcclient](https://github.com/bcb/jsonrpcclient)
