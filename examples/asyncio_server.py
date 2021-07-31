@@ -2,12 +2,11 @@
 import asyncio
 import json
 
-from jsonrpcserver import method, Success, Result
-from jsonrpcserver.async_main import dispatch
+from jsonrpcserver import Success, method, async_dispatch as dispatch
 
 
 @method
-async def sleep_() -> Result:
+async def sleep_():
     await asyncio.sleep(1)
     return Success()
 

@@ -1,17 +1,16 @@
 import asyncio
 import websockets
-from jsonrpcserver import method, async_dispatch as dispatch
+from jsonrpcserver import Success, method, async_dispatch as dispatch
 
 
 @method
 async def ping():
-    return "pong"
+    return Success("pong")
 
 
 async def main(websocket, path):
-    response = await dispatch(await websocket.recv())
-    if response.wanted:
-        await websocket.send(str(response))
+    if response := await dispatch(await websocket.recv()):
+        await websocket.send(response)
 
 
 start_server = websockets.serve(main, "localhost", 5000)

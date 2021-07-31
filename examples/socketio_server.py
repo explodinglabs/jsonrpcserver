@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_socketio import SocketIO, send
-from jsonrpcserver import method, dispatch
+from jsonrpcserver import Success, method, dispatch
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -8,13 +8,12 @@ socketio = SocketIO(app)
 
 @method
 def ping():
-    return "pong"
+    return Success("pong")
 
 
 @socketio.on("message")
 def handle_message(request):
-    response = dispatch(request)
-    if response.wanted:
+    if response := dispatch(request):
         send(response, json=True)
 
 

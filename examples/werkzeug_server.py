@@ -1,17 +1,16 @@
 from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
-from jsonrpcserver import method, dispatch
+from jsonrpcserver import Success, method, dispatch
 
 
 @method
 def ping():
-    return "pong"
+    return Success("pong")
 
 
 @Request.application
 def application(request):
-    response = dispatch(request.data.decode())
-    return Response(str(response), response.http_status, mimetype="application/json")
+    return Response(dispatch(request.data.decode()), 200, mimetype="application/json")
 
 
 if __name__ == "__main__":
