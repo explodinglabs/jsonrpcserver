@@ -1,5 +1,5 @@
-import zmq
 from jsonrpcserver import Success, method, dispatch
+import zmq
 
 socket = zmq.Context().socket(zmq.REP)
 
