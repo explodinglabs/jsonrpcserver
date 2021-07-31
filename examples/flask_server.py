@@ -1,4 +1,4 @@
-from flask import Flask, Response, request  # type: ignore
+from flask import Flask, Response, request
 from jsonrpcserver import Result, Success, dispatch, method
 
 app = Flask(__name__)
@@ -10,7 +10,7 @@ def ping() -> Result:
 
 
 @app.route("/", methods=["POST"])
-def index() -> str:
+def index():
     return Response(
         dispatch(request.get_data().decode()), content_type="application/json"
     )
