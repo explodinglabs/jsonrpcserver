@@ -13,5 +13,4 @@ if __name__ == "__main__":
     socket.bind("tcp://*:5000")
     while True:
         request = socket.recv().decode()
-        response = dispatch(request)
-        socket.send_string(response)
+        socket.send_string(dispatch(request))
