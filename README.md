@@ -1,4 +1,4 @@
-> :warning: **Note: This master branch is for development of the upcoming version 5**, which is [currently in alpha](https://github.com/bcb/jsonrpcserver/discussions/204). For the latest stable version, see the [4.x branch](https://github.com/bcb/jsonrpcserver/tree/4.x). Also, please pin your dependency to "jsonrpcserver<5" until you're ready to upgrade to v5.
+> :warning: **Note: This master branch is for development of the upcoming version 5**, which is [currently in beta](https://github.com/bcb/jsonrpcserver/discussions/204). For the latest stable version, see the [4.x branch](https://github.com/bcb/jsonrpcserver/tree/4.x). Also, please pin your dependency to "jsonrpcserver<5" until you're ready to upgrade to v5.
 
 # jsonrpcserver
 

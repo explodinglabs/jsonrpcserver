@@ -1,6 +1,6 @@
 # jsonrpcserver 5
 
-> Version 5 is currently in alpha. For the stable release go to [version
+> Version 5 is currently in beta. For the stable release go to [version
 > 4](https://jsonrpcserver.com/en/stable/).
 
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
