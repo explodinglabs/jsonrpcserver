@@ -1,9 +1,5 @@
-"""
-An exception can be raised from inside a method to return an error response.
-
-This is an alternative to returning a Result from the method.
-
-See https://github.com/bcb/jsonrpcserver/discussions/158
+"""A JsonRpcError exception can be raised from inside a method, as an alternative way to
+return an error response. See https://github.com/bcb/jsonrpcserver/discussions/158
 """
 from typing import Any
 from .sentinels import NODATA

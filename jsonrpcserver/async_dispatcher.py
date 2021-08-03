@@ -1,4 +1,4 @@
-"""Asynchronous dispatch"""
+"""Async version of dispatcher.py"""
 
 from functools import partial
 from itertools import starmap

@@ -1,18 +1,6 @@
-"""
-response.py - the response data types.
+"""The response data types.
 
-Methods return a Result, but internally, the Result is converted to a Response type -
-either a SuccessResponse or ErrorResponse. These simply add the id that's associated
-with the original request.
-
->>> dispatch('{"jsonrpc": "2.0", "method": "ping", params: [], "id": 1}', [my_method])
-SuccessResponse(result='pong', id=1)
-
-Use to_serializable to get a dictionary or list containing the JSON-RPC response
-elements, and then serialize it to JSON:
-
->>> json.dumps(to_serializable(Right(SuccessResponse(result='foo', id=1))))
-'{"jsonrpc": "2.0", "result": "foo", "id": 1}'
+https://www.jsonrpc.org/specification#response_object
 """
 from typing import Any, Dict, List, Type, NamedTuple, Union
 

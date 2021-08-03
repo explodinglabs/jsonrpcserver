@@ -1,4 +1,14 @@
-"""The public functions."""
+"""The public api functions.
+
+These three public functions all perform the same function of dispatching a JSON-RPC
+request, but they each give a different return value.
+
+- dispatch_to_responses: Returns Response(s) (or None for notifications).
+- dispatch_to_serializable: Returns a Python dict or list of dicts (or None for
+  notifications).
+- dispatch_to_json/dispatch: Returns a JSON-RPC response string (or an empty string for
+  notifications).
+"""
 from configparser import ConfigParser
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
 import json
@@ -38,30 +48,31 @@ def dispatch_to_response(
     deserializer: Callable[[str], Deserialized] = json.loads,
     validator: Callable[[Deserialized], Deserialized] = default_validator,
     post_process: Callable[[Deserialized], Iterable[Any]] = identity,
-) -> Union[Response, Iterable[Response], None]:
-    """Dispatch a JSON-serialized request to methods.
+) -> Union[Response, List[Response], None]:
+    """Takes a JSON-RPC request string and dispatches it to method(s), giving Response
+    namedtuple(s) or None.
 
-    Maps a request string to a Response (or list of Responses).
-
-    This is a public method which wraps dispatch_to_response_pure, adding default values
-    and globals.
+    This is a public wrapper around dispatch_to_response_pure, adding globals and
+    default values to be nicer for end users.
 
     Args:
         request: The JSON-RPC request string.
-        methods: Collection of methods that can be called. If not passed, uses the
-            internal, global methods object which is populated with the @method
-            decorator.
-        context: Will be passed to methods as the first param if not None.
-        validator: Function that validates the JSON-RPC request. The function
-            should raise an exception if the request is invalid. We don't care about the
-            return value otherwise.
+        methods: Dictionary of methods that can be called - mapping of function names to
+            functions.. If not passed, uses the internal global_methods dict which is
+            populated with the @method decorator.
+        context: If given, will be passed as the first argument to methods.
         deserializer: Function that deserializes the JSON-RPC request.
+        validator: Function that validates the JSON-RPC request. The function should
+            raise an exception if the request is invalid. To disable validation, pass
+            lambda _: None.
+        post_process: Function that will be applied to Responses.
 
     Returns:
         A Response, list of Responses or None.
 
     Examples:
-        >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+       >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+       '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
     """
     return dispatch_to_response_pure(
         deserializer=deserializer,
@@ -76,6 +87,9 @@ def dispatch_to_response(
 def dispatch_to_serializable(
     *args: Any, **kwargs: Any
 ) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+    """Takes a JSON-RPC request string and dispatches it to method(s), giving responses
+    as dicts (or None).
+    """
     return cast(
         Union[Dict[str, Any], List[Dict[str, Any]], None],
         dispatch_to_response(*args, post_process=to_serializable_one, **kwargs),
@@ -89,13 +103,19 @@ def dispatch_to_json(
     ] = json.dumps,
     **kwargs: Any,
 ) -> str:
-    """This is the main public method, it goes through the entire JSON-RPC process,
-    taking a JSON-RPC request string, dispatching it, converting the Response(s) into a
-    serializable value and then serializing that to return a JSON-RPC response string.
+    """Takes a JSON-RPC request string and dispatches it to method(s), giving a JSON-RPC
+    response string.
+
+    This is the main public method, it goes through the entire JSON-RPC process - it's a
+    function from JSON-RPC request string to JSON-RPC response string.
+
+    Args:
+        serializer: A function to serialize a Python object to json.
+        The rest: Passed through to dispatch_to_serializable.
     """
     response = dispatch_to_serializable(*args, **kwargs)
-    # Better to respond with nothing instead of json "null". See discussion at
-    # https://github.com/bcb/jsonrpcserver/discussions/163
+    # Better to respond with the empty string instead of json "null", because "null" is
+    # an invalid JSON-RPC response.
     return "" if response is None else serializer(response)
 
 
