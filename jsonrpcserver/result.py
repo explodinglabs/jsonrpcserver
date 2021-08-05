@@ -1,27 +1,10 @@
-"""
-The result data types - the results of calling a method.
+"""Result data types - the results of calling a method.
 
-Methods must return either a Success or Error result. A union type "Result"
-combines the two result types.
+Results are the JSON-RPC response objects
+(https://www.jsonrpc.org/specification#response_object), minus the "jsonrpc" and "id"
+parts - the library takes care of these parts for you.
 
-    @method
-    def my_method(request: Request) -> Result:
-
-Success indicates success. Optionally pass a result value.
-
-    return Success(result)
-
-Error indicates failure.
-
-    return Error(-1, "There was an error")
-
-InvalidParams is a shortcut to this error response:
-
-    return InvalidParams("Colour is invalid")
-
-Which is equivalent to (-32602 is the Invalid Params error code in JSON-RPC):
-
-    return Error(-32602, "Color is invalid")
+The public functions are Success, Error and InvalidParams.
 """
 from typing import Any, NamedTuple
 
@@ -66,6 +49,9 @@ def InvalidParamsResult(data: Any = NODATA) -> ErrorResult:
     return ErrorResult(ERROR_INVALID_PARAMS, "Invalid params", data)
 
 
+# Helpers (the public functions)
+
+
 def Success(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
     return Right(SuccessResult(*args, **kwargs))
 
@@ -75,4 +61,7 @@ def Error(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
 
 
 def InvalidParams(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
+    """InvalidParams is a shortcut to save you from having to pass the Invalid Params
+    JSON-RPC code to Error.
+    """
     return Left(InvalidParamsResult(*args, **kwargs))

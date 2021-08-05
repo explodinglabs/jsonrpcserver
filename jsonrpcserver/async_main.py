@@ -1,4 +1,4 @@
-"""The public async functions."""
+"""Async version of main.py. The public async functions."""
 import json
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
 
@@ -53,5 +53,4 @@ async def dispatch_to_json(
     return "" if response is None else serializer(response)
 
 
-# "dispatch" is an alias of dispatch_to_json.
 dispatch = dispatch_to_json

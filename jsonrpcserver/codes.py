@@ -1,4 +1,4 @@
-"""JSONRPC status codes from http://www.jsonrpc.org/specification#error_object"""
+"""JSONRPC error codes from http://www.jsonrpc.org/specification#error_object"""
 
 ERROR_PARSE_ERROR = -32700
 ERROR_INVALID_REQUEST = -32600
