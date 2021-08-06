@@ -1,9 +1,9 @@
 """Using jsonrpcserver's built-in serve() function"""
-from jsonrpcserver import Success, method, serve
+from jsonrpcserver import method, Result, Success, serve
 
 
 @method
-def ping():
+def ping() -> Result:
     return Success("pong")
 
 

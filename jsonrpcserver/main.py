@@ -58,10 +58,10 @@ def dispatch_to_response(
     Args:
         request: The JSON-RPC request string.
         methods: Dictionary of methods that can be called - mapping of function names to
-            functions.. If not passed, uses the internal global_methods dict which is
+            functions. If not passed, uses the internal global_methods dict which is
             populated with the @method decorator.
         context: If given, will be passed as the first argument to methods.
-        deserializer: Function that deserializes the JSON-RPC request.
+        deserializer: Function that deserializes the request string.
         validator: Function that validates the JSON-RPC request. The function should
             raise an exception if the request is invalid. To disable validation, pass
             lambda _: None.

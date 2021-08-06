@@ -1,13 +1,13 @@
 from flask import Flask
 from flask_socketio import SocketIO, send
-from jsonrpcserver import Success, method, dispatch
+from jsonrpcserver import method, Result, Success, dispatch
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
 
 @method
-def ping():
+def ping() -> Result:
     return Success("pong")
 
 

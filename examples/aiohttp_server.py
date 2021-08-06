@@ -1,9 +1,9 @@
 from aiohttp import web
-from jsonrpcserver import Success, async_dispatch, method
+from jsonrpcserver import method, Result, Success, async_dispatch
 
 
 @method
-async def ping():
+async def ping() -> Result:
     return Success("pong")
 
 

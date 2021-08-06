@@ -1,5 +1,5 @@
 from flask import Flask, Response, request
-from jsonrpcserver import Result, Success, dispatch, method
+from jsonrpcserver import method, Result, Success, dispatch
 
 app = Flask(__name__)
 

@@ -1,11 +1,11 @@
-from jsonrpcserver import Success, method, dispatch
+from jsonrpcserver import method, Result, Success, dispatch
 import zmq
 
 socket = zmq.Context().socket(zmq.REP)
 
 
 @method
-def ping():
+def ping() -> Result:
     return Success("pong")
 
 
