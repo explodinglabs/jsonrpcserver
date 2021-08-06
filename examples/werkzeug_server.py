@@ -1,6 +1,6 @@
-from werkzeug.wrappers import Request, Response
-from werkzeug.serving import run_simple
 from jsonrpcserver import method, Result, Success, dispatch
+from werkzeug.serving import run_simple
+from werkzeug.wrappers import Request, Response
 
 
 @method

@@ -1,5 +1,5 @@
-from tornado import ioloop, web
 from jsonrpcserver import method, Result, Success, async_dispatch
+from tornado import ioloop, web
 
 
 @method

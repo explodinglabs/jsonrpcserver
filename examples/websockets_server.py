@@ -1,6 +1,7 @@
 import asyncio
-import websockets
+
 from jsonrpcserver import method, Success, Result, async_dispatch
+import websockets
 
 
 @method

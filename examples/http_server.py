@@ -1,5 +1,5 @@
-"""Using Python's built-in HTTPServer"""
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
 from jsonrpcserver import method, Result, Success, dispatch
 
 

@@ -1,4 +1,3 @@
-"""Using jsonrpcserver's built-in serve() function"""
 from jsonrpcserver import method, Result, Success, serve
 
 

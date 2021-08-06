@@ -1,7 +1,7 @@
-import asyncio
-import aiozmq
-import zmq
 from jsonrpcserver import method, Result, Success, async_dispatch
+import aiozmq
+import asyncio
+import zmq
 
 
 @method

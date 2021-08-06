@@ -14,20 +14,18 @@ and gives a JSON-RPC response.
 
 ### methods
 
-This lets you specify which group of methods to dispatch to. The value should
-be a dict mapping function names to functions.
+This lets you specify a group of methods to dispatch to. It's an alternative to
+using the `@method` decorator. The value should be a dict mapping function
+names to functions.
 
 ```python
 def ping():
     return Success("pong")
 
-dispatch(
-    '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-    methods={"ping": ping}
-)
+dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', methods={"ping": ping})
 ```
 
-Default is `global_methods`. This is an internal dict populated by the
+Default is `global_methods`, which is an internal dict populated by the
 `@method` decorator.
 
 ### context
@@ -39,12 +37,8 @@ If specified, this will be the first argument to all methods.
 def greet(context, name):
     return Success(context + " " + name)
 
-dispatch(
-    '{"jsonrpc": "2.0", "method": "greet", "params": ["Beau"], "id": 1}',
-    context="Hello"
-)
-
-# Gives '{"jsonrpc": "2.0", "result": "Hello Beau", "id": 1}'
+>>> dispatch('{"jsonrpc": "2.0", "method": "greet", "params": ["Beau"], "id": 1}', context="Hello")
+'{"jsonrpc": "2.0", "result": "Hello Beau", "id": 1}'
 ```
 
 ### deserializer
@@ -54,10 +48,7 @@ A function that parses the request string. Default is `json.loads`.
 ```python
 import ujson
 
-dispatch(
-    '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-    deserializer=ujson.loads
-)
+dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', deserializer=ujson.loads)
 ```
 
 ### serializer
@@ -67,10 +58,7 @@ A function that serializes the response string. Default is `json.dumps`.
 ```python
 import ujson
 
-dispatch(
-    '{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-    serializer=ujson.loads
-)
+dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', serializer=ujson.loads)
 ```
 
 ### validator
