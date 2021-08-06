@@ -15,8 +15,7 @@ def ping() -> Result:
 
 Methods return either `Success` or `Error`. These are the [JSON-RPC response
 objects](https://www.jsonrpc.org/specification#response_object) (excluding the
-`jsonrpc` and `id` parts). `Error` takes a code and a message (a third 'data'
-value is optional).
+`jsonrpc` and `id` parts). `Error` takes a code, message, and optionally 'data'.
 
 ```python
 @method
