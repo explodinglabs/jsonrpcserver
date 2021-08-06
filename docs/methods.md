@@ -47,7 +47,7 @@ $ curl -X POST http://localhost:5000 -d '{"jsonrpc": "2.0", "method": "hello", "
 
 ## Invalid params
 
-It's common to respond with an error when the provided arguments are invalid.
+A common error response is *invalid params*.
 The JSON-RPC error code for this is **-32602**. A shortcut, *InvalidParams*, is
 included so you don't need to remember that.
 
