@@ -1,11 +1,11 @@
-import asyncio
+from jsonrpcserver import method, Result, Success, async_dispatch
 import aiozmq
+import asyncio
 import zmq
-from jsonrpcserver import Success, method, async_dispatch
 
 
 @method
-async def ping():
+async def ping() -> Result:
     return Success("pong")
 
 
@@ -13,8 +13,8 @@ async def main():
     rep = await aiozmq.create_zmq_stream(zmq.REP, bind="tcp://*:5000")
     while True:
         request = (await rep.read())[0].decode()
-        response = (await async_dispatch(request)).encode()
-        rep.write((response,))
+        if response := (await async_dispatch(request)).encode():
+            rep.write((response,))
 
 
 if __name__ == "__main__":

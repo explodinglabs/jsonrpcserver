@@ -1,10 +1,10 @@
-from werkzeug.wrappers import Request, Response
+from jsonrpcserver import method, Result, Success, dispatch
 from werkzeug.serving import run_simple
-from jsonrpcserver import Success, method, dispatch
+from werkzeug.wrappers import Request, Response
 
 
 @method
-def ping():
+def ping() -> Result:
     return Success("pong")
 
 

@@ -1,11 +1,11 @@
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from jsonrpcserver import method, dispatch
+from jsonrpcserver import method, Result, Success, dispatch
 
 
 @method
-def ping():
-    return "pong"
+def ping() -> Result:
+    return Success("pong")
 
 
 @csrf_exempt

@@ -1,10 +1,10 @@
-"""Using Python's built-in HTTPServer"""
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from jsonrpcserver import Success, method, dispatch
+
+from jsonrpcserver import method, Result, Success, dispatch
 
 
 @method
-def ping():
+def ping() -> Result:
     return Success("pong")
 
 
