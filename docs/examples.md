@@ -1,9 +1,9 @@
 # Examples
 
-Showing how to take JSON-RPC requests in various frameworks and transport
-protocols.
-
 ```{contents}
+---
+local
+---
 ```
 
 ## aiohttp
