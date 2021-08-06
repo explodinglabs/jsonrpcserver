@@ -1,9 +1,6 @@
 # Examples
 
 ```{contents}
----
-local
----
 ```
 
 ## aiohttp
