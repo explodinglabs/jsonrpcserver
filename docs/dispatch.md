@@ -48,7 +48,7 @@ A function that parses the request string. Default is `json.loads`.
 ```python
 import ujson
 
-dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', deserializer=ujson.loads)
+dispatch(request, deserializer=ujson.loads)
 ```
 
 ### serializer
@@ -58,7 +58,7 @@ A function that serializes the response string. Default is `json.dumps`.
 ```python
 import ujson
 
-dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', serializer=ujson.loads)
+dispatch(request, serializer=ujson.loads)
 ```
 
 ### validator
