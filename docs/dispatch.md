@@ -22,7 +22,7 @@ names to functions.
 def ping():
     return Success("pong")
 
-dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}', methods={"ping": ping})
+dispatch(request, methods={"ping": ping})
 ```
 
 Default is `global_methods`, which is an internal dict populated by the
