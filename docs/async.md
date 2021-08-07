@@ -29,7 +29,7 @@ response*.
 ''
 ```
 
-If the response is an empty string, don't send it. Otherwise, send it.
+If the response is an empty string, don't send it.
 
 ```python
 if response := dispatch(request):
