@@ -20,8 +20,8 @@ Some reasons to use this:
 
 ## Notifications
 
-A notification is a request with no `id`. We should not respond to
-notifications so jsonrpcserver gives an empty string to signify there is *no
+Notifications are requests without an `id`. We should not respond to
+notifications, so jsonrpcserver gives an empty string to signify there is *no
 response*.
 
 ```python
