@@ -12,7 +12,7 @@ dispatch(request, validator=lambda _: None)
 
 
 
-## How to get the response in other forms
+## How to get the response in other forms?
 
 (Todo)
 
