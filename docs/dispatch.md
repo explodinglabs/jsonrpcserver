@@ -46,8 +46,6 @@ def greet(context, name):
 A function that parses the request string. Default is `json.loads`.
 
 ```python
-import ujson
-
 dispatch(request, deserializer=ujson.loads)
 ```
 
@@ -56,9 +54,7 @@ dispatch(request, deserializer=ujson.loads)
 A function that serializes the response string. Default is `json.dumps`.
 
 ```python
-import ujson
-
-dispatch(request, serializer=ujson.loads)
+dispatch(request, serializer=ujson.dumps)
 ```
 
 ### validator
