@@ -1,6 +1,6 @@
 # Welcome to jsonrpcserver's documentation!
 
-Prices json-rpc requests in Python. 
+Process JSON-RPC requests in Python. 
 
 This library takes a JSON-RPC request, that's usually come through the network, parses, validates and dispatches it, giving you a response to send back. 
 
