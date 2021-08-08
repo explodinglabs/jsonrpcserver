@@ -2,10 +2,15 @@
 
 ## 5.0.0
 
-- Use Success or Error when returning a value from @methods.
+A complete rebuild.
+
+- The dispatch function now returns a string.
+- Methods must now return a Result (Success or Error).
+- Methods collection is now a simple dict, the Methods class has been removed.
 - Changed all classes (Request, Response, Methods, etc) to namedtuples.
-- Removed trim_log_values option
-- Removed "convert camel case" option.
+- Logging removed. User can log instead.
+- Config file removed. Configure with arguments to dispatch.
+- Removed "trim log values" and  "convert camel case" options.
 - Removed the custom exceptions, replaced with one JsonRpcError exception.
 
 ## 4.2.0 (Nov 9, 2020)
