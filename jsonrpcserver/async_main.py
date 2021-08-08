@@ -2,18 +2,15 @@
 import json
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
 
-from apply_defaults import apply_config
-
 from .async_dispatcher import dispatch_to_response_pure
 from .dispatcher import Deserialized
-from .main import config, default_validator, default_deserializer
+from .main import default_validator, default_deserializer
 from .methods import Methods, global_methods
 from .response import Response, to_serializable
 from .sentinels import NOCONTEXT
 from .utils import identity
 
 
-@apply_config(config)
 async def dispatch_to_response(
     request: str,
     methods: Optional[Methods] = None,
@@ -21,7 +18,7 @@ async def dispatch_to_response(
     context: Any = NOCONTEXT,
     deserializer: Callable[[str], Deserialized] = default_deserializer,
     validator: Callable[[Deserialized], Deserialized] = default_validator,
-    post_process: Callable[[Deserialized], Iterable[Any]] = identity,
+    post_process: Callable[[Response], Any] = identity,
 ) -> Union[Response, Iterable[Response], None]:
     return await dispatch_to_response_pure(
         deserializer=deserializer,
