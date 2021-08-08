@@ -9,12 +9,9 @@ request, but they each give a different return value.
 - dispatch_to_json/dispatch: Returns a JSON-RPC response string (or an empty string for
   notifications).
 """
-from configparser import ConfigParser
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 import json
-import os
 
-from apply_defaults import apply_config
 from jsonschema.validators import validator_for  # type: ignore
 from pkg_resources import resource_string
 
@@ -34,12 +31,7 @@ klass = validator_for(schema)
 klass.check_schema(schema)
 default_validator = klass(schema).validate
 
-# Read configuration file
-config = ConfigParser(default_section="dispatch")
-config.read([".jsonrpcserverrc", os.path.expanduser("~/.jsonrpcserverrc")])
 
-
-@apply_config(config)
 def dispatch_to_response(
     request: str,
     methods: Optional[Methods] = None,
@@ -47,7 +39,7 @@ def dispatch_to_response(
     context: Any = NOCONTEXT,
     deserializer: Callable[[str], Deserialized] = json.loads,
     validator: Callable[[Deserialized], Deserialized] = default_validator,
-    post_process: Callable[[Deserialized], Iterable[Any]] = identity,
+    post_process: Callable[[Response], Any] = identity,
 ) -> Union[Response, List[Response], None]:
     """Takes a JSON-RPC request string and dispatches it to method(s), giving Response
     namedtuple(s) or None.
