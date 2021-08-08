@@ -10,7 +10,7 @@ and gives a JSON-RPC response.
 
 [See how dispatch is used in different frameworks.](examples)
 
-## Options
+## Optional parameters
 
 ### methods
 
