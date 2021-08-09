@@ -2,7 +2,8 @@
 
 ## 5.0.0
 
-A complete rebuild, although the usage remains mostly the same.
+A complete rebuild. The usage remains mostly the same, except for a few
+important changes.
 
 - The dispatch function now returns a string.
 - Methods must now return a Result (Success or Error).
