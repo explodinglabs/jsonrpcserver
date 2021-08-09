@@ -11,6 +11,8 @@ def ping() -> Result:
     return Success("pong")
 ```
 
+If you don't need to respond with any value simply `return Success()`.
+
 ## Responses
 
 Methods return either `Success` or `Error`. These are the [JSON-RPC response
