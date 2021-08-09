@@ -1,6 +1,6 @@
 # Welcome to jsonrpcserver's documentation!
 
-Dispatches JSON-RPC requests to your own functions, and gives a response to
+Dispatch JSON-RPC requests to your own functions, and get a response to
 send back.
 
 ```{warning}
