@@ -3,7 +3,7 @@
 Create a `server.py`:
 
 ```python
-from jsonrpcserver import method, Success, serve
+from jsonrpcserver import Success, method, serve
 
 @method
 def ping():
