@@ -8,7 +8,7 @@
 ```{literalinclude} ../examples/aiohttp_server.py
 ```
 
-See [blog post](https://beau.click/jsonrpc/aiohttp).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/aiohttp).
 
 ## Django
 
