@@ -17,14 +17,14 @@ Create a `views.py`:
 ```{literalinclude} ../examples/django_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/django).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/django).
 
 ## Flask
 
 ```{literalinclude} ../examples/flask_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/flask).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/flask).
 
 ## http.server
 
@@ -34,7 +34,7 @@ Using Python's built-in
 ```{literalinclude} ../examples/http_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/httpserver).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/httpserver).
 
 ## Plain jsonrpcserver
 
@@ -48,39 +48,39 @@ Using jsonrpcserver's built-in `serve` method.
 ```{literalinclude} ../examples/socketio_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/flask-socketio).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/flask-socketio).
 
 ## Tornado
 
 ```{literalinclude} ../examples/tornado_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/tornado).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/tornado).
 
 ## Websockets
 
 ```{literalinclude} ../examples/websockets_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/websockets).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/websockets).
 
 ## Werkzeug
 
 ```{literalinclude} ../examples/werkzeug_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/werkzeug).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/werkzeug).
 
 ## ZeroMQ
 
 ```{literalinclude} ../examples/zeromq_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/zeromq).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/zeromq).
 
 ## ZeroMQ (asynchronous)
 
 ```{literalinclude} ../examples/aiozmq_server.py
 ```
 
-See [blog post](https://bcb.github.io/jsonrpc/zeromq-async).
+See [blog post](https://blog.explodinglabs.com/jsonrpc/zeromq-async).
