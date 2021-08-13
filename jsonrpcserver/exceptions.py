@@ -1,5 +1,5 @@
 """A JsonRpcError exception can be raised from inside a method, as an alternative way to
-return an error response. See https://github.com/bcb/jsonrpcserver/discussions/158
+return an error response. See https://github.com/explodinglabs/jsonrpcserver/discussions/158
 """
 from typing import Any
 from .sentinels import NODATA
