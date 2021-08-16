@@ -5,7 +5,7 @@
 
 # jsonrpcserver
 
-Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
+Process incoming JSON-RPC requests in Python.
 
 ![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
 ![Downloads](https://pepy.tech/badge/jsonrpcserver/week)
