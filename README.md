@@ -1,4 +1,7 @@
-> :warning: **Note: This master branch is for development of the upcoming version 5**, which is currently in ~alpha~ ~beta~ [release candidate!](https://github.com/explodinglabs/jsonrpcserver/discussions/204) For the latest stable version, see the [4.x branch](https://github.com/explodinglabs/jsonrpcserver/tree/4.x). Also, please pin your dependency to "jsonrpcserver<5" until you're ready to upgrade to v5.
+> :warning: **August 16, 2021: Version 5 released!** [Read about the
+> changes](https://blog.explodinglabs.com/jsonrpcserver-5-changes), or jump to
+> the [full documenation for version
+> 5](https://www.jsonrpcserver.com/en/stable/).
 
 # jsonrpcserver
 
