@@ -2,11 +2,16 @@
 
 ## 5.0.0
 
-A complete rebuild. The usage remains mostly the same, except for a few
-important changes.
+A complete rebuild, with a few important usage changes.
 
-- The dispatch function now returns a string.
+See a post explaining the changes at
+[https://blog.explodinglabs.com/jsonrpcserver-5-changes](https://blog.explodinglabs.com/jsonrpcserver-5-changes).
+
+Read the full version 5 documentation at
+[jsonrpcserver.com](https://www.jsonrpcserver.com/).
+
 - Methods must now return a Result (Success or Error).
+- The dispatch function now returns a string.
 - Methods collection is now a simple dict, the Methods class has been removed.
 - Changed all classes (Request, Response, Methods, etc) to namedtuples.
 - Logging removed. User can log instead.

@@ -1,5 +1,7 @@
 ```{warning}
-This is the documentation for version 5, released August 2021.
+This is the documentation for version 5, released August 16, 2021. [Read a post
+explaining the changes in version
+5](https://blog.explodinglabs.com/jsonrpcserver-5-changes).
 ```
 
 # Welcome to jsonrpcserver's documentation!
