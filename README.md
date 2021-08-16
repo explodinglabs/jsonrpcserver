@@ -8,7 +8,7 @@
 Process [JSON-RPC](http://www.jsonrpc.org/) requests in Python.
 
 ![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
-![Downloads](https://pepy.tech/badge/jsonrpcserver)
+![Downloads](https://pepy.tech/badge/jsonrpcserver/week)
 ![Coverage Status](https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=master)
 
 ```python
