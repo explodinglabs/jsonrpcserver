@@ -1,12 +1,12 @@
 """setup.py"""
-from codecs import open as codecs_open
 from setuptools import setup  # type: ignore
 
-with codecs_open("README.md", "r", "utf-8") as f:
+with open("README.md") as f:
     README = f.read()
 
 setup(
     author="Beau Barker",
+    author_email="beau@explodinglabs.com",
     classifiers=[
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -14,7 +14,6 @@ setup(
     ],
     description="Process JSON-RPC requests",
     extras_require={
-        "tox": ["tox"],
         "examples": [
             "aiohttp",
             "aiozmq",
