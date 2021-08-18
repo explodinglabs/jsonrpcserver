@@ -1,7 +1,9 @@
-> :warning: **August 16, 2021: Version 5 released!** [Read about the
+> :warning: August 16, 2021: Version 5 has been released. [Read about the
 > changes](https://blog.explodinglabs.com/jsonrpcserver-5-changes), or jump to
 > the [full documenation for version
-> 5](https://www.jsonrpcserver.com/en/stable/).
+> 5](https://www.jsonrpcserver.com/en/stable/). Development of version 4 has
+> moved to the [4.x
+> branch](https://github.com/explodinglabs/jsonrpcserver/tree/4.x).
 
 # jsonrpcserver
 
