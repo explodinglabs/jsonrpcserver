@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 5.0.1
+
+Update readme and setup.py, minor adjustments.
+
 ## 5.0.0
 
 A complete rebuild, with a few important usage changes.
