@@ -38,5 +38,5 @@ setup(
     zip_safe=False,
     packages=["jsonrpcserver"],
     url="https://github.com/explodinglabs/jsonrpcserver",
-    version="5.0.1",
+    version="5.0.2",
 )

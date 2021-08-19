@@ -26,4 +26,4 @@ if __name__ == "__main__":
 
 Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
 
-See also: [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient)
+See also: [jsonrpcclient](https://www.jsonrpcclient.com/)
