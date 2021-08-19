@@ -19,6 +19,13 @@ Create a `views.py`:
 
 See [blog post](https://blog.explodinglabs.com/jsonrpc/django).
 
+## FastAPI
+
+```{literalinclude} ../examples/fastapi_server.py
+```
+
+See [blog post](https://blog.explodinglabs.com/jsonrpc/fastapi).
+
 ## Flask
 
 ```{literalinclude} ../examples/flask_server.py
@@ -36,12 +43,19 @@ Using Python's built-in
 
 See [blog post](https://blog.explodinglabs.com/jsonrpc/httpserver).
 
-## Plain jsonrpcserver
+## jsonrpcserver
 
 Using jsonrpcserver's built-in `serve` method.
 
 ```{literalinclude} ../examples/jsonrpcserver_server.py
 ```
+
+## Sanic
+
+```{literalinclude} ../examples/sanic_server.py
+```
+
+See [blog post](https://blog.explodinglabs.com/jsonrpc/sanic).
 
 ## Socket.IO
 

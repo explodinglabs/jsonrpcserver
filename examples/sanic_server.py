@@ -3,7 +3,7 @@ from sanic.request import Request
 from sanic.response import json
 from jsonrpcserver import Result, Success, dispatch_to_serializable, method
 
-app = Sanic("My Hello, world app")
+app = Sanic("JSON-RPC app")
 
 
 @method
