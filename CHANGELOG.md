@@ -9,7 +9,7 @@ Update readme and setup.py, minor adjustments.
 A complete rebuild, with a few important usage changes.
 
 See a post explaining the changes at
-[https://blog.explodinglabs.com/jsonrpcserver-5-changes](https://blog.explodinglabs.com/jsonrpcserver-5-changes).
+[https://composed.blog/jsonrpcserver-5-changes](https://composed.blog/jsonrpcserver-5-changes).
 
 Read the full version 5 documentation at
 [jsonrpcserver.com](https://www.jsonrpcserver.com/).
