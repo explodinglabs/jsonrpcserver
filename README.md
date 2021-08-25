@@ -1,9 +1,12 @@
 > August 16, 2021: Version 5 has been released. It's for Python 3.8+, otherwise
 > jump to the [4.x
 > branch](https://github.com/explodinglabs/jsonrpcserver/tree/4.x). Read about
-> the [changes in v5](https://composed.blog/jsonrpcserver-5-changes), or jump to
-> the [full documenation for version
-> 5](https://www.jsonrpcserver.com/en/stable/).
+> the [changes in v5](https://composed.blog/jsonrpcserver-5-changes), or jump
+> to the [full documenation for version
+> 5](https://www.jsonrpcserver.com/en/stable/). Version 5 is for Python 3.8+
+> only, otherwise jump to the [4.x
+> branch](https://github.com/explodinglabs/jsonrpcserver/tree/4.x) or read the
+> [full documentation for version 5](https://www.jsonrpcserver.com/en/4.2.0/)
 
 <img
     alt="jsonrpcserver"
