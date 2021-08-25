@@ -4,6 +4,8 @@ explaining the changes in version
 5](https://composed.blog/jsonrpcserver-5-changes).
 ```
 
+# Welcome to jsonrpcserver's documentation!
+
 ![jsonrpcserver](/logo.png)
 
 Dispatch JSON-RPC requests to your own functions, and get a response to
