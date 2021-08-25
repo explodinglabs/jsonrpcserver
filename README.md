@@ -5,7 +5,11 @@
 > the [full documenation for version
 > 5](https://www.jsonrpcserver.com/en/stable/).
 
-# jsonrpcserver
+<img
+    alt="jsonrpcserver"
+    style="margin: 0 auto;"
+    src="https://github.com/explodinglabs/jsonrpcserver/blob/master/docs/logo.png?raw=true"
+/>
 
 Process incoming JSON-RPC requests in Python.
 
