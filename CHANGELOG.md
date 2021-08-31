@@ -1,5 +1,10 @@
 # jsonrpcserver Change Log
 
+## 5.0.3
+
+- Update readme and documentation.
+- Internal function `compose` has been replaced with a better one.
+
 ## 5.0.2
 
 Update readme and setup.py, minor adjustments.
