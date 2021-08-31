@@ -6,3 +6,4 @@
 .tox
 .travis.yml
 dist/
+design
