@@ -6,7 +6,7 @@ explaining the changes in version
 
 # Welcome to jsonrpcserver's documentation!
 
-![jsonrpcserver](/logo.png)
+![jsonrpcserver](https://github.com/explodinglabs/jsonrpcserver/blob/master/docs/logo.png?raw=true)
 
 Dispatch JSON-RPC requests to your own functions, and get a response to
 send back.
