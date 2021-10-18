@@ -228,7 +228,8 @@ def validate_request(
     try:
         validator(request)
     # Since the validator is unknown, the specific exception that will be raised is also
-    # unknown. Any exception raised is an invalid request response.
+    # unknown. Any exception raised we assume the request is invalid and  return an
+    # "invalid request" response.
     except Exception as exc:
         return Left(InvalidRequestResponse("The request failed schema validation"))
     return Right(request)
@@ -244,7 +245,8 @@ def deserialize_request(
     try:
         return Right(deserializer(request))
     # Since the deserializer is unknown, the specific exception that will be raised is
-    # also unknown. Any exception raised is an parse error response.
+    # also unknown. Any exception raised we assume the request is invalid, return a
+    # parse error response.
     except Exception as exc:
         return Left(ParseErrorResponse(str(exc)))
 
