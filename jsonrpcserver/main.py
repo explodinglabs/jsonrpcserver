@@ -1,4 +1,4 @@
-"""The public api functions.
+"""The public functions.
 
 These three public functions all perform the same function of dispatching a JSON-RPC
 request, but they each give a different return value.
