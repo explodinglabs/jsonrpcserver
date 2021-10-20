@@ -1,3 +1,8 @@
+"""Sentinels - these are used to indicate no data is present.
+
+We can't use None, because None may be a valid piece of data.
+"""
+
 import sys
 
 
