@@ -111,5 +111,5 @@ def dispatch_to_json(
     return "" if response is None else serializer(response)
 
 
-# "dispatch" is an alias of dispatch_to_json.
+# "dispatch" aliases dispatch_to_json.
 dispatch = dispatch_to_json
