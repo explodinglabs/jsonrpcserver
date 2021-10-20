@@ -7,9 +7,7 @@ the changes in version 5](https://composed.blog/jsonrpcserver-5-changes).
 
 ![jsonrpcserver](/logo.png)
 
-Dispatch JSON-RPC requests to your own functions, and get a response to
-send back.
-
+Dispatch incoming JSON-RPC requests in Python. 
 ```{toctree}
 ---
 maxdepth: 3
