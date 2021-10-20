@@ -25,9 +25,17 @@ since there's no http body, use status code 204 - no content.
 
 Use `@method(name="new_name")`.
 
-Or use dispatch function's [methods
+Or use the dispatch function's [methods
 parameter](https://www.jsonrpcserver.com/en/latest/dispatch.html#methods).
 
 ## How to get the response in other forms?
 
-(Todo)
+Instead of `dispatch`, use:
+
+- `dispatch_to_serializable` to get the response as a dict.
+- `dispatch_to_response` to get the response as a namedtuple (either a
+  `SuccessResponse` or `ErrorResponse`, these are defined in
+  [response.py](https://github.com/explodinglabs/jsonrpcserver/blob/master/jsonrpcserver/response.py)).
+
+For these functions, if the request was a batch, you'll get a list of
+responses. If the request was a notification, you'll get `None`.
