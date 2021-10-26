@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 5.0.4 (Oct 27, 2021)
+
+- Add to FAQ.
+
 ## 5.0.3
 
 - Update readme and documentation.
@@ -7,9 +11,9 @@
 
 ## 5.0.2
 
-Update readme and setup.py, minor adjustments.
+- Update readme and setup.py, minor adjustments.
 
-## 5.0.0
+## 5.0.0 (Aug 16, 2021)
 
 A complete rebuild, with a few important usage changes.
 
