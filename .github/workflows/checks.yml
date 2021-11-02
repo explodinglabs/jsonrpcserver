@@ -13,6 +13,6 @@ jobs:
     - run: |
         pip install --upgrade pip
         pip install black==21.6b0 pylint==v3.0.0a3 mypy==v0.902 types-setuptools
-        black --diff --check jsonrpcserver
-        pylint --disable=all --enable=unused-import jsonrpcserver
-        mypy --strict jsonrpcserver
+    - run: black --diff --check jsonrpcserver
+    - run: pylint --disable=all --enable=unused-import jsonrpcserver
+    - run: mypy --strict jsonrpcserver
