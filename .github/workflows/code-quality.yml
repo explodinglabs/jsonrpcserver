@@ -1,0 +1,16 @@
+name: Code Quality
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - run: pip install --upgrade pip
+    - run: pip install black==21.6b0 pylint==v3.0.0a3 mypy==v0.902 types-setuptools
+    - run: black --diff --check $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
+    - run: pylint --disable=all --enable=unused-import $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
+    - run: mypy --strict $(git ls-files  -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
