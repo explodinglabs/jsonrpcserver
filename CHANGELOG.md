@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 5.0.5 (Nov 27, 2021)
+
+- Documentation.
+
 ## 5.0.4 (Oct 27, 2021)
 
 - Add to FAQ.
