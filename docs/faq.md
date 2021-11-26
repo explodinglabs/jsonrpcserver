@@ -35,7 +35,7 @@ Instead of `dispatch`, use:
 - `dispatch_to_serializable` to get the response as a dict.
 - `dispatch_to_response` to get the response as a namedtuple (either a
   `SuccessResponse` or `ErrorResponse`, these are defined in
-  [response.py](https://github.com/explodinglabs/jsonrpcserver/blob/master/jsonrpcserver/response.py)).
+  [response.py](https://github.com/explodinglabs/jsonrpcserver/blob/main/jsonrpcserver/response.py)).
 
 For these functions, if the request was a batch, you'll get a list of
 responses. If the request was a notification, you'll get `None`.
