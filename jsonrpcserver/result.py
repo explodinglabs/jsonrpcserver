@@ -31,7 +31,7 @@ class ErrorResult(NamedTuple):
 
 
 # Union of the two valid result types
-Result = Either[SuccessResult, ErrorResult]
+Result = Either[ErrorResult, SuccessResult]
 
 
 # Helpers
