@@ -15,7 +15,7 @@ Process incoming JSON-RPC requests in Python.
 
 ![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
 ![Downloads](https://pepy.tech/badge/jsonrpcserver/week)
-![Checks](https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg)
+![Code Quality](https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg)
 ![Coverage Status](https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main)
 
 ```python

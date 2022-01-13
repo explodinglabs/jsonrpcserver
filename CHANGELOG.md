@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 5.0.6 (Nov 27, 2021)
+
+- Fix reversed Result Either type ([#227](https://github.com/explodinglabs/jsonrpcserver/pull/227)).
+
 ## 5.0.5 (Nov 27, 2021)
 
 - Documentation.
