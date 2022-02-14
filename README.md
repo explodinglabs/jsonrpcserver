@@ -1,6 +1,3 @@
-> August 16, 2021: Version 5 has been released. Read about the [changes in
-> version 5](https://composed.blog/jsonrpcserver-5-changes). 
-
 <img
     alt="jsonrpcserver"
     style="margin: 0 auto;"
