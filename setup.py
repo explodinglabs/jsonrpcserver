@@ -27,7 +27,7 @@ setup(
         ],
     },
     include_package_data=True,
-    install_requires=["jsonschema<4", "oslash<1"],
+    install_requires=["jsonschema<5", "oslash<1"],
     license="MIT",
     long_description=README,
     long_description_content_type="text/markdown",
