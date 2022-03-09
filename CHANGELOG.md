@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 5.0.7 (Mar 10, 2022)
+
+- Upgrade to jsonschema 4.
+
 ## 5.0.6 (Jan 14, 2022)
 
 - Fix reversed Result Either type ([#227](https://github.com/explodinglabs/jsonrpcserver/pull/227)).
