@@ -3,11 +3,12 @@ This is the documentation for version 5, released August 16, 2021. [Read about
 the changes in version 5](https://composed.blog/jsonrpcserver-5-changes).
 ```
 
-# Welcome to jsonrpcserver's documentation!
+# Process incoming JSON-RPC requests in Python | jsonrpcserver Documentation
 
 ![jsonrpcserver](/logo.png)
 
-Dispatch incoming JSON-RPC requests in Python. 
+Process incoming JSON-RPC requests in Python.
+
 ```{toctree}
 ---
 maxdepth: 3
