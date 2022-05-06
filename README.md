@@ -23,7 +23,7 @@ if __name__ == "__main__":
     serve()
 ```
 
-Or use `dispatch`:
+To get a JSON-RPC response:
 ```python
 >>> from jsonrpcserver import dispatch
 >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
