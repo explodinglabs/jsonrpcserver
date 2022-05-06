@@ -13,7 +13,7 @@ Process incoming JSON-RPC requests in Python.
 
 To serve JSON-RPC methods:
 ```python
-from jsonrpcserver import Success, method, serve
+from jsonrpcserver import Success, method, serve, dispatch
 
 @method
 def ping():
@@ -25,9 +25,8 @@ if __name__ == "__main__":
 
 To get a JSON-RPC response:
 ```python
->>> from jsonrpcserver import dispatch
->>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-'{"jsonrpc": "2.0", "result": "pong", "id": 1}'
+dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+# '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
 Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
