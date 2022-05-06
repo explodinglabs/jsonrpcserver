@@ -11,7 +11,6 @@
 
 Process incoming JSON-RPC requests in Python.
 
-To serve JSON-RPC methods:
 ```python
 from jsonrpcserver import dispatch, method, Success
 
