@@ -1,12 +1,13 @@
 """Async version of dispatcher.py"""
 
 from functools import partial
+from inspect import signature
 from itertools import starmap
 from typing import Any, Callable, Iterable, Tuple, Union
 import asyncio
 import logging
 
-from oslash.either import Left  # type: ignore
+from returns.result import Failure, Result, Success
 
 from .dispatcher import (
     Deserialized,
@@ -15,53 +16,84 @@ from .dispatcher import (
     extract_args,
     extract_kwargs,
     extract_list,
-    get_method,
     not_notification,
     to_response,
-    validate_args,
     validate_request,
     validate_result,
 )
 from .exceptions import JsonRpcError
-from .methods import Method, Methods
+from .async_methods import Method, Methods
 from .request import Request
-from .result import Result, InternalErrorResult, ErrorResult
+from .result import (
+    ErrorResult,
+    InternalErrorResult,
+    InvalidParamsResult,
+    MethodNotFoundResult,
+    SuccessResult,
+)
 from .response import Response, ServerErrorResponse
 from .utils import make_list
 
 
-async def call(request: Request, context: Any, method: Method) -> Result:
+async def call(
+    request: Request, context: Any, method: Method
+) -> Result[SuccessResult, ErrorResult]:
     try:
         result = await method(
             *extract_args(request, context), **extract_kwargs(request)
         )
         validate_result(result)
     except JsonRpcError as exc:
-        return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
+        return Failure(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     except Exception as exc:  # Other error inside method - Internal error
         logging.exception(exc)
-        return Left(InternalErrorResult(str(exc)))
+        return Failure(InternalErrorResult(str(exc)))
     return result
+
+
+def validate_args(
+    request: Request, context: Any, func: Method
+) -> Result[Method, ErrorResult]:
+    """Ensure the method can be called with the arguments given.
+
+    Returns: Either the function to be called, or an Invalid Params error result.
+    """
+    try:
+        signature(func).bind(*extract_args(request, context), **extract_kwargs(request))
+    except TypeError as exc:
+        return Failure(InvalidParamsResult(str(exc)))
+    return Success(func)
+
+
+def get_method(methods: Methods, method_name: str) -> Result[Method, ErrorResult]:
+    """Get the requested method from the methods dict.
+
+    Returns: Either the function to be called, or a Method Not Found result.
+    """
+    try:
+        return Success(methods[method_name])
+    except KeyError:
+        return Failure(MethodNotFoundResult(method_name))
 
 
 async def dispatch_request(
     methods: Methods, context: Any, request: Request
-) -> Tuple[Request, Result]:
+) -> Tuple[Request, Result[SuccessResult, ErrorResult]]:
     method = get_method(methods, request.method).bind(
         partial(validate_args, request, context)
     )
     return (
         request,
         method
-        if isinstance(method, Left)
-        else await call(request, context, method._value),
+        if isinstance(method, Failure)
+        else await call(request, context, method.unwrap()),
     )
 
 
 async def dispatch_deserialized(
     methods: Methods,
     context: Any,
-    post_process: Callable[[Response], Iterable[Any]],
+    post_process: Callable[[Response], Response],
     deserialized: Deserialized,
 ) -> Union[Response, Iterable[Response], None]:
     results = await asyncio.gather(
@@ -85,7 +117,7 @@ async def dispatch_to_response_pure(
     validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
-    post_process: Callable[[Response], Iterable[Any]],
+    post_process: Callable[[Response], Response],
     request: str,
 ) -> Union[Response, Iterable[Response], None]:
     try:
@@ -94,11 +126,11 @@ async def dispatch_to_response_pure(
         )
         return (
             post_process(result)
-            if isinstance(result, Left)
+            if isinstance(result, Failure)
             else await dispatch_deserialized(
-                methods, context, post_process, result._value
+                methods, context, post_process, result.unwrap()
             )
         )
     except Exception as exc:
         logging.exception(exc)
-        return post_process(Left(ServerErrorResponse(str(exc), None)))
+        return post_process(Failure(ServerErrorResponse(str(exc), None)))

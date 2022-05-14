@@ -1,12 +1,12 @@
 from flask import Flask, Response, request
-from jsonrpcserver import method, Result, Success, dispatch
+from jsonrpcserver import dispatch, method, Ok, Result
 
 app = Flask(__name__)
 
 
 @method
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 @app.route("/", methods=["POST"])

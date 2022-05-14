@@ -1,11 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from jsonrpcserver import method, Result, Success, dispatch
+from jsonrpcserver import dispatch, method, Ok, Result
 
 
 @method
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 class TestHttpServer(BaseHTTPRequestHandler):

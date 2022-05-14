@@ -7,16 +7,16 @@ from itertools import starmap
 from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 import logging
 
-from oslash.either import Either, Left, Right  # type: ignore
+from returns.result import Result, Failure, Success
 
 from .exceptions import JsonRpcError
 from .methods import Method, Methods
 from .request import Request
 from .response import (
+    Response,
     ErrorResponse,
     InvalidRequestResponse,
     ParseErrorResponse,
-    Response,
     ServerErrorResponse,
     SuccessResponse,
 )
@@ -25,7 +25,6 @@ from .result import (
     InternalErrorResult,
     InvalidParamsResult,
     MethodNotFoundResult,
-    Result,
     SuccessResult,
 )
 from .sentinels import NOCONTEXT, NOID
@@ -36,7 +35,7 @@ Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
 def extract_list(
     is_batch: bool, responses: Iterable[Response]
-) -> Union[Response, List[Response], None]:
+) -> Union[Response, List[Response], None,]:
     """This is the inverse of make_list. Here we extract a response back out of the list
     if it wasn't a batch request originally. Also applies a JSON-RPC rule: we do not
     respond to batches of notifications.
@@ -64,7 +63,9 @@ def extract_list(
         return response_list[0]
 
 
-def to_response(request: Request, result: Result) -> Response:
+def to_response(
+    request: Request, result: Result[SuccessResult, ErrorResult]
+) -> Response:
     """Maps a Request plus a Result to a Response. A Response is just a Result plus the
     id from the original Request.
 
@@ -77,9 +78,9 @@ def to_response(request: Request, result: Result) -> Response:
     """
     assert request.id is not NOID
     return (
-        Left(ErrorResponse(**result._error._asdict(), id=request.id))
-        if isinstance(result, Left)
-        else Right(SuccessResponse(**result._value._asdict(), id=request.id))
+        Failure(ErrorResponse(**result.failure()._asdict(), id=request.id))
+        if isinstance(result, Failure)
+        else Success(SuccessResponse(**result.unwrap()._asdict(), id=request.id))
     )
 
 
@@ -102,19 +103,23 @@ def extract_kwargs(request: Request) -> Dict[str, Any]:
     return request.params if isinstance(request.params, dict) else {}
 
 
-def validate_result(result: Result) -> None:
+def validate_result(result: Result[SuccessResult, ErrorResult]) -> None:
     """Validate the return value from a method.
 
     Raises an AssertionError if the result returned from a method is invalid.
 
     Returns: None
     """
-    assert (isinstance(result, Left) and isinstance(result._error, ErrorResult)) or (
-        isinstance(result, Right) and isinstance(result._value, SuccessResult)
+    assert (
+        isinstance(result, Failure) and isinstance(result.failure(), ErrorResult)
+    ) or (
+        isinstance(result, Success) and isinstance(result.unwrap(), SuccessResult)
     ), f"The method did not return a valid Result (returned {result!r})"
 
 
-def call(request: Request, context: Any, method: Method) -> Result:
+def call(
+    request: Request, context: Any, method: Method
+) -> Result[SuccessResult, ErrorResult]:
     """Call the method.
 
     Handles any exceptions raised in the method, being sure to return an Error response.
@@ -130,17 +135,17 @@ def call(request: Request, context: Any, method: Method) -> Result:
     # Raising JsonRpcError inside the method is an alternative way of returning an error
     # response.
     except JsonRpcError as exc:
-        return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
+        return Failure(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     # Any other uncaught exception inside method - internal error.
     except Exception as exc:
         logging.exception(exc)
-        return Left(InternalErrorResult(str(exc)))
+        return Failure(InternalErrorResult(str(exc)))
     return result
 
 
 def validate_args(
     request: Request, context: Any, func: Method
-) -> Either[ErrorResult, Method]:
+) -> Result[Method, ErrorResult]:
     """Ensure the method can be called with the arguments given.
 
     Returns: Either the function to be called, or an Invalid Params error result.
@@ -148,24 +153,24 @@ def validate_args(
     try:
         signature(func).bind(*extract_args(request, context), **extract_kwargs(request))
     except TypeError as exc:
-        return Left(InvalidParamsResult(str(exc)))
-    return Right(func)
+        return Failure(InvalidParamsResult(str(exc)))
+    return Success(func)
 
 
-def get_method(methods: Methods, method_name: str) -> Either[ErrorResult, Method]:
+def get_method(methods: Methods, method_name: str) -> Result[Method, ErrorResult]:
     """Get the requested method from the methods dict.
 
     Returns: Either the function to be called, or a Method Not Found result.
     """
     try:
-        return Right(methods[method_name])
+        return Success(methods[method_name])
     except KeyError:
-        return Left(MethodNotFoundResult(method_name))
+        return Failure(MethodNotFoundResult(method_name))
 
 
 def dispatch_request(
     methods: Methods, context: Any, request: Request
-) -> Tuple[Request, Result]:
+) -> Tuple[Request, Result[SuccessResult, ErrorResult]]:
     """Get the method, validates the arguments and calls the method.
 
     Returns: A tuple containing the Result of the method, along with the original
@@ -198,14 +203,14 @@ def not_notification(request_result: Any) -> bool:
 def dispatch_deserialized(
     methods: Methods,
     context: Any,
-    post_process: Callable[[Response], Iterable[Any]],
+    post_process: Callable[[Response], Response],
     deserialized: Deserialized,
-) -> Union[Response, List[Response], None]:
+) -> Union[Response, List[Response], None,]:
     """This is simply continuing the pipeline from dispatch_to_response_pure. It exists
     only to be an abstraction, otherwise that function is doing too much. It continues
     on from the request string having been parsed and validated.
 
-    Returns: A Response, a list of Responses, or None. If post_process is passed, it's
+    Returns: A Result, a list of Results, or None. If post_process is passed, it's
         applied to the Response(s).
     """
     results = map(
@@ -218,7 +223,7 @@ def dispatch_deserialized(
 
 def validate_request(
     validator: Callable[[Deserialized], Deserialized], request: Deserialized
-) -> Either[ErrorResponse, Deserialized]:
+) -> Result[Deserialized, ErrorResponse]:
     """Validate the request against a JSON-RPC schema.
 
     Ensures the parsed request is valid JSON-RPC.
@@ -231,24 +236,24 @@ def validate_request(
     # unknown. Any exception raised we assume the request is invalid and  return an
     # "invalid request" response.
     except Exception as exc:
-        return Left(InvalidRequestResponse("The request failed schema validation"))
-    return Right(request)
+        return Failure(InvalidRequestResponse("The request failed schema validation"))
+    return Success(request)
 
 
 def deserialize_request(
     deserializer: Callable[[str], Deserialized], request: str
-) -> Either[ErrorResponse, Deserialized]:
+) -> Result[Deserialized, ErrorResponse]:
     """Parse the JSON request string.
 
     Returns: Either the deserialized request or a "Parse Error" response.
     """
     try:
-        return Right(deserializer(request))
+        return Success(deserializer(request))
     # Since the deserializer is unknown, the specific exception that will be raised is
     # also unknown. Any exception raised we assume the request is invalid, return a
     # parse error response.
     except Exception as exc:
-        return Left(ParseErrorResponse(str(exc)))
+        return Failure(ParseErrorResponse(str(exc)))
 
 
 def dispatch_to_response_pure(
@@ -257,7 +262,7 @@ def dispatch_to_response_pure(
     validator: Callable[[Deserialized], Deserialized],
     methods: Methods,
     context: Any,
-    post_process: Callable[[Response], Iterable[Any]],
+    post_process: Callable[[Response], Response],
     request: str,
 ) -> Union[Response, List[Response], None]:
     """A function from JSON-RPC request string to Response namedtuple(s), (yet to be
@@ -273,10 +278,10 @@ def dispatch_to_response_pure(
         )
         return (
             post_process(result)
-            if isinstance(result, Left)
-            else dispatch_deserialized(methods, context, post_process, result._value)
+            if isinstance(result, Failure)
+            else dispatch_deserialized(methods, context, post_process, result.unwrap())
         )
     except Exception as exc:
         # There was an error with the jsonrpcserver library.
         logging.exception(exc)
-        return post_process(Left(ServerErrorResponse(str(exc), None)))
+        return post_process(Failure(ServerErrorResponse(str(exc), None)))

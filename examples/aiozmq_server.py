@@ -1,12 +1,12 @@
-from jsonrpcserver import method, Result, Success, async_dispatch
+from jsonrpcserver import async_dispatch, async_method, Ok, Result
 import aiozmq
 import asyncio
 import zmq
 
 
-@method
+@async_method
 async def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 async def main():

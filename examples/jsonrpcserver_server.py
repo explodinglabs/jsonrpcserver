@@ -1,9 +1,9 @@
-from jsonrpcserver import method, Result, Success, serve
+from jsonrpcserver import method, serve, Ok, Result
 
 
 @method
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 if __name__ == "__main__":

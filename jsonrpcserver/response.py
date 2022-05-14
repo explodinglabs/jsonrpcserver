@@ -2,9 +2,9 @@
 
 https://www.jsonrpc.org/specification#response_object
 """
-from typing import Any, Dict, List, Type, NamedTuple, Union
+from typing import Any, Dict, List, NamedTuple, Union
 
-from oslash.either import Either, Left  # type: ignore
+from returns.result import Result, Failure
 
 from .codes import (
     ERROR_INVALID_REQUEST,
@@ -39,8 +39,7 @@ class ErrorResponse(NamedTuple):
     id: Any
 
 
-Response = Either[ErrorResponse, SuccessResponse]
-ResponseType = Type[Either[ErrorResponse, SuccessResponse]]
+Response = Result[SuccessResponse, ErrorResponse]
 
 
 def ParseErrorResponse(data: Any) -> ErrorResponse:
@@ -86,15 +85,15 @@ def serialize_success(response: SuccessResponse) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
 
 
-def to_serializable_one(response: ResponseType) -> Union[Deserialized, None]:
+def to_serializable_one(response: Response) -> Union[Deserialized, None]:
     return (
-        serialize_error(response._error)
-        if isinstance(response, Left)
-        else serialize_success(response._value)
+        serialize_error(response.failure())
+        if isinstance(response, Failure)
+        else serialize_success(response.unwrap())
     )
 
 
-def to_serializable(response: ResponseType) -> Union[Deserialized, None]:
+def to_serializable(response: Response) -> Union[Deserialized, None]:
     if response is None:
         return None
     elif isinstance(response, List):

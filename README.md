@@ -12,11 +12,11 @@
 Process incoming JSON-RPC requests in Python.
 
 ```python
-from jsonrpcserver import dispatch, method, Success
+from jsonrpcserver import dispatch, method, Ok, Result
 
 @method
-def ping():
-    return Success("pong")
+def ping() -> Result:
+    return Ok("pong")
 
 response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # '{"jsonrpc": "2.0", "result": "pong", "id": 1}'

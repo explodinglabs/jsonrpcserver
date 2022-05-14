@@ -3,11 +3,11 @@
 Create a `server.py`:
 
 ```python
-from jsonrpcserver import Success, method, serve
+from jsonrpcserver import method, serve, Ok
 
 @method
 def ping():
-    return Success("pong")
+    return Ok("pong")
 
 if __name__ == "__main__":
     serve()

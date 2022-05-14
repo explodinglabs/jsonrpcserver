@@ -4,8 +4,9 @@ from unittest.mock import patch, sentinel
 import json
 import pytest
 
-from oslash.either import Left, Right
+from returns.result import Failure, Success
 
+from jsonrpcserver import Result
 from jsonrpcserver.codes import (
     ERROR_INTERNAL_ERROR,
     ERROR_INVALID_PARAMS,
@@ -38,20 +39,13 @@ from jsonrpcserver.main import (
 from jsonrpcserver.methods import method
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
-from jsonrpcserver.result import (
-    ErrorResult,
-    InvalidParams,
-    Result,
-    Success,
-    SuccessResult,
-    NODATA,
-)
+from jsonrpcserver.result import ErrorResult, InvalidParams, Ok, SuccessResult, NODATA
 from jsonrpcserver.sentinels import NOCONTEXT, NOID
 from jsonrpcserver.utils import identity
 
 
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 # extract_list
@@ -80,21 +74,21 @@ def test_extract_list_batch_all_notifications():
 
 def test_to_response_SuccessResult():
     assert to_response(
-        Request("ping", [], sentinel.id), Right(SuccessResult(sentinel.result))
-    ) == Right(SuccessResponse(sentinel.result, sentinel.id))
+        Request("ping", [], sentinel.id), Success(SuccessResult(sentinel.result))
+    ) == Success(SuccessResponse(sentinel.result, sentinel.id))
 
 
 def test_to_response_ErrorResult():
     assert (
         to_response(
             Request("ping", [], sentinel.id),
-            Left(
+            Failure(
                 ErrorResult(
                     code=sentinel.code, message=sentinel.message, data=sentinel.data
                 )
             ),
         )
-    ) == Left(
+    ) == Failure(
         ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id)
     )
 
@@ -102,11 +96,11 @@ def test_to_response_ErrorResult():
 def test_to_response_InvalidParams():
     assert to_response(
         Request("ping", [], sentinel.id), InvalidParams(sentinel.data)
-    ) == Left(ErrorResponse(-32602, "Invalid params", sentinel.data, sentinel.id))
+    ) == Failure(ErrorResponse(-32602, "Invalid params", sentinel.data, sentinel.id))
 
 
 def test_to_response_InvalidParams_no_data():
-    assert to_response(Request("ping", [], sentinel.id), InvalidParams()) == Left(
+    assert to_response(Request("ping", [], sentinel.id), InvalidParams()) == Failure(
         ErrorResponse(-32602, "Invalid params", NODATA, sentinel.id)
     )
 
@@ -139,11 +133,13 @@ def test_extract_kwargs():
 
 def test_validate_result_no_arguments():
     f = lambda: None
-    assert validate_args(Request("f", [], NOID), NOCONTEXT, f) == Right(f)
+    assert validate_args(Request("f", [], NOID), NOCONTEXT, f) == Success(f)
 
 
 def test_validate_result_no_arguments_too_many_positionals():
-    assert validate_args(Request("f", ["foo"], NOID), NOCONTEXT, lambda: None) == Left(
+    assert validate_args(
+        Request("f", ["foo"], NOID), NOCONTEXT, lambda: None
+    ) == Failure(
         ErrorResult(
             code=ERROR_INVALID_PARAMS,
             message="Invalid params",
@@ -154,13 +150,13 @@ def test_validate_result_no_arguments_too_many_positionals():
 
 def test_validate_result_positionals():
     f = lambda x: None
-    assert validate_args(Request("f", [1], NOID), NOCONTEXT, f) == Right(f)
+    assert validate_args(Request("f", [1], NOID), NOCONTEXT, f) == Success(f)
 
 
 def test_validate_result_positionals_not_passed():
     assert validate_args(
         Request("f", {"foo": "bar"}, NOID), NOCONTEXT, lambda x: None
-    ) == Left(
+    ) == Failure(
         ErrorResult(
             ERROR_INVALID_PARAMS, "Invalid params", "missing a required argument: 'x'"
         )
@@ -169,7 +165,7 @@ def test_validate_result_positionals_not_passed():
 
 def test_validate_result_keywords():
     f = lambda **kwargs: None
-    assert validate_args(Request("f", {"foo": "bar"}, NOID), NOCONTEXT, f) == Right(f)
+    assert validate_args(Request("f", {"foo": "bar"}, NOID), NOCONTEXT, f) == Success(f)
 
 
 def test_validate_result_object_method():
@@ -178,21 +174,23 @@ def test_validate_result_object_method():
             return "bar"
 
     f = FooClass().foo
-    assert validate_args(Request("f", ["one", "two"], NOID), NOCONTEXT, f) == Right(f)
+    assert validate_args(Request("f", ["one", "two"], NOID), NOCONTEXT, f) == Success(f)
 
 
 # call
 
 
 def test_call():
-    assert call(Request("ping", [], 1), NOCONTEXT, ping) == Right(SuccessResult("pong"))
+    assert call(Request("ping", [], 1), NOCONTEXT, ping) == Success(
+        SuccessResult("pong")
+    )
 
 
 def test_call_raising_jsonrpcerror():
     def method():
         raise JsonRpcError(code=1, message="foo", data=NODATA)
 
-    assert call(Request("ping", [], 1), NOCONTEXT, method) == Left(
+    assert call(Request("ping", [], 1), NOCONTEXT, method) == Failure(
         ErrorResult(1, "foo")
     )
 
@@ -201,7 +199,7 @@ def test_call_raising_exception():
     def method():
         raise ValueError("foo")
 
-    assert call(Request("ping", [], 1), NOCONTEXT, method) == Left(
+    assert call(Request("ping", [], 1), NOCONTEXT, method) == Failure(
         ErrorResult(ERROR_INTERNAL_ERROR, "Internal error", "foo")
     )
 
@@ -210,11 +208,11 @@ def test_call_raising_exception():
 
 
 def test_validate_args():
-    assert validate_args(Request("ping", [], 1), NOCONTEXT, ping) == Right(ping)
+    assert validate_args(Request("ping", [], 1), NOCONTEXT, ping) == Success(ping)
 
 
 def test_validate_args():
-    assert validate_args(Request("ping", ["foo"], 1), NOCONTEXT, ping) == Left(
+    assert validate_args(Request("ping", ["foo"], 1), NOCONTEXT, ping) == Failure(
         ErrorResult(
             ERROR_INVALID_PARAMS, "Invalid params", "too many positional arguments"
         )
@@ -225,11 +223,11 @@ def test_validate_args():
 
 
 def test_get_method():
-    assert get_method({"ping": ping}, "ping") == Right(ping)
+    assert get_method({"ping": ping}, "ping") == Success(ping)
 
 
 def test_get_method():
-    assert get_method({"ping": ping}, "non-existant") == Left(
+    assert get_method({"ping": ping}, "non-existant") == Failure(
         ErrorResult(ERROR_METHOD_NOT_FOUND, "Method not found", "non-existant")
     )
 
@@ -241,14 +239,14 @@ def test_dispatch_request():
     request = Request("ping", [], 1)
     assert dispatch_request({"ping": ping}, NOCONTEXT, request) == (
         request,
-        Right(SuccessResult("pong")),
+        Success(SuccessResult("pong")),
     )
 
 
 def test_dispatch_request_with_context():
     def ping_with_context(context: Any):
         assert context is sentinel.context
-        return Success()
+        return Ok()
 
     dispatch_request(
         {"ping_with_context": ping_with_context},
@@ -281,15 +279,12 @@ def test_not_notification_false():
 
 
 def test_dispatch_deserialized():
-    assert (
-        dispatch_deserialized(
-            methods={"ping": ping},
-            context=NOCONTEXT,
-            post_process=identity,
-            deserialized={"jsonrpc": "2.0", "method": "ping", "id": 1},
-        )
-        == Right(SuccessResponse("pong", 1))
-    )
+    assert dispatch_deserialized(
+        methods={"ping": ping},
+        context=NOCONTEXT,
+        post_process=identity,
+        deserialized={"jsonrpc": "2.0", "method": "ping", "id": 1},
+    ) == Success(SuccessResponse("pong", 1))
 
 
 # validate_request
@@ -297,11 +292,11 @@ def test_dispatch_deserialized():
 
 def test_validate_request():
     request = {"jsonrpc": "2.0", "method": "ping"}
-    assert validate_request(default_validator, request) == Right(request)
+    assert validate_request(default_validator, request) == Success(request)
 
 
 def test_validate_request_invalid():
-    assert validate_request(default_validator, {"jsonrpc": "2.0"}) == Left(
+    assert validate_request(default_validator, {"jsonrpc": "2.0"}) == Failure(
         ErrorResponse(
             ERROR_INVALID_REQUEST,
             "Invalid request",
@@ -318,7 +313,7 @@ def test_dispatch_request():
     request = Request("ping", [], 1)
     assert dispatch_request({"ping": ping}, NOCONTEXT, request) == (
         request,
-        Right(SuccessResult("pong")),
+        Success(SuccessResult("pong")),
     )
 
 
@@ -326,17 +321,14 @@ def test_dispatch_request():
 
 
 def test_dispatch_to_response_pure():
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"ping": ping},
-            request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-        )
-        == Right(SuccessResponse("pong", 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"ping": ping},
+        request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+    ) == Success(SuccessResponse("pong", 1))
 
 
 def test_dispatch_to_response_pure_parse_error():
@@ -348,7 +340,7 @@ def test_dispatch_to_response_pure_parse_error():
         context=NOCONTEXT,
         methods={"ping": ping},
         request="{",
-    ) == Left(
+    ) == Failure(
         ErrorResponse(
             ERROR_PARSE_ERROR,
             "Parse error",
@@ -369,7 +361,7 @@ def test_dispatch_to_response_pure_invalid_request():
         context=NOCONTEXT,
         methods={"ping": ping},
         request="{}",
-    ) == Left(
+    ) == Failure(
         ErrorResponse(
             ERROR_INVALID_REQUEST,
             "Invalid request",
@@ -387,14 +379,14 @@ def test_dispatch_to_response_pure_method_not_found():
         context=NOCONTEXT,
         methods={},
         request='{"jsonrpc": "2.0", "method": "non_existant", "id": 1}',
-    ) == Left(
+    ) == Failure(
         ErrorResponse(ERROR_METHOD_NOT_FOUND, "Method not found", "non_existant", 1)
     )
 
 
 def test_dispatch_to_response_pure_invalid_params_auto():
     def foo(colour: str, size: str):
-        return Success()
+        return Ok()
 
     assert dispatch_to_response_pure(
         deserializer=default_deserializer,
@@ -403,7 +395,7 @@ def test_dispatch_to_response_pure_invalid_params_auto():
         context=NOCONTEXT,
         methods={"foo": foo},
         request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
-    ) == Left(
+    ) == Failure(
         ErrorResponse(
             ERROR_INVALID_PARAMS,
             "Invalid params",
@@ -418,52 +410,43 @@ def test_dispatch_to_response_pure_invalid_params_explicitly_returned():
         if colour not in ("orange", "red", "yellow"):
             return InvalidParams()
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
-        )
-        == Left(ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
+    ) == Failure(ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1))
 
 
 def test_dispatch_to_response_pure_internal_error():
     def foo():
         raise ValueError("foo")
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
-        )
-        == Left(ErrorResponse(ERROR_INTERNAL_ERROR, "Internal error", "foo", 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
+    ) == Failure(ErrorResponse(ERROR_INTERNAL_ERROR, "Internal error", "foo", 1))
 
 
 @patch("jsonrpcserver.dispatcher.dispatch_request", side_effect=ValueError("foo"))
 def test_dispatch_to_response_pure_server_error(*_):
     def foo():
-        return Success()
+        return Ok()
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
-        )
-        == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
+    ) == Failure(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
 
 
 def test_dispatch_to_response_pure_invalid_result():
@@ -479,7 +462,7 @@ def test_dispatch_to_response_pure_invalid_result():
         context=NOCONTEXT,
         methods={"not_a_result": not_a_result},
         request='{"jsonrpc": "2.0", "method": "not_a_result", "id": 1}',
-    ) == Left(
+    ) == Failure(
         ErrorResponse(
             ERROR_INTERNAL_ERROR,
             "Internal error",
@@ -495,17 +478,14 @@ def test_dispatch_to_response_pure_raising_exception():
     def raise_exception():
         raise JsonRpcError(code=0, message="foo", data="bar")
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"raise_exception": raise_exception},
-            request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
-        )
-        == Left(ErrorResponse(0, "foo", "bar", 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"raise_exception": raise_exception},
+        request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
+    ) == Failure(ErrorResponse(0, "foo", "bar", 1))
 
 
 # dispatch_to_response_pure -- Notifications
@@ -534,7 +514,7 @@ def test_dispatch_to_response_pure_notification_parse_error():
         context=NOCONTEXT,
         methods={"ping": ping},
         request="{",
-    ) == Left(
+    ) == Failure(
         ErrorResponse(
             ERROR_PARSE_ERROR,
             "Parse error",
@@ -553,7 +533,7 @@ def test_dispatch_to_response_pure_notification_invalid_request():
         context=NOCONTEXT,
         methods={"ping": ping},
         request="{}",
-    ) == Left(
+    ) == Failure(
         ErrorResponse(
             ERROR_INVALID_REQUEST,
             "Invalid request",
@@ -579,7 +559,7 @@ def test_dispatch_to_response_pure_notification_method_not_found():
 
 def test_dispatch_to_response_pure_notification_invalid_params_auto():
     def foo(colour: str, size: str):
-        return Success()
+        return Ok()
 
     assert (
         dispatch_to_response_pure(
@@ -632,19 +612,16 @@ def test_dispatch_to_response_pure_notification_internal_error():
 @patch("jsonrpcserver.dispatcher.dispatch_request", side_effect=ValueError("foo"))
 def test_dispatch_to_response_pure_notification_server_error(*_):
     def foo():
-        return Success()
+        return Ok()
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo"}',
-        )
-        == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo"}',
+    ) == Failure(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
 
 
 def test_dispatch_to_response_pure_notification_invalid_result():
@@ -692,16 +669,16 @@ def test_dispatch_to_response():
     response = dispatch_to_response(
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}', {"ping": ping}
     )
-    assert response == Right(SuccessResponse("pong", 1))
+    assert response == Success(SuccessResponse("pong", 1))
 
 
 def test_dispatch_to_response_with_global_methods():
     @method
     def ping():
-        return Success("pong")
+        return Ok("pong")
 
     response = dispatch_to_response('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-    assert response == Right(SuccessResponse("pong", 1))
+    assert response == Success(SuccessResponse("pong", 1))
 
 
 # The remaining tests are direct from the examples in the specification
@@ -709,7 +686,7 @@ def test_dispatch_to_response_with_global_methods():
 
 def test_examples_positionals():
     def subtract(minuend, subtrahend):
-        return Success(minuend - subtrahend)
+        return Ok(minuend - subtrahend)
 
     response = dispatch_to_response_pure(
         methods={"subtract": subtract},
@@ -719,7 +696,7 @@ def test_examples_positionals():
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}',
     )
-    assert response == Right(SuccessResponse(19, 1))
+    assert response == Success(SuccessResponse(19, 1))
 
     # Second example
     response = dispatch_to_response_pure(
@@ -730,12 +707,12 @@ def test_examples_positionals():
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}',
     )
-    assert response == Right(SuccessResponse(-19, 2))
+    assert response == Success(SuccessResponse(-19, 2))
 
 
 def test_examples_nameds():
     def subtract(**kwargs):
-        return Success(kwargs["minuend"] - kwargs["subtrahend"])
+        return Ok(kwargs["minuend"] - kwargs["subtrahend"])
 
     response = dispatch_to_response_pure(
         methods={"subtract": subtract},
@@ -745,7 +722,7 @@ def test_examples_nameds():
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
     )
-    assert response == Right(SuccessResponse(19, 3))
+    assert response == Success(SuccessResponse(19, 3))
 
     # Second example
     response = dispatch_to_response_pure(
@@ -756,7 +733,7 @@ def test_examples_nameds():
         deserializer=default_deserializer,
         request='{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
     )
-    assert response == Right(SuccessResponse(19, 4))
+    assert response == Success(SuccessResponse(19, 4))
 
 
 def test_examples_notification():
@@ -791,7 +768,7 @@ def test_examples_invalid_json():
         deserializer=default_deserializer,
         request='[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
     )
-    assert response == Left(
+    assert response == Failure(
         ErrorResponse(
             ERROR_PARSE_ERROR,
             "Parse error",
@@ -811,7 +788,7 @@ def test_examples_empty_array():
         post_process=identity,
         deserializer=default_deserializer,
     )
-    assert response == Left(
+    assert response == Failure(
         ErrorResponse(
             ERROR_INVALID_REQUEST,
             "Invalid request",
@@ -834,7 +811,7 @@ def test_examples_invalid_jsonrpc_batch():
         methods={"ping": ping},
         request="[1]",
     )
-    assert response == Left(
+    assert response == Failure(
         ErrorResponse(
             ERROR_INVALID_REQUEST,
             "Invalid request",
@@ -857,7 +834,7 @@ def test_examples_multiple_invalid_jsonrpc():
         methods={"ping": ping},
         request="[1, 2, 3]",
     )
-    assert response == Left(
+    assert response == Failure(
         ErrorResponse(
             ERROR_INVALID_REQUEST,
             "Invalid request",
@@ -878,10 +855,10 @@ def test_examples_mixed_requests_and_notifications():
         {"foo": "boo"},
     """
     methods = {
-        "sum": lambda *args: Right(SuccessResult(sum(args))),
-        "notify_hello": lambda *args: Right(SuccessResult(19)),
-        "subtract": lambda *args: Right(SuccessResult(args[0] - sum(args[1:]))),
-        "get_data": lambda: Right(SuccessResult(["hello", 5])),
+        "sum": lambda *args: Success(SuccessResult(sum(args))),
+        "notify_hello": lambda *args: Success(SuccessResult(19)),
+        "subtract": lambda *args: Success(SuccessResult(args[0] - sum(args[1:]))),
+        "get_data": lambda: Success(SuccessResult(["hello", 5])),
     }
     requests = json.dumps(
         [
@@ -906,13 +883,13 @@ def test_examples_mixed_requests_and_notifications():
         request=requests,
     )
     expected = [
-        Right(
+        Success(
             SuccessResponse(result=7, id="1")
         ),  # {"jsonrpc": "2.0", "result": 7, "id": "1"},
-        Right(
+        Success(
             SuccessResponse(result=19, id="2")
         ),  # {"jsonrpc": "2.0", "result": 19, "id": "2"},
-        Left(
+        Failure(
             ErrorResponse(
                 code=-32601, message="Method not found", data="foo.get", id="5"
             )
@@ -922,7 +899,7 @@ def test_examples_mixed_requests_and_notifications():
         #     "error": {"code": -32601, "message": "Method not found", "data": "foo.get"},
         #     "id": "5",
         # },
-        Right(
+        Success(
             SuccessResponse(result=["hello", 5], id="9")
         ),  # {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"},
     ]
