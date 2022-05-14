@@ -10,7 +10,7 @@ jobs:
       with:
         python-version: 3.x
     - run: pip install --upgrade pip
-    - run: pip install black<23 pylint==v3.0.0a3 mypy==v0.950 types-setuptools returns<1
+    - run: pip install "black<23" pylint==v3.0.0a3 mypy==v0.950 types-setuptools "returns<1"
     - run: black --diff --check $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
     - run: pylint --disable=all --enable=unused-import $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
     - run: mypy --strict $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
