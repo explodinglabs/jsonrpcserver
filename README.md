@@ -22,9 +22,8 @@ if __name__ == "__main__":
     serve()
 ```
 
-Alternatively, use `dispatch`:
+For production, use `dispatch`:
 ```python
-from jsonrpcserver import dispatch
 response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
