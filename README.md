@@ -22,11 +22,13 @@ if __name__ == "__main__":
     serve()
 ```
 
-Alternatively, use `dispatch`:
+Or use `dispatch`:
 ```python
 response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
+
+[Watch a video on how to use it.](https://www.youtube.com/watch?v=3_BMmgJaFHQ)
 
 Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
 
