@@ -1,4 +1,4 @@
-from jsonrpcserver import method, Result, Success, dispatch
+from jsonrpcserver import dispatch, method, Ok, Result
 import zmq
 
 socket = zmq.Context().socket(zmq.REP)
@@ -6,7 +6,7 @@ socket = zmq.Context().socket(zmq.REP)
 
 @method
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 if __name__ == "__main__":

@@ -1,30 +1,17 @@
-"""A method is a Python function that can be called by a JSON-RPC request.
-
-They're held in a dict, a mapping of function names to functions.
-
-The @method decorator adds a method to jsonrpcserver's internal global_methods dict.
-Alternatively pass your own dictionary of methods to `dispatch` with the methods param.
-
-    >>> dispatch(request)  # Uses the internal collection of funcs added with @method
-    >>> dispatch(request, methods={"ping": lambda: "pong"})  # Custom collection
-
-Methods can take either positional or named arguments, but not both. This is a
-limitation of JSON-RPC.
-"""
-from typing import Any, Callable, Dict, Optional, cast
+from typing import Any, Awaitable, Callable, Dict, Optional, cast
 
 from returns.result import Result
 
 from .result import ErrorResult, SuccessResult
 
-Method = Callable[..., Result[SuccessResult, ErrorResult]]
+Method = Callable[..., Awaitable[Result[SuccessResult, ErrorResult]]]
 Methods = Dict[str, Method]
 global_methods: Methods = dict()
 
 
 def method(
     f: Optional[Method] = None, name: Optional[str] = None
-) -> Callable[..., Any]:
+) -> Callable[..., Awaitable[Any]]:
     """A decorator to add a function into jsonrpcserver's internal global_methods dict.
     The global_methods dict will be used by default unless a methods argument is passed
     to `dispatch`.

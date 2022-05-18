@@ -14,13 +14,13 @@ and gives a JSON-RPC response.
 
 ### methods
 
-This lets you specify a group of methods to dispatch to. It's an alternative to
-using the `@method` decorator. The value should be a dict mapping function
-names to functions.
+This lets you specify the methods to dispatch to. It's an alternative to using
+the `@method` decorator. The value should be a dict mapping function names to
+functions.
 
 ```python
 def ping():
-    return Success("pong")
+    return Ok("pong")
 
 dispatch(request, methods={"ping": ping})
 ```
@@ -35,7 +35,7 @@ If specified, this will be the first argument to all methods.
 ```python
 @method
 def greet(context, name):
-    return Success(context + " " + name)
+    return Ok(context + " " + name)
 
 >>> dispatch('{"jsonrpc": "2.0", "method": "greet", "params": ["Beau"], "id": 1}', context="Hello")
 '{"jsonrpc": "2.0", "result": "Hello Beau", "id": 1}'

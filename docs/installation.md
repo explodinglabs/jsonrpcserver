@@ -3,11 +3,11 @@
 Create a `server.py`:
 
 ```python
-from jsonrpcserver import Success, method, serve
+from jsonrpcserver import method, serve, Ok
 
 @method
 def ping():
-    return Success("pong")
+    return Ok("pong")
 
 if __name__ == "__main__":
     serve()
@@ -27,3 +27,6 @@ Test the server:
 $ curl -X POST http://localhost:5000 -d '{"jsonrpc": "2.0", "method": "ping", "id": 1}'
 {"jsonrpc": "2.0", "result": "pong", "id": 1}
 ```
+
+`serve` is good for serving methods in development, but for production use
+`dispatch` instead.

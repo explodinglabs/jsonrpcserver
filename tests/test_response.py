@@ -1,6 +1,6 @@
 from unittest.mock import sentinel
 
-from oslash.either import Left, Right
+from returns.result import Failure, Success
 
 from jsonrpcserver.response import (
     ErrorResponse,
@@ -62,7 +62,7 @@ def test_ServerErrorResponse():
 
 
 def test_to_serializable():
-    assert to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id))) == {
+    assert to_serializable(Success(SuccessResponse(sentinel.result, sentinel.id))) == {
         "jsonrpc": "2.0",
         "result": sentinel.result,
         "id": sentinel.id,
@@ -74,7 +74,7 @@ def test_to_serializable_None():
 
 
 def test_to_serializable_SuccessResponse():
-    assert to_serializable(Right(SuccessResponse(sentinel.result, sentinel.id))) == {
+    assert to_serializable(Success(SuccessResponse(sentinel.result, sentinel.id))) == {
         "jsonrpc": "2.0",
         "result": sentinel.result,
         "id": sentinel.id,
@@ -83,7 +83,9 @@ def test_to_serializable_SuccessResponse():
 
 def test_to_serializable_ErrorResponse():
     assert to_serializable(
-        Left(ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id))
+        Failure(
+            ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id)
+        )
     ) == {
         "jsonrpc": "2.0",
         "error": {
@@ -96,7 +98,9 @@ def test_to_serializable_ErrorResponse():
 
 
 def test_to_serializable_list():
-    assert to_serializable([Right(SuccessResponse(sentinel.result, sentinel.id))]) == [
+    assert to_serializable(
+        [Success(SuccessResponse(sentinel.result, sentinel.id))]
+    ) == [
         {
             "jsonrpc": "2.0",
             "result": sentinel.result,

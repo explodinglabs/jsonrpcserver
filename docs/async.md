@@ -3,11 +3,11 @@
 Async dispatch is supported.
 
 ```python
-from jsonrpcserver import method, Success, async_dispatch
+from jsonrpcserver import async_dispatch, async_method, Ok, Result
 
-@method
+@async_method
 async def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 await async_dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 ```

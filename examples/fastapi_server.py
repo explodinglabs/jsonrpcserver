@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Response
-from jsonrpcserver import Result, Success, dispatch, method
+from jsonrpcserver import dispatch, method, Ok, Result
 import uvicorn
 
 app = FastAPI()
@@ -7,7 +7,7 @@ app = FastAPI()
 
 @method
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 @app.post("/")

@@ -1,13 +1,13 @@
 from unittest.mock import sentinel
 
-from oslash.either import Left, Right
+from returns.result import Failure, Success
 
 from jsonrpcserver.result import (
+    Ok,
     Error,
     ErrorResult,
     InvalidParamsResult,
     NODATA,
-    Success,
     SuccessResult,
 )
 
@@ -55,9 +55,9 @@ def test_InvalidParamsResult_with_data():
     assert result.data == sentinel.data
 
 
-def test_Success():
-    assert Success() == Right(SuccessResult(None))
+def test_Ok():
+    assert Ok(None) == Success(SuccessResult(None))
 
 
 def test_Error():
-    assert Error(1, "foo", None) == Left(ErrorResult(1, "foo", None))
+    assert Error(1, "foo", None) == Failure(ErrorResult(1, "foo", None))

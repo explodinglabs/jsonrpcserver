@@ -1,6 +1,6 @@
 import pytest
 
-from oslash.either import Right
+from returns.result import Success
 
 from jsonrpcserver.async_main import (
     dispatch_to_response,
@@ -8,18 +8,18 @@ from jsonrpcserver.async_main import (
     dispatch_to_json,
 )
 from jsonrpcserver.response import SuccessResponse
-from jsonrpcserver.result import Result, Success
+from jsonrpcserver.result import Result, Ok
 
 
 async def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 @pytest.mark.asyncio
 async def test_dispatch_to_response():
     assert await dispatch_to_response(
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}', {"ping": ping}
-    ) == Right(SuccessResponse("pong", 1))
+    ) == Success(SuccessResponse("pong", 1))
 
 
 @pytest.mark.asyncio
