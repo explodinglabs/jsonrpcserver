@@ -22,7 +22,7 @@ if __name__ == "__main__":
     serve()
 ```
 
-Or use `dispatch`:
+Or use `dispatch` instead of `serve`:
 ```python
 response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
