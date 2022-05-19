@@ -11,7 +11,6 @@ def ping() -> Result:
 
 @app.route("/", methods=["POST"])
 def index():
-    print(request.get_data().decode())
     return Response(
         dispatch(request.get_data().decode()), content_type="application/json"
     )
