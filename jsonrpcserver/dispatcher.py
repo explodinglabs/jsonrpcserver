@@ -173,9 +173,9 @@ def dispatch_request(
 ) -> Tuple[Request, Result[SuccessResult, ErrorResult]]:
     """Get the method, validates the arguments and calls the method.
 
-    Returns: A tuple containing the Result of the method, along with the original
-        Request. We need the ids from the original request to remove notifications
-        before responding, and  create a Response.
+    Returns: A tuple containing the original Request, and the Result of the method call.
+        We need the ids from the original request to remove notifications before
+        responding, and  create a Response.
     """
     return (
         request,
