@@ -18,9 +18,17 @@ from jsonrpcserver import dispatch, method, Ok, Result
 def ping() -> Result:
     return Ok("pong")
 
-response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
-# '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
+if __name__ == "__main__":
+    serve()
 ```
+
+Or use `dispatch` instead of `serve`:
+```python
+response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+# => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
+```
+
+[Watch a video on how to use it.](https://www.youtube.com/watch?v=3_BMmgJaFHQ)
 
 Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
 
