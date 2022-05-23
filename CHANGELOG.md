@@ -1,5 +1,26 @@
 # jsonrpcserver Change Log
 
+## 6.0.0 (May 18, 2022)
+
+A small release but incrementing the major release number due to a breaking
+change for async use.
+
+Breaking changes:
+
+- Decorate async JSON-RPC methods with `@async_method` instead of `@method`.
+  The reason for this change is due to the typing of the decorator, async
+  functions return a different type (`Awaitable`) to other functions.
+
+Other changes:
+
+- Internally, replaced the Oslash dependency with
+  [Returns](https://github.com/dry-python/returns). Because Oslash is not meant
+  for production use.
+- Use `Ok` instead of `Success` when returning a response. This is to avoid
+  confusion with the Returns library now used internally which has it's own
+  `Success` class. This is not a breaking change, `Success` will still work for
+  now, however `Ok` is recommended.
+
 ## 5.0.7 (Mar 10, 2022)
 
 - Upgrade to jsonschema 4.
