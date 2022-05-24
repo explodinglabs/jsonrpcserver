@@ -205,7 +205,7 @@ def dispatch_deserialized(
     context: Any,
     post_process: Callable[[Response], Response],
     deserialized: Deserialized,
-) -> Union[Response, List[Response], None,]:
+) -> Union[Response, List[Response], None]:
     """This is simply continuing the pipeline from dispatch_to_response_pure. It exists
     only to be an abstraction, otherwise that function is doing too much. It continues
     on from the request string having been parsed and validated.
