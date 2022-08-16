@@ -1,5 +1,9 @@
 # jsonrpcserver Change Log
 
+## 5.0.8 (Aug 16, 2022)
+
+- Use importlib.resources instead of pkg_resources.
+
 ## 5.0.7 (Mar 10, 2022)
 
 - Upgrade to jsonschema 4.
