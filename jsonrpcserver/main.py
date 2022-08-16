@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, List, Optional, Union, cast
 import json
 
 from jsonschema.validators import validator_for  # type: ignore
-from pkg_resources import resource_string
+import importlib.resources
 
 from .dispatcher import dispatch_to_response_pure, Deserialized
 from .methods import Methods, global_methods
@@ -26,7 +26,7 @@ default_deserializer = json.loads
 
 # Prepare the jsonschema validator. This is global so it loads only once, not every
 # time dispatch is called.
-schema = json.loads(resource_string(__name__, "request-schema.json"))
+schema = json.loads(importlib.resources.read_text(__package__, "request-schema.json"))
 klass = validator_for(schema)
 klass.check_schema(schema)
 default_validator = klass(schema).validate
