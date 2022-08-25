@@ -5,7 +5,6 @@ from itertools import starmap
 from typing import Any, Callable, Iterable, Tuple, Union
 import asyncio
 import logging
-import traceback
 
 from oslash.either import Left  # type: ignore
 
@@ -31,7 +30,7 @@ from .response import Response, ServerErrorResponse
 from .utils import make_list
 
 
-logger = logging.getLogger("jsonrpcserver")
+logger = logging.getLogger(__name__)
 
 async def call(request: Request, context: Any, method: Method) -> Result:
     try:

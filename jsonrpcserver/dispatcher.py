@@ -6,7 +6,6 @@ from inspect import signature
 from itertools import starmap
 from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 import logging
-import traceback
 
 from oslash.either import Either, Left, Right  # type: ignore
 
@@ -34,7 +33,7 @@ from .utils import compose, make_list
 
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
-logger = logging.getLogger("jsonrpcserver")
+logger = logging.getLogger(__name__)
 
 
 def extract_list(
@@ -136,7 +135,7 @@ def call(request: Request, context: Any, method: Method) -> Result:
         return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     # Any other uncaught exception inside method - internal error.
     except Exception as exc:
-        logger.error(traceback.format_exc())
+        logger.exception(exc)
         return Left(InternalErrorResult(str(exc)))
     return result
 
@@ -281,5 +280,5 @@ def dispatch_to_response_pure(
         )
     except Exception as exc:
         # There was an error with the jsonrpcserver library.
-        logger.error(traceback.format_exc())
+        logger.exception(exc)
         return post_process(Left(ServerErrorResponse(str(exc), None)))
