@@ -41,7 +41,7 @@ async def call(request: Request, context: Any, method: Method) -> Result:
     except JsonRpcError as exc:
         return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     except Exception as exc:  # Other error inside method - Internal error
-        logger.error(traceback.format_exc())
+        logger.exception(exc)
         return Left(InternalErrorResult(str(exc)))
     return result
 
@@ -102,5 +102,5 @@ async def dispatch_to_response_pure(
             )
         )
     except Exception as exc:
-        logger.error(traceback.format_exc())
+        logger.exception(exc)
         return post_process(Left(ServerErrorResponse(str(exc), None)))
