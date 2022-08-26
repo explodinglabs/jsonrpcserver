@@ -30,6 +30,8 @@ from .response import Response, ServerErrorResponse
 from .utils import make_list
 
 
+logger = logging.getLogger(__name__)
+
 async def call(request: Request, context: Any, method: Method) -> Result:
     try:
         result = await method(
@@ -39,7 +41,7 @@ async def call(request: Request, context: Any, method: Method) -> Result:
     except JsonRpcError as exc:
         return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     except Exception as exc:  # Other error inside method - Internal error
-        logging.exception(exc)
+        logger.exception(exc)
         return Left(InternalErrorResult(str(exc)))
     return result
 
@@ -100,5 +102,5 @@ async def dispatch_to_response_pure(
             )
         )
     except Exception as exc:
-        logging.exception(exc)
+        logger.exception(exc)
         return post_process(Left(ServerErrorResponse(str(exc), None)))
