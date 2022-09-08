@@ -34,7 +34,6 @@ setup(
     name="jsonrpcserver",
     # Be PEP 561 compliant
     # https://mypy.readthedocs.io/en/stable/installed_packages.html#making-pep-561-compatible-packages
-    package_data={"jsonrpcserver": ["request-schema.json", "py.typed"]},
     zip_safe=False,
     packages=["jsonrpcserver"],
     url="https://github.com/explodinglabs/jsonrpcserver",
