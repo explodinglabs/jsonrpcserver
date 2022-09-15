@@ -1,5 +1,10 @@
 # jsonrpcserver Change Log
 
+## 5.0.9 (Sep 15, 2022)
+
+- Remove unncessary `package_data` from setup.py (#243)
+- Use a custom logger when logging exceptions, not root
+
 ## 5.0.8 (Aug 16, 2022)
 
 - Use importlib.resources instead of pkg_resources.
