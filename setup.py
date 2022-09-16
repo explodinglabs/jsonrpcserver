@@ -25,6 +25,11 @@ setup(
             "websockets",
             "werkzeug",
         ],
+        "test": [
+            "pytest",
+            "pytest-cov",
+            "tox",
+        ],
     },
     include_package_data=True,
     install_requires=["jsonschema<5", "oslash<1"],
@@ -32,10 +37,10 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     name="jsonrpcserver",
-    # Be PEP 561 compliant
-    # https://mypy.readthedocs.io/en/stable/installed_packages.html#making-pep-561-compatible-packages
-    zip_safe=False,
     packages=["jsonrpcserver"],
     url="https://github.com/explodinglabs/jsonrpcserver",
     version="5.0.9",
+    # Be PEP 561 compliant
+    # https://mypy.readthedocs.io/en/stable/installed_packages.html#making-pep-561-compatible-packages
+    zip_safe=False,
 )
