@@ -281,15 +281,12 @@ def test_not_notification_false():
 
 
 def test_dispatch_deserialized():
-    assert (
-        dispatch_deserialized(
-            methods={"ping": ping},
-            context=NOCONTEXT,
-            post_process=identity,
-            deserialized={"jsonrpc": "2.0", "method": "ping", "id": 1},
-        )
-        == Right(SuccessResponse("pong", 1))
-    )
+    assert dispatch_deserialized(
+        methods={"ping": ping},
+        context=NOCONTEXT,
+        post_process=identity,
+        deserialized={"jsonrpc": "2.0", "method": "ping", "id": 1},
+    ) == Right(SuccessResponse("pong", 1))
 
 
 # validate_request
@@ -326,17 +323,14 @@ def test_dispatch_request():
 
 
 def test_dispatch_to_response_pure():
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"ping": ping},
-            request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-        )
-        == Right(SuccessResponse("pong", 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"ping": ping},
+        request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+    ) == Right(SuccessResponse("pong", 1))
 
 
 def test_dispatch_to_response_pure_parse_error():
@@ -418,34 +412,28 @@ def test_dispatch_to_response_pure_invalid_params_explicitly_returned():
         if colour not in ("orange", "red", "yellow"):
             return InvalidParams()
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
-        )
-        == Left(ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"], "id": 1}',
+    ) == Left(ErrorResponse(ERROR_INVALID_PARAMS, "Invalid params", NODATA, 1))
 
 
 def test_dispatch_to_response_pure_internal_error():
     def foo():
         raise ValueError("foo")
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
-        )
-        == Left(ErrorResponse(ERROR_INTERNAL_ERROR, "Internal error", "foo", 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
+    ) == Left(ErrorResponse(ERROR_INTERNAL_ERROR, "Internal error", "foo", 1))
 
 
 @patch("jsonrpcserver.dispatcher.dispatch_request", side_effect=ValueError("foo"))
@@ -453,17 +441,14 @@ def test_dispatch_to_response_pure_server_error(*_):
     def foo():
         return Success()
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
-        )
-        == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
+    ) == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
 
 
 def test_dispatch_to_response_pure_invalid_result():
@@ -495,17 +480,14 @@ def test_dispatch_to_response_pure_raising_exception():
     def raise_exception():
         raise JsonRpcError(code=0, message="foo", data="bar")
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"raise_exception": raise_exception},
-            request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
-        )
-        == Left(ErrorResponse(0, "foo", "bar", 1))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"raise_exception": raise_exception},
+        request='{"jsonrpc": "2.0", "method": "raise_exception", "id": 1}',
+    ) == Left(ErrorResponse(0, "foo", "bar", 1))
 
 
 # dispatch_to_response_pure -- Notifications
@@ -634,17 +616,14 @@ def test_dispatch_to_response_pure_notification_server_error(*_):
     def foo():
         return Success()
 
-    assert (
-        dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo"}',
-        )
-        == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
-    )
+    assert dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo"}',
+    ) == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
 
 
 def test_dispatch_to_response_pure_notification_invalid_result():
