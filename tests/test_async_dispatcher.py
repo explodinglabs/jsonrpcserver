@@ -61,30 +61,24 @@ async def test_dispatch_request():
 
 @pytest.mark.asyncio
 async def test_dispatch_deserialized():
-    assert (
-        await dispatch_deserialized(
-            {"ping": ping},
-            NOCONTEXT,
-            identity,
-            {"jsonrpc": "2.0", "method": "ping", "id": 1},
-        )
-        == Right(SuccessResponse("pong", 1))
-    )
+    assert await dispatch_deserialized(
+        {"ping": ping},
+        NOCONTEXT,
+        identity,
+        {"jsonrpc": "2.0", "method": "ping", "id": 1},
+    ) == Right(SuccessResponse("pong", 1))
 
 
 @pytest.mark.asyncio
 async def test_dispatch_to_response_pure_success():
-    assert (
-        await dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"ping": ping},
-            request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-        )
-        == Right(SuccessResponse("pong", 1))
-    )
+    assert await dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"ping": ping},
+        request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+    ) == Right(SuccessResponse("pong", 1))
 
 
 @patch("jsonrpcserver.async_dispatcher.dispatch_request", side_effect=ValueError("foo"))
@@ -93,14 +87,11 @@ async def test_dispatch_to_response_pure_server_error(*_):
     async def foo():
         return Success()
 
-    assert (
-        await dispatch_to_response_pure(
-            deserializer=default_deserializer,
-            validator=default_validator,
-            post_process=identity,
-            context=NOCONTEXT,
-            methods={"foo": foo},
-            request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
-        )
-        == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
-    )
+    assert await dispatch_to_response_pure(
+        deserializer=default_deserializer,
+        validator=default_validator,
+        post_process=identity,
+        context=NOCONTEXT,
+        methods={"foo": foo},
+        request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
+    ) == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
