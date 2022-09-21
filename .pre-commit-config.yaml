@@ -1,19 +1,19 @@
 fail_fast: true
 repos:
   - repo: https://github.com/ambv/black
-    rev: 22.3.0
+    rev: 22.8.0
     hooks:
       - id: black
         args: [--diff, --check]
 
   - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v3.0.0a4
+    rev: v3.0.0a5
     hooks:
       - id: pylint
         args: [--disable=all, --enable=unused-import]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.950
+    rev: v0.971
     hooks:
       - id: mypy
         exclude: (^tests|^examples|^docs)

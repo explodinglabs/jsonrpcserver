@@ -34,6 +34,8 @@ from .result import (
 from .response import Response, ServerErrorResponse
 from .utils import make_list
 
+logger = logging.getLogger(__name__)
+
 
 async def call(
     request: Request, context: Any, method: Method

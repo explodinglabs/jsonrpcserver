@@ -32,6 +32,8 @@ from .utils import compose, make_list
 
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
+logger = logging.getLogger(__name__)
+
 
 def extract_list(
     is_batch: bool, responses: Iterable[Response]

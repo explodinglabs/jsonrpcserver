@@ -11,6 +11,10 @@
 
 Process incoming JSON-RPC requests in Python.
 
+```sh
+pip install jsonrpcserver
+```
+
 ```python
 from jsonrpcserver import method, serve, Ok, Result
 
