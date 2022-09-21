@@ -23,7 +23,7 @@ class SuccessResponse(NamedTuple):
     easily subclass NamedTuples in Python 3.6. (I believe it can be done in 3.8.)
     """
 
-    result: str
+    result: Any
     id: Any
 
 
@@ -86,7 +86,7 @@ def serialize_success(response: SuccessResponse) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
 
 
-def to_serializable_one(response: ResponseType) -> Union[Deserialized, None]:
+def to_serializable_one(response: ResponseType) -> Deserialized:
     return (
         serialize_error(response._error)
         if isinstance(response, Left)
@@ -94,7 +94,9 @@ def to_serializable_one(response: ResponseType) -> Union[Deserialized, None]:
     )
 
 
-def to_serializable(response: ResponseType) -> Union[Deserialized, None]:
+def to_serializable(
+    response: Union[ResponseType, List[ResponseType], None]
+) -> Union[Deserialized, List[Deserialized], None]:
     if response is None:
         return None
     elif isinstance(response, List):
