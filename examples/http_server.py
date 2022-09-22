@@ -9,7 +9,7 @@ def ping() -> Result:
 
 
 class TestHttpServer(BaseHTTPRequestHandler):
-    def do_POST(self):
+    def do_POST(self) -> None:
         # Process request
         request = self.rfile.read(int(self.headers["Content-Length"])).decode()
         response = dispatch(request)

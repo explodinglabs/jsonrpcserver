@@ -9,7 +9,7 @@ def ping() -> Result:
 
 
 @Request.application
-def application(request):
+def application(request: Request) -> Response:
     return Response(dispatch(request.data.decode()), 200, mimetype="application/json")
 
 

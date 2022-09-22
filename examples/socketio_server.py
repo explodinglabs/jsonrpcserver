@@ -1,5 +1,5 @@
-from flask import Flask
-from flask_socketio import SocketIO, send
+from flask import Flask, Request
+from flask_socketio import SocketIO, send  # type: ignore
 from jsonrpcserver import method, Result, Success, dispatch
 
 app = Flask(__name__)
@@ -11,8 +11,8 @@ def ping() -> Result:
     return Success("pong")
 
 
-@socketio.on("message")
-def handle_message(request):
+@socketio.on("message")  # type: ignore
+def handle_message(request: Request) -> None:
     if response := dispatch(request):
         send(response, json=True)
 

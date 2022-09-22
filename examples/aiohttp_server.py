@@ -1,4 +1,4 @@
-from aiohttp import web
+from aiohttp import web  # type: ignore
 from jsonrpcserver import method, Result, Success, async_dispatch
 
 
@@ -7,7 +7,7 @@ async def ping() -> Result:
     return Success("pong")
 
 
-async def handle(request):
+async def handle(request: web.Request) -> web.Response:
     return web.Response(
         text=await async_dispatch(await request.text()), content_type="application/json"
     )

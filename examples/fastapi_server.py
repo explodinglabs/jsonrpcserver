@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Response
 from jsonrpcserver import Result, Success, dispatch, method
-import uvicorn
+import uvicorn  # type: ignore
 
 app = FastAPI()
 
@@ -11,7 +11,7 @@ def ping() -> Result:
 
 
 @app.post("/")
-async def index(request: Request):
+async def index(request: Request) -> Response:
     return Response(dispatch(await request.body()))
 
 

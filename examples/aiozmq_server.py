@@ -1,5 +1,5 @@
 from jsonrpcserver import method, Result, Success, async_dispatch
-import aiozmq
+import aiozmq  # type: ignore
 import asyncio
 import zmq
 
@@ -9,7 +9,7 @@ async def ping() -> Result:
     return Success("pong")
 
 
-async def main():
+async def main() -> None:
     rep = await aiozmq.create_zmq_stream(zmq.REP, bind="tcp://*:5000")
     while True:
         request = (await rep.read())[0].decode()
