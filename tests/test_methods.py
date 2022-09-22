@@ -1,17 +1,17 @@
 from jsonrpcserver.methods import global_methods, method
 
 
-def test_decorator():
+def test_decorator() -> None:
     @method
-    def foo():
+    def foo() -> None:
         pass
 
     assert callable(global_methods["foo"])
 
 
-def test_decorator_custom_name():
+def test_decorator_custom_name() -> None:
     @method(name="baz")
-    def bar():
+    def bar() -> None:
         pass
 
     assert callable(global_methods["baz"])

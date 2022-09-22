@@ -1,7 +1,7 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import pytest
 
-from oslash.either import Left, Right
+from oslash.either import Left, Right  # type: ignore
 
 from jsonrpcserver.async_dispatcher import (
     call,
@@ -9,7 +9,7 @@ from jsonrpcserver.async_dispatcher import (
     dispatch_request,
     dispatch_to_response_pure,
 )
-from jsonrpcserver.async_main import default_deserializer, default_validator
+from jsonrpcserver.main import default_deserializer, default_validator
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR, ERROR_SERVER_ERROR
 from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.request import Request
@@ -24,15 +24,15 @@ async def ping() -> Result:
 
 
 @pytest.mark.asyncio
-async def test_call():
+async def test_call() -> None:
     assert await call(Request("ping", [], 1), NOCONTEXT, ping) == Right(
         SuccessResult("pong")
     )
 
 
 @pytest.mark.asyncio
-async def test_call_raising_jsonrpcerror():
-    def method():
+async def test_call_raising_jsonrpcerror() -> None:
+    def method() -> None:
         raise JsonRpcError(code=1, message="foo", data=NODATA)
 
     assert await call(Request("ping", [], 1), NOCONTEXT, method) == Left(
@@ -41,8 +41,8 @@ async def test_call_raising_jsonrpcerror():
 
 
 @pytest.mark.asyncio
-async def test_call_raising_exception():
-    def method():
+async def test_call_raising_exception() -> None:
+    def method() -> None:
         raise ValueError("foo")
 
     assert await call(Request("ping", [], 1), NOCONTEXT, method) == Left(
@@ -51,7 +51,7 @@ async def test_call_raising_exception():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_request():
+async def test_dispatch_request() -> None:
     request = Request("ping", [], 1)
     assert await dispatch_request({"ping": ping}, NOCONTEXT, request) == (
         request,
@@ -60,7 +60,7 @@ async def test_dispatch_request():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_deserialized():
+async def test_dispatch_deserialized() -> None:
     assert await dispatch_deserialized(
         {"ping": ping},
         NOCONTEXT,
@@ -70,7 +70,7 @@ async def test_dispatch_deserialized():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_to_response_pure_success():
+async def test_dispatch_to_response_pure_success() -> None:
     assert await dispatch_to_response_pure(
         deserializer=default_deserializer,
         validator=default_validator,
@@ -83,8 +83,8 @@ async def test_dispatch_to_response_pure_success():
 
 @patch("jsonrpcserver.async_dispatcher.dispatch_request", side_effect=ValueError("foo"))
 @pytest.mark.asyncio
-async def test_dispatch_to_response_pure_server_error(*_):
-    async def foo():
+async def test_dispatch_to_response_pure_server_error(*_: Mock) -> None:
+    async def foo() -> Result:
         return Success()
 
     assert await dispatch_to_response_pure(

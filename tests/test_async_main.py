@@ -1,6 +1,6 @@
 import pytest
 
-from oslash.either import Right
+from oslash.either import Right  # type: ignore
 
 from jsonrpcserver.async_main import (
     dispatch_to_response,
@@ -16,21 +16,21 @@ async def ping() -> Result:
 
 
 @pytest.mark.asyncio
-async def test_dispatch_to_response():
+async def test_dispatch_to_response() -> None:
     assert await dispatch_to_response(
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}', {"ping": ping}
     ) == Right(SuccessResponse("pong", 1))
 
 
 @pytest.mark.asyncio
-async def test_dispatch_to_serializable():
+async def test_dispatch_to_serializable() -> None:
     assert await dispatch_to_serializable(
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}', {"ping": ping}
     ) == {"jsonrpc": "2.0", "result": "pong", "id": 1}
 
 
 @pytest.mark.asyncio
-async def test_dispatch_to_json():
+async def test_dispatch_to_json() -> None:
     assert (
         await dispatch_to_json(
             '{"jsonrpc": "2.0", "method": "ping", "id": 1}', {"ping": ping}
@@ -40,7 +40,7 @@ async def test_dispatch_to_json():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_to_json_notification():
+async def test_dispatch_to_json_notification() -> None:
     assert (
         await dispatch_to_json('{"jsonrpc": "2.0", "method": "ping"}', {"ping": ping})
         == ""
