@@ -1,4 +1,5 @@
 fail_fast: true
+exclude: (^docs)
 repos:
   - repo: https://github.com/ambv/black
     rev: 22.8.0
@@ -16,6 +17,16 @@ repos:
     rev: v0.971
     hooks:
       - id: mypy
-        exclude: (^docs)
         args: [--strict]
-        additional_dependencies: ["types-setuptools", "pytest", "pyzmq", "tornado", "websockets", "aiozmq", "flask", "fastapi", "django", "sanic", "flask-socketio"]
+        additional_dependencies:
+          - aiozmq<1
+          - django<5
+          - fastapi<1
+          - flask<3
+          - flask-socketio<5.3.1
+          - pytest
+          - pyzmq
+          - sanic
+          - tornado<7
+          - types-setuptools
+          - websockets<11

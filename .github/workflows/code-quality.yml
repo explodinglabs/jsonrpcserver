@@ -10,7 +10,7 @@ jobs:
       with:
         python-version: 3.x
     - run: pip install --upgrade pip
-    - run: pip install "black<23" pylint==v3.0.0a3 mypy==v0.902 types-setuptools pytest
-    - run: black --diff --check $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
-    - run: pylint --disable=all --enable=unused-import $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
-    - run: mypy --strict $(git ls-files -- '*.py' ':!:tests/*' ':!:docs/*' ':!:examples/*')
+    - run: pip install "black<23" pylint==v3.0.0a3 mypy==v0.971 types-setuptools pytest "aiozmq<1" "django<5" "fastapi<1" "flask<3" "flask-socketio<5.3.1" "pyzmq" "sanic" "tornado<7" "websockets<11"
+    - run: black --diff --check $(git ls-files -- '*.py' ':!:docs/*')
+    - run: pylint --disable=all --enable=unused-import $(git ls-files -- '*.py' ':!:docs/*')
+    - run: mypy --strict $(git ls-files -- '*.py' ':!:docs/*')
