@@ -19,14 +19,14 @@ repos:
       - id: mypy
         args: [--strict]
         additional_dependencies:
-          - aiozmq
-          - django
-          - fastapi
-          - flask
-          - flask-socketio
+          - aiozmq<1
+          - django<5
+          - fastapi<1
+          - flask<3
+          - flask-socketio<5.3.1
           - pytest
           - pyzmq
           - sanic
-          - tornado
+          - tornado<7
           - types-setuptools
-          - websockets
+          - websockets<11
