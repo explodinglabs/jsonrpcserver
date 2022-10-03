@@ -35,6 +35,7 @@ repos:
       - id: mypy
         args: [--strict]
         additional_dependencies:
+          - aiohttp<4
           - aiozmq<1
           - django<5
           - fastapi<1

@@ -1,5 +1,5 @@
 """AioHTTP server"""
-from aiohttp import web  # type: ignore
+from aiohttp import web
 from jsonrpcserver import method, Result, Success, async_dispatch
 
 
