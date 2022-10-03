@@ -1,15 +1,19 @@
-from jsonrpcserver import method, Result, Success, async_dispatch
-import aiozmq  # type: ignore
+"""AioZMQ server"""
 import asyncio
+
+import aiozmq  # type: ignore
 import zmq
+from jsonrpcserver import method, Result, Success, async_dispatch
 
 
 @method
 async def ping() -> Result:
+    """JSON-RPC method"""
     return Success("pong")
 
 
 async def main() -> None:
+    """Handle AioZMQ request"""
     rep = await aiozmq.create_zmq_stream(zmq.REP, bind="tcp://*:5000")
     while True:
         request = (await rep.read())[0].decode()

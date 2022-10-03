@@ -1,15 +1,18 @@
+"""Websockets server"""
 import asyncio
 
-from jsonrpcserver import method, Success, Result, async_dispatch
 from websockets.server import WebSocketServerProtocol, serve
+from jsonrpcserver import method, Success, Result, async_dispatch
 
 
 @method
 async def ping() -> Result:
+    """JSON-RPC method"""
     return Success("pong")
 
 
-async def main(websocket: WebSocketServerProtocol, path: str) -> None:
+async def main(websocket: WebSocketServerProtocol, _: str) -> None:
+    """Handle Websocket message"""
     if response := await async_dispatch(await websocket.recv()):
         await websocket.send(response)
 

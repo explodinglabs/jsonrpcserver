@@ -1,3 +1,4 @@
+"""Test main.py"""
 from oslash.either import Right  # type: ignore
 
 from jsonrpcserver.main import (
@@ -7,6 +8,8 @@ from jsonrpcserver.main import (
 )
 from jsonrpcserver.response import SuccessResponse
 from jsonrpcserver.result import Result, Success
+
+# pylint: disable=missing-function-docstring
 
 
 def ping() -> Result:

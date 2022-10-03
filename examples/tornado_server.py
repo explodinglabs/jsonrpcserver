@@ -1,17 +1,28 @@
-from jsonrpcserver import method, Result, Success, async_dispatch
+"""Tornado server"""
+from typing import Awaitable, Optional
+
 from tornado import ioloop, web
+from jsonrpcserver import method, Result, Success, async_dispatch
 
 
 @method
 async def ping() -> Result:
+    """JSON-RPC method"""
     return Success("pong")
 
 
 class MainHandler(web.RequestHandler):
+    """Handle Tornado request"""
+
     async def post(self) -> None:
+        """Post"""
         request = self.request.body.decode()
-        if response := await async_dispatch(request):
+        response = await async_dispatch(request)
+        if response:
             self.write(response)
+
+    def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
+        pass
 
 
 app = web.Application([(r"/", MainHandler)])

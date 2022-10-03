@@ -1,5 +1,4 @@
 """Async version of dispatcher.py"""
-
 from functools import partial
 from itertools import starmap
 from typing import Any, Callable, Iterable, Tuple, Union
@@ -31,6 +30,8 @@ from .utils import make_list
 
 logger = logging.getLogger(__name__)
 
+# pylint: disable=missing-function-docstring,duplicate-code
+
 
 async def call(request: Request, context: Any, method: Method) -> Result:
     try:
@@ -40,7 +41,8 @@ async def call(request: Request, context: Any, method: Method) -> Result:
         validate_result(result)
     except JsonRpcError as exc:
         return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
-    except Exception as exc:  # Other error inside method - Internal error
+    except Exception as exc:  # pylint: disable=broad-except
+        # Other error inside method - Internal error
         logger.exception(exc)
         return Left(InternalErrorResult(str(exc)))
     return result
@@ -56,7 +58,9 @@ async def dispatch_request(
         request,
         method
         if isinstance(method, Left)
-        else await call(request, context, method._value),
+        else await call(
+            request, context, method._value  # pylint: disable=protected-access
+        ),
     )
 
 
@@ -98,9 +102,12 @@ async def dispatch_to_response_pure(
             post_process(result)
             if isinstance(result, Left)
             else await dispatch_deserialized(
-                methods, context, post_process, result._value
+                methods,
+                context,
+                post_process,
+                result._value,  # pylint: disable=protected-access
             )
         )
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         logger.exception(exc)
         return post_process(Left(ServerErrorResponse(str(exc), None)))

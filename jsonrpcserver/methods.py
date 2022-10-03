@@ -18,11 +18,12 @@ from .result import Result
 Method = Callable[..., Result]
 Methods = Dict[str, Method]
 
-global_methods = dict()
+global_methods = {}
 
 
 def method(
-    f: Optional[Method] = None, name: Optional[str] = None
+    f: Optional[Method] = None,  # pylint: disable=invalid-name
+    name: Optional[str] = None,
 ) -> Callable[..., Any]:
     """A decorator to add a function into jsonrpcserver's internal global_methods dict.
     The global_methods dict will be used by default unless a methods argument is passed

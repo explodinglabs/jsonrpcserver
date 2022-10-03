@@ -25,4 +25,4 @@ from .exceptions import JsonRpcError
 from .main import dispatch, dispatch_to_response, dispatch_to_serializable
 from .methods import method
 from .result import Error, InvalidParams, Result, Success
-from .server import serve as serve
+from .server import serve

@@ -7,6 +7,12 @@ import sys
 
 
 class Sentinel:
+    """Use this class to create a unique object.
+
+    Has a nicer repr than `object()`.
+    """
+
+    # pylint: disable=too-few-public-methods
     def __init__(self, name: str):
         self.name = name
 

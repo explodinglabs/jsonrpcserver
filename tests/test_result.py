@@ -1,3 +1,4 @@
+"""Test result.py"""
 from unittest.mock import sentinel
 
 from oslash.either import Left, Right  # type: ignore
@@ -10,6 +11,8 @@ from jsonrpcserver.result import (
     SuccessResult,
 )
 from jsonrpcserver.sentinels import NODATA
+
+# pylint: disable=missing-function-docstring,invalid-name
 
 
 def test_SuccessResult() -> None:

@@ -1,4 +1,7 @@
-"""TODO: Add tests for dispatch_requests (non-pure version)"""
+"""Test dispatcher.py
+
+TODO: Add tests for dispatch_requests (non-pure version)
+"""
 from typing import Any, Callable, Dict
 from unittest.mock import Mock, patch, sentinel
 import json
@@ -49,6 +52,8 @@ from jsonrpcserver.result import (
 from jsonrpcserver.sentinels import NOCONTEXT, NODATA, NOID
 from jsonrpcserver.utils import identity
 
+# pylint: disable=missing-function-docstring,missing-class-docstring,too-few-public-methods,unnecessary-lambda-assignment,invalid-name,disallowed-name
+
 
 def ping() -> Result:
     return Success("pong")
@@ -62,7 +67,7 @@ def test_extract_list() -> None:
 
 
 def test_extract_list_notification() -> None:
-    assert extract_list(False, [None]) == None
+    assert extract_list(False, [None]) is None
 
 
 def test_extract_list_batch() -> None:
@@ -72,7 +77,7 @@ def test_extract_list_batch() -> None:
 
 
 def test_extract_list_batch_all_notifications() -> None:
-    assert extract_list(True, []) == None
+    assert extract_list(True, []) is None
 
 
 # to_response
@@ -174,11 +179,11 @@ def test_validate_result_keywords() -> None:
 
 def test_validate_result_object_method() -> None:
     class FooClass:
-        def foo(self, one: str, two: str) -> str:
-            return "bar"
+        def f(self, *_: str) -> str:
+            return ""
 
-    f = FooClass().foo
-    assert validate_args(Request("f", ["one", "two"], NOID), NOCONTEXT, f) == Right(f)
+    g = FooClass().f
+    assert validate_args(Request("g", ["one", "two"], NOID), NOCONTEXT, g) == Right(g)
 
 
 # call
@@ -189,19 +194,19 @@ def test_call() -> None:
 
 
 def test_call_raising_jsonrpcerror() -> None:
-    def method() -> None:
+    def method_() -> None:
         raise JsonRpcError(code=1, message="foo", data=NODATA)
 
-    assert call(Request("ping", [], 1), NOCONTEXT, method) == Left(
+    assert call(Request("ping", [], 1), NOCONTEXT, method_) == Left(
         ErrorResult(1, "foo")
     )
 
 
 def test_call_raising_exception() -> None:
-    def method() -> None:
+    def method_() -> None:
         raise ValueError("foo")
 
-    assert call(Request("ping", [], 1), NOCONTEXT, method) == Left(
+    assert call(Request("ping", [], 1), NOCONTEXT, method_) == Left(
         ErrorResult(ERROR_INTERNAL_ERROR, "Internal error", "foo")
     )
 
@@ -290,11 +295,11 @@ def test_create_request() -> None:
 
 
 def test_not_notification() -> None:
-    assert not_notification((Request("ping", [], 1), SuccessResult("pong"))) == True
+    assert not_notification((Request("ping", [], 1), SuccessResult("pong"))) is True
 
 
 def test_not_notification_false() -> None:
-    assert not_notification((Request("ping", [], NOID), SuccessResult("pong"))) == False
+    assert not_notification((Request("ping", [], NOID), SuccessResult("pong"))) is False
 
 
 # dispatch_deserialized
@@ -396,7 +401,7 @@ def test_dispatch_to_response_pure_method_not_found() -> None:
 
 
 def test_dispatch_to_response_pure_invalid_params_auto() -> None:
-    def foo(colour: str, size: str) -> Result:
+    def f(colour: str, size: str) -> Result:  # pylint: disable=unused-argument
         return Success()
 
     assert dispatch_to_response_pure(
@@ -404,8 +409,8 @@ def test_dispatch_to_response_pure_invalid_params_auto() -> None:
         validator=default_validator,
         post_process=identity,
         context=NOCONTEXT,
-        methods={"foo": foo},
-        request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}, "id": 1}',
+        methods={"f": f},
+        request='{"jsonrpc": "2.0", "method": "f", "params": {"colour":"blue"}, "id": 1}',
     ) == Left(
         ErrorResponse(
             ERROR_INVALID_PARAMS,
@@ -420,6 +425,7 @@ def test_dispatch_to_response_pure_invalid_params_explicitly_returned() -> None:
     def foo(colour: str) -> Result:
         if colour not in ("orange", "red", "yellow"):
             return InvalidParams()
+        return Success()
 
     assert dispatch_to_response_pure(
         deserializer=default_deserializer,
@@ -512,7 +518,7 @@ def test_dispatch_to_response_pure_notification() -> None:
             methods={"ping": ping},
             request='{"jsonrpc": "2.0", "method": "ping"}',
         )
-        == None
+        is None
     )
 
 
@@ -564,12 +570,12 @@ def test_dispatch_to_response_pure_notification_method_not_found() -> None:
             methods={},
             request='{"jsonrpc": "2.0", "method": "non_existant"}',
         )
-        == None
+        is None
     )
 
 
 def test_dispatch_to_response_pure_notification_invalid_params_auto() -> None:
-    def foo(colour: str, size: str) -> Result:
+    def foo(colour: str, size: str) -> Result:  # pylint: disable=unused-argument
         return Success()
 
     assert (
@@ -581,7 +587,7 @@ def test_dispatch_to_response_pure_notification_invalid_params_auto() -> None:
             methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo", "params": {"colour":"blue"}}',
         )
-        == None
+        is None
     )
 
 
@@ -589,6 +595,7 @@ def test_dispatch_to_response_pure_invalid_params_notification_explicitly_return
     def foo(colour: str) -> Result:
         if colour not in ("orange", "red", "yellow"):
             return InvalidParams()
+        return Success()
 
     assert (
         dispatch_to_response_pure(
@@ -599,7 +606,7 @@ def test_dispatch_to_response_pure_invalid_params_notification_explicitly_return
             methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo", "params": ["blue"]}',
         )
-        == None
+        is None
     )
 
 
@@ -616,7 +623,7 @@ def test_dispatch_to_response_pure_notification_internal_error() -> None:
             methods={"foo": foo},
             request='{"jsonrpc": "2.0", "method": "foo"}',
         )
-        == None
+        is None
     )
 
 
@@ -650,7 +657,7 @@ def test_dispatch_to_response_pure_notification_invalid_result() -> None:
             methods={"not_a_result": not_a_result},
             request='{"jsonrpc": "2.0", "method": "not_a_result"}',
         )
-        == None
+        is None
     )
 
 
@@ -669,7 +676,7 @@ def test_dispatch_to_response_pure_notification_raising_exception() -> None:
             methods={"raise_exception": raise_exception},
             request='{"jsonrpc": "2.0", "method": "raise_exception"}',
         )
-        == None
+        is None
     )
 
 
@@ -685,8 +692,8 @@ def test_dispatch_to_response() -> None:
 
 def test_dispatch_to_response_with_global_methods() -> None:
     @method
-    def ping() -> Result:
-        return Success("pong")
+    def ping() -> Result:  # pylint: disable=redefined-outer-name
+        return Success("ping")
 
     response = dispatch_to_response('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
     assert response == Right(SuccessResponse("pong", 1))
@@ -731,7 +738,10 @@ def test_examples_nameds() -> None:
         validator=default_validator,
         post_process=identity,
         deserializer=default_deserializer,
-        request='{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}',
+        request=(
+            '{"jsonrpc": "2.0", "method": "subtract", '
+            '"params": {"subtrahend": 23, "minuend": 42}, "id": 3}'
+        ),
     )
     assert response == Right(SuccessResponse(19, 3))
 
@@ -742,7 +752,10 @@ def test_examples_nameds() -> None:
         validator=default_validator,
         post_process=identity,
         deserializer=default_deserializer,
-        request='{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}',
+        request=(
+            '{"jsonrpc": "2.0", "method": "subtract", '
+            '"params": {"minuend": 42, "subtrahend": 23}, "id": 4}'
+        ),
     )
     assert response == Right(SuccessResponse(19, 4))
 
@@ -777,7 +790,10 @@ def test_examples_invalid_json() -> None:
         validator=default_validator,
         post_process=identity,
         deserializer=default_deserializer,
-        request='[{"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]',
+        request=(
+            '[{"jsonrpc": "2.0", "method": "sum", '
+            '"params": [1,2,4], "id": "1"}, {"jsonrpc": "2.0", "method"]'
+        ),
     )
     assert response == Left(
         ErrorResponse(
