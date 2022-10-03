@@ -1,3 +1,4 @@
+"""Test async_dispatcher.py"""
 from unittest.mock import Mock, patch
 import pytest
 
@@ -17,6 +18,8 @@ from jsonrpcserver.response import ErrorResponse, SuccessResponse
 from jsonrpcserver.result import ErrorResult, Result, Success, SuccessResult
 from jsonrpcserver.sentinels import NOCONTEXT, NODATA
 from jsonrpcserver.utils import identity
+
+# pylint: disable=missing-function-docstring,duplicate-code
 
 
 async def ping() -> Result:
@@ -84,7 +87,7 @@ async def test_dispatch_to_response_pure_success() -> None:
 @patch("jsonrpcserver.async_dispatcher.dispatch_request", side_effect=ValueError("foo"))
 @pytest.mark.asyncio
 async def test_dispatch_to_response_pure_server_error(*_: Mock) -> None:
-    async def foo() -> Result:
+    async def hello() -> Result:
         return Success()
 
     assert await dispatch_to_response_pure(
@@ -92,6 +95,6 @@ async def test_dispatch_to_response_pure_server_error(*_: Mock) -> None:
         validator=default_validator,
         post_process=identity,
         context=NOCONTEXT,
-        methods={"foo": foo},
-        request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
-    ) == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
+        methods={"hello": hello},
+        request='{"jsonrpc": "2.0", "method": "hello", "id": 1}',
+    ) == Left(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "hello", None))

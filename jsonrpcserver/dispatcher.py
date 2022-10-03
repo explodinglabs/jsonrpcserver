@@ -1,6 +1,7 @@
 """Dispatcher - does the hard work of this library: parses, validates and dispatches
 requests, providing responses.
 """
+# pylint: disable=protected-access
 from functools import partial
 from inspect import signature
 from itertools import starmap
@@ -59,11 +60,10 @@ def extract_list(
     if len(response_list) == 0:
         return None
     # For batches containing at least one non-notification, return the list
-    elif is_batch:
+    if is_batch:
         return response_list
     # For single requests, extract it back from the list (there will be only one).
-    else:
-        return response_list[0]
+    return response_list[0]
 
 
 def to_response(request: Request, result: Result) -> Response:
@@ -134,7 +134,7 @@ def call(request: Request, context: Any, method: Method) -> Result:
     except JsonRpcError as exc:
         return Left(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     # Any other uncaught exception inside method - internal error.
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         logger.exception(exc)
         return Left(InternalErrorResult(str(exc)))
     return result
@@ -232,7 +232,7 @@ def validate_request(
     # Since the validator is unknown, the specific exception that will be raised is also
     # unknown. Any exception raised we assume the request is invalid and  return an
     # "invalid request" response.
-    except Exception as exc:
+    except Exception:  # pylint: disable=broad-except
         return Left(InvalidRequestResponse("The request failed schema validation"))
     return Right(request)
 
@@ -249,7 +249,7 @@ def deserialize_request(
     # Since the deserializer is unknown, the specific exception that will be raised is
     # also unknown. Any exception raised we assume the request is invalid, return a
     # parse error response.
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         return Left(ParseErrorResponse(str(exc)))
 
 
@@ -278,7 +278,7 @@ def dispatch_to_response_pure(
             if isinstance(result, Left)
             else dispatch_deserialized(methods, context, post_process, result._value)
         )
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         # There was an error with the jsonrpcserver library.
         logger.exception(exc)
         return post_process(Left(ServerErrorResponse(str(exc), None)))

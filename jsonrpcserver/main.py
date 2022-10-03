@@ -9,15 +9,15 @@ request, but they each give a different return value.
 - dispatch_to_json/dispatch: Returns a JSON-RPC response string (or an empty string for
   notifications).
 """
+from importlib.resources import read_text
 from typing import Any, Callable, Dict, List, Optional, Union, cast
 import json
 
 from jsonschema.validators import validator_for  # type: ignore
-import importlib.resources
 
 from .dispatcher import dispatch_to_response_pure, Deserialized
 from .methods import Methods, global_methods
-from .response import Response, to_serializable_one
+from .response import Response, to_dict
 from .sentinels import NOCONTEXT
 from .utils import identity
 
@@ -26,7 +26,7 @@ default_deserializer = json.loads
 
 # Prepare the jsonschema validator. This is global so it loads only once, not every
 # time dispatch is called.
-schema = json.loads(importlib.resources.read_text(__package__, "request-schema.json"))
+schema = json.loads(read_text(__package__, "request-schema.json"))
 klass = validator_for(schema)
 klass.check_schema(schema)
 default_validator = klass(schema).validate
@@ -84,7 +84,7 @@ def dispatch_to_serializable(
     """
     return cast(
         Union[Dict[str, Any], List[Dict[str, Any]], None],
-        dispatch_to_response(*args, post_process=to_serializable_one, **kwargs),
+        dispatch_to_response(*args, post_process=to_dict, **kwargs),
     )
 
 

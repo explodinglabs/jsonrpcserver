@@ -11,6 +11,9 @@ from .sentinels import NOCONTEXT
 from .utils import identity
 
 
+# pylint: disable=missing-function-docstring,duplicate-code
+
+
 async def dispatch_to_response(
     request: str,
     methods: Optional[Methods] = None,

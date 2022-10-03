@@ -13,6 +13,8 @@ from oslash.either import Either, Left, Right  # type: ignore
 from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
 from .sentinels import NODATA
 
+# pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name
+
 
 class SuccessResult(NamedTuple):
     result: Any = None

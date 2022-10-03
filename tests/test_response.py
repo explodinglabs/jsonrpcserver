@@ -1,3 +1,4 @@
+"""Test response.py"""
 from unittest.mock import sentinel
 
 from oslash.either import Left, Right  # type: ignore
@@ -11,6 +12,8 @@ from jsonrpcserver.response import (
     SuccessResponse,
     to_serializable,
 )
+
+# pylint: disable=missing-function-docstring,invalid-name,duplicate-code
 
 
 def test_SuccessResponse() -> None:
@@ -34,7 +37,7 @@ def test_ParseErrorResponse() -> None:
     assert response.code == -32700
     assert response.message == "Parse error"
     assert response.data == sentinel.data
-    assert response.id == None
+    assert response.id is None
 
 
 def test_InvalidRequestResponse() -> None:
@@ -42,7 +45,7 @@ def test_InvalidRequestResponse() -> None:
     assert response.code == -32600
     assert response.message == "Invalid request"
     assert response.data == sentinel.data
-    assert response.id == None
+    assert response.id is None
 
 
 def test_MethodNotFoundResponse() -> None:
@@ -70,7 +73,7 @@ def test_to_serializable() -> None:
 
 
 def test_to_serializable_None() -> None:
-    assert to_serializable(None) == None
+    assert to_serializable(None) is None
 
 
 def test_to_serializable_SuccessResponse() -> None:

@@ -1,3 +1,6 @@
+"""A simple development server for serving JSON-RPC requests using Python's builtin
+http.server module.
+"""
 import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -5,7 +8,10 @@ from .main import dispatch
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    def do_POST(self) -> None:
+    """Handle HTTP requests"""
+
+    def do_POST(self) -> None:  # pylint: disable=invalid-name
+        """Handle POST request"""
         response = dispatch(
             self.rfile.read(int(str(self.headers["Content-Length"]))).decode()
         )
@@ -17,5 +23,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 
 def serve(name: str = "", port: int = 5000) -> None:
+    """A simple function to serve HTTP requests"""
     logging.info(" * Listening on port %s", port)
     HTTPServer((name, port), RequestHandler).serve_forever()
