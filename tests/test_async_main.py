@@ -13,6 +13,8 @@ from jsonrpcserver.result import Ok, Result
 
 # pylint: disable=missing-function-docstring
 
+# pylint: disable=missing-function-docstring
+
 
 async def ping() -> Result:
     return Ok("pong")

@@ -13,7 +13,7 @@ repos:
     rev: v2.15.3
     hooks:
       - id: pylint
-        args: [--ignored-modules=returns]
+        stages: [manual]
         additional_dependencies:
           - returns<1
           - aiohttp<4

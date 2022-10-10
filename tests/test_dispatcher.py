@@ -9,7 +9,6 @@ import pytest
 
 from returns.result import Failure, Success
 
-from jsonrpcserver import Result
 from jsonrpcserver.codes import (
     ERROR_INTERNAL_ERROR,
     ERROR_INVALID_PARAMS,
@@ -43,7 +42,13 @@ from jsonrpcserver.main import (
 from jsonrpcserver.methods import method
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
-from jsonrpcserver.result import ErrorResult, InvalidParams, Ok, Result, SuccessResult
+from jsonrpcserver.result import (
+    ErrorResult,
+    InvalidParams,
+    Ok,
+    Result,
+    SuccessResult,
+)
 from jsonrpcserver.sentinels import NOCONTEXT, NODATA, NOID
 from jsonrpcserver.utils import identity
 
