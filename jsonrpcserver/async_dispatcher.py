@@ -1,5 +1,4 @@
 """Async version of dispatcher.py"""
-
 from functools import partial
 from inspect import signature
 from itertools import starmap
@@ -36,6 +35,8 @@ from .utils import make_list
 
 logger = logging.getLogger(__name__)
 
+# pylint: disable=missing-function-docstring,duplicate-code
+
 
 async def call(
     request: Request, context: Any, method: Method
@@ -47,8 +48,9 @@ async def call(
         validate_result(result)
     except JsonRpcError as exc:
         return Failure(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
-    except Exception as exc:  # Other error inside method - Internal error
-        logging.exception(exc)
+    except Exception as exc:  # pylint: disable=broad-except
+        # Other error inside method - Internal error
+        logger.exception(exc)
         return Failure(InternalErrorResult(str(exc)))
     return result
 
@@ -130,9 +132,12 @@ async def dispatch_to_response_pure(
             post_process(result)
             if isinstance(result, Failure)
             else await dispatch_deserialized(
-                methods, context, post_process, result.unwrap()
+                methods,
+                context,
+                post_process,
+                result.unwrap(),
             )
         )
-    except Exception as exc:
-        logging.exception(exc)
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.exception(exc)
         return post_process(Failure(ServerErrorResponse(str(exc), None)))

@@ -1,6 +1,7 @@
 """Dispatcher - does the hard work of this library: parses, validates and dispatches
 requests, providing responses.
 """
+# pylint: disable=protected-access
 from functools import partial
 from inspect import signature
 from itertools import starmap
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 def extract_list(
     is_batch: bool, responses: Iterable[Response]
-) -> Union[Response, List[Response], None,]:
+) -> Union[Response, List[Response], None]:
     """This is the inverse of make_list. Here we extract a response back out of the list
     if it wasn't a batch request originally. Also applies a JSON-RPC rule: we do not
     respond to batches of notifications.
@@ -58,11 +59,10 @@ def extract_list(
     if len(response_list) == 0:
         return None
     # For batches containing at least one non-notification, return the list
-    elif is_batch:
+    if is_batch:
         return response_list
     # For single requests, extract it back from the list (there will be only one).
-    else:
-        return response_list[0]
+    return response_list[0]
 
 
 def to_response(
@@ -139,8 +139,8 @@ def call(
     except JsonRpcError as exc:
         return Failure(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     # Any other uncaught exception inside method - internal error.
-    except Exception as exc:
-        logging.exception(exc)
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.exception(exc)
         return Failure(InternalErrorResult(str(exc)))
     return result
 
@@ -237,7 +237,7 @@ def validate_request(
     # Since the validator is unknown, the specific exception that will be raised is also
     # unknown. Any exception raised we assume the request is invalid and  return an
     # "invalid request" response.
-    except Exception as exc:
+    except Exception:  # pylint: disable=broad-except
         return Failure(InvalidRequestResponse("The request failed schema validation"))
     return Success(request)
 
@@ -254,7 +254,7 @@ def deserialize_request(
     # Since the deserializer is unknown, the specific exception that will be raised is
     # also unknown. Any exception raised we assume the request is invalid, return a
     # parse error response.
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         return Failure(ParseErrorResponse(str(exc)))
 
 
@@ -283,7 +283,7 @@ def dispatch_to_response_pure(
             if isinstance(result, Failure)
             else dispatch_deserialized(methods, context, post_process, result.unwrap())
         )
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         # There was an error with the jsonrpcserver library.
         logging.exception(exc)
         return post_process(Failure(ServerErrorResponse(str(exc), None)))

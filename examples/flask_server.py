@@ -1,3 +1,4 @@
+"""Flask server"""
 from flask import Flask, Response, request
 from jsonrpcserver import dispatch, method, Ok, Result
 
@@ -6,11 +7,13 @@ app = Flask(__name__)
 
 @method
 def ping() -> Result:
+    """JSON-RPC method"""
     return Ok("pong")
 
 
 @app.route("/", methods=["POST"])
-def index():
+def index() -> Response:
+    """Handle Flask request"""
     return Response(
         dispatch(request.get_data().decode()), content_type="application/json"
     )

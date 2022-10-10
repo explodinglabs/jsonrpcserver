@@ -1,7 +1,7 @@
 """setup.py"""
 from setuptools import setup
 
-with open("README.md") as f:
+with open("README.md", encoding="utf-8") as f:
     README = f.read()
 
 setup(
@@ -25,7 +25,7 @@ setup(
             "websockets",
             "werkzeug",
         ],
-        "test": [
+        "qa": [
             "pytest",
             "pytest-asyncio",
             "pytest-cov",

@@ -1,13 +1,16 @@
+"""AioHTTP server"""
 from aiohttp import web
 from jsonrpcserver import async_dispatch, async_method, Ok, Result
 
 
 @async_method
 async def ping() -> Result:
+    """JSON-RPC method"""
     return Ok("pong")
 
 
-async def handle(request):
+async def handle(request: web.Request) -> web.Response:
+    """Handle aiohttp request"""
     return web.Response(
         text=await async_dispatch(await request.text()), content_type="application/json"
     )

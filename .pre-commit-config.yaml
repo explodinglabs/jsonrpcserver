@@ -1,3 +1,6 @@
+default_language_version:
+  python: python3.8
+exclude: (^docs)
 fail_fast: true
 repos:
   - repo: https://github.com/ambv/black
@@ -6,16 +9,44 @@ repos:
       - id: black
         args: [--diff, --check]
 
-  - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v3.0.0a5
+  - repo: https://github.com/PyCQA/pylint
+    rev: v2.15.3
     hooks:
       - id: pylint
-        args: [--disable=all, --enable=unused-import]
+        args: [--ignored-modules=returns]
+        additional_dependencies:
+          - returns<1
+          - aiohttp<4
+          - aiozmq<1
+          - django<5
+          - fastapi<1
+          - flask<3
+          - flask-socketio<5.3.1
+          - jsonschema<5
+          - pytest
+          - pyzmq
+          - sanic
+          - tornado<7
+          - uvicorn<1
+          - websockets<11
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.971
     hooks:
       - id: mypy
-        exclude: (^tests|^examples|^docs)
         args: [--strict]
-        additional_dependencies: ['types-setuptools', 'returns']
+        additional_dependencies:
+          - returns<1
+          - aiohttp<4
+          - aiozmq<1
+          - django<5
+          - fastapi<1
+          - flask<3
+          - flask-socketio<5.3.1
+          - pytest
+          - pyzmq
+          - sanic
+          - tornado<7
+          - types-setuptools
+          - uvicorn<1
+          - websockets<11

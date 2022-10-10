@@ -1,16 +1,20 @@
+"""Utility functions"""
 from functools import reduce
 from typing import Any, Callable, List
 
+# pylint: disable=invalid-name
 
-identity = lambda x: x
+
+def identity(x: Any) -> Any:
+    """Returns the argument."""
+    return x
 
 
-def compose(*fs: Callable[..., Any]) -> Callable[..., Any]:
-    def compose2(f: Callable[..., Any], g: Callable[..., Any]) -> Callable[..., Any]:
-        return lambda *a, **kw: f(g(*a, **kw))
-
-    return reduce(compose2, fs)
+def compose(*funcs: Callable[..., Any]) -> Callable[..., Any]:
+    """Compose two or more functions producing a single composite function."""
+    return reduce(lambda f, g: lambda *a, **kw: f(g(*a, **kw)), funcs)
 
 
 def make_list(x: Any) -> List[Any]:
-    return [x] if not isinstance(x, list) else x
+    """Puts a value into a list if it's not already."""
+    return x if isinstance(x, list) else [x]

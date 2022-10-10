@@ -1,11 +1,13 @@
-from jsonrpcserver import dispatch, method, Ok, Result
+"""ZeroMQ server"""
 import zmq
+from jsonrpcserver import dispatch, method, Ok, Result
 
 socket = zmq.Context().socket(zmq.REP)
 
 
 @method
 def ping() -> Result:
+    """JSON-RPC method"""
     return Ok("pong")
 
 

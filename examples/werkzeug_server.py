@@ -1,18 +1,19 @@
-from jsonrpcserver import method, Result, Ok, dispatch
+"""Werkzeug server"""
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
+from jsonrpcserver import method, Result, Ok, dispatch
 
 
 @method
 def ping() -> Result:
+    """JSON-RPC method"""
     return Ok("pong")
 
 
 @Request.application
-def application(request):
-    return Response(
-        dispatch(request.get_data().decode()), 200, mimetype="application/json"
-    )
+def application(request: Request) -> Response:
+    """Handle Werkzeug request"""
+    return Response(dispatch(request.data.decode()), 200, mimetype="application/json")
 
 
 if __name__ == "__main__":

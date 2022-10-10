@@ -1,3 +1,4 @@
+"""Test response.py"""
 from unittest.mock import sentinel
 
 from returns.result import Failure, Success
@@ -12,14 +13,16 @@ from jsonrpcserver.response import (
     to_serializable,
 )
 
+# pylint: disable=missing-function-docstring,invalid-name,duplicate-code
 
-def test_SuccessResponse():
+
+def test_SuccessResponse() -> None:
     response = SuccessResponse(sentinel.result, sentinel.id)
     assert response.result == sentinel.result
     assert response.id == sentinel.id
 
 
-def test_ErrorResponse():
+def test_ErrorResponse() -> None:
     response = ErrorResponse(
         sentinel.code, sentinel.message, sentinel.data, sentinel.id
     )
@@ -29,23 +32,23 @@ def test_ErrorResponse():
     assert response.id is sentinel.id
 
 
-def test_ParseErrorResponse():
+def test_ParseErrorResponse() -> None:
     response = ParseErrorResponse(sentinel.data)
     assert response.code == -32700
     assert response.message == "Parse error"
     assert response.data == sentinel.data
-    assert response.id == None
+    assert response.id is None
 
 
-def test_InvalidRequestResponse():
+def test_InvalidRequestResponse() -> None:
     response = InvalidRequestResponse(sentinel.data)
     assert response.code == -32600
     assert response.message == "Invalid request"
     assert response.data == sentinel.data
-    assert response.id == None
+    assert response.id is None
 
 
-def test_MethodNotFoundResponse():
+def test_MethodNotFoundResponse() -> None:
     response = MethodNotFoundResponse(sentinel.data, sentinel.id)
     assert response.code == -32601
     assert response.message == "Method not found"
@@ -53,7 +56,7 @@ def test_MethodNotFoundResponse():
     assert response.id == sentinel.id
 
 
-def test_ServerErrorResponse():
+def test_ServerErrorResponse() -> None:
     response = ServerErrorResponse(sentinel.data, sentinel.id)
     assert response.code == -32000
     assert response.message == "Server error"
@@ -61,7 +64,7 @@ def test_ServerErrorResponse():
     assert response.id == sentinel.id
 
 
-def test_to_serializable():
+def test_to_serializable() -> None:
     assert to_serializable(Success(SuccessResponse(sentinel.result, sentinel.id))) == {
         "jsonrpc": "2.0",
         "result": sentinel.result,
@@ -69,11 +72,11 @@ def test_to_serializable():
     }
 
 
-def test_to_serializable_None():
-    assert to_serializable(None) == None
+def test_to_serializable_None() -> None:
+    assert to_serializable(None) is None
 
 
-def test_to_serializable_SuccessResponse():
+def test_to_serializable_SuccessResponse() -> None:
     assert to_serializable(Success(SuccessResponse(sentinel.result, sentinel.id))) == {
         "jsonrpc": "2.0",
         "result": sentinel.result,
@@ -81,7 +84,7 @@ def test_to_serializable_SuccessResponse():
     }
 
 
-def test_to_serializable_ErrorResponse():
+def test_to_serializable_ErrorResponse() -> None:
     assert to_serializable(
         Failure(
             ErrorResponse(sentinel.code, sentinel.message, sentinel.data, sentinel.id)
@@ -97,7 +100,7 @@ def test_to_serializable_ErrorResponse():
     }
 
 
-def test_to_serializable_list():
+def test_to_serializable_list() -> None:
     assert to_serializable(
         [Success(SuccessResponse(sentinel.result, sentinel.id))]
     ) == [

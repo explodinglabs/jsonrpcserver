@@ -8,10 +8,12 @@ The public functions are Success, Error and InvalidParams.
 """
 from typing import Any, NamedTuple
 
-from returns.result import Failure, Result, Success
+from returns.result import Failure, Success
 
 from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
 from .sentinels import NODATA
+
+# pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name
 
 
 class SuccessResult(NamedTuple):
@@ -48,15 +50,15 @@ def InvalidParamsResult(data: Any = NODATA) -> ErrorResult:
 # Helpers (the public functions)
 
 
-def Ok(*args: Any, **kwargs: Any) -> Result[SuccessResult, ErrorResult]:
+def Ok(*args: Any, **kwargs: Any) -> Result:
     return Success(SuccessResult(*args, **kwargs))
 
 
-def Error(*args: Any, **kwargs: Any) -> Result[SuccessResult, ErrorResult]:
+def Error(*args: Any, **kwargs: Any) -> Result:
     return Failure(ErrorResult(*args, **kwargs))
 
 
-def InvalidParams(*args: Any, **kwargs: Any) -> Result[SuccessResult, ErrorResult]:
+def InvalidParams(*args: Any, **kwargs: Any) -> Result:
     """InvalidParams is a shortcut to save you from having to pass the Invalid Params
     JSON-RPC code to Error.
     """
