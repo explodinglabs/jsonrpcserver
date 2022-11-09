@@ -18,8 +18,8 @@ Other changes:
   for production use.
 - Use `Ok` instead of `Success` when returning a response. This is to avoid
   confusion with the Returns library now used internally which has it's own
-  `Success` class. This is not a breaking change. `Success` will still work for
-  now, but use `Ok` instead.
+  `Success` class. It also matches Jsonrpcclient's `Ok` type. This is not a
+  breaking change, `Success` will still work for now. But use `Ok` instead.
 
 ## 5.0.9 (Sep 15, 2022)
 
