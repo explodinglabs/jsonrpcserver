@@ -2,7 +2,7 @@
 
 TODO: Add tests for dispatch_requests (non-pure version)
 """
-from typing import Any, Callable, Dict
+from typing import Any
 from unittest.mock import Mock, patch, sentinel
 import json
 import pytest
@@ -167,14 +167,14 @@ def test_validate_result_no_arguments_too_many_positionals() -> None:
 
 
 def test_validate_result_positionals() -> None:
-    def f(x: int) -> Result:
+    def f(_: int) -> Result:
         return Ok()
 
     assert validate_args(Request("f", [1], NOID), NOCONTEXT, f) == Success(f)
 
 
 def test_validate_result_positionals_not_passed() -> None:
-    def f(x: str) -> Result:
+    def f(_: str) -> Result:
         return Ok()
 
     assert validate_args(Request("f", {"foo": "bar"}, NOID), NOCONTEXT, f) == Failure(
@@ -185,7 +185,7 @@ def test_validate_result_positionals_not_passed() -> None:
 
 
 def test_validate_result_keywords() -> None:
-    def f(**kwargs: str) -> Result:
+    def f(**_: str) -> Result:
         return Ok()
 
     assert validate_args(Request("f", {"foo": "bar"}, NOID), NOCONTEXT, f) == Success(f)

@@ -87,7 +87,7 @@ async def test_dispatch_to_response_pure_success() -> None:
 @patch("jsonrpcserver.async_dispatcher.dispatch_request", side_effect=ValueError("foo"))
 @pytest.mark.asyncio
 async def test_dispatch_to_response_pure_server_error(_: Mock) -> None:
-    async def foo() -> Result:
+    async def ping() -> Result:
         return Ok()
 
     assert await dispatch_to_response_pure(
@@ -95,6 +95,6 @@ async def test_dispatch_to_response_pure_server_error(_: Mock) -> None:
         validator=default_validator,
         post_process=identity,
         context=NOCONTEXT,
-        methods={"foo": foo},
-        request='{"jsonrpc": "2.0", "method": "foo", "id": 1}',
-    ) == Failure(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
+        methods={"ping": ping},
+        request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
+    ) == Failure(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "ping", None))
