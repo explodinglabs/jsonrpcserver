@@ -10,7 +10,7 @@ repos:
         args: [--diff, --check]
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v2.15.3
+    rev: v2.15.5
     hooks:
       - id: pylint
         stages: [manual]
