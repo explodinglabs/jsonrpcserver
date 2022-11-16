@@ -167,19 +167,25 @@ def test_validate_result_no_arguments_too_many_positionals() -> None:
 
 
 def test_validate_result_positionals() -> None:
-    def f(_: int) -> Result:
+    def ping_(_: int) -> Result:
         return Ok()
 
-    assert validate_args(Request("f", [1], NOID), NOCONTEXT, f) == Success(f)
+    assert validate_args(Request("ping_", [1], NOID), NOCONTEXT, ping_) == Success(
+        ping_
+    )
 
 
 def test_validate_result_positionals_not_passed() -> None:
-    def f(_: str) -> Result:
+    def ping_(name: str) -> Result:
         return Ok()
 
-    assert validate_args(Request("f", {"foo": "bar"}, NOID), NOCONTEXT, f) == Failure(
+    assert validate_args(
+        Request("ping_", {"foo": "bar"}, NOID), NOCONTEXT, ping_
+    ) == Failure(
         ErrorResult(
-            ERROR_INVALID_PARAMS, "Invalid params", "missing a required argument: 'x'"
+            ERROR_INVALID_PARAMS,
+            "Invalid params",
+            "missing a required argument: 'name'",
         )
     )
 

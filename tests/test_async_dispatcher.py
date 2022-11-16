@@ -97,4 +97,4 @@ async def test_dispatch_to_response_pure_server_error(_: Mock) -> None:
         context=NOCONTEXT,
         methods={"ping": ping},
         request='{"jsonrpc": "2.0", "method": "ping", "id": 1}',
-    ) == Failure(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "ping", None))
+    ) == Failure(ErrorResponse(ERROR_SERVER_ERROR, "Server error", "foo", None))
