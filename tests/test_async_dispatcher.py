@@ -10,7 +10,7 @@ from jsonrpcserver.async_dispatcher import (
     dispatch_request,
     dispatch_to_response_pure,
 )
-from jsonrpcserver.main import default_deserializer, default_validator
+from jsonrpcserver.main import default_deserializer, default_jsonrpc_validator
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR, ERROR_SERVER_ERROR
 from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.request import Request
@@ -76,7 +76,7 @@ async def test_dispatch_deserialized() -> None:
 async def test_dispatch_to_response_pure_success() -> None:
     assert await dispatch_to_response_pure(
         deserializer=default_deserializer,
-        validator=default_validator,
+        validator=default_jsonrpc_validator,
         post_process=identity,
         context=NOCONTEXT,
         methods={"ping": ping},
@@ -92,7 +92,7 @@ async def test_dispatch_to_response_pure_server_error(_: Mock) -> None:
 
     assert await dispatch_to_response_pure(
         deserializer=default_deserializer,
-        validator=default_validator,
+        validator=default_jsonrpc_validator,
         post_process=identity,
         context=NOCONTEXT,
         methods={"ping": ping},

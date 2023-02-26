@@ -31,6 +31,7 @@ from .result import (
 from .sentinels import NOCONTEXT, NOID
 from .utils import compose, make_list
 
+ArgsValidator = Callable[[Any, Request, Method], Result[Method, ErrorResult]]
 Deserialized = Union[Dict[str, Any], List[Dict[str, Any]]]
 
 logger = logging.getLogger(__name__)
@@ -120,7 +121,9 @@ def validate_result(result: Result[SuccessResult, ErrorResult]) -> None:
 
 
 def call(
-    request: Request, context: Any, method: Method
+    request: Request,
+    context: Any,
+    method: Method,
 ) -> Result[SuccessResult, ErrorResult]:
     """Call the method.
 
@@ -146,7 +149,9 @@ def call(
 
 
 def validate_args(
-    request: Request, context: Any, func: Method
+    request: Request,
+    context: Any,
+    func: Method,
 ) -> Result[Method, ErrorResult]:
     """Ensure the method can be called with the arguments given.
 
@@ -171,7 +176,10 @@ def get_method(methods: Methods, method_name: str) -> Result[Method, ErrorResult
 
 
 def dispatch_request(
-    methods: Methods, context: Any, request: Request
+    args_validator: ArgsValidator,
+    methods: Methods,
+    context: Any,
+    request: Request,
 ) -> Tuple[Request, Result[SuccessResult, ErrorResult]]:
     """Get the method, validates the arguments and calls the method.
 
@@ -182,7 +190,7 @@ def dispatch_request(
     return (
         request,
         get_method(methods, request.method)
-        .bind(partial(validate_args, request, context))
+        .bind(partial(args_validator, request, context))
         .bind(partial(call, request, context)),
     )
 
@@ -203,9 +211,10 @@ def not_notification(request_result: Any) -> bool:
 
 
 def dispatch_deserialized(
+    args_validator: ArgsValidator,
+    post_process: Callable[[Response], Response],
     methods: Methods,
     context: Any,
-    post_process: Callable[[Response], Response],
     deserialized: Deserialized,
 ) -> Union[Response, List[Response], None]:
     """This is simply continuing the pipeline from dispatch_to_response_pure. It exists
@@ -216,7 +225,9 @@ def dispatch_deserialized(
         applied to the Response(s).
     """
     results = map(
-        compose(partial(dispatch_request, methods, context), create_request),
+        compose(
+            partial(dispatch_request, args_validator, methods, context), create_request
+        ),
         make_list(deserialized),
     )
     responses = starmap(to_response, filter(not_notification, results))
@@ -224,7 +235,7 @@ def dispatch_deserialized(
 
 
 def validate_request(
-    validator: Callable[[Deserialized], Deserialized], request: Deserialized
+    jsonrpc_validator: Callable[[Deserialized], Deserialized], request: Deserialized
 ) -> Result[Deserialized, ErrorResponse]:
     """Validate the request against a JSON-RPC schema.
 
@@ -233,9 +244,9 @@ def validate_request(
     Returns: Either the same request passed in or an Invalid request response.
     """
     try:
-        validator(request)
+        jsonrpc_validator(request)
     # Since the validator is unknown, the specific exception that will be raised is also
-    # unknown. Any exception raised we assume the request is invalid and  return an
+    # unknown. Any exception raised we assume the request is invalid and return an
     # "invalid request" response.
     except Exception:  # pylint: disable=broad-except
         return Failure(InvalidRequestResponse("The request failed schema validation"))
@@ -259,29 +270,31 @@ def deserialize_request(
 
 
 def dispatch_to_response_pure(
-    *,
+    args_validator: ArgsValidator,
     deserializer: Callable[[str], Deserialized],
-    validator: Callable[[Deserialized], Deserialized],
+    jsonrpc_validator: Callable[[Deserialized], Deserialized],
+    post_process: Callable[[Response], Response],
     methods: Methods,
     context: Any,
-    post_process: Callable[[Response], Response],
     request: str,
 ) -> Union[Response, List[Response], None]:
     """A function from JSON-RPC request string to Response namedtuple(s), (yet to be
     serialized to json).
 
     Returns: A single Response, a list of Responses, or None. None is given for
-        notifications or batches of notifications, to indicate that we should not
-        respond.
+        notifications or batches of notifications, to indicate that we should
+        not respond.
     """
     try:
         result = deserialize_request(deserializer, request).bind(
-            partial(validate_request, validator)
+            partial(validate_request, jsonrpc_validator)
         )
         return (
             post_process(result)
             if isinstance(result, Failure)
-            else dispatch_deserialized(methods, context, post_process, result.unwrap())
+            else dispatch_deserialized(
+                args_validator, post_process, methods, context, result.unwrap()
+            )
         )
     except Exception as exc:  # pylint: disable=broad-except
         # There was an error with the jsonrpcserver library.

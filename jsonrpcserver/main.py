@@ -15,30 +15,38 @@ import json
 
 from jsonschema.validators import validator_for  # type: ignore
 
-from .dispatcher import dispatch_to_response_pure, Deserialized
+from .dispatcher import (
+    ArgsValidator,
+    Deserialized,
+    dispatch_to_response_pure,
+    validate_args,
+)
 from .methods import Methods, global_methods
 from .response import Response, to_dict
 from .sentinels import NOCONTEXT
 from .utils import identity
 
 
+default_args_validator = validate_args
 default_deserializer = json.loads
 
-# Prepare the jsonschema validator. This is global so it loads only once, not every
-# time dispatch is called.
+# Prepare the jsonschema validator. This is global so it loads only once, not every time
+# dispatch is called.
 schema = json.loads(read_text(__package__, "request-schema.json"))
 klass = validator_for(schema)
 klass.check_schema(schema)
-default_validator = klass(schema).validate
+default_jsonrpc_validator = klass(schema).validate
 
 
 def dispatch_to_response(
     request: str,
-    methods: Optional[Methods] = None,
-    *,
+    methods: Methods = global_methods,
     context: Any = NOCONTEXT,
+    args_validator: ArgsValidator = default_args_validator,
     deserializer: Callable[[str], Deserialized] = json.loads,
-    validator: Callable[[Deserialized], Deserialized] = default_validator,
+    jsonrpc_validator: Callable[
+        [Deserialized], Deserialized
+    ] = default_jsonrpc_validator,
     post_process: Callable[[Response], Any] = identity,
 ) -> Union[Response, List[Response], None]:
     """Takes a JSON-RPC request string and dispatches it to method(s), giving Response
@@ -54,9 +62,11 @@ def dispatch_to_response(
             populated with the @method decorator.
         context: If given, will be passed as the first argument to methods.
         deserializer: Function that deserializes the request string.
-        validator: Function that validates the JSON-RPC request. The function should
-            raise an exception if the request is invalid. To disable validation, pass
-            lambda _: None.
+        args_validator: Function that validates that the parameters in the request match
+            the Python function being called.
+        jsonrpc_validator: Function that validates the JSON-RPC request. The function
+            should raise an exception if the request is invalid. To disable validation,
+            pass lambda _: None.
         post_process: Function that will be applied to Responses.
 
     Returns:
@@ -67,12 +77,13 @@ def dispatch_to_response(
        '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
     """
     return dispatch_to_response_pure(
-        deserializer=deserializer,
-        validator=validator,
-        post_process=post_process,
-        context=context,
-        methods=global_methods if methods is None else methods,
-        request=request,
+        args_validator,
+        deserializer,
+        jsonrpc_validator,
+        post_process,
+        methods,
+        context,
+        request,
     )
 
 
