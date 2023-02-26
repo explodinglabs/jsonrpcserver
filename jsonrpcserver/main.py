@@ -10,7 +10,7 @@ request, but they each give a different return value.
   notifications).
 """
 from importlib.resources import read_text
-from typing import Any, Callable, Dict, List, Optional, Union, cast
+from typing import Any, Callable, Dict, List, Union, cast
 import json
 
 from jsonschema.validators import validator_for  # type: ignore

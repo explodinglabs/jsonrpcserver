@@ -29,7 +29,10 @@ class ErrorResult(NamedTuple):
     data: Any = NODATA  # The spec says this value may be omitted
 
     def __repr__(self) -> str:
-        return f"ErrorResult(code={self.code!r}, message={self.message!r}, data={self.data!r})"
+        return (
+            f"ErrorResult(code={self.code!r}, message={self.message!r}, "
+            "data={self.data!r})"
+        )
 
 
 Result = R[SuccessResult, ErrorResult]
