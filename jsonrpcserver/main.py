@@ -93,9 +93,10 @@ def dispatch_to_serializable(
     """Takes a JSON-RPC request string and dispatches it to method(s), giving responses
     as dicts (or None).
     """
+    kwargs.setdefault("post_process", to_dict)
     return cast(
         Union[Dict[str, Any], List[Dict[str, Any]], None],
-        dispatch_to_response(*args, post_process=to_dict, **kwargs),
+        dispatch_to_response(*args, **kwargs),
     )
 
 
@@ -117,7 +118,7 @@ def dispatch_to_json(
         The rest: Passed through to dispatch_to_serializable.
     """
     response = dispatch_to_serializable(*args, **kwargs)
-    # Better to respond with the empty string instead of json "null", because "null" is
+    # Better to respond with an empty string instead of json "null", because "null" is
     # an invalid JSON-RPC response.
     return "" if response is None else serializer(response)
 

@@ -2,7 +2,7 @@
 
 TODO: Add tests for dispatch_requests (non-pure version)
 """
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import Mock, patch, sentinel
 import json
 import pytest
@@ -34,7 +34,7 @@ from jsonrpcserver.dispatcher import (
 )
 from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.main import default_jsonrpc_validator
-from jsonrpcserver.methods import method
+from jsonrpcserver.methods import Method
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
 from jsonrpcserver.result import (
@@ -46,8 +46,6 @@ from jsonrpcserver.result import (
 )
 from jsonrpcserver.sentinels import NOCONTEXT, NODATA, NOID
 from jsonrpcserver.utils import identity
-
-# pylint: disable=missing-function-docstring,missing-class-docstring,too-few-public-methods,unnecessary-lambda-assignment,invalid-name,disallowed-name
 
 
 def ping() -> Result:
@@ -381,7 +379,10 @@ def test_dispatch_to_response_pure_parse_error() -> None:
         ErrorResponse(
             ERROR_PARSE_ERROR,
             "Parse error",
-            "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+            (
+                "Expecting property name enclosed in double quotes: "
+                "line 1 column 2 (char 1)"
+            ),
             None,
         )
     )
@@ -566,14 +567,19 @@ def test_dispatch_to_response_pure_notification_parse_error() -> None:
         ErrorResponse(
             ERROR_PARSE_ERROR,
             "Parse error",
-            "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+            (
+                "Expecting property name enclosed in double quotes: "
+                "line 1 column 2 (char 1)"
+            ),
             None,
         )
     )
 
 
 def test_dispatch_to_response_pure_notification_invalid_request() -> None:
-    """Invalid JSON-RPC, must return an error. (impossible to determine if notification)"""
+    """Invalid JSON-RPC, must return an error. (impossible to determine if
+    notification)
+    """
     assert dispatch_to_response_pure(
         validate_args,
         json.loads,
@@ -625,7 +631,7 @@ def test_dispatch_to_response_pure_notification_invalid_params_auto() -> None:
     )
 
 
-def test_dispatch_to_response_pure_invalid_params_notification_explicitly_returned() -> None:
+def test_dispatch_to_response_pure_invalid_params_notification_returned() -> None:
     def foo(colour: str) -> Result:
         if colour not in ("orange", "red", "yellow"):
             return InvalidParams()
@@ -912,7 +918,7 @@ def test_examples_mixed_requests_and_notifications() -> None:
     The spec example includes this which invalidates the entire request:
         {"foo": "boo"},
     """
-    methods = {
+    methods: Dict[str, Method] = {
         "sum": lambda *args: Ok(sum(args)),
         "notify_hello": lambda *args: Ok(19),
         "subtract": lambda *args: Ok(args[0] - sum(args[1:])),
@@ -929,7 +935,12 @@ def test_examples_mixed_requests_and_notifications() -> None:
             {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
             {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
             {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
-            {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},
+            {
+                "jsonrpc": "2.0",
+                "method": "foo.get",
+                "params": {"name": "myself"},
+                "id": "5"
+            },
             {"jsonrpc": "2.0", "method": "get_data", "id": "9"}
         ]""",
     )
