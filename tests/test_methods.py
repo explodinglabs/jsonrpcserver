@@ -4,8 +4,6 @@ from jsonrpcserver.methods import global_methods, method
 
 # pylint: disable=missing-function-docstring
 
-# pylint: disable=missing-function-docstring
-
 
 def test_decorator() -> None:
     @method
