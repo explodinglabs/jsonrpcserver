@@ -31,7 +31,7 @@ class ErrorResult(NamedTuple):
     def __repr__(self) -> str:
         return (
             f"ErrorResult(code={self.code!r}, message={self.message!r}, "
-            "data={self.data!r})"
+            f"data={self.data!r})"
         )
 
 
