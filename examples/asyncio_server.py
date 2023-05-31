@@ -2,14 +2,14 @@
 import asyncio
 import json
 
-from jsonrpcserver import method, Result, Success, async_dispatch
+from jsonrpcserver import async_dispatch, async_method, Ok, Result
 
 
-@method
+@async_method
 async def sleep_() -> Result:
     """JSON-RPC method"""
     await asyncio.sleep(1)
-    return Success()
+    return Ok()
 
 
 async def handle(req: str) -> None:

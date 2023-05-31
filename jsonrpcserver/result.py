@@ -8,7 +8,7 @@ The public functions are Success, Error and InvalidParams.
 """
 from typing import Any, NamedTuple
 
-from oslash.either import Either, Left, Right  # type: ignore
+from returns.result import Failure, Result as R, Success
 
 from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
 from .sentinels import NODATA
@@ -29,11 +29,13 @@ class ErrorResult(NamedTuple):
     data: Any = NODATA  # The spec says this value may be omitted
 
     def __repr__(self) -> str:
-        return f"ErrorResult(code={self.code!r}, message={self.message!r}, data={self.data!r})"
+        return (
+            f"ErrorResult(code={self.code!r}, message={self.message!r}, "
+            f"data={self.data!r})"
+        )
 
 
-# Union of the two valid result types
-Result = Either[ErrorResult, SuccessResult]
+Result = R[SuccessResult, ErrorResult]
 
 
 # Helpers
@@ -54,16 +56,16 @@ def InvalidParamsResult(data: Any = NODATA) -> ErrorResult:
 # Helpers (the public functions)
 
 
-def Success(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
-    return Right(SuccessResult(*args, **kwargs))
+def Ok(*args: Any, **kwargs: Any) -> Success[SuccessResult]:
+    return Success(SuccessResult(*args, **kwargs))
 
 
-def Error(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
-    return Left(ErrorResult(*args, **kwargs))
+def Error(*args: Any, **kwargs: Any) -> Failure[ErrorResult]:
+    return Failure(ErrorResult(*args, **kwargs))
 
 
-def InvalidParams(*args: Any, **kwargs: Any) -> Either[ErrorResult, SuccessResult]:
+def InvalidParams(*args: Any, **kwargs: Any) -> Failure[ErrorResult]:
     """InvalidParams is a shortcut to save you from having to pass the Invalid Params
     JSON-RPC code to Error.
     """
-    return Left(InvalidParamsResult(*args, **kwargs))
+    return Failure(InvalidParamsResult(*args, **kwargs))

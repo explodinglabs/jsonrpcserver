@@ -1,7 +1,7 @@
 """SocketIO server"""
 from flask import Flask, Request
 from flask_socketio import SocketIO, send  # type: ignore
-from jsonrpcserver import method, Result, Success, dispatch
+from jsonrpcserver import dispatch, method, Ok, Result
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -10,7 +10,7 @@ socketio = SocketIO(app)
 @method
 def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 @socketio.on("message")  # type: ignore
