@@ -1,6 +1,7 @@
 """Test methods.py"""
-from jsonrpcserver.result import Ok, Result
+
 from jsonrpcserver.methods import global_methods, method
+from jsonrpcserver.result import Ok, Result
 
 # pylint: disable=missing-function-docstring
 

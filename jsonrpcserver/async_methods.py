@@ -1,4 +1,5 @@
 """Async methods"""
+
 from typing import Any, Awaitable, Callable, Dict, Optional, cast
 
 from returns.result import Result

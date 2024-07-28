@@ -1,6 +1,8 @@
 """Flask server"""
+
 from flask import Flask, Response, request
-from jsonrpcserver import dispatch, method, Ok, Result
+
+from jsonrpcserver import Ok, Result, dispatch, method
 
 app = Flask(__name__)
 

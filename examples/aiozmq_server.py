@@ -1,9 +1,11 @@
 """AioZMQ server"""
+
 import asyncio
 
 import aiozmq  # type: ignore
 import zmq
-from jsonrpcserver import async_dispatch, async_method, Ok, Result
+
+from jsonrpcserver import Ok, Result, async_dispatch, async_method
 
 
 @async_method

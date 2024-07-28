@@ -1,8 +1,10 @@
 """Tornado server"""
+
 from typing import Awaitable, Optional
 
 from tornado import ioloop, web
-from jsonrpcserver import async_dispatch, async_method, Ok, Result
+
+from jsonrpcserver import Ok, Result, async_dispatch, async_method
 
 
 @async_method

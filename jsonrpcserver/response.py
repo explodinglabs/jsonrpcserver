@@ -2,9 +2,10 @@
 
 https://www.jsonrpc.org/specification#response_object
 """
+
 from typing import Any, Dict, List, NamedTuple, Union
 
-from returns.result import Result, Failure
+from returns.result import Failure, Result
 
 from .codes import (
     ERROR_INVALID_REQUEST,
@@ -101,7 +102,7 @@ def to_dict(response: Response) -> Dict[str, Any]:
 
 
 def to_serializable(
-    response: Union[Response, List[Response], None]
+    response: Union[Response, List[Response], None],
 ) -> Union[Deserialized, None]:
     """Serialize a response object (or list of them), to a dict, or list of them."""
     if response is None:

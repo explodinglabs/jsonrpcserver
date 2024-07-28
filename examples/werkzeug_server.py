@@ -1,7 +1,9 @@
 """Werkzeug server"""
+
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
-from jsonrpcserver import method, Result, Ok, dispatch
+
+from jsonrpcserver import Ok, Result, dispatch, method
 
 
 @method

@@ -1,7 +1,9 @@
 """SocketIO server"""
+
 from flask import Flask, Request
 from flask_socketio import SocketIO, send  # type: ignore
-from jsonrpcserver import dispatch, method, Ok, Result
+
+from jsonrpcserver import Ok, Result, dispatch, method
 
 app = Flask(__name__)
 socketio = SocketIO(app)

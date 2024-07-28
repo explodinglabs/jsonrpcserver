@@ -1,4 +1,5 @@
 """Test response.py"""
+
 from unittest.mock import sentinel
 
 from returns.result import Failure, Success

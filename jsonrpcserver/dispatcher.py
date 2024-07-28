@@ -1,23 +1,24 @@
 """Dispatcher - does the hard work of this library: parses, validates and dispatches
 requests, providing responses.
 """
+
 # pylint: disable=protected-access
+import logging
 from functools import partial
 from inspect import signature
 from itertools import starmap
 from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
-import logging
 
-from returns.result import Result, Failure, Success
+from returns.result import Failure, Result, Success
 
 from .exceptions import JsonRpcError
 from .methods import Method, Methods
 from .request import Request
 from .response import (
-    Response,
     ErrorResponse,
     InvalidRequestResponse,
     ParseErrorResponse,
+    Response,
     ServerErrorResponse,
     SuccessResponse,
 )
