@@ -1,8 +1,10 @@
 """Sanic server"""
+
 from sanic import Sanic
 from sanic.request import Request
 from sanic.response import HTTPResponse, json
-from jsonrpcserver import dispatch_to_serializable, method, Ok, Result
+
+from jsonrpcserver import Ok, Result, dispatch_to_serializable, method
 
 app = Sanic("JSON-RPC app")
 

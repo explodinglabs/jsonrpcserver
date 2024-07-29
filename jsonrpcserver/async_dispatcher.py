@@ -1,13 +1,15 @@
 """Async version of dispatcher.py"""
+
+import asyncio
+import logging
 from functools import partial
 from inspect import signature
 from itertools import starmap
 from typing import Any, Callable, Iterable, Tuple, Union
-import asyncio
-import logging
 
 from returns.result import Failure, Result, Success
 
+from .async_methods import Method, Methods
 from .dispatcher import (
     Deserialized,
     create_request,
@@ -21,8 +23,8 @@ from .dispatcher import (
     validate_result,
 )
 from .exceptions import JsonRpcError
-from .async_methods import Method, Methods
 from .request import Request
+from .response import Response, ServerErrorResponse
 from .result import (
     ErrorResult,
     InternalErrorResult,
@@ -30,7 +32,6 @@ from .result import (
     MethodNotFoundResult,
     SuccessResult,
 )
-from .response import Response, ServerErrorResponse
 from .utils import make_list
 
 logger = logging.getLogger(__name__)

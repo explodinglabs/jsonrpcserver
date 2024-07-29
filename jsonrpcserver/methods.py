@@ -11,6 +11,7 @@ Alternatively pass your own dictionary of methods to `dispatch` with the methods
 Methods can take either positional or named arguments, but not both. This is a
 limitation of JSON-RPC.
 """
+
 from typing import Any, Callable, Dict, Optional, cast
 
 from returns.result import Result

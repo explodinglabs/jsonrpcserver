@@ -37,6 +37,7 @@ examples = [
     "flask-socketio",
     "gmqtt",
     "pyzmq",
+    "sanic",
     "tornado",
     "websockets",
     "werkzeug",

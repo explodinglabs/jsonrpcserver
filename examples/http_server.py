@@ -2,9 +2,10 @@
 
 Demonstrates using Python's builtin http.server module to serve JSON-RPC.
 """
+
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from jsonrpcserver import dispatch, method, Ok, Result
+from jsonrpcserver import Ok, Result, dispatch, method
 
 
 @method

@@ -6,11 +6,13 @@ parts - the library takes care of these parts for you.
 
 The public functions are Success, Error and InvalidParams.
 """
+
 from typing import Any, NamedTuple
 
-from returns.result import Failure, Result as R, Success
+from returns.result import Failure, Success
+from returns.result import Result as R
 
-from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
+from .codes import ERROR_INTERNAL_ERROR, ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND
 from .sentinels import NODATA
 
 # pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name

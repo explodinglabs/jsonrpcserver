@@ -1,13 +1,14 @@
 """Test result.py"""
+
 from unittest.mock import sentinel
 
 from returns.result import Failure, Success
 
 from jsonrpcserver.result import (
-    Ok,
     Error,
     ErrorResult,
     InvalidParamsResult,
+    Ok,
     SuccessResult,
 )
 from jsonrpcserver.sentinels import NODATA

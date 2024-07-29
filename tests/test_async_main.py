@@ -1,12 +1,12 @@
 """Test async_main.py"""
-import pytest
 
+import pytest
 from returns.result import Success
 
 from jsonrpcserver.async_main import (
+    dispatch_to_json,
     dispatch_to_response,
     dispatch_to_serializable,
-    dispatch_to_json,
 )
 from jsonrpcserver.response import SuccessResponse
 from jsonrpcserver.result import Ok, Result

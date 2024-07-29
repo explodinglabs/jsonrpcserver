@@ -1,6 +1,8 @@
 """ZeroMQ server"""
+
 import zmq
-from jsonrpcserver import dispatch, method, Ok, Result
+
+from jsonrpcserver import Ok, Result, dispatch, method
 
 socket = zmq.Context().socket(zmq.REP)
 

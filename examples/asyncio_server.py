@@ -1,8 +1,9 @@
 """Demonstrates processing a batch of 100 requests asynchronously with asyncio."""
+
 import asyncio
 import json
 
-from jsonrpcserver import async_dispatch, async_method, Ok, Result
+from jsonrpcserver import Ok, Result, async_dispatch, async_method
 
 
 @async_method

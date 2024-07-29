@@ -1,4 +1,5 @@
 """Test main.py"""
+
 from returns.result import Success
 
 from jsonrpcserver.main import (
