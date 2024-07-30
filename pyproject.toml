@@ -49,3 +49,9 @@ packages = [
     "jsonrpcserver"
 ]
 zip-safe = false
+
+[tool.pytest.ini_options]
+addopts = '--doctest-glob="*.md"'
+testpaths = [
+    "tests",
+]
