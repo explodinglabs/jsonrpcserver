@@ -1,8 +1,10 @@
 """Sanic server"""
+
 from sanic import Sanic
 from sanic.request import Request
 from sanic.response import HTTPResponse, json
-from jsonrpcserver import Result, Success, dispatch_to_serializable, method
+
+from jsonrpcserver import Ok, Result, dispatch_to_serializable, method
 
 app = Sanic("JSON-RPC app")
 
@@ -10,7 +12,7 @@ app = Sanic("JSON-RPC app")
 @method
 def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 @app.route("/", methods=["POST"])

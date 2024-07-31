@@ -16,24 +16,18 @@ pip install jsonrpcserver
 ```
 
 ```python
-from jsonrpcserver import method, serve, Success
+from jsonrpcserver import method, serve, Ok, Result
 
 @method
-def ping():
-    return Success("pong")
+def ping() -> Result:
+    return Ok("pong")
 
-if __name__ == "__main__":
-    serve()
-```
-
-Or use `dispatch` instead of `serve`:
-```python
 response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
 [Watch a video on how to use it.](https://www.youtube.com/watch?v=3_BMmgJaFHQ)
 
-Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
+Full documentation is in the [wiki](https://github.com/explodinglabs/jsonrpcserver/wiki).
 
 See also: [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient)

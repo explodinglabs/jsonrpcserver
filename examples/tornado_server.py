@@ -1,14 +1,16 @@
 """Tornado server"""
+
 from typing import Awaitable, Optional
 
 from tornado import ioloop, web
-from jsonrpcserver import method, Result, Success, async_dispatch
+
+from jsonrpcserver import Ok, Result, async_dispatch, async_method
 
 
-@method
+@async_method
 async def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 class MainHandler(web.RequestHandler):

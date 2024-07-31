@@ -1,6 +1,7 @@
 """A simple development server for serving JSON-RPC requests using Python's builtin
 http.server module.
 """
+
 import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -25,4 +26,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 def serve(name: str = "", port: int = 5000) -> None:
     """A simple function to serve HTTP requests"""
     logging.info(" * Listening on port %s", port)
-    HTTPServer((name, port), RequestHandler).serve_forever()
+    try:
+        httpd = HTTPServer((name, port), RequestHandler)
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        httpd.shutdown()
+        raise

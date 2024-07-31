@@ -2,9 +2,10 @@
 
 https://www.jsonrpc.org/specification#response_object
 """
-from typing import Any, Dict, List, Type, NamedTuple, Union
 
-from oslash.either import Either, Left  # type: ignore
+from typing import Any, Dict, List, NamedTuple, Union
+
+from returns.result import Failure, Result
 
 from .codes import (
     ERROR_INVALID_REQUEST,
@@ -37,8 +38,7 @@ class ErrorResponse(NamedTuple):
     id: Any
 
 
-Response = Either[ErrorResponse, SuccessResponse]
-ResponseType = Type[Either[ErrorResponse, SuccessResponse]]
+Response = Result[SuccessResponse, ErrorResponse]
 
 
 def ParseErrorResponse(data: Any) -> ErrorResponse:  # pylint: disable=invalid-name
@@ -92,18 +92,17 @@ def to_success_dict(response: SuccessResponse) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
 
 
-def to_dict(response: ResponseType) -> Dict[str, Any]:
+def to_dict(response: Response) -> Dict[str, Any]:
     """Serialize either an error or success response object to dict"""
-    # pylint: disable=protected-access
     return (
-        to_error_dict(response._error)
-        if isinstance(response, Left)
-        else to_success_dict(response._value)
+        to_error_dict(response.failure())
+        if isinstance(response, Failure)
+        else to_success_dict(response.unwrap())
     )
 
 
 def to_serializable(
-    response: Union[ResponseType, List[ResponseType], None]
+    response: Union[Response, List[Response], None],
 ) -> Union[Deserialized, None]:
     """Serialize a response object (or list of them), to a dict, or list of them."""
     if response is None:

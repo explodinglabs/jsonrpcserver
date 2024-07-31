@@ -1,7 +1,9 @@
 """FastAPI server"""
+
+import uvicorn
 from fastapi import FastAPI, Request, Response
-import uvicorn  # type: ignore
-from jsonrpcserver import Result, Success, dispatch, method
+
+from jsonrpcserver import Ok, Result, dispatch, method
 
 app = FastAPI()
 
@@ -9,7 +11,7 @@ app = FastAPI()
 @method
 def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 @app.post("/")

@@ -1,15 +1,17 @@
 """AioZMQ server"""
+
 import asyncio
 
 import aiozmq  # type: ignore
 import zmq
-from jsonrpcserver import method, Result, Success, async_dispatch
+
+from jsonrpcserver import Ok, Result, async_dispatch, async_method
 
 
-@method
+@async_method
 async def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 async def main() -> None:
