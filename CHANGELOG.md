@@ -7,19 +7,18 @@ change for async use.
 
 Breaking changes:
 
-- Decorate async JSON-RPC methods with `@async_method` instead of `@method`.
-  The reason for this change is due to the typing of the decorator, async
-  functions return a different type (`Awaitable`) to other functions.
+- Async methods should be decorated with `@async_method` instead of `@method`. The
+  reason is due to the _type_ of the decorated function - async functions have a
+  different type to other functions (`Awaitable`).
 
 Other changes:
 
-- Internally, replaced the Oslash dependency with
-  [Returns](https://github.com/dry-python/returns). Because Oslash is not meant
-  for production use.
-- Use `Ok` instead of `Success` when returning a response. This is to avoid
-  confusion with the Returns library now used internally which has it's own
-  `Success` class. It also matches Jsonrpcclient's `Ok` type. This is not a
-  breaking change, `Success` will still work for now. But use `Ok` instead.
+- Replaced the Oslash dependency with [Returns](https://github.com/dry-python/returns).
+  Oslash is not meant for production use, and doesn't work in Python 3.12.
+- Use `Ok` instead of `Success` when returning a response. This is to avoid confusion
+  with the Returns library's `Success` class. It also matches Jsonrpcclient's `Ok` type.
+  This is not a breaking change, `Success` will still work for now.
+- Docs moved to https://github.com/explodinglabs/jsonrpcserver/wiki
 
 ## 5.0.9 (Sep 15, 2022)
 
