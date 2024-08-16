@@ -1,3 +1,7 @@
+# Jsonrpcserver
+
+Jsonrpcserver processes JSON-RPC requests.
+
 ## Quickstart
 
 Install jsonrpcserver:
@@ -19,19 +23,15 @@ if __name__ == "__main__":
 ```
 
 Start the server:
-
 ```sh
-$ pip install jsonrpcserver
 $ python server.py
- * Listening on port 5000
 ```
 
-Test the server:
-
+Send a request:
 ```sh
 $ curl -X POST http://localhost:5000 -d '{"jsonrpc": "2.0", "method": "ping", "id": 1}'
 {"jsonrpc": "2.0", "result": "pong", "id": 1}
 ```
 
-`serve` is good for serving methods in development, but for production use
-`dispatch` instead.
+`serve` starts a basic development server. Do not use it in a production deployment. Use
+a production WSGI server instead, with jsonrpcserver's [dispatch](dispatch) function.

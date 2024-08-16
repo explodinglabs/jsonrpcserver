@@ -1,17 +1,22 @@
-The `dispatch` function takes a JSON-RPC request, attempts to call a method and gives a
-JSON-RPC response.
+# Dispatch
+
+The `dispatch` function processes a JSON-RPC request, attempting to call the method(s)
+and gives a JSON-RPC response.
 
 ```python
 >>> dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
+It's a pure function; it will always give you a JSON-RPC response. No exceptions will be
+raised.
+
 [See how dispatch is used in different frameworks.](examples)
 
 ## Optional parameters
 
-The `dispatch` function has some optional parameters that allow you to
-customise how it works.
+The `dispatch` function takes a request as its argument, and also has some optional
+parameters that allow you to customise how it works.
 
 ### methods
 

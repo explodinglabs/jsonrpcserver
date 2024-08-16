@@ -1,5 +1,10 @@
-Methods are functions that can be called by a JSON-RPC request. To write one,
-decorate a function with `@method`:
+# Methods
+
+Methods are functions that can be called by a JSON-RPC request.
+
+## Writing methods
+
+To write a method, decorate a function with `@method`:
 
 ```python
 from jsonrpcserver import method, Error, Ok, Result
@@ -24,9 +29,7 @@ def test() -> Result:
     return Error(1, "There was a problem")
 ```
 
-```{note}
 Alternatively, raise a `JsonRpcError`, which takes the same arguments as `Error`.
-```
 
 ## Parameters
 
