@@ -3,8 +3,6 @@
 from functools import reduce
 from typing import Any, Callable, List
 
-# pylint: disable=invalid-name
-
 
 def identity(x: Any) -> Any:
     """Returns the argument."""

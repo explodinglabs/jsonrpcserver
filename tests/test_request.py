@@ -2,8 +2,6 @@
 
 from jsonrpcserver.request import Request
 
-# pylint: disable=missing-function-docstring
-
 
 def test_request() -> None:
     assert Request(method="foo", params=[], id=1).method == "foo"

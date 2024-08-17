@@ -8,7 +8,10 @@ from .main import dispatch
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    def do_POST(self) -> None:  # pylint: disable=invalid-name
+    """Handle HTTP requests"""
+
+    def do_POST(self) -> None:
+        """Handle POST request"""
         request = self.rfile.read(int(str(self.headers["Content-Length"]))).decode()
         response = dispatch(request)
         if response is not None:

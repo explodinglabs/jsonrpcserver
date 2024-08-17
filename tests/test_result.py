@@ -13,8 +13,6 @@ from jsonrpcserver.result import (
 )
 from jsonrpcserver.sentinels import NODATA
 
-# pylint: disable=missing-function-docstring,invalid-name
-
 
 def test_SuccessResult() -> None:
     assert SuccessResult(None).result is None

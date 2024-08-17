@@ -20,8 +20,6 @@ from jsonrpcserver.result import ErrorResult, Ok, Result, SuccessResult
 from jsonrpcserver.sentinels import NOCONTEXT, NODATA
 from jsonrpcserver.utils import identity
 
-# pylint: disable=missing-function-docstring,duplicate-code
-
 
 async def ping() -> Result:
     return Ok("pong")
