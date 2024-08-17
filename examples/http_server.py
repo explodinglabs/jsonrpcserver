@@ -17,7 +17,7 @@ def ping() -> Result:
 class TestHttpServer(BaseHTTPRequestHandler):
     """HTTPServer request handler"""
 
-    def do_POST(self) -> None:  # pylint: disable=invalid-name
+    def do_POST(self) -> None:
         """POST handler"""
         # Process request
         request = self.rfile.read(int(self.headers["Content-Length"])).decode()

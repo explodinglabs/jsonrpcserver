@@ -14,8 +14,6 @@ from jsonrpcserver.response import (
     to_serializable,
 )
 
-# pylint: disable=missing-function-docstring,invalid-name,duplicate-code
-
 
 def test_SuccessResponse() -> None:
     response = SuccessResponse(sentinel.result, sentinel.id)

@@ -41,7 +41,7 @@ class ErrorResponse(NamedTuple):
 Response = Result[SuccessResponse, ErrorResponse]
 
 
-def ParseErrorResponse(data: Any) -> ErrorResponse:  # pylint: disable=invalid-name
+def ParseErrorResponse(data: Any) -> ErrorResponse:
     """An ErrorResponse with most attributes already populated.
 
     From the spec: "This (id) member is REQUIRED. It MUST be the same as the value of
@@ -51,7 +51,7 @@ def ParseErrorResponse(data: Any) -> ErrorResponse:  # pylint: disable=invalid-n
     return ErrorResponse(ERROR_PARSE_ERROR, "Parse error", data, None)
 
 
-def InvalidRequestResponse(data: Any) -> ErrorResponse:  # pylint: disable=invalid-name
+def InvalidRequestResponse(data: Any) -> ErrorResponse:
     """An ErrorResponse with most attributes already populated.
 
     From the spec: "This (id) member is REQUIRED. It MUST be the same as the value of
@@ -63,13 +63,11 @@ def InvalidRequestResponse(data: Any) -> ErrorResponse:  # pylint: disable=inval
 
 def MethodNotFoundResponse(data: Any, id: Any) -> ErrorResponse:
     """An ErrorResponse with some attributes already populated."""
-    # pylint: disable=invalid-name,redefined-builtin
     return ErrorResponse(ERROR_METHOD_NOT_FOUND, "Method not found", data, id)
 
 
 def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
     """An ErrorResponse with some attributes already populated."""
-    # pylint: disable=invalid-name,redefined-builtin
     return ErrorResponse(ERROR_SERVER_ERROR, "Server error", data, id)
 
 

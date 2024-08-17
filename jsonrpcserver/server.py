@@ -11,7 +11,7 @@ from .main import dispatch
 class RequestHandler(BaseHTTPRequestHandler):
     """Handle HTTP requests"""
 
-    def do_POST(self) -> None:  # pylint: disable=invalid-name
+    def do_POST(self) -> None:
         """Handle POST request"""
         response = dispatch(
             self.rfile.read(int(str(self.headers["Content-Length"]))).decode()

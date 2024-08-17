@@ -426,7 +426,7 @@ def test_dispatch_to_response_pure_method_not_found() -> None:
 
 
 def test_dispatch_to_response_pure_invalid_params_auto() -> None:
-    def f(colour: str, size: str) -> Result:  # pylint: disable=unused-argument
+    def f(colour: str, size: str) -> Result:
         return Ok()
 
     assert dispatch_to_response_pure(
@@ -615,7 +615,7 @@ def test_dispatch_to_response_pure_notification_method_not_found() -> None:
 
 
 def test_dispatch_to_response_pure_notification_invalid_params_auto() -> None:
-    def foo(colour: str, size: str) -> Result:  # pylint: disable=unused-argument
+    def foo(colour: str, size: str) -> Result:
         return Ok()
 
     assert (

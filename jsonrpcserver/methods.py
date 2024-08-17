@@ -25,7 +25,7 @@ global_methods: Methods = {}
 
 
 def method(
-    f: Optional[Method] = None,  # pylint: disable=invalid-name
+    f: Optional[Method] = None,
     name: Optional[str] = None,
 ) -> Callable[..., Any]:
     """A decorator to add a function into jsonrpcserver's internal global_methods dict.

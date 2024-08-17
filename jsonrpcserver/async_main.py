@@ -11,8 +11,6 @@ from .response import Response, to_serializable
 from .sentinels import NOCONTEXT
 from .utils import identity
 
-# pylint: disable=missing-function-docstring,duplicate-code
-
 
 async def dispatch_to_response(
     request: str,

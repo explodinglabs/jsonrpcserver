@@ -2,7 +2,6 @@
 requests, providing responses.
 """
 
-# pylint: disable=protected-access
 import logging
 from functools import partial
 from inspect import signature
@@ -143,7 +142,7 @@ def call(
     except JsonRpcError as exc:
         return Failure(ErrorResult(code=exc.code, message=exc.message, data=exc.data))
     # Any other uncaught exception inside method - internal error.
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:
         logger.exception(exc)
         return Failure(InternalErrorResult(str(exc)))
     return result
@@ -249,7 +248,7 @@ def validate_request(
     # Since the validator is unknown, the specific exception that will be raised is also
     # unknown. Any exception raised we assume the request is invalid and return an
     # "invalid request" response.
-    except Exception:  # pylint: disable=broad-except
+    except Exception:
         return Failure(InvalidRequestResponse("The request failed schema validation"))
     return Success(request)
 
@@ -266,7 +265,7 @@ def deserialize_request(
     # Since the deserializer is unknown, the specific exception that will be raised is
     # also unknown. Any exception raised we assume the request is invalid, return a
     # parse error response.
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:
         return Failure(ParseErrorResponse(str(exc)))
 
 
@@ -297,7 +296,7 @@ def dispatch_to_response_pure(
                 args_validator, post_process, methods, context, result.unwrap()
             )
         )
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:
         # There was an error with the jsonrpcserver library.
         logging.exception(exc)
         return post_process(Failure(ServerErrorResponse(str(exc), None)))

@@ -11,10 +11,6 @@ from jsonrpcserver.methods import method
 from jsonrpcserver.response import SuccessResponse
 from jsonrpcserver.result import Ok, Result
 
-# pylint: disable=missing-function-docstring
-
-# pylint: disable=missing-function-docstring
-
 
 def ping() -> Result:
     return Ok("pong")
@@ -28,7 +24,7 @@ def test_dispatch_to_response() -> None:
 
 def test_dispatch_to_response_with_global_methods() -> None:
     @method
-    def ping() -> Result:  # pylint: disable=redefined-outer-name
+    def ping() -> Result:
         return Ok("pong")
 
     response = dispatch_to_response('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
