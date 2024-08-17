@@ -1,7 +1,7 @@
 <img
     alt="jsonrpcserver"
     style="margin: 0 auto;"
-    src="https://github.com/explodinglabs/jsonrpcserver/blob/main/docs/logo.png?raw=true"
+    src="https://github.com/explodinglabs/jsonrpcserver/blob/main/logo.png?raw=true"
 />
 
 ![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
@@ -16,7 +16,7 @@ pip install jsonrpcserver
 ```
 
 ```python
-from jsonrpcserver import method, serve, Ok, Result
+from jsonrpcserver import method, Result, Ok
 
 @method
 def ping() -> Result:
