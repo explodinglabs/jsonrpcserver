@@ -11,7 +11,6 @@ request, but they each give a different return value.
 """
 
 import json
-from importlib.resources import read_text
 from typing import Any, Callable, Dict, List, Union, cast
 
 from jsonschema.validators import validator_for  # type: ignore
@@ -23,6 +22,7 @@ from .dispatcher import (
     validate_args,
 )
 from .methods import Methods, global_methods
+from .request_schema import REQUEST_SCHEMA
 from .response import Response, to_dict
 from .sentinels import NOCONTEXT
 from .utils import identity
@@ -32,10 +32,9 @@ default_deserializer = json.loads
 
 # Prepare the jsonschema validator. This is global so it loads only once, not every time
 # dispatch is called.
-schema = json.loads(read_text(__package__, "request-schema.json"))
-klass = validator_for(schema)
-klass.check_schema(schema)
-default_jsonrpc_validator = klass(schema).validate
+klass = validator_for(REQUEST_SCHEMA)
+klass.check_schema(REQUEST_SCHEMA)
+default_jsonrpc_validator = klass(REQUEST_SCHEMA).validate
 
 
 def dispatch_to_response(
