@@ -1,6 +1,8 @@
 """ZeroMQ server"""
+
 import zmq
-from jsonrpcserver import method, Result, Success, dispatch
+
+from jsonrpcserver import Ok, Result, dispatch, method
 
 socket = zmq.Context().socket(zmq.REP)
 
@@ -8,7 +10,7 @@ socket = zmq.Context().socket(zmq.REP)
 @method
 def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 if __name__ == "__main__":

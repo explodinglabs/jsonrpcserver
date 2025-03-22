@@ -1,0 +1,49 @@
+markdown_extensions:
+  - pymdownx.highlight:
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+nav:
+  - Home: 'index.md'
+  - 'methods.md'
+  - 'dispatch.md'
+  - 'async.md'
+  - 'faq.md'
+  - 'examples.md'
+repo_name: jsonrpcserver
+repo_url: https://github.com/explodinglabs/jsonrpcserver
+site_author: Exploding Labs
+site_description: Welcome to the documentation for Jsonrcpcserver.
+site_name: Jsonrpcserver
+site_url: https://www.jsonrpcserver.com/
+theme:
+  features:
+    - content.code.copy
+    - navigation.footer
+    - navigation.tabs
+    - toc.integrate
+  name: material
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+extra:
+  version:
+    provider: mike

@@ -1,5 +1,3 @@
-# FAQ
-
 ## How to disable schema validation?
 
 Validating requests is costly - roughly 40% of dispatching time is spent on schema validation.

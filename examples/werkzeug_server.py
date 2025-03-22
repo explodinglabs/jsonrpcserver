@@ -1,13 +1,15 @@
 """Werkzeug server"""
+
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
-from jsonrpcserver import method, Result, Success, dispatch
+
+from jsonrpcserver import Ok, Result, dispatch, method
 
 
 @method
 def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 @Request.application

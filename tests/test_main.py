@@ -1,25 +1,34 @@
 """Test main.py"""
-from oslash.either import Right  # type: ignore
+
+from returns.result import Success
 
 from jsonrpcserver.main import (
+    dispatch_to_json,
     dispatch_to_response,
     dispatch_to_serializable,
-    dispatch_to_json,
 )
+from jsonrpcserver.methods import method
 from jsonrpcserver.response import SuccessResponse
-from jsonrpcserver.result import Result, Success
-
-# pylint: disable=missing-function-docstring
+from jsonrpcserver.result import Ok, Result
 
 
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 
 
 def test_dispatch_to_response() -> None:
     assert dispatch_to_response(
         '{"jsonrpc": "2.0", "method": "ping", "id": 1}', {"ping": ping}
-    ) == Right(SuccessResponse("pong", 1))
+    ) == Success(SuccessResponse("pong", 1))
+
+
+def test_dispatch_to_response_with_global_methods() -> None:
+    @method
+    def ping() -> Result:
+        return Ok("pong")
+
+    response = dispatch_to_response('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
+    assert response == Success(SuccessResponse("pong", 1))
 
 
 def test_dispatch_to_serializable() -> None:

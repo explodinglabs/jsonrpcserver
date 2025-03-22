@@ -11,18 +11,21 @@ Alternatively pass your own dictionary of methods to `dispatch` with the methods
 Methods can take either positional or named arguments, but not both. This is a
 limitation of JSON-RPC.
 """
+
 from typing import Any, Callable, Dict, Optional, cast
 
-from .result import Result
+from returns.result import Result
 
-Method = Callable[..., Result]
+from .result import ErrorResult, SuccessResult
+
+Method = Callable[..., Result[SuccessResult, ErrorResult]]
 Methods = Dict[str, Method]
 
-global_methods = {}
+global_methods: Methods = {}
 
 
 def method(
-    f: Optional[Method] = None,  # pylint: disable=invalid-name
+    f: Optional[Method] = None,
     name: Optional[str] = None,
 ) -> Callable[..., Any]:
     """A decorator to add a function into jsonrpcserver's internal global_methods dict.

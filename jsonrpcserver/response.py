@@ -2,9 +2,10 @@
 
 https://www.jsonrpc.org/specification#response_object
 """
-from typing import Any, Dict, List, Type, NamedTuple, Union
 
-from oslash.either import Either, Left  # type: ignore
+from typing import Any, Dict, List, NamedTuple, Union
+
+from returns.result import Failure, Result
 
 from .codes import (
     ERROR_INVALID_REQUEST,
@@ -37,11 +38,10 @@ class ErrorResponse(NamedTuple):
     id: Any
 
 
-Response = Either[ErrorResponse, SuccessResponse]
-ResponseType = Type[Either[ErrorResponse, SuccessResponse]]
+Response = Result[SuccessResponse, ErrorResponse]
 
 
-def ParseErrorResponse(data: Any) -> ErrorResponse:  # pylint: disable=invalid-name
+def ParseErrorResponse(data: Any) -> ErrorResponse:
     """An ErrorResponse with most attributes already populated.
 
     From the spec: "This (id) member is REQUIRED. It MUST be the same as the value of
@@ -51,7 +51,7 @@ def ParseErrorResponse(data: Any) -> ErrorResponse:  # pylint: disable=invalid-n
     return ErrorResponse(ERROR_PARSE_ERROR, "Parse error", data, None)
 
 
-def InvalidRequestResponse(data: Any) -> ErrorResponse:  # pylint: disable=invalid-name
+def InvalidRequestResponse(data: Any) -> ErrorResponse:
     """An ErrorResponse with most attributes already populated.
 
     From the spec: "This (id) member is REQUIRED. It MUST be the same as the value of
@@ -63,13 +63,11 @@ def InvalidRequestResponse(data: Any) -> ErrorResponse:  # pylint: disable=inval
 
 def MethodNotFoundResponse(data: Any, id: Any) -> ErrorResponse:
     """An ErrorResponse with some attributes already populated."""
-    # pylint: disable=invalid-name,redefined-builtin
     return ErrorResponse(ERROR_METHOD_NOT_FOUND, "Method not found", data, id)
 
 
 def ServerErrorResponse(data: Any, id: Any) -> ErrorResponse:
     """An ErrorResponse with some attributes already populated."""
-    # pylint: disable=invalid-name,redefined-builtin
     return ErrorResponse(ERROR_SERVER_ERROR, "Server error", data, id)
 
 
@@ -92,18 +90,17 @@ def to_success_dict(response: SuccessResponse) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "result": response.result, "id": response.id}
 
 
-def to_dict(response: ResponseType) -> Dict[str, Any]:
+def to_dict(response: Response) -> Dict[str, Any]:
     """Serialize either an error or success response object to dict"""
-    # pylint: disable=protected-access
     return (
-        to_error_dict(response._error)
-        if isinstance(response, Left)
-        else to_success_dict(response._value)
+        to_error_dict(response.failure())
+        if isinstance(response, Failure)
+        else to_success_dict(response.unwrap())
     )
 
 
 def to_serializable(
-    response: Union[ResponseType, List[ResponseType], None]
+    response: Union[Response, List[Response], None],
 ) -> Union[Deserialized, None]:
     """Serialize a response object (or list of them), to a dict, or list of them."""
     if response is None:

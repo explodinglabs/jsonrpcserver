@@ -1,23 +1,27 @@
 # Methods
 
-Methods are functions that can be called by a JSON-RPC request. To write one,
-decorate a function with `@method`:
+Methods are functions that can be called by a JSON-RPC request.
+
+## Writing methods
+
+To write a method, decorate a function with `@method`:
 
 ```python
-from jsonrpcserver import method, Result, Success, Error
+from jsonrpcserver import method, Error, Ok, Result
 
 @method
 def ping() -> Result:
-    return Success("pong")
+    return Ok("pong")
 ```
 
-If you don't need to respond with any value simply `return Success()`.
+If you don't need to respond with any value simply `return Ok()`.
 
 ## Responses
 
-Methods return either `Success` or `Error`. These are the [JSON-RPC response
+Methods return either `Ok` or `Error`. These are the [JSON-RPC response
 objects](https://www.jsonrpc.org/specification#response_object) (excluding the
-`jsonrpc` and `id` parts). `Error` takes a code, message, and optionally 'data'.
+`jsonrpc` and `id` parts). `Error` takes a code, message, and optionally
+'data'.
 
 ```python
 @method
@@ -25,9 +29,7 @@ def test() -> Result:
     return Error(1, "There was a problem")
 ```
 
-```{note}
 Alternatively, raise a `JsonRpcError`, which takes the same arguments as `Error`.
-```
 
 ## Parameters
 
@@ -36,7 +38,7 @@ Methods can accept arguments.
 ```python
 @method
 def hello(name: str) -> Result:
-    return Success("Hello " + name)
+    return Ok("Hello " + name)
 ```
 
 Testing it:
@@ -53,13 +55,13 @@ The JSON-RPC error code for this is **-32602**. A shortcut, *InvalidParams*, is
 included so you don't need to remember that.
 
 ```python
-from jsonrpcserver import method, Result, InvalidParams, Success, dispatch
+from jsonrpcserver import dispatch, method, InvalidParams, Ok, Result
 
 @method
 def within_range(num: int) -> Result:
     if num not in range(1, 5):
         return InvalidParams("Value must be 1-5")
-    return Success()
+    return Ok()
 ```
 
 This is the same as saying

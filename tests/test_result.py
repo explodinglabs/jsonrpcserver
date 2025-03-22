@@ -1,18 +1,17 @@
 """Test result.py"""
+
 from unittest.mock import sentinel
 
-from oslash.either import Left, Right  # type: ignore
+from returns.result import Failure, Success
 
 from jsonrpcserver.result import (
     Error,
     ErrorResult,
     InvalidParamsResult,
-    Success,
+    Ok,
     SuccessResult,
 )
 from jsonrpcserver.sentinels import NODATA
-
-# pylint: disable=missing-function-docstring,invalid-name
 
 
 def test_SuccessResult() -> None:
@@ -58,9 +57,9 @@ def test_InvalidParamsResult_with_data() -> None:
     assert result.data == sentinel.data
 
 
-def test_Success() -> None:
-    assert Success() == Right(SuccessResult(None))
+def test_Ok() -> None:
+    assert Ok() == Success(SuccessResult(None))
 
 
 def test_Error() -> None:
-    assert Error(1, "foo", None) == Left(ErrorResult(1, "foo", None))
+    assert Error(1, "foo", None) == Failure(ErrorResult(1, "foo", None))

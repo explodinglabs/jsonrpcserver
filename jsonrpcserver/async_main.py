@@ -1,17 +1,15 @@
 """Async version of main.py. The public async functions."""
+
 import json
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
 
 from .async_dispatcher import dispatch_to_response_pure
+from .async_methods import Methods, global_methods
 from .dispatcher import Deserialized
-from .main import default_validator, default_deserializer
-from .methods import Methods, global_methods
+from .main import default_deserializer, default_jsonrpc_validator
 from .response import Response, to_serializable
 from .sentinels import NOCONTEXT
 from .utils import identity
-
-
-# pylint: disable=missing-function-docstring,duplicate-code
 
 
 async def dispatch_to_response(
@@ -20,7 +18,7 @@ async def dispatch_to_response(
     *,
     context: Any = NOCONTEXT,
     deserializer: Callable[[str], Deserialized] = default_deserializer,
-    validator: Callable[[Deserialized], Deserialized] = default_validator,
+    validator: Callable[[Deserialized], Deserialized] = default_jsonrpc_validator,
     post_process: Callable[[Response], Any] = identity,
 ) -> Union[Response, Iterable[Response], None]:
     return await dispatch_to_response_pure(

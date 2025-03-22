@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [
+    {name = "Beau Barker", email = "beau@explodinglabs.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11"
+]
+description = "Process JSON-RPC requests"
+dependencies = ["returns", "jsonschema"]
+license = {file = "LICENSE"}
+name = "jsonrpcserver"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.8"
+version = "6.0.0"
+
+[project.urls]
+homepage = "https://www.jsonrpcserver.com"
+repository = "https://github.com/explodinglabs/jsonrpcserver"
+
+[project.optional-dependencies]
+qa = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "tox",
+]
+examples = [
+    "aiohttp",
+    "aiozmq",
+    "flask",
+    "flask-socketio",
+    "gmqtt",
+    "pyzmq",
+    "sanic",
+    "tornado",
+    "websockets",
+    "werkzeug",
+]
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "jsonrpcserver"
+]
+zip-safe = false
+
+[tool.pytest.ini_options]
+addopts = '--doctest-glob="*.md"'
+testpaths = [
+    "tests",
+]

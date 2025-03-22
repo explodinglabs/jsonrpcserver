@@ -1,13 +1,13 @@
 """Test methods.py"""
-from jsonrpcserver.methods import global_methods, method
 
-# pylint: disable=missing-function-docstring
+from jsonrpcserver.methods import global_methods, method
+from jsonrpcserver.result import Ok, Result
 
 
 def test_decorator() -> None:
     @method
-    def func() -> None:
-        pass
+    def func() -> Result:
+        return Ok()
 
     assert callable(global_methods["func"])
 

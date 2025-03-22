@@ -2,21 +2,22 @@
 
 Demonstrates using Python's builtin http.server module to serve JSON-RPC.
 """
+
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from jsonrpcserver import method, Result, Success, dispatch
+from jsonrpcserver import Ok, Result, dispatch, method
 
 
 @method
 def ping() -> Result:
     """JSON-RPC method"""
-    return Success("pong")
+    return Ok("pong")
 
 
 class TestHttpServer(BaseHTTPRequestHandler):
     """HTTPServer request handler"""
 
-    def do_POST(self) -> None:  # pylint: disable=invalid-name
+    def do_POST(self) -> None:
         """POST handler"""
         # Process request
         request = self.rfile.read(int(self.headers["Content-Length"])).decode()
