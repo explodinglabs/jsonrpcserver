@@ -8,6 +8,7 @@
 ![Code Quality](https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg)
 ![Coverage Status](https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main)
 ![Downloads](https://img.shields.io/pypi/dw/jsonrpcserver)
+![License](https://img.shields.io/pypi/l/jsonrpcserver.svg)
 
 Process incoming JSON-RPC requests in Python.
 
