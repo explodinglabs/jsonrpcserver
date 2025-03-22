@@ -8,6 +8,7 @@
 ![Code Quality](https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg)
 ![Coverage Status](https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main)
 ![Downloads](https://img.shields.io/pypi/dw/jsonrpcserver)
+![License](https://img.shields.io/pypi/l/jsonrpcserver.svg)
 
 Process incoming JSON-RPC requests in Python.
 
@@ -27,6 +28,7 @@ if __name__ == "__main__":
 ```
 
 Or use `dispatch` instead of `serve`:
+
 ```python
 response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
