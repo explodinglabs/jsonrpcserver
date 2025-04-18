@@ -17,7 +17,7 @@ pip install jsonrpcserver
 ```
 
 ```python
-from jsonrpcserver import method, serve, Success
+from jsonrpcserver import dispatch, method, Success
 
 @method
 def ping():
