@@ -2,7 +2,7 @@
 
 Uses jsonrpcserver's built-in "serve" function.
 """
-from jsonrpcserver import method, Result, Success, serve
+from jsonrpcserver import Result, Success, method, serve
 
 
 @method

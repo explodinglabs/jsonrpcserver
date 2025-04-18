@@ -9,18 +9,17 @@ request, but they each give a different return value.
 - dispatch_to_json/dispatch: Returns a JSON-RPC response string (or an empty string for
   notifications).
 """
+import json
 from importlib.resources import read_text
 from typing import Any, Callable, Dict, List, Optional, Union, cast
-import json
 
 from jsonschema.validators import validator_for  # type: ignore
 
-from .dispatcher import dispatch_to_response_pure, Deserialized
+from .dispatcher import Deserialized, dispatch_to_response_pure
 from .methods import Methods, global_methods
 from .response import Response, to_dict
 from .sentinels import NOCONTEXT
 from .utils import identity
-
 
 default_deserializer = json.loads
 

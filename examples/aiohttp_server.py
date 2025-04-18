@@ -1,6 +1,7 @@
 """AioHTTP server"""
 from aiohttp import web
-from jsonrpcserver import method, Result, Success, async_dispatch
+
+from jsonrpcserver import Result, Success, async_dispatch, method
 
 
 @method

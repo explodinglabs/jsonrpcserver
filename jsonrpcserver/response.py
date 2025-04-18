@@ -2,7 +2,7 @@
 
 https://www.jsonrpc.org/specification#response_object
 """
-from typing import Any, Dict, List, Type, NamedTuple, Union
+from typing import Any, Dict, List, NamedTuple, Type, Union
 
 from oslash.either import Either, Left  # type: ignore
 

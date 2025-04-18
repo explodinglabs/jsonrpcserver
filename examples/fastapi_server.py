@@ -1,6 +1,7 @@
 """FastAPI server"""
+import uvicorn
 from fastapi import FastAPI, Request, Response
-import uvicorn  # type: ignore
+
 from jsonrpcserver import Result, Success, dispatch, method
 
 app = FastAPI()

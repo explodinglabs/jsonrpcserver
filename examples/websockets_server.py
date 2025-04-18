@@ -2,7 +2,8 @@
 import asyncio
 
 from websockets.server import WebSocketServerProtocol, serve
-from jsonrpcserver import method, Success, Result, async_dispatch
+
+from jsonrpcserver import Result, Success, async_dispatch, method
 
 
 @method

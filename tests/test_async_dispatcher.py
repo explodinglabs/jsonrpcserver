@@ -1,7 +1,7 @@
 """Test async_dispatcher.py"""
 from unittest.mock import Mock, patch
-import pytest
 
+import pytest
 from oslash.either import Left, Right  # type: ignore
 
 from jsonrpcserver.async_dispatcher import (
@@ -10,9 +10,9 @@ from jsonrpcserver.async_dispatcher import (
     dispatch_request,
     dispatch_to_response_pure,
 )
-from jsonrpcserver.main import default_deserializer, default_validator
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR, ERROR_SERVER_ERROR
 from jsonrpcserver.exceptions import JsonRpcError
+from jsonrpcserver.main import default_deserializer, default_validator
 from jsonrpcserver.request import Request
 from jsonrpcserver.response import ErrorResponse, SuccessResponse
 from jsonrpcserver.result import ErrorResult, Result, Success, SuccessResult

@@ -2,9 +2,9 @@
 from oslash.either import Right  # type: ignore
 
 from jsonrpcserver.main import (
+    dispatch_to_json,
     dispatch_to_response,
     dispatch_to_serializable,
-    dispatch_to_json,
 )
 from jsonrpcserver.response import SuccessResponse
 from jsonrpcserver.result import Result, Success

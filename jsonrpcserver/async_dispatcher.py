@@ -1,9 +1,9 @@
 """Async version of dispatcher.py"""
+import asyncio
+import logging
 from functools import partial
 from itertools import starmap
 from typing import Any, Callable, Iterable, Tuple, Union
-import asyncio
-import logging
 
 from oslash.either import Left  # type: ignore
 
@@ -24,8 +24,8 @@ from .dispatcher import (
 from .exceptions import JsonRpcError
 from .methods import Method, Methods
 from .request import Request
-from .result import Result, InternalErrorResult, ErrorResult
 from .response import Response, ServerErrorResponse
+from .result import ErrorResult, InternalErrorResult, Result
 from .utils import make_list
 
 logger = logging.getLogger(__name__)

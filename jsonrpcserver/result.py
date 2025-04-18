@@ -10,7 +10,7 @@ from typing import Any, NamedTuple
 
 from oslash.either import Either, Left, Right  # type: ignore
 
-from .codes import ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND, ERROR_INTERNAL_ERROR
+from .codes import ERROR_INTERNAL_ERROR, ERROR_INVALID_PARAMS, ERROR_METHOD_NOT_FOUND
 from .sentinels import NODATA
 
 # pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name

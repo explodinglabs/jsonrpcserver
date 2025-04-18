@@ -1,7 +1,8 @@
 """Django server"""
 from django.http import HttpRequest, HttpResponse  # type: ignore
 from django.views.decorators.csrf import csrf_exempt  # type: ignore
-from jsonrpcserver import method, Result, Success, dispatch
+
+from jsonrpcserver import Result, Success, dispatch, method
 
 
 @method

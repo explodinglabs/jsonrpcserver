@@ -18,7 +18,11 @@ __all__ = [
 
 from .async_main import (
     dispatch as async_dispatch,
+)
+from .async_main import (
     dispatch_to_response as async_dispatch_to_response,
+)
+from .async_main import (
     dispatch_to_serializable as async_dispatch_to_serializable,
 )
 from .exceptions import JsonRpcError

@@ -1,5 +1,6 @@
 """Exceptions"""
 from typing import Any
+
 from .sentinels import NODATA
 
 

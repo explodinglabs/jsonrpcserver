@@ -2,11 +2,11 @@
 
 TODO: Add tests for dispatch_requests (non-pure version)
 """
+import json
 from typing import Any, Callable, Dict
 from unittest.mock import Mock, patch, sentinel
-import json
-import pytest
 
+import pytest
 from oslash.either import Left, Right  # type: ignore
 
 from jsonrpcserver.codes import (
@@ -23,9 +23,9 @@ from jsonrpcserver.dispatcher import (
     dispatch_deserialized,
     dispatch_request,
     dispatch_to_response_pure,
-    extract_list,
     extract_args,
     extract_kwargs,
+    extract_list,
     get_method,
     not_notification,
     to_response,
@@ -36,8 +36,8 @@ from jsonrpcserver.exceptions import JsonRpcError
 from jsonrpcserver.main import (
     default_deserializer,
     default_validator,
-    dispatch_to_response,
     dispatch,
+    dispatch_to_response,
 )
 from jsonrpcserver.methods import method
 from jsonrpcserver.request import Request

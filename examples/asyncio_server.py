@@ -2,7 +2,7 @@
 import asyncio
 import json
 
-from jsonrpcserver import method, Result, Success, async_dispatch
+from jsonrpcserver import Result, Success, async_dispatch, method
 
 
 @method

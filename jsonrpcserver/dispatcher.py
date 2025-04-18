@@ -1,12 +1,13 @@
 """Dispatcher - does the hard work of this library: parses, validates and dispatches
 requests, providing responses.
 """
+
 # pylint: disable=protected-access
+import logging
 from functools import partial
 from inspect import signature
 from itertools import starmap
 from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
-import logging
 
 from oslash.either import Either, Left, Right  # type: ignore
 
