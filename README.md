@@ -37,7 +37,7 @@ Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
 
 ## 🎥 Video
 
-https://github.com/user-attachments/assets/69fc0b20-b9a2-49fb-b065-ce834cdbd269
+https://github.com/user-attachments/assets/94fb4f04-a5f1-41ca-84dd-7e18b87990e0
 
 ## 📖 See Also
 
