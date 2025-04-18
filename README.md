@@ -3,16 +3,14 @@
 </p>
 
 <p align="center">
+  <i>Process incoming JSON-RPC requests in Python</i>
+</p>
+
 ![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
 ![Code Quality](https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg)
 ![Coverage Status](https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main)
 ![Downloads](https://img.shields.io/pypi/dw/jsonrpcserver)
 ![License](https://img.shields.io/pypi/l/jsonrpcserver.svg)
-</p>
-
-<p align="center">
-  <i>Process incoming JSON-RPC requests in Python</i>
-</p>
 
 ## Installation
 
