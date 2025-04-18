@@ -2,15 +2,17 @@
   <img alt="Logo" height="96" src="https://github.com/explodinglabs/jsonrpcserver/blob/main/docs/logo.png?raw=true" />
 </p>
 
+<div align="center">
+  <img src="https://img.shields.io/pypi/v/jsonrpcserver.svg" alt="PyPI" />
+  <img src="https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg" alt="Code Quality" />
+  <img src="https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main" alt="Coverage Status" />
+  <img src="https://img.shields.io/pypi/dw/jsonrpcserver" alt="Downloads" />
+  <img src="https://img.shields.io/pypi/l/jsonrpcserver.svg" alt="License" />
+</div>
+
 <p align="center">
   <i>Process incoming JSON-RPC requests in Python</i>
 </p>
-
-![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
-![Code Quality](https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg)
-![Coverage Status](https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main)
-![Downloads](https://img.shields.io/pypi/dw/jsonrpcserver)
-![License](https://img.shields.io/pypi/l/jsonrpcserver.svg)
 
 ## Installation
 
