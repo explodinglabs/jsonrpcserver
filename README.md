@@ -35,6 +35,10 @@ response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 
 Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
 
+## 🎥 Video
+
+https://github.com/user-attachments/assets/69fc0b20-b9a2-49fb-b065-ce834cdbd269
+
 ## 📖 See Also
 
 - [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient)
