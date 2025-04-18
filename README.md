@@ -41,4 +41,4 @@ https://github.com/user-attachments/assets/94fb4f04-a5f1-41ca-84dd-7e18b87990e0
 
 ## 📖 See Also
 
-- [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient)
+- [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient) – Create JSON-RPC requests and parse responses in Python
