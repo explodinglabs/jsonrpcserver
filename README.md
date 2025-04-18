@@ -1,20 +1,26 @@
-<img
-    alt="jsonrpcserver"
-    style="margin: 0 auto;"
-    src="https://github.com/explodinglabs/jsonrpcserver/blob/main/docs/logo.png?raw=true"
-/>
+<p align="center">
+  <img alt="Logo" height="96" src="https://github.com/explodinglabs/jsonrpcserver/blob/main/docs/logo.png?raw=true" />
+</p>
 
+<p align="center">
 ![PyPI](https://img.shields.io/pypi/v/jsonrpcserver.svg)
 ![Code Quality](https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg)
 ![Coverage Status](https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main)
 ![Downloads](https://img.shields.io/pypi/dw/jsonrpcserver)
 ![License](https://img.shields.io/pypi/l/jsonrpcserver.svg)
+</p>
 
-Process incoming JSON-RPC requests in Python.
+<p align="center">
+  <i>Process incoming JSON-RPC requests in Python</i>
+</p>
+
+## Installation
 
 ```sh
 pip install jsonrpcserver
 ```
+
+## Usage
 
 ```python
 from jsonrpcserver import dispatch, method, Success
@@ -29,4 +35,6 @@ response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 
 Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
 
-See also: [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient)
+## 📖 See Also
+
+- [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient)
