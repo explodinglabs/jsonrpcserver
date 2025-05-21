@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Logo" height="96" src="https://github.com/explodinglabs/jsonrpcserver/blob/main/docs/logo.png?raw=true" />
+  <img alt="Logo" src="https://github.com/explodinglabs/jsonrpcserver/blob/main/docs/logo.png?raw=true" />
 </p>
 
 <p align="center">
