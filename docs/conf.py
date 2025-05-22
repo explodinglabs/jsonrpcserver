@@ -17,6 +17,7 @@ release = '5.0.9'  # Or dynamically read from package metadata
 # -- General configuration ---------------------------------------------------
 
 extensions = [
+    'myst_parser',  # ← add this
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',  # for Google/NumPy docstrings
     'sphinx.ext.viewcode',
