@@ -14,6 +14,8 @@
   <i>Process incoming JSON-RPC requests in Python</i>
 </p>
 
+https://github.com/user-attachments/assets/94fb4f04-a5f1-41ca-84dd-7e18b87990e0
+
 ## Installation
 
 ```sh
@@ -34,10 +36,6 @@ response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 ```
 
 Full documentation is at [jsonrpcserver.com](https://www.jsonrpcserver.com/).
-
-## 🎥 Video
-
-https://github.com/user-attachments/assets/94fb4f04-a5f1-41ca-84dd-7e18b87990e0
 
 ## 📖 See Also
 
