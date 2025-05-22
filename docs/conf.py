@@ -1,6 +1,7 @@
 import os
 import sys
 import datetime
+import sphinx_rtd_theme
 
 # -- Path setup --------------------------------------------------------------
 
