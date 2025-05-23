@@ -1,24 +1,23 @@
-```{warning}
-This is the documentation for version 5, released August 16, 2021. [Read about
-the changes in version
-5](https://explodinglabs.github.io/jsonrpcserver-5-changes).
-```
-
-# Process incoming JSON-RPC requests in Python | jsonrpcserver Documentation
-
-![jsonrpcserver](/logo.png)
-
-Process incoming JSON-RPC requests in Python.
-
-```{toctree}
 ---
-maxdepth: 3
-caption: Contents
+hide:
+  - toc
 ---
-installation
-methods
-dispatch
-async
-faq
-examples
-```
+
+<style>
+.md-content__inner h1:first-of-type {
+  display: none;
+}
+</style>
+
+![jsonrpcserver](images/logo.png)
+
+_Process incoming JSON-RPC requests in Python._
+
+## Table of Contents
+
+- [Installation](installation.md)
+- [Methods](methods.md)
+- [Dispatch](dispatch.md)
+- [Async](async.md)
+- [Faq](faq.md)
+- [Examples](examples.md)

@@ -8,7 +8,7 @@ and gives a JSON-RPC response.
 '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
-[See how dispatch is used in different frameworks.](examples)
+[See how dispatch is used in different frameworks.](examples.md)
 
 ## Optional parameters
 

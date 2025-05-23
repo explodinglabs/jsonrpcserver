@@ -1,4 +1,10 @@
-# Quickstart
+---
+hide:
+  - title
+  - toc
+---
+
+# Installation
 
 Create a `server.py`:
 
