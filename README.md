@@ -16,13 +16,13 @@
 
 https://github.com/user-attachments/assets/94fb4f04-a5f1-41ca-84dd-7e18b87990e0
 
-## Installation
+## 🚀 Installation
 
 ```sh
 pip install jsonrpcserver
 ```
 
-## Usage
+## ⚒️ Usage
 
 ```python
 from jsonrpcserver import dispatch, method, Success
@@ -35,8 +35,8 @@ response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
-Full documentation is at [explodinglabs.com/jsonrpcserver](https://www.explodinglabs.com/jsonrpcserver/).
+👉 Full documentation is at [explodinglabs.com/jsonrpcserver](https://www.explodinglabs.com/jsonrpcserver/).
 
-## 📖 See Also
+## ➡️ See Also
 
 - [jsonrpcclient](https://github.com/explodinglabs/jsonrpcclient) – Create JSON-RPC requests and parse responses in Python
