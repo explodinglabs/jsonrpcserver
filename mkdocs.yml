@@ -3,6 +3,10 @@ site_url: https://explodinglabs.com/jsonrpcserver/
 repo_url: https://github.com/explodinglabs/jsonrpcserver
 theme:
   name: material
+  features:
+    - navigation.footer
+    - palette.toggle
+    - content.code.copy
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -26,9 +30,6 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
-  features:
-    - navigation.footer
-    - palette.toggle
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
