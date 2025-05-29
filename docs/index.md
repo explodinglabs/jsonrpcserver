@@ -13,7 +13,7 @@ hide:
 
 _Process incoming JSON-RPC requests in Python._
 
-## Table of Contents
+## Documentation
 
 - [Installation](installation.md)
 - [Methods](methods.md)
