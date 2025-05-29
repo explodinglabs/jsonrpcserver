@@ -1,9 +1,5 @@
 <p align="center">
-  <img
-    alt="Jsonrpcserver Logo"
-    style="max-height:96px; height:auto; width:auto;"
-    src="https://github.com/explodinglabs/jsonrpcserver/blob/main/logo.png?raw=true"
-  />
+  <img alt="Jsonrpcserver Logo" src="https://github.com/explodinglabs/jsonrpcserver/blob/main/logo.png?raw=true" />
 </p>
 
 <p align="center">
