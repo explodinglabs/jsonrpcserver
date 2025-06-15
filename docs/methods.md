@@ -25,9 +25,8 @@ def test() -> Result:
     return Error(1, "There was a problem")
 ```
 
-```{note}
-Alternatively, raise a `JsonRpcError`, which takes the same arguments as `Error`.
-```
+> 📝 Alternatively, raise a `JsonRpcError`, which takes the same
+> arguments as `Error`.
 
 ## Parameters
 
@@ -48,9 +47,9 @@ $ curl -X POST http://localhost:5000 -d '{"jsonrpc": "2.0", "method": "hello", "
 
 ## Invalid params
 
-A common error response is *invalid params*.
-The JSON-RPC error code for this is **-32602**. A shortcut, *InvalidParams*, is
-included so you don't need to remember that.
+A common error response is _invalid params_. The JSON-RPC error code
+for this is **-32602**. A shortcut, _InvalidParams_, is included so
+you don't need to remember that.
 
 ```python
 from jsonrpcserver import method, Result, InvalidParams, Success, dispatch
@@ -63,6 +62,7 @@ def within_range(num: int) -> Result:
 ```
 
 This is the same as saying
+
 ```python
 return Error(-32602, "Invalid params", "Value must be 1-5")
 ```

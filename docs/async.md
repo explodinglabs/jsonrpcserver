@@ -36,8 +36,6 @@ if response := dispatch(request):
     send(response)
 ```
 
-```{note}
-A synchronous protocol like HTTP requires a response no matter what, so we can
-send back the empty string. However with async protocols, we have the choice of
-responding or not.
-```
+> 📝 A synchronous protocol like HTTP requires a response no matter
+> what, so we can send back the empty string. However with async
+> protocols, we have the choice of responding or not.

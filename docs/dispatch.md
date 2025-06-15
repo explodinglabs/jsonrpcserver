@@ -59,7 +59,7 @@ dispatch(request, serializer=ujson.dumps)
 
 ### validator
 
-A function that validates the request once the json has been parsed. The
-function should raise an exception (any exception) if the request doesn't match
-the JSON-RPC spec. Default is `default_validator` which validates the request
-against a schema.
+A function that validates the request once the json has been parsed.
+The function should raise an exception (any exception) if the request
+doesn't match the JSON-RPC spec. Default is `default_validator` which
+validates the request against a schema.
