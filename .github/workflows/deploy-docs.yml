@@ -1,0 +1,49 @@
+# ⚠️ This workflow deploys docs to explodinglabs.com
+# It is active only in the official repo. Forks won't trigger deployment.
+name: Build and Deploy MkDocs
+
+on:
+  push:
+    branches:
+      - main # or your main development branch
+
+jobs:
+  deploy:
+    if: github.repository == 'explodinglabs/jsonrpcserver'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install mkdocs mkdocs-material
+
+      - name: Build MkDocs site
+        run: mkdocs build
+
+      - name: Clone target repo
+        run: |
+          git clone https://x-access-token:${{ secrets.TARGET_REPO_PAT }}@github.com/explodinglabs/explodinglabs.com.git target-repo
+          rm -rf target-repo/$(basename "$GITHUB_REPOSITORY")
+          mkdir -p target-repo/$(basename "$GITHUB_REPOSITORY")
+          cp -a site/. target-repo/$(basename "$GITHUB_REPOSITORY")/
+        env:
+          GIT_AUTHOR_NAME: GitHub Actions
+          GIT_COMMITTER_NAME: GitHub Actions
+          GIT_AUTHOR_EMAIL: actions@github.com
+          GIT_COMMITTER_EMAIL: actions@github.com
+
+      - name: Commit and push
+        run: |
+          cd target-repo
+          git config user.name "Exploding Labs Bot"
+          git config user.email "bot@explodinglabs.com"
+          git add .
+          git commit -m "Update site from docs source repo" || echo "No changes to commit"
+          git push
