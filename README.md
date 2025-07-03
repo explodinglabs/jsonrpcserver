@@ -1,4 +1,12 @@
 <p align="center">
+  <img src="https://img.shields.io/pypi/v/jsonrpcserver.svg" alt="PyPI" />
+  <img src="https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg" alt="Code Quality" />
+  <img src="https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main" alt="Coverage Status" />
+  <img src="https://img.shields.io/pypi/dw/jsonrpcserver" alt="Downloads" />
+  <img src="https://img.shields.io/pypi/l/jsonrpcserver.svg" alt="License" />
+</p>
+
+<p align="center">
   <img alt="Jsonrpcserver Logo" src="https://github.com/explodinglabs/jsonrpcserver/blob/main/logo.png?raw=true" />
 </p>
 
@@ -9,14 +17,6 @@
 <p align="center">
   <a href="https://www.explodinglabs.com/jsonrpcserver/">Documentation</a> |
   <a href="https://github.com/explodinglabs/jsonrpcserver/wiki">Wiki</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/pypi/v/jsonrpcserver.svg" alt="PyPI" />
-  <img src="https://github.com/explodinglabs/jsonrpcserver/actions/workflows/code-quality.yml/badge.svg" alt="Code Quality" />
-  <img src="https://coveralls.io/repos/github/explodinglabs/jsonrpcserver/badge.svg?branch=main" alt="Coverage Status" />
-  <img src="https://img.shields.io/pypi/dw/jsonrpcserver" alt="Downloads" />
-  <img src="https://img.shields.io/pypi/l/jsonrpcserver.svg" alt="License" />
 </p>
 
 https://github.com/user-attachments/assets/94fb4f04-a5f1-41ca-84dd-7e18b87990e0
