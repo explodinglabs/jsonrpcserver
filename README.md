@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.explodinglabs.com/superstack/">Documentation</a> |
+  <a href="https://www.explodinglabs.com/jsonrpcserver/">Documentation</a> |
   <a href="https://github.com/explodinglabs/jsonrpcserver/wiki">Wiki</a>
 </p>
 
