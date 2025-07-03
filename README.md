@@ -35,7 +35,8 @@ response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
-👉 Full documentation is at [explodinglabs.com/jsonrpcserver](https://www.explodinglabs.com/jsonrpcserver/).
+👉 Full documentation is at [explodinglabs.com/jsonrpcserver](https://www.explodinglabs.com/jsonrpcserver/).  
+👉 Usage examples in the [Wiki](https://github.com/explodinglabs/jsonrpcserver/wiki).
 
 ## ➡️ See Also
 
