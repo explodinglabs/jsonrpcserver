@@ -11,10 +11,10 @@ hide:
 
 ![jsonrpcserver](images/logo.png)
 
+_Process incoming JSON-RPC requests in Python._
+
 Jump to:
 [GitHub](https://github.com/explodinglabs/jsonrpcserver) | [Examples Wiki](https://github.com/explodinglabs/jsonrpcserver/wiki)
-
-_Process incoming JSON-RPC requests in Python._
 
 ## Documentation
 
