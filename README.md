@@ -3,12 +3,12 @@
 </p>
 
 <p align="center">
-  [Documentation](https://www.explodinglabs.com/superstack/) |
-  [Examples Wiki](https://github.com/explodinglabs/jsonrpcserver/wiki)
+  <i>Process incoming JSON-RPC requests in Python</i>
 </p>
 
 <p align="center">
-  <i>Process incoming JSON-RPC requests in Python</i>
+  <a href="https://www.explodinglabs.com/superstack/">Documentation</a> |
+  <a href="https://github.com/explodinglabs/jsonrpcserver/wiki">Wiki</a>
 </p>
 
 <p align="center">
