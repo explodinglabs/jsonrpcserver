@@ -3,6 +3,11 @@
 </p>
 
 <p align="center">
+  [Documentation](https://www.explodinglabs.com/superstack/) |
+  [Examples Wiki](https://github.com/explodinglabs/jsonrpcserver/wiki)
+</p>
+
+<p align="center">
   <i>Process incoming JSON-RPC requests in Python</i>
 </p>
 
