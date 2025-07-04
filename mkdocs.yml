@@ -3,6 +3,7 @@ site_url: https://explodinglabs.com/jsonrpcserver/
 repo_url: https://github.com/explodinglabs/jsonrpcserver
 theme:
   name: material
+  logo: images/logo.png
   features:
     - navigation.footer
     - palette.toggle
