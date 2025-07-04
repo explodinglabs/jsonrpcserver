@@ -14,7 +14,7 @@ hide:
 _Process incoming JSON-RPC requests in Python._
 
 Jump to:
-[GitHub](https://github.com/explodinglabs/jsonrpcserver) | [Examples Wiki](https://github.com/explodinglabs/jsonrpcserver/wiki)
+[GitHub](https://github.com/explodinglabs/jsonrpcserver) | [Community Wiki](https://github.com/explodinglabs/jsonrpcserver/wiki)
 
 ## Documentation
 
