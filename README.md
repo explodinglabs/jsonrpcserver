@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.explodinglabs.com/jsonrpcserver/">Documentation</a> |
+  <a href="https://explodinglabs.com/jsonrpcserver/">Documentation</a> |
   <a href="https://github.com/explodinglabs/jsonrpcserver/wiki">Community Wiki</a>
 </p>
 
@@ -40,7 +40,7 @@ response = dispatch('{"jsonrpc": "2.0", "method": "ping", "id": 1}')
 # => '{"jsonrpc": "2.0", "result": "pong", "id": 1}'
 ```
 
-👉 Full documentation is at [explodinglabs.com/jsonrpcserver](https://www.explodinglabs.com/jsonrpcserver/).
+👉 Full documentation is at [explodinglabs.com/jsonrpcserver](https://explodinglabs.com/jsonrpcserver/).
 
 👉 See the [Wiki](https://github.com/explodinglabs/jsonrpcserver/wiki) for community-editable usage examples in various frameworks, libraries, and transport protocols.
 
